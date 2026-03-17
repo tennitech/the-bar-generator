@@ -11,7 +11,7 @@ def test():
             browser = p.chromium.launch()
             page = browser.new_page()
             page.goto("http://127.0.0.1:8000")
-            page.select_option("#style-select", value="staff")
+            page.select_option("#style-select", value="music")
             time.sleep(0.5)
             
             # Click buttons to add notes

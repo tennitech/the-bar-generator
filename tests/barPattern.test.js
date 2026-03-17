@@ -1,4 +1,4 @@
-const { createBarPatternSVG } = require('../js/utils/barPattern');
+const { createBarPatternSVG, createTrussPatternGeometry } = require('../js/utils/barPattern');
 
 function makeBaseConfig(overrides = {}) {
   return {
@@ -35,7 +35,8 @@ function makeBaseConfig(overrides = {}) {
       circlesGridOverlap: 0,
       circlesLayout: 'straight',
       numericValue: '3.14159',
-      numericMode: 'dotmatrix'
+      numericMode: 'dotmatrix',
+      trussFamily: 'flat'
     },
     ...overrides
   };
@@ -89,5 +90,53 @@ describe('createBarPatternSVG', () => {
     expect(ticker).toContain('<rect');
     expect(binary).toContain('<rect');
     expect(numeric).toContain('<rect');
+  });
+
+  test('builds geometry for every truss option in the selector', () => {
+    const families = [
+      'flat',
+      'king-post',
+      'queen-post',
+      'howe',
+      'scissor',
+      'fink',
+      'attic',
+      'mono',
+      'hip',
+      'gable',
+      'cathedral',
+      'fan',
+      'raised-tie'
+    ];
+
+    families.forEach((family) => {
+      const geometry = createTrussPatternGeometry({
+        barStartX: 0,
+        barY: 0,
+        exactBarWidth: 250,
+        barHeight: 18,
+        segments: 8,
+        thickness: 2,
+        family
+      });
+
+      expect(geometry.family).toBe(family);
+      expect(geometry.lines.length).toBeGreaterThan(0);
+    });
+  });
+
+  test('serializes selected truss family into SVG output', () => {
+    const result = createBarPatternSVG(makeBaseConfig({
+      currentShader: 9,
+      values: {
+        ...makeBaseConfig().values,
+        trussFamily: 'raised-tie',
+        trussSegments: 5,
+        trussThickness: 2
+      }
+    }));
+
+    expect(result).toContain('<path d="');
+    expect((result.match(/ M /g) || []).length).toBe(6);
   });
 });
