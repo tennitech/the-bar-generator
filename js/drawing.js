@@ -508,6 +508,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       exactBarWidth,
       barHeight: rectHeight,
       segments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
+      mirrorSegments: trussMirrorToggle ? trussMirrorToggle.checked : false,
       thickness: trussThicknessSlider ? trussThicknessSlider.value : 2,
       family: trussFamilySelect ? trussFamilySelect.value : 'flat'
     });
@@ -515,8 +516,22 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     pg.noFill();
     pg.stroke(fgColor);
     pg.strokeWeight(trussGeometry.thickness);
-    pg.strokeCap(pg.SQUARE);
-    pg.strokeJoin(pg.MITER);
+    pg.drawingContext.lineCap = 'butt';
+    pg.drawingContext.lineJoin = 'miter';
+
+    for (let i = 0; i < trussGeometry.strokes.length; i++) {
+      const strokeShape = trussGeometry.strokes[i];
+      pg.beginShape();
+      for (let j = 0; j < strokeShape.points.length; j++) {
+        const point = strokeShape.points[j];
+        pg.vertex(point.x, point.y);
+      }
+      if (strokeShape.closed) {
+        pg.endShape(pg.CLOSE);
+      } else {
+        pg.endShape();
+      }
+    }
 
     for (let i = 0; i < trussGeometry.lines.length; i++) {
       const lineSegment = trussGeometry.lines[i];
@@ -640,6 +655,27 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
         pg.vertex(x, y);
       }
       pg.endShape();
+    }
+  } else if (currentShader === 13) {
+    // GitHub contribution graph
+    const renderData = buildGithubContributionRenderData({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight: rectHeight,
+      grid: githubContributionGrid
+    });
+
+    pg.stroke(fgColor);
+    pg.strokeWeight(0.85);
+    for (let i = 0; i < renderData.cells.length; i++) {
+      const cell = renderData.cells[i];
+      if (cell.filled) {
+        pg.fill(fgColor);
+      } else {
+        pg.noFill();
+      }
+      pg.rect(cell.x, cell.y, cell.size, cell.size);
     }
   }
 }
@@ -911,6 +947,7 @@ function saveSVG() {
           matrixGap: matrixGapSlider ? matrixGapSlider.value : 1,
           trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
           trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
+          trussMirror: trussMirrorToggle ? trussMirrorToggle.checked : false,
           trussThickness: trussThicknessSlider ? trussThicknessSlider.value : 2,
           staffText: staffInput ? staffInput.value : 'RPI',
           staffThickness: staffThicknessSlider ? staffThicknessSlider.value : 1,
@@ -924,7 +961,8 @@ function saveSVG() {
           graphText4: graphInput4 ? graphInput4.value : '',
           graphText5: graphInput5 ? graphInput5.value : '',
           graphMulti: graphMultiToggle ? graphMultiToggle.checked : false,
-          graphScale: graphScaleSlider ? graphScaleSlider.value : 10
+          graphScale: graphScaleSlider ? graphScaleSlider.value : 10,
+          githubContributionGrid
         }
       });
     }

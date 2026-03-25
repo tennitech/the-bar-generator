@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hidden prototype for a cinematic RPI logo generator experience.">
+  <title>RPI Animation Prototype</title>
+  <link href="animation.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <div class="page-wrapper animation_page">
+    <main class="main-wrapper animation_main">
+      <a class="animation_back_link" href="/">Open generator</a>
+      <p class="animation_badge">Hidden prototype</p>
+
+      <section class="section_animation_stage" aria-labelledby="animation-title">
+        <h1 id="animation-title" class="sr-only">RPI animation prototype</h1>
+
+        <div class="animation_stage" aria-hidden="true">
+          <canvas id="animation-canvas" class="animation_canvas"></canvas>
+          <div class="animation_stage_glow"></div>
+          <div class="animation_scanlines"></div>
+          <div class="animation_noise"></div>
+        </div>
+
+        <div class="animation_controls">
+          <nav class="animation_mode_group" aria-label="Prototype modes">
+            <button type="button" class="animation_mode_button is-active" data-theme="measure" aria-pressed="true">
+              Measure
+            </button>
+            <button type="button" class="animation_mode_button" data-theme="experiment" aria-pressed="false">
+              Experiment
+            </button>
+            <button type="button" class="animation_mode_button" data-theme="build" aria-pressed="false">
+              Build
+            </button>
+          </nav>
+          <p id="animation-summary" class="animation_summary" role="status" aria-live="polite">
+            Theme 01: the bar as survey, coordinate, tolerance, and scientific measure.
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="animation.js"></script>
+</body>
+
+</html>

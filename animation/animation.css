@@ -1,0 +1,290 @@
+@font-face {
+  font-family: 'RPIGeist';
+  src: url('../assets/fonts/RPIGeist-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RPIGeist';
+  src: url('../assets/fonts/RPIGeist-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RPIGeistMono';
+  src: url('../assets/fonts/RPIGeistMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --rpi-red: #d6001c;
+  --rpi-white: #ffffff;
+  --paper-tint: #fff8f9;
+  --paper-line: rgba(214, 0, 28, 0.08);
+  --ink-soft: rgba(214, 0, 28, 0.9);
+  --ink-muted: rgba(122, 33, 46, 0.68);
+  --border-soft: rgba(214, 0, 28, 0.16);
+  --surface-pill: rgba(255, 255, 255, 0.96);
+  --surface-button: rgba(255, 255, 255, 0.94);
+  --surface-button-active: rgba(214, 0, 28, 0.92);
+  --surface-button-soft: rgba(249, 236, 238, 0.96);
+  --shadow-pill: 0 16px 36px rgba(214, 0, 28, 0.12);
+  --space-page: clamp(1rem, 2vw, 2rem);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(214, 0, 28, 0.04), transparent 18rem),
+    linear-gradient(180deg, var(--rpi-white) 0%, var(--paper-tint) 100%);
+  color: var(--rpi-red);
+  font-family: 'RPIGeist', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--rpi-red);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.animation_page,
+.animation_main,
+.section_animation_stage,
+.animation_stage {
+  min-height: 100vh;
+}
+
+.animation_main {
+  position: relative;
+  isolation: isolate;
+}
+
+.section_animation_stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.animation_back_link,
+.animation_badge {
+  position: absolute;
+  z-index: 4;
+  top: var(--space-page);
+  padding: 0.72rem 1rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+}
+
+.animation_back_link {
+  left: var(--space-page);
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.animation_back_link:hover,
+.animation_back_link:focus-visible {
+  border-color: rgba(214, 0, 28, 0.28);
+  background: rgba(255, 247, 248, 1);
+  transform: translateY(-1px);
+}
+
+.animation_badge {
+  right: var(--space-page);
+  margin: 0;
+  color: var(--ink-muted);
+  font-family: 'RPIGeistMono', ui-monospace, monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.animation_stage,
+.animation_stage_glow,
+.animation_scanlines,
+.animation_noise {
+  position: absolute;
+  inset: 0;
+}
+
+.animation_stage {
+  pointer-events: none;
+}
+
+.animation_canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.animation_stage_glow {
+  background: radial-gradient(circle at 50% 50%, rgba(214, 0, 28, 0.055), transparent 22rem);
+}
+
+.animation_scanlines {
+  background:
+    repeating-linear-gradient(180deg,
+      rgba(214, 0, 28, 0.06) 0,
+      rgba(214, 0, 28, 0.06) 1px,
+      rgba(0, 0, 0, 0) 1px,
+      rgba(0, 0, 0, 0) 6px);
+  opacity: 0.95;
+}
+
+.animation_noise {
+  opacity: 0.05;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(214, 0, 28, 0.14) 0 0.6px, transparent 0.8px),
+    radial-gradient(circle at 80% 65%, rgba(214, 0, 28, 0.1) 0 0.7px, transparent 0.9px),
+    radial-gradient(circle at 65% 35%, rgba(214, 0, 28, 0.12) 0 0.5px, transparent 0.7px);
+  background-size: 160px 160px, 210px 210px, 240px 240px;
+}
+
+.animation_controls {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: clamp(1.4rem, 4vh, 3rem);
+  display: grid;
+  gap: 0.85rem;
+  justify-items: center;
+  width: min(92vw, 48rem);
+  transform: translateX(-50%);
+}
+
+.animation_mode_group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  padding: 0.92rem;
+  border: 1px solid rgba(214, 0, 28, 0.12);
+  border-radius: 999px;
+  background: var(--surface-pill);
+  box-shadow: var(--shadow-pill);
+  backdrop-filter: blur(18px);
+}
+
+.animation_mode_button {
+  min-width: 9rem;
+  padding: 1rem 1.35rem;
+  border: 1px solid rgba(214, 0, 28, 0.08);
+  border-radius: 999px;
+  color: var(--rpi-red);
+  background: var(--surface-button);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.animation_mode_button[data-theme="experiment"] {
+  background: var(--surface-button-active);
+  color: var(--rpi-white);
+}
+
+.animation_mode_button[data-theme="build"] {
+  background: var(--surface-button-soft);
+}
+
+.animation_mode_button:hover,
+.animation_mode_button:focus-visible {
+  border-color: rgba(214, 0, 28, 0.24);
+  transform: translateY(-1px);
+}
+
+.animation_mode_button.is-active {
+  border-color: rgba(214, 0, 28, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(214, 0, 28, 0.08);
+}
+
+.animation_summary {
+  margin: 0;
+  max-width: 42rem;
+  color: var(--ink-muted);
+  font-family: 'RPIGeistMono', ui-monospace, monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .animation_controls {
+    width: min(94vw, 34rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .animation_badge {
+    display: none;
+  }
+
+  .animation_back_link {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .animation_back_link:hover,
+  .animation_back_link:focus-visible {
+    transform: translateX(-50%) translateY(-1px);
+  }
+
+  .animation_mode_group {
+    width: 100%;
+    border-radius: 1.8rem;
+  }
+
+  .animation_mode_button {
+    width: 100%;
+  }
+
+  .animation_summary {
+    max-width: 22rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animation_back_link,
+  .animation_mode_button {
+    transition: none;
+  }
+}

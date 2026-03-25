@@ -1325,6 +1325,225 @@
     }
   }
 
+  class TrexBarGame {
+    constructor(hostElement, options) {
+      this.hostElement = hostElement || null;
+      this.stageElement = this.hostElement ? this.hostElement.querySelector('#easter-egg-runner-stage') : null;
+      this.options = options || {};
+      this.onExit = this.options.onExit || null;
+      this.onStateChange = this.options.onStateChange || null;
+      this.runner = null;
+      this.profile = readProfile();
+      this.active = false;
+      this.phase = 'idle';
+      this.score = 0;
+      this.displayScore = 0;
+      this.syncHandle = 0;
+      this.gameOverRecorded = false;
+      this.lastStateSignature = '';
+      this.sync = this.sync.bind(this);
+    }
+
+    ensureRunner() {
+      if (this.runner) return this.runner;
+      if (typeof window === 'undefined' || typeof window.Runner !== 'function' || !this.stageElement) {
+        return null;
+      }
+
+      if (window.Runner.instance_ && typeof window.Runner.instance_.destroy === 'function') {
+        window.Runner.instance_.destroy();
+      }
+
+      this.runner = new window.Runner(this.stageElement, {
+        BIND_EVENTS: false,
+        DISABLE_SOUND: true,
+        CLASS_TARGET: this.hostElement,
+        MAX_SPEED: 8.2,
+        INVERT_DISTANCE: 999999,
+        CLEAR_TIME: 600
+      });
+
+      const storedHighScore = Math.max(0, parseInt(this.profile.highScore, 10) || 0);
+      if (this.runner.distanceMeter) {
+        this.runner.highestScore = storedHighScore / this.runner.distanceMeter.config.COEFFICIENT;
+        this.runner.distanceMeter.setHighScore(this.runner.highestScore);
+        this.runner.distanceMeter.draw = function () { };
+        this.runner.distanceMeter.drawHighScore = function () { };
+      }
+
+      if (this.runner.containerEl) {
+        this.runner.containerEl.style.width = this.runner.dimensions.WIDTH + 'px';
+        this.runner.containerEl.style.height = this.runner.dimensions.HEIGHT + 'px';
+      }
+      this.runner.activated = true;
+      if (this.runner.tRex) {
+        this.runner.tRex.xPos = this.runner.tRex.config.START_X_POS;
+        this.runner.tRex.update(0);
+      }
+
+      return this.runner;
+    }
+
+    teardownRunner() {
+      if (!this.runner) return;
+      if (typeof this.runner.destroy === 'function') {
+        this.runner.destroy();
+      } else if (typeof this.runner.stop === 'function') {
+        this.runner.stop();
+      }
+      this.runner = null;
+    }
+
+    emitState(force) {
+      if (typeof this.onStateChange !== 'function') return;
+      const state = this.getState();
+      const signature = JSON.stringify(state);
+      if (!force && signature === this.lastStateSignature) return;
+      this.lastStateSignature = signature;
+      this.onStateChange(state);
+    }
+
+    getState() {
+      const highScore = Math.max(
+        Math.max(0, parseInt(this.profile.highScore, 10) || 0),
+        this.runner && typeof this.runner.getHighScore === 'function' ? this.runner.getHighScore() : 0
+      );
+
+      return {
+        active: this.active,
+        phase: this.phase,
+        score: this.score,
+        displayScore: Math.round(this.displayScore),
+        round: Math.max(1, Math.floor(this.score / 150) + 1),
+        combo: 0,
+        meter: 0,
+        highScore,
+        rank: scoreToRank(this.score, 0),
+        message: this.phase === 'gameover' ? 'Press jump to retry' : 'Press jump to start',
+        gameOver: !!(this.runner && this.runner.crashed)
+      };
+    }
+
+    resize() {
+      if (this.runner && typeof this.runner.adjustDimensions === 'function') {
+        this.runner.adjustDimensions();
+      }
+    }
+
+    open(triggerSource) {
+      this.triggerSource = triggerSource || 'secret';
+      this.profile = readProfile();
+      this.score = 0;
+      this.displayScore = 0;
+      this.phase = 'boot';
+      this.active = true;
+      this.gameOverRecorded = false;
+      this.lastStateSignature = '';
+      this.teardownRunner();
+      this.ensureRunner();
+      this.startSync();
+      this.emitState(true);
+    }
+
+    close() {
+      this.active = false;
+      this.phase = 'idle';
+      this.stopSync();
+      this.teardownRunner();
+      this.emitState(true);
+      if (typeof this.onExit === 'function') {
+        this.onExit(this.getState());
+      }
+    }
+
+    restart() {
+      if (!this.active) {
+        this.open('restart');
+        return;
+      }
+      this.open('restart');
+    }
+
+    isGameOver() {
+      return !!(this.runner && this.runner.crashed);
+    }
+
+    setControl(controlName, active) {
+      if (controlName !== 'jump' || !active) {
+        return;
+      }
+
+      const runner = this.ensureRunner();
+      if (!runner) return;
+
+      if (runner.crashed) {
+        runner.restart();
+        this.phase = 'run';
+        this.gameOverRecorded = false;
+        this.emitState(true);
+        return;
+      }
+
+      runner.pressJump();
+      runner.releaseJump();
+      if (this.phase === 'boot') {
+        this.phase = 'run';
+      }
+      this.emitState(true);
+    }
+
+    startSync() {
+      this.stopSync();
+      if (typeof requestAnimationFrame === 'function') {
+        this.syncHandle = requestAnimationFrame(this.sync);
+      }
+    }
+
+    stopSync() {
+      if (this.syncHandle && typeof cancelAnimationFrame === 'function') {
+        cancelAnimationFrame(this.syncHandle);
+      }
+      this.syncHandle = 0;
+    }
+
+    sync() {
+      if (!this.active) return;
+
+      const runner = this.ensureRunner();
+      if (!runner) {
+        this.emitState();
+        return;
+      }
+
+      const nextScore = typeof runner.getScore === 'function' ? runner.getScore() : 0;
+      const nextHighScore = typeof runner.getHighScore === 'function' ? runner.getHighScore() : 0;
+
+      this.score = nextScore;
+      this.displayScore += (nextScore - this.displayScore) * 0.32;
+
+      if (nextHighScore > (this.profile.highScore || 0)) {
+        this.profile.highScore = nextHighScore;
+        writeProfile(this.profile);
+      }
+
+      if (runner.crashed) {
+        this.phase = 'gameover';
+        if (!this.gameOverRecorded) {
+          this.profile.runs = Math.max(0, parseInt(this.profile.runs, 10) || 0) + 1;
+          writeProfile(this.profile);
+          this.gameOverRecorded = true;
+        }
+      } else if (runner.playing || runner.activated) {
+        this.phase = 'run';
+      } else {
+        this.phase = 'boot';
+      }
+
+      this.emitState();
+      this.syncHandle = requestAnimationFrame(this.sync);
+    }
+  }
+
   return {
     STORAGE_KEY,
     DEFAULT_PROFILE,
@@ -1333,6 +1552,6 @@
     getScoreboardExtension,
     pickObstacleType,
     scoreToRank,
-    RinkRushGame
+    RinkRushGame: TrexBarGame
   };
 });

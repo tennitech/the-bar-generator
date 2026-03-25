@@ -26,6 +26,14 @@ Given the constraint of "Stability First" and "Vanilla JS":
 2.  **Embed** via iframe or link directly from the Brand Hub navigation.
 3.  **Manual Upload:** Users download the PNG and manually upload it to their Frontify libraries if needed.
 
+### Embedded UI Constraint
+When the generator is embedded inside the Brand Hub, it should behave like a compact tool surface inside existing page chrome, not like a standalone application shell.
+
+- Avoid introducing a second persistent left navigation/sidebar inside the embedded experience.
+- Prefer docked top controls on desktop and an overlay sheet on smaller screens when space is limited.
+- Keep canvas/output controls scoped to the generator itself and assume Frontify already provides surrounding navigation context.
+- Treat interface appearance separately from artwork/canvas appearance to avoid confusing the host platform's navigation with the generator's output options.
+
 ## 3. Next Steps
 1.  Request API Documentation for RPI's specific Frontify instance.
 2.  Determine if "Custom Content Blocks" are allowed in RPI's plan.

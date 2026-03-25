@@ -20,7 +20,7 @@
     </div>
     <div class="header-actions">
       <div class="save-section">
-        <button id="save-button" class="save-button primary-button" aria-haspopup="true" aria-expanded="false"
+        <button id="save-button" type="button" class="save-button primary-button" aria-expanded="false"
           aria-controls="save-menu">
           Download Asset
           <svg class="icon-right" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -30,23 +30,31 @@
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
         </button>
-        <div id="save-menu" class="save-menu hidden" role="menu">
-          <button id="save-png" class="save-option" role="menuitem">
+        <div id="save-menu" class="save-menu hidden">
+          <button id="save-png" type="button" class="save-option">
             <span class="option-label">PNG IMAGE</span>
             <span class="option-desc">High resolution raster</span>
           </button>
-          <button id="save-svg" class="save-option" role="menuitem">
+          <button id="save-svg" type="button" class="save-option">
             <span class="option-label">SVG VECTOR</span>
             <span class="option-desc">Scalable format</span>
           </button>
           <div class="save-divider"></div>
-          <button id="copy-embed" class="save-option" role="menuitem">
+          <button id="copy-embed" type="button" class="save-option">
             <span class="option-label">COPY EMBED CODE</span>
             <span class="option-desc">For Frontify / Web</span>
           </button>
         </div>
       </div>
-      <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle Menu" aria-expanded="false"
+      <button id="ui-theme-toggle" type="button" class="theme-toggle" aria-pressed="false"
+        aria-label="Switch to dark interface">
+        <svg class="theme-toggle_icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+          aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+      <button id="mobile-menu-toggle" type="button" class="mobile-menu-toggle" aria-label="Toggle Menu" aria-expanded="false"
         aria-controls="app-sidebar">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -59,48 +67,55 @@
   </header>
 
   <div class="app-layout">
-    <!-- Sidebar Controls -->
+    <!-- Tool Controls -->
     <aside id="app-sidebar" class="app-sidebar" role="region" aria-label="Design Controls">
       <div class="sidebar-content">
-        <div class="control-group">
+        <section class="tool_intro" aria-labelledby="tool-intro-title">
+          <p class="tool_intro_label">RPI Logo Generator</p>
+          <h1 id="tool-intro-title" class="tool_intro_title">The Bar</h1>
+          <p class="tool_intro_text">Configure the bar, preview the mark, and export.</p>
+        </section>
+
+        <section class="control-group control_group_static" aria-labelledby="sidebar-core-controls-title">
+          <h2 id="sidebar-core-controls-title" class="control-header">System</h2>
           <div class="control">
-            <label for="style-select" class="control-label">VISUAL STYLE</label>
+            <label for="style-select" class="control-label">BAR SYSTEM</label>
             <div class="select-wrapper">
               <select id="style-select" class="control-select">
-                <option value="solid">SOLID</option>
-                <option value="ruler">RULER</option>
-                <option value="ticker">TICKER</option>
-                <option value="binary">BINARY</option>
-                <option value="morse">MORSE CODE</option>
-                <option value="waveform">WAVEFORM</option>
-                <option value="circles">CIRCLES</option>
-                <option value="numeric">NUMERIC</option>
-                <option value="matrix">MATRIX</option>
-                <option value="truss">TRUSS</option>
-                <option value="music">MUSIC</option>
-                <option value="graph">DATA GRAPH</option>
+                <option value="solid">Solid fill</option>
+                <option value="ruler">Ruler</option>
+                <option value="ticker">Ticker</option>
+                <option value="binary">Binary</option>
+                <option value="morse">Morse code</option>
+                <option value="waveform">Waveform</option>
+                <option value="circles">Circles</option>
+                <option value="numeric">Numeric</option>
+                <option value="matrix">Matrix</option>
+                <option value="truss">Truss</option>
+                <option value="music">Music</option>
+                <option value="graph">Data graph</option>
+                <option value="github">GitHub</option>
+                <option value="puck-game">🏒</option>
               </select>
             </div>
           </div>
 
           <div class="control">
-            <label for="color-mode-select" class="control-label">THEME</label>
+            <label for="color-mode-select" class="control-label">CANVAS COLORS</label>
             <div class="select-wrapper">
               <select id="color-mode-select" class="control-select">
-                <option value="black-on-white">LIGHT (Default)</option>
-                <option value="white-on-black">DARK</option>
-                <option value="white-on-red">RED</option>
-                <option value="red-on-white">INVERTED</option>
+                <option value="black-on-white">Black on white</option>
+                <option value="white-on-black">White on black</option>
+                <option value="white-on-red">White on red</option>
+                <option value="red-on-white">Red on white</option>
               </select>
             </div>
           </div>
-        </div>
-
-        <div class="sidebar-divider"></div>
+        </section>
 
         <!-- Dynamic Control Groups -->
-        <div id="ruler-group" class="control-group" style="display: none;">
-          <div class="control-header">RULER SETTINGS</div>
+        <section id="ruler-group" class="control-group control_group_detail" aria-labelledby="ruler-heading" hidden>
+          <h3 id="ruler-heading" class="control-header">Ruler calibration</h3>
           <div class="control slider-control">
             <label for="ruler-repeats-slider" class="control-label">REPEATS <span
                 id="ruler-repeats-display">10</span></label>
@@ -112,23 +127,22 @@
             <input type="range" id="ruler-units-slider" min="2" max="10" step="2" value="4" class="control-slider"
               aria-label="Ruler Units">
           </div>
-        </div>
+        </section>
 
-        <div id="binary-group" class="control-group" style="display: none;">
-          <div class="control-header">BINARY SETTINGS</div>
+        <section id="binary-group" class="control-group control_group_detail" aria-labelledby="binary-heading" hidden>
+          <h3 id="binary-heading" class="control-header">Binary encoding</h3>
           <div class="control">
             <label for="binary-input" class="control-label">INPUT TEXT</label>
             <input type="text" id="binary-input" placeholder="ENTER TEXT..." class="control-input"
               aria-label="Binary Text Input">
             <div class="control-hint">Type to translate to binary bars</div>
           </div>
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="binary-audio-toggle" class="control-label"
-              style="margin-bottom: 0; display: flex; align-items: center;">
+          <div class="control control_row">
+            <label for="binary-audio-toggle" class="control-label control_label_inline control_label_with_icon">
               AUDIO (FSK)
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                style="margin-left: 6px; color: var(--text-muted);">
+                class="control_label_icon">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                 <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
@@ -140,29 +154,29 @@
             </label>
           </div>
           <div class="control">
-            <div id="binary-audio-indicator" class="info-badge audio-status audio-indicator">AUDIO ACTIVE</div>
+            <div id="binary-audio-indicator" class="info-badge audio-status audio-indicator" role="status" aria-live="polite">AUDIO ACTIVE</div>
           </div>
-        </div>
+        </section>
 
-        <div id="morse-group" class="control-group" style="display: none;">
-          <div class="control-header">MORSE CODE SETTINGS</div>
+        <section id="morse-group" class="control-group control_group_detail" aria-labelledby="morse-heading" hidden>
+          <h3 id="morse-heading" class="control-header">Morse sequence</h3>
           <div class="control">
             <label for="morse-input" class="control-label">INPUT TEXT</label>
             <input type="text" id="morse-input" placeholder="ENTER TEXT..." class="control-input"
               aria-label="Morse Text Input">
             <div class="control-hint">Type to translate to morse code</div>
           </div>
-          <div class="control audio-controls">
-            <button id="morse-play-btn" class="audio-control-btn">PLAY AUDIO</button>
+          <div class="control audio-controls control_button_group">
+            <button id="morse-play-btn" class="audio-control-btn audio-control-btn--primary">PLAY AUDIO</button>
             <button id="morse-reset-btn" class="audio-control-btn">RESET</button>
           </div>
           <div class="control">
-            <div id="morse-info-badge" class="info-badge audio-status audio-indicator">AUDIO ACTIVE - PRESS SPACEBAR TO PAUSE</div>
+            <div id="morse-info-badge" class="info-badge audio-status audio-indicator" role="status" aria-live="polite">AUDIO ACTIVE - PRESS SPACEBAR TO PAUSE</div>
           </div>
-        </div>
+        </section>
 
-        <div id="ticker-group" class="control-group" style="display: none;">
-          <div class="control-header">TICKER SETTINGS</div>
+        <section id="ticker-group" class="control-group control_group_detail" aria-labelledby="ticker-heading" hidden>
+          <h3 id="ticker-heading" class="control-header">Ticker rhythm</h3>
           <div class="control slider-control">
             <label for="ticker-slider" class="control-label">REPEATS <span id="ticker-display">34</span></label>
             <input type="range" id="ticker-slider" min="5" max="40" value="34" class="control-slider"
@@ -182,13 +196,12 @@
             <input type="range" id="ticker-width-ratio-slider" min="1" max="5" value="2" class="control-slider"
               aria-label="Ticker Width Ratio">
           </div>
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="ticker-audio-toggle" class="control-label"
-              style="margin-bottom: 0; display: flex; align-items: center;">
+          <div class="control control_row">
+            <label for="ticker-audio-toggle" class="control-label control_label_inline control_label_with_icon">
               AUDIO (POLY)
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                style="margin-left: 6px; color: var(--text-muted);">
+                class="control_label_icon">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                 <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
@@ -200,12 +213,12 @@
             </label>
           </div>
           <div class="control">
-            <div id="ticker-audio-indicator" class="info-badge audio-status audio-indicator">AUDIO ACTIVE</div>
+            <div id="ticker-audio-indicator" class="info-badge audio-status audio-indicator" role="status" aria-live="polite">AUDIO ACTIVE</div>
           </div>
-        </div>
+        </section>
 
-        <div id="waveform-group" class="control-group" style="display: none;">
-          <div class="control-header">WAVEFORM SETTINGS</div>
+        <section id="waveform-group" class="control-group control_group_detail" aria-labelledby="waveform-heading" hidden>
+          <h3 id="waveform-heading" class="control-header">Waveform behavior</h3>
           <div class="control slider-control">
             <label for="waveform-type-slider" class="control-label">TYPE <span
                 id="waveform-type-display">SINE</span></label>
@@ -227,16 +240,15 @@
               aria-label="Waveform Speed">
           </div>
 
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="waveform-envelope-toggle" class="control-label" style="margin-bottom: 0;">ENVELOPE</label>
+          <div class="control control_row">
+            <label for="waveform-envelope-toggle" class="control-label control_label_inline">ENVELOPE</label>
             <label class="switch">
               <input type="checkbox" id="waveform-envelope-toggle">
               <span class="slider round"></span>
             </label>
           </div>
 
-          <div id="envelope-settings-group"
-            style="display: none; padding-left: 12px; border-left: 2px solid var(--border-color); margin-top: 8px; margin-bottom: 16px;">
+          <div id="envelope-settings-group" class="control_subpanel" hidden>
             <div class="control">
               <label for="waveform-envelope-type" class="control-label">SHAPE</label>
               <select id="waveform-envelope-type" class="control-select" aria-label="Envelope Shape">
@@ -258,10 +270,8 @@
               <input type="range" id="waveform-envelope-center-slider" min="-1" max="1" step="0.1" value="0"
                 class="control-slider" aria-label="Envelope Center Offset">
             </div>
-            <div class="control"
-              style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
-              <label for="waveform-envelope-bipolar-toggle" class="control-label"
-                style="margin-bottom: 0;">BIPOLAR</label>
+            <div class="control control_row control_row_compact">
+              <label for="waveform-envelope-bipolar-toggle" class="control-label control_label_inline">BIPOLAR</label>
               <label class="switch">
                 <input type="checkbox" id="waveform-envelope-bipolar-toggle">
                 <span class="slider round"></span>
@@ -269,13 +279,12 @@
             </div>
           </div>
 
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="waveform-animate-toggle" class="control-label"
-              style="margin-bottom: 0; display: flex; align-items: center;">
+          <div class="control control_row">
+            <label for="waveform-animate-toggle" class="control-label control_label_inline control_label_with_icon">
               ANIMATE
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                style="margin-left: 6px; color: var(--text-muted);">
+                class="control_label_icon">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
               </svg>
             </label>
@@ -285,13 +294,12 @@
             </label>
           </div>
 
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="waveform-audio-toggle" class="control-label"
-              style="margin-bottom: 0; display: flex; align-items: center;">
+          <div class="control control_row">
+            <label for="waveform-audio-toggle" class="control-label control_label_inline control_label_with_icon">
               AUDIO
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                style="margin-left: 6px; color: var(--text-muted);">
+                class="control_label_icon">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                 <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
@@ -303,16 +311,16 @@
             </label>
           </div>
           <div class="control">
-            <div id="waveform-audio-indicator" class="info-badge audio-status audio-indicator">AUDIO ACTIVE</div>
+            <div id="waveform-audio-indicator" class="info-badge audio-status audio-indicator" role="status" aria-live="polite">AUDIO ACTIVE</div>
           </div>
 
           <div class="control">
-            <div id="animation-info-badge" class="info-badge">PRESS SPACEBAR TO PAUSE ANIMATION</div>
+            <div id="animation-info-badge" class="info-badge" role="status" aria-live="polite">PRESS SPACEBAR TO PAUSE ANIMATION</div>
           </div>
-        </div>
+        </section>
 
-        <div id="circles-group" class="control-group" style="display: none;">
-          <div class="control-header">CIRCLES SETTINGS</div>
+        <section id="circles-group" class="control-group control_group_detail" aria-labelledby="circles-heading" hidden>
+          <h3 id="circles-heading" class="control-header">Circle field</h3>
           <div class="control">
             <label for="circles-mode-select" class="control-label">MODE</label>
             <div class="select-wrapper">
@@ -348,7 +356,7 @@
           </div>
 
           <!-- Grid Mode Controls -->
-          <div id="circles-grid-controls" class="sub-group" style="display: none;">
+          <div id="circles-grid-controls" class="sub-group" hidden>
             <div class="control slider-control">
               <label for="circles-rows-slider" class="control-label">ROWS <span
                   id="circles-rows-display">2</span></label>
@@ -404,10 +412,10 @@
               </select>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div id="numeric-group" class="control-group" style="display: none;">
-          <div class="control-header">NUMERIC SETTINGS</div>
+        <section id="numeric-group" class="control-group control_group_detail" aria-labelledby="numeric-heading" hidden>
+          <h3 id="numeric-heading" class="control-header">Numeric field</h3>
           <div class="control">
             <label for="numeric-input" class="control-label">NUMBER / FORMULA</label>
             <input type="text" id="numeric-input" placeholder="Enter a number..." class="control-input"
@@ -423,10 +431,10 @@
               </select>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div id="matrix-group" class="control-group" style="display: none;">
-          <div class="control-header">MATRIX SETTINGS</div>
+        <section id="matrix-group" class="control-group control_group_detail" aria-labelledby="matrix-heading" hidden>
+          <h3 id="matrix-heading" class="control-header">Matrix grid</h3>
           <div class="control">
             <label for="matrix-input" class="control-label">INPUT TEXT</label>
             <input type="text" id="matrix-input" placeholder="ENTER TEXT..." class="control-input" value="RPI"
@@ -443,10 +451,10 @@
             <input type="range" id="matrix-gap-slider" min="0" max="5" value="1" class="control-slider"
               aria-label="Matrix Gap">
           </div>
-        </div>
+        </section>
 
-        <div id="truss-group" class="control-group" style="display: none;">
-          <div class="control-header">TRUSS SETTINGS</div>
+        <section id="truss-group" class="control-group control_group_detail" aria-labelledby="truss-heading" hidden>
+          <h3 id="truss-heading" class="control-header">Truss lattice</h3>
           <div class="control">
             <label for="truss-family-select" class="control-label">TRUSS FAMILY</label>
             <div class="select-wrapper">
@@ -474,23 +482,30 @@
             <input type="range" id="truss-segments-slider" min="5" max="50" value="15" class="control-slider"
               aria-label="Truss Segments">
           </div>
+          <div class="control control_row">
+            <label for="truss-mirror-toggle" class="control-label control_label_inline">MIRROR SEGMENTS</label>
+            <label class="switch">
+              <input type="checkbox" id="truss-mirror-toggle">
+              <span class="slider round"></span>
+            </label>
+          </div>
           <div class="control slider-control">
             <label for="truss-thickness-slider" class="control-label">THICKNESS <span
                 id="truss-thickness-display">2</span></label>
-            <input type="range" id="truss-thickness-slider" min="0.5" max="5" step="0.5" value="2"
+            <input type="range" id="truss-thickness-slider" min="1.5" max="5" step="0.5" value="2"
               class="control-slider" aria-label="Truss Thickness">
           </div>
-        </div>
+        </section>
 
-        <div id="staff-group" class="control-group" style="display: none;">
-          <div class="control-header">MUSIC SETTINGS</div>
-          <div class="control audio-controls">
-            <button id="staff-play-btn" class="audio-control-btn">PLAY AUDIO</button>
+        <section id="staff-group" class="control-group control_group_detail" aria-labelledby="staff-heading" hidden>
+          <h3 id="staff-heading" class="control-header">Music notation</h3>
+          <div class="control audio-controls control_button_group">
+            <button id="staff-play-btn" class="audio-control-btn audio-control-btn--primary">PLAY AUDIO</button>
             <button id="staff-reset-btn" class="audio-control-btn">RESET</button>
-            <input type="checkbox" id="staff-audio-toggle" style="display: none;" aria-hidden="true">
+            <input type="checkbox" id="staff-audio-toggle" class="visually-hidden-input" aria-hidden="true">
           </div>
           <div class="control">
-            <div id="staff-info-badge" class="info-badge audio-status audio-indicator">AUDIO ACTIVE - PRESS SPACEBAR TO PAUSE</div>
+            <div id="staff-info-badge" class="info-badge audio-status audio-indicator" role="status" aria-live="polite">AUDIO ACTIVE - PRESS SPACEBAR TO PAUSE</div>
           </div>
           <div class="control">
             <label for="staff-instrument-select" class="control-label">INSTRUMENT</label>
@@ -513,15 +528,15 @@
               </select>
             </div>
           </div>
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="staff-reverb-toggle" class="control-label" style="margin-bottom: 0;">REVERB</label>
+          <div class="control control_row">
+            <label for="staff-reverb-toggle" class="control-label control_label_inline">REVERB</label>
             <label class="switch">
               <input type="checkbox" id="staff-reverb-toggle">
               <span class="slider round"></span>
             </label>
           </div>
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="staff-tremolo-toggle" class="control-label" style="margin-bottom: 0;">TREMOLO</label>
+          <div class="control control_row">
+            <label for="staff-tremolo-toggle" class="control-label control_label_inline">TREMOLO</label>
             <label class="switch">
               <input type="checkbox" id="staff-tremolo-toggle">
               <span class="slider round"></span>
@@ -536,57 +551,56 @@
           <div class="control">
             <label class="control-label">NOTE DURATION</label>
             <div class="duration-selector" id="staff-duration-selector">
-              <button class="duration-btn" data-duration="4">1</button>
-              <button class="duration-btn" data-duration="2">1/2</button>
-              <button class="duration-btn active" data-duration="1">1/4</button>
-              <button class="duration-btn" data-duration="0.5">1/8</button>
-              <button class="duration-btn" data-duration="0.25">1/16</button>
-              <button class="duration-btn" data-duration="0.125">1/32</button>
+              <button type="button" class="duration-btn" data-duration="4" aria-pressed="false">1</button>
+              <button type="button" class="duration-btn" data-duration="2" aria-pressed="false">1/2</button>
+              <button type="button" class="duration-btn active" data-duration="1" aria-pressed="true">1/4</button>
+              <button type="button" class="duration-btn" data-duration="0.5" aria-pressed="false">1/8</button>
+              <button type="button" class="duration-btn" data-duration="0.25" aria-pressed="false">1/16</button>
+              <button type="button" class="duration-btn" data-duration="0.125" aria-pressed="false">1/32</button>
             </div>
           </div>
           <div class="control">
-            <label class="control-label" style="display:flex; justify-content:space-between; align-items:center;">
-              KEYBOARD
-              <button id="staff-clear-btn" class="workspace-btn" style="padding: 2px 6px; height: auto;"
-                aria-label="Clear Notes">CLEAR</button>
-            </label>
+            <div class="control_heading_row">
+              <label class="control-label control_label_inline" for="staff-keyboard">KEYBOARD</label>
+              <button id="staff-clear-btn" class="control_inline_action" aria-label="Clear Notes">CLEAR</button>
+            </div>
             <div class="piano-keyboard">
-              <div class="keys">
-                <div class="key white" data-note="C4"></div>
-                <div class="key black" data-note="C#4"></div>
-                <div class="key white" data-note="D4"></div>
-                <div class="key black" data-note="D#4"></div>
-                <div class="key white" data-note="E4"></div>
-                <div class="key white" data-note="F4"></div>
-                <div class="key black" data-note="F#4"></div>
-                <div class="key white" data-note="G4"></div>
-                <div class="key black" data-note="G#4"></div>
-                <div class="key white" data-note="A4"></div>
-                <div class="key black" data-note="A#4"></div>
-                <div class="key white" data-note="B4"></div>
-                <div class="key white" data-note="C5"></div>
+              <div id="staff-keyboard" class="keys" role="group" aria-label="Music keyboard">
+                <button type="button" class="key white" data-note="C4" aria-label="Add C4"></button>
+                <button type="button" class="key black" data-note="C#4" aria-label="Add C sharp 4"></button>
+                <button type="button" class="key white" data-note="D4" aria-label="Add D4"></button>
+                <button type="button" class="key black" data-note="D#4" aria-label="Add D sharp 4"></button>
+                <button type="button" class="key white" data-note="E4" aria-label="Add E4"></button>
+                <button type="button" class="key white" data-note="F4" aria-label="Add F4"></button>
+                <button type="button" class="key black" data-note="F#4" aria-label="Add F sharp 4"></button>
+                <button type="button" class="key white" data-note="G4" aria-label="Add G4"></button>
+                <button type="button" class="key black" data-note="G#4" aria-label="Add G sharp 4"></button>
+                <button type="button" class="key white" data-note="A4" aria-label="Add A4"></button>
+                <button type="button" class="key black" data-note="A#4" aria-label="Add A sharp 4"></button>
+                <button type="button" class="key white" data-note="B4" aria-label="Add B4"></button>
+                <button type="button" class="key white" data-note="C5" aria-label="Add C5"></button>
               </div>
             </div>
-            <div class="control-hint" style="margin-top: 8px;">Click keys to add notes (max 4 measures)</div>
+            <div class="control-hint control_hint_spaced">Click keys to add notes (max 4 measures)</div>
           </div>
-        </div>
+        </section>
 
-        <div id="graph-group" class="control-group" style="display: none;">
-          <div class="control-header">GRAPH SETTINGS</div>
+        <section id="graph-group" class="control-group control_group_detail" aria-labelledby="graph-heading" hidden>
+          <h3 id="graph-heading" class="control-header">Data graph</h3>
           <div class="control">
             <label for="graph-input" class="control-label">STREAM 1</label>
             <input type="text" id="graph-input" placeholder="ENTER TEXT..." class="control-input" value="RPI"
               aria-label="Graph Text Input">
             <div class="control-hint">Type to generate line graph values</div>
           </div>
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="graph-multi-toggle" class="control-label" style="margin-bottom: 0;">MULTI STREAMS (NO FILL)</label>
+          <div class="control control_row">
+            <label for="graph-multi-toggle" class="control-label control_label_inline">MULTI STREAMS (NO FILL)</label>
             <label class="switch">
               <input type="checkbox" id="graph-multi-toggle">
               <span class="slider round"></span>
             </label>
           </div>
-          <div id="graph-multi-inputs" class="graph-multi-inputs" style="display: none;">
+          <div id="graph-multi-inputs" class="graph-multi-inputs control_subpanel" hidden>
             <div class="control">
               <label for="graph-input-2" class="control-label">STREAM 2</label>
               <input type="text" id="graph-input-2" placeholder="OPTIONAL..." class="control-input"
@@ -615,10 +629,29 @@
             <input type="range" id="graph-scale-slider" min="4" max="14" value="10" class="control-slider"
               aria-label="Graph Scale Max">
           </div>
-        </div>
+        </section>
+
+        <section id="github-group" class="control-group control_group_detail" aria-labelledby="github-heading" hidden>
+          <h3 id="github-heading" class="control-header">Contribution graph</h3>
+          <div class="control">
+            <label class="control-label">SCREENSHOT INPUT</label>
+            <input type="file" id="github-upload-input" class="visually-hidden-input"
+              accept="image/png,image/jpeg,image/webp"
+              aria-label="Upload GitHub contribution screenshot">
+            <div class="github-upload-actions">
+              <button id="github-upload-btn" type="button" class="audio-control-btn audio-control-btn--primary">UPLOAD SCREENSHOT</button>
+              <button id="github-help-btn" type="button" class="audio-control-btn">HOW TO CAPTURE</button>
+            </div>
+            <div class="control-hint">Crop tightly to the contribution calendar. The bar compresses the screenshot into a 3-row weekly matrix.</div>
+          </div>
+          <div class="control">
+            <div id="github-status-badge" class="info-badge" role="status" aria-live="polite">USING DEMO DATA</div>
+          </div>
+        </section>
 
       </div>
     </aside>
+    <div id="sidebar-backdrop" class="sidebar_backdrop hidden" aria-hidden="true"></div>
 
     <!-- Main Workspace -->
     <main class="app-main">
@@ -632,62 +665,112 @@
         <div class="easter-egg-hint-track"></div>
         <div class="easter-egg-hint-copy">
           <span class="easter-egg-hint-kicker">SECRET RINK</span>
-          <span id="easter-egg-hint-label" class="easter-egg-hint-label">HOLD TO ENTER</span>
+          <span id="easter-egg-hint-label" class="easter-egg-hint-label">CLICK TO PLAY</span>
         </div>
       </div>
 
       <div id="easter-egg-overlay" class="easter-egg-overlay hidden" aria-hidden="true">
-        <div class="easter-egg-overlay-chrome">
-          <div class="easter-egg-pill">RPI AFTER HOURS</div>
-          <div id="easter-egg-live-status" class="easter-egg-pill secondary" aria-live="polite">BULLET TIME ON ICE</div>
-          <button id="easter-egg-close" class="easter-egg-close" aria-label="Close hidden game">Exit Rink</button>
+        <div id="easter-egg-runner-stage" class="easter-egg-runner-stage interstitial-wrapper" aria-label="Hidden t-rex runner">
+          <div class="icon icon-offline" aria-hidden="true"></div>
+          <div id="offline-resources" class="easter-egg-runner-resources" aria-hidden="true">
+            <img id="offline-resources-1x" src="third_party/t-rex-runner/assets/default_100_percent/100-offline-sprite.png" alt="">
+            <img id="offline-resources-2x" src="third_party/t-rex-runner/assets/default_200_percent/200-offline-sprite.png" alt="">
+          </div>
         </div>
-        <canvas id="easter-egg-canvas" class="easter-egg-canvas" aria-label="Hidden retro game"></canvas>
-        <div class="easter-egg-touch-controls" aria-label="Game Controls">
-          <button class="easter-egg-touch-btn" data-control="duck" aria-label="Duck">TUCK</button>
-          <button class="easter-egg-touch-btn focus" data-control="bullet" aria-label="Bullet time">FOCUS</button>
-          <button class="easter-egg-touch-btn jump" data-control="jump" aria-label="Jump">JUMP</button>
+        <div id="easter-egg-stage-status" class="easter-egg-stage-status" aria-live="polite">ROUND 1</div>
+      </div>
+
+      <div id="github-help-overlay" class="github-help-overlay hidden" aria-hidden="true">
+        <div class="github-help-dialog" role="dialog" aria-modal="true" aria-labelledby="github-help-title">
+          <div class="github-help-header">
+            <div>
+              <div class="github-help-kicker">GITHUB BAR INPUT</div>
+              <h2 id="github-help-title" class="github-help-title">Capture The Calendar, Not The Page</h2>
+            </div>
+            <button id="github-help-close-icon" type="button" class="github-help-close-icon" aria-label="Close help">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+                <line x1="5" y1="5" x2="19" y2="19"></line>
+                <line x1="19" y1="5" x2="5" y2="19"></line>
+              </svg>
+            </button>
+          </div>
+          <p class="github-help-intro">This mode compresses your GitHub activity into a weekly 3-row matrix. Clean input makes a cleaner bar.</p>
+          <div class="github-help-grid">
+            <div class="github-help-step">
+              <div class="github-help-step-num">01</div>
+              <div class="github-help-step-copy">Open your GitHub profile and scroll to the contribution graph.</div>
+            </div>
+            <div class="github-help-step">
+              <div class="github-help-step-num">02</div>
+              <div class="github-help-step-copy">Zoom until the day squares read clearly and evenly.</div>
+            </div>
+            <div class="github-help-step">
+              <div class="github-help-step-num">03</div>
+              <div class="github-help-step-copy">Crop tightly around the graph itself. Leave out usernames, month labels, legends, and surrounding UI.</div>
+            </div>
+            <div class="github-help-step">
+              <div class="github-help-step-num">04</div>
+              <div class="github-help-step-copy">Upload the screenshot here. The bar will compress one year of data into weekly columns.</div>
+            </div>
+          </div>
+          <div class="github-help-note">Best results: light background, tight crop, and no browser chrome.</div>
+          <button id="github-help-close" type="button" class="primary-button github-help-close">Close Guide</button>
         </div>
       </div>
 
       <!-- Visual Workspace Actions -->
       <div class="workspace-controls">
-        <!-- Playback Control (Hidden by default, shown for animated styles) -->
-
-
-        <button id="zoom-out-btn" class="workspace-btn" aria-label="Zoom Out">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-        </button>
-        <input type="text" id="zoom-level" class="zoom-level-input" value="100%" aria-label="Zoom Level">
-        <button id="zoom-in-btn" class="workspace-btn" aria-label="Zoom In">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-        </button>
-        <div class="workspace-divider"></div>
-        <button id="zoom-reset-btn" class="workspace-btn" aria-label="Reset Zoom">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-            <path d="M3 3v5h5"></path>
-          </svg>
-        </button>
-        <button id="pan-btn" class="workspace-btn" aria-label="Pan Tool">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="5 9 2 12 5 15"></polyline>
-            <polyline points="9 5 12 2 15 5"></polyline>
-            <polyline points="19 9 22 12 19 15"></polyline>
-            <polyline points="9 19 12 22 15 19"></polyline>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <line x1="12" y1="2" x2="12" y2="22"></line>
-          </svg>
-        </button>
+        <div id="workspace-default-controls" class="workspace-controls-group">
+          <button id="zoom-out-btn" class="workspace-btn" aria-label="Zoom Out">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+          <input type="text" id="zoom-level" class="zoom-level-input" value="100%" aria-label="Zoom Level">
+          <button id="zoom-in-btn" class="workspace-btn" aria-label="Zoom In">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+          <div class="workspace-divider"></div>
+          <button id="zoom-reset-btn" class="workspace-btn" aria-label="Reset Zoom">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+          </button>
+          <button id="pan-btn" class="workspace-btn" aria-label="Pan Tool">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="5 9 2 12 5 15"></polyline>
+              <polyline points="9 5 12 2 15 5"></polyline>
+              <polyline points="19 9 22 12 19 15"></polyline>
+              <polyline points="9 19 12 22 15 19"></polyline>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <line x1="12" y1="2" x2="12" y2="22"></line>
+            </svg>
+          </button>
+        </div>
+        <div id="easter-egg-scoreboard" class="workspace-controls-group easter-egg-scoreboard" hidden>
+          <button id="easter-egg-jump-btn" class="workspace-btn workspace-btn-label" aria-label="Jump">Jump</button>
+          <div class="workspace-divider"></div>
+          <div class="workspace-stat">
+            <span class="workspace-stat-label">Score</span>
+            <span id="easter-egg-score-value" class="workspace-stat-value">0000</span>
+          </div>
+          <div class="workspace-divider"></div>
+          <div class="workspace-stat">
+            <span class="workspace-stat-label">High</span>
+            <span id="easter-egg-best-value" class="workspace-stat-value">0000</span>
+          </div>
+          <div class="workspace-divider"></div>
+          <button id="easter-egg-close" class="workspace-btn workspace-btn-label" aria-label="Restart game">Restart</button>
+        </div>
       </div>
     </main>
   </div>
@@ -698,6 +781,7 @@
   <script src="js/utils/musicStyle.js"></script>
   <script src="js/utils/barPattern.js"></script>
   <script src="js/ui.js"></script>
+  <script src="third_party/t-rex-runner/runner.js"></script>
   <script src="js/easter-egg.js"></script>
   <script src="js/main.js"></script>
   <script src="js/drawing.js"></script>

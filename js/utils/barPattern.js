@@ -87,8 +87,9 @@ function createTrussPatternGeometry(options = {}) {
   const barY = Number(options.barY || 0);
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const thickness = Math.max(0.5, parseFloat(options.thickness || 2));
+  const thickness = Math.max(1.5, parseFloat(options.thickness || 2));
   const segments = Math.max(2, parseInt(options.segments || 15, 10));
+  const mirrorSegments = options.mirrorSegments === true || options.mirrorSegments === 'true';
   const family = normalizeTrussFamily(options.family);
 
   const halfThick = thickness / 2;
@@ -99,23 +100,22 @@ function createTrussPatternGeometry(options = {}) {
   const innerWidth = Math.max(0.1, xRight - xLeft);
   const innerHeight = Math.max(0.1, yBottom - yTop);
 
+  const strokes = [];
   const lines = [];
   const toAbsolute = (point) => ({
     x: xLeft + point.x * innerWidth,
     y: yTop + point.y * innerHeight
   });
+  const addStroke = (points, closed = false) => {
+    strokes.push({
+      closed,
+      points: points.map(toAbsolute)
+    });
+  };
   const addLine = (pointA, pointB) => {
     const a = toAbsolute(pointA);
     const b = toAbsolute(pointB);
     lines.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y });
-  };
-  const addPolyline = (points, closed = false) => {
-    for (let i = 0; i < points.length - 1; i++) {
-      addLine(points[i], points[i + 1]);
-    }
-    if (closed && points.length > 2) {
-      addLine(points[points.length - 1], points[0]);
-    }
   };
   const point = (x, y) => ({ x, y });
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -133,56 +133,61 @@ function createTrussPatternGeometry(options = {}) {
   };
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-  const leftBase = point(0.04, 1.0);
-  const ridge = point(0.5, 0.04);
-  const rightBase = point(0.96, 1.0);
+  const leftBase = point(0.0, 1.0);
+  const ridge = point(0.5, 0.0);
+  const rightBase = point(1.0, 1.0);
   const bottomCenter = point(0.5, 1.0);
 
   if (family === 'flat') {
-    const panels = clamp(segments, 4, 16);
-    const corners = [
+    const panels = clamp(Math.round(segments / 4), 4, 6);
+    addStroke([
       point(0, 0),
       point(1, 0),
       point(1, 1),
       point(0, 1)
-    ];
-    addPolyline(corners, true);
+    ], true);
 
     for (let i = 1; i < panels; i++) {
       const x = i / panels;
       addLine(point(x, 0), point(x, 1));
     }
 
-    const middleIndex = Math.floor(panels / 2);
-    const hasCenterPanel = panels % 2 === 1;
     for (let i = 0; i < panels; i++) {
       const x0 = i / panels;
       const x1 = (i + 1) / panels;
-      if (hasCenterPanel && i === middleIndex) {
-        addLine(point(x0, 0), point(x1, 1));
-        addLine(point(x0, 1), point(x1, 0));
-      } else if (i < middleIndex) {
+      if (mirrorSegments) {
+        const middleIndex = Math.floor(panels / 2);
+        const hasCenterPanel = panels % 2 === 1;
+        if (hasCenterPanel && i === middleIndex) {
+          addLine(point(x0, 0), point(x1, 1));
+          addLine(point(x0, 1), point(x1, 0));
+        } else if (i < middleIndex) {
+          addLine(point(x0, 0), point(x1, 1));
+        } else {
+          addLine(point(x0, 1), point(x1, 0));
+        }
+      } else if (i % 2 === 0) {
         addLine(point(x0, 0), point(x1, 1));
       } else {
         addLine(point(x0, 1), point(x1, 0));
       }
     }
   } else if (family === 'king-post') {
-    addPolyline([leftBase, ridge, rightBase]);
+    addStroke([leftBase, ridge, rightBase]);
     addLine(leftBase, rightBase);
     addLine(ridge, bottomCenter);
   } else if (family === 'queen-post') {
-    const leftWeb = roofPointAt(0.32, leftBase, ridge, rightBase);
-    const rightWeb = roofPointAt(0.68, leftBase, ridge, rightBase);
-    addPolyline([leftBase, ridge, rightBase]);
+    const leftWeb = roofPointAt(0.28, leftBase, ridge, rightBase);
+    const rightWeb = roofPointAt(0.72, leftBase, ridge, rightBase);
+    addStroke([leftBase, ridge, rightBase]);
     addLine(leftBase, rightBase);
     addLine(ridge, bottomCenter);
     addLine(leftWeb, bottomCenter);
     addLine(bottomCenter, rightWeb);
   } else if (family === 'howe') {
-    const leftTop = roofPointAt(0.26, leftBase, ridge, rightBase);
-    const rightTop = roofPointAt(0.74, leftBase, ridge, rightBase);
-    addPolyline([leftBase, ridge, rightBase]);
+    const leftTop = roofPointAt(0.24, leftBase, ridge, rightBase);
+    const rightTop = roofPointAt(0.76, leftBase, ridge, rightBase);
+    addStroke([leftBase, ridge, rightBase]);
     addLine(leftBase, rightBase);
     addLine(leftTop, point(0.26, 1));
     addLine(ridge, bottomCenter);
@@ -190,11 +195,11 @@ function createTrussPatternGeometry(options = {}) {
     addLine(leftTop, bottomCenter);
     addLine(bottomCenter, rightTop);
   } else if (family === 'scissor') {
-    const lowerApex = point(0.5, 0.5);
-    const leftLower = point(0.28, lineYAtX(leftBase, lowerApex, 0.28));
-    const rightLower = point(0.72, lineYAtX(lowerApex, rightBase, 0.72));
-    addPolyline([leftBase, ridge, rightBase]);
-    addPolyline([leftBase, lowerApex, rightBase]);
+    const lowerApex = point(0.5, 0.46);
+    const leftLower = point(0.26, lineYAtX(leftBase, lowerApex, 0.26));
+    const rightLower = point(0.74, lineYAtX(lowerApex, rightBase, 0.74));
+    addStroke([leftBase, ridge, rightBase]);
+    addStroke([leftBase, lowerApex, rightBase]);
     addLine(ridge, lowerApex);
     addLine(leftLower, roofPointAt(leftLower.x, leftBase, ridge, rightBase));
     addLine(rightLower, roofPointAt(rightLower.x, leftBase, ridge, rightBase));
@@ -203,7 +208,7 @@ function createTrussPatternGeometry(options = {}) {
     const bottomRight = point(0.7, 1);
     const roofLeft = roofPointAt(0.18, leftBase, ridge, rightBase);
     const roofRight = roofPointAt(0.82, leftBase, ridge, rightBase);
-    addPolyline([leftBase, ridge, rightBase]);
+    addStroke([leftBase, ridge, rightBase]);
     addLine(leftBase, rightBase);
     addLine(bottomCenter, ridge);
     addLine(ridge, bottomLeft);
@@ -215,25 +220,24 @@ function createTrussPatternGeometry(options = {}) {
     const rightWallTop = roofPointAt(0.76, leftBase, ridge, rightBase);
     const leftWallBottom = point(0.24, 1);
     const rightWallBottom = point(0.76, 1);
-    const atticLeft = point(0.39, 0.28);
-    const atticRight = point(0.61, 0.28);
-    const atticMid = point(0.5, 0.28);
-    addPolyline([leftBase, ridge, rightBase]);
+    const atticLeft = point(0.38, 0.26);
+    const atticRight = point(0.62, 0.26);
+    const atticMid = point(0.5, 0.26);
+    addStroke([leftBase, ridge, rightBase]);
     addLine(leftBase, rightBase);
     addLine(leftWallTop, leftWallBottom);
     addLine(rightWallTop, rightWallBottom);
     addLine(atticLeft, atticRight);
-    addLine(atticLeft, ridge);
-    addLine(ridge, atticRight);
+    addStroke([atticLeft, ridge, atticRight]);
     addLine(ridge, atticMid);
-    addLine(point(0.12, 1), leftWallTop);
-    addLine(rightWallTop, point(0.88, 1));
+    addLine(point(0.1, 1), leftWallTop);
+    addLine(rightWallTop, point(0.9, 1));
   } else if (family === 'mono') {
-    const monoLeft = point(0.04, 1);
-    const monoTop = point(0.92, 0.08);
-    const monoRight = point(0.92, 1);
-    const centerTop = lerpPoint(monoLeft, monoTop, 0.64);
-    addPolyline([monoLeft, monoTop, monoRight]);
+    const monoLeft = point(0.0, 1);
+    const monoTop = point(1.0, 0.0);
+    const monoRight = point(1.0, 1);
+    const centerTop = lerpPoint(monoLeft, monoTop, 0.6);
+    addStroke([monoLeft, monoTop, monoRight]);
     addLine(monoLeft, monoRight);
     addLine(centerTop, point(centerTop.x, 1));
     addLine(centerTop, monoRight);
@@ -241,56 +245,64 @@ function createTrussPatternGeometry(options = {}) {
     const leftKnee = point(0.28, 0.22);
     const rightKnee = point(0.72, 0.22);
     const centerTop = point(0.5, 0.22);
-    addPolyline([leftBase, leftKnee, rightKnee, rightBase]);
+    addStroke([leftBase, leftKnee, rightKnee, rightBase]);
     addLine(leftBase, rightBase);
     addLine(leftKnee, point(leftKnee.x, 1));
     addLine(centerTop, bottomCenter);
     addLine(rightKnee, point(rightKnee.x, 1));
     addLine(leftKnee, bottomCenter);
     addLine(bottomCenter, rightKnee);
-    addLine(point(0.14, 1), point(0.2, 0.62));
-    addLine(point(0.8, 0.62), point(0.86, 1));
+    addLine(point(0.12, 1), point(0.2, 0.62));
+    addLine(point(0.8, 0.62), point(0.88, 1));
   } else if (family === 'gable') {
-    const postCount = clamp(segments, 6, 18);
-    addPolyline([leftBase, ridge, rightBase]);
+    const postCount = clamp(Math.round(segments / 1.8), 8, 14);
+    addStroke([leftBase, ridge, rightBase]);
     addLine(leftBase, rightBase);
     for (let i = 1; i < postCount; i++) {
       const x = i / postCount;
       addLine(point(x, 1), roofPointAt(x, leftBase, ridge, rightBase));
     }
   } else if (family === 'cathedral') {
-    const cathedralRidge = point(0.48, 0.04);
+    const cathedralRidge = point(0.48, 0.0);
     const valley = point(0.56, 1.0);
     const wingPeak = point(0.74, 0.44);
-    const wingEnd = point(0.96, 0.78);
-    const leftBraceX = 0.24;
+    const wingEnd = point(1.0, 1.0);
+    const leftBraceX = 0.22;
     const leftBraceTop = roofPointAt(leftBraceX, leftBase, cathedralRidge, valley);
-    const rightBraceStart = lerpPoint(valley, wingPeak, 0.62);
-    const rightBraceEnd = lerpPoint(wingPeak, wingEnd, 0.38);
-    addPolyline([leftBase, cathedralRidge, valley]);
+    const rightHub = point(0.72, 0.58);
+    addStroke([leftBase, cathedralRidge, valley]);
     addLine(leftBase, valley);
-    addPolyline([valley, wingPeak, wingEnd]);
+    addStroke([valley, wingPeak, wingEnd]);
     addLine(cathedralRidge, valley);
     addLine(leftBraceTop, point(leftBraceX, 1));
     addLine(leftBraceTop, valley);
-    addLine(rightBraceStart, rightBraceEnd);
+    addLine(valley, rightHub);
+    addLine(rightHub, wingPeak);
+    addLine(rightHub, point(0.88, 0.72));
   } else if (family === 'fan') {
-    const rayCount = clamp(Math.round(segments / 2), 3, 7);
-    addPolyline([leftBase, ridge, rightBase]);
+    const rayCount = clamp(Math.round(segments / 4), 2, 4);
+    addStroke([leftBase, ridge, rightBase]);
     addLine(leftBase, rightBase);
     addLine(bottomCenter, ridge);
+    addLine(point(0.24, 1), roofPointAt(0.24, leftBase, ridge, rightBase));
+    addLine(point(0.76, 1), roofPointAt(0.76, leftBase, ridge, rightBase));
     for (let i = 1; i <= rayCount; i++) {
-      const x = 0.5 - (0.38 * i) / (rayCount + 1);
+      const x = 0.12 + (0.32 * i) / (rayCount + 1);
       addLine(bottomCenter, roofPointAt(x, leftBase, ridge, rightBase));
-      addLine(bottomCenter, roofPointAt(1 - x, leftBase, ridge, rightBase));
+      if (mirrorSegments) {
+        addLine(bottomCenter, roofPointAt(1 - x, leftBase, ridge, rightBase));
+      } else {
+        const rightX = 0.56 + (0.28 * i) / (rayCount + 1);
+        addLine(bottomCenter, roofPointAt(rightX, leftBase, ridge, rightBase));
+      }
     }
   } else if (family === 'raised-tie') {
-    const tieLeft = point(0.28, 0.62);
-    const tieRight = point(0.72, 0.62);
-    const tieMid = point(0.5, 0.62);
+    const tieLeft = point(0.24, 0.58);
+    const tieRight = point(0.76, 0.58);
+    const tieMid = point(0.5, 0.58);
     const roofLeft = roofPointAt(0.34, leftBase, ridge, rightBase);
     const roofRight = roofPointAt(0.66, leftBase, ridge, rightBase);
-    addPolyline([leftBase, ridge, rightBase]);
+    addStroke([leftBase, ridge, rightBase]);
     addLine(tieLeft, tieRight);
     addLine(ridge, tieMid);
     addLine(roofLeft, tieMid);
@@ -301,7 +313,192 @@ function createTrussPatternGeometry(options = {}) {
     family,
     thickness,
     segments,
+    mirrorSegments,
+    strokes,
     lines
+  };
+}
+
+function normalizeGithubContributionLevel(value) {
+  const parsed = parseInt(value, 10);
+  if (!isFinite(parsed)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(4, parsed));
+}
+
+function createSeededGithubContributionGrid(seed = 'RPI', weekCount = 53, rows = 7) {
+  const normalizedWeekCount = Math.max(1, parseInt(weekCount || 53, 10));
+  const normalizedRows = Math.max(1, parseInt(rows || 7, 10));
+  const source = String(seed || 'RPI');
+  let state = 0;
+
+  for (let i = 0; i < source.length; i++) {
+    state = ((state * 31) + source.charCodeAt(i)) >>> 0;
+  }
+  if (state === 0) {
+    state = 1;
+  }
+
+  const columns = [];
+  for (let week = 0; week < normalizedWeekCount; week++) {
+    const column = [];
+    const seasonalBias = (Math.sin((week / Math.max(1, normalizedWeekCount - 1)) * Math.PI * 2 - (Math.PI / 2)) + 1) * 0.5;
+
+    for (let day = 0; day < normalizedRows; day++) {
+      state = (state * 1664525 + 1013904223 + week * 17 + day * 29) >>> 0;
+      const randomValue = ((state >>> 8) % 1000) / 999;
+      const weekendPenalty = day === 0 || day === normalizedRows - 1 ? 0.78 : 1.0;
+      const score = randomValue * 0.76 + seasonalBias * 0.48;
+      let level = 0;
+
+      if (score > 0.9 * weekendPenalty) {
+        level = 4;
+      } else if (score > 0.74 * weekendPenalty) {
+        level = 3;
+      } else if (score > 0.56 * weekendPenalty) {
+        level = 2;
+      } else if (score > 0.42 * weekendPenalty) {
+        level = 1;
+      }
+
+      column.push(level);
+    }
+
+    columns.push(column);
+  }
+
+  return columns;
+}
+
+function transposeGithubContributionRows(rowsData, rows) {
+  const columnCount = rowsData.reduce((max, row) => Math.max(max, Array.isArray(row) ? row.length : 0), 0);
+  const columns = [];
+
+  for (let columnIndex = 0; columnIndex < columnCount; columnIndex++) {
+    const column = [];
+    for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
+      const row = Array.isArray(rowsData[rowIndex]) ? rowsData[rowIndex] : [];
+      column.push(normalizeGithubContributionLevel(row[columnIndex]));
+    }
+    columns.push(column);
+  }
+
+  return columns;
+}
+
+function compressGithubContributionColumns(columns, targetWeeks, rows) {
+  if (columns.length <= targetWeeks) {
+    return columns;
+  }
+
+  const compressed = [];
+  for (let week = 0; week < targetWeeks; week++) {
+    const start = Math.floor((week / targetWeeks) * columns.length);
+    const end = Math.max(start + 1, Math.floor(((week + 1) / targetWeeks) * columns.length));
+    const sourceColumns = columns.slice(start, end);
+    const compressedColumn = [];
+
+    for (let day = 0; day < rows; day++) {
+      let maxLevel = 0;
+      let total = 0;
+
+      for (let index = 0; index < sourceColumns.length; index++) {
+        const level = normalizeGithubContributionLevel(sourceColumns[index][day]);
+        total += level;
+        maxLevel = Math.max(maxLevel, level);
+      }
+
+      compressedColumn.push(Math.max(maxLevel, Math.round(total / Math.max(1, sourceColumns.length))));
+    }
+
+    compressed.push(compressedColumn);
+  }
+
+  return compressed;
+}
+
+function normalizeGithubContributionGrid(rawGrid, options = {}) {
+  const rows = Math.max(1, parseInt(options.rows || 7, 10));
+  const maxWeeks = Math.max(1, parseInt(options.maxWeeks || 53, 10));
+  let columns = [];
+
+  if (Array.isArray(rawGrid) && rawGrid.length > 0) {
+    const looksRowMajor = rawGrid.length === rows && rawGrid.some(entry => Array.isArray(entry) && entry.length > rows);
+
+    if (looksRowMajor) {
+      columns = transposeGithubContributionRows(rawGrid, rows);
+    } else {
+      columns = rawGrid.map(entry => {
+        const source = Array.isArray(entry) ? entry : [];
+        return Array.from({ length: rows }, (_, day) => normalizeGithubContributionLevel(source[day]));
+      });
+    }
+  }
+
+  if (columns.length === 0) {
+    columns = createSeededGithubContributionGrid('RPI', maxWeeks, rows);
+  }
+
+  if (columns.length > maxWeeks) {
+    columns = compressGithubContributionColumns(columns, maxWeeks, rows);
+  }
+
+  return columns.map(column => Array.from({ length: rows }, (_, day) => normalizeGithubContributionLevel(column[day])));
+}
+
+function buildGithubContributionRenderData(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const rowCount = 3;
+  const grid = normalizeGithubContributionGrid(options.grid, { rows: 7, maxWeeks: 53 });
+  const weekCount = Math.max(1, grid.length);
+  const gapX = Math.max(0.7, Math.min(1.15, exactBarWidth / Math.max(weekCount * 5.5, 1)));
+  const gapY = Math.max(1.1, Math.min(1.7, barHeight / 10.5));
+  const totalGapWidth = gapX * Math.max(0, weekCount - 1);
+  const maxCellSize = Math.max(2.2, Math.min(4.2, barHeight / 3.9));
+  const cellSize = Math.max(1, Math.min(
+    (exactBarWidth - totalGapWidth) / weekCount,
+    (barHeight - gapY * (rowCount - 1)) / rowCount,
+    maxCellSize
+  ));
+  const totalWidth = weekCount * cellSize + Math.max(0, weekCount - 1) * gapX;
+  const totalHeight = rowCount * cellSize + Math.max(0, rowCount - 1) * gapY;
+  const startX = barStartX + (exactBarWidth - totalWidth) / 2;
+  const startY = barY + (barHeight - totalHeight) / 2;
+  const cells = [];
+
+  for (let week = 0; week < weekCount; week++) {
+    const levels = Array.isArray(grid[week]) ? grid[week] : [];
+    const activeDays = levels.filter(level => normalizeGithubContributionLevel(level) > 0).length;
+    const weightedScore = levels.reduce((sum, level) => sum + normalizeGithubContributionLevel(level), 0);
+    const level2Plus = levels.filter(level => normalizeGithubContributionLevel(level) >= 2).length;
+    const level3Plus = levels.filter(level => normalizeGithubContributionLevel(level) >= 3).length;
+
+    const rowStates = [
+      level3Plus >= 1 || weightedScore >= 10,
+      activeDays >= 3 || level2Plus >= 2 || weightedScore >= 6,
+      activeDays >= 1
+    ];
+
+    for (let row = 0; row < rowCount; row++) {
+      cells.push({
+        x: Math.round((startX + week * (cellSize + gapX)) * 10) / 10,
+        y: Math.round((startY + row * (cellSize + gapY)) * 10) / 10,
+        size: cellSize,
+        filled: rowStates[row]
+      });
+    }
+  }
+
+  return {
+    grid,
+    weekCount,
+    rowCount,
+    cellSize,
+    cells
   };
 }
 
@@ -589,18 +786,21 @@ function createBarPatternSVG(config) {
       exactBarWidth,
       barHeight,
       segments: values.trussSegments,
+      mirrorSegments: values.trussMirror,
       thickness: values.trussThickness,
       family: values.trussFamily
     });
 
-    let pathData = '';
-    for (let i = 0; i < trussGeometry.lines.length; i++) {
-      const line = trussGeometry.lines[i];
-      pathData += ` M ${line.x1} ${line.y1} L ${line.x2} ${line.y2}`;
+    for (let i = 0; i < trussGeometry.strokes.length; i++) {
+      const stroke = trussGeometry.strokes[i];
+      const points = stroke.points.map(point => `${point.x},${point.y}`).join(' ');
+      const tag = stroke.closed ? 'polygon' : 'polyline';
+      pattern += `\n    <${tag} points="${points}" fill="none" stroke="${fgColor}" stroke-width="${trussGeometry.thickness}" stroke-linecap="butt" stroke-linejoin="miter"/>`;
     }
 
-    if (pathData) {
-      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${trussGeometry.thickness}" stroke-linecap="square" stroke-linejoin="miter"/>`;
+    for (let i = 0; i < trussGeometry.lines.length; i++) {
+      const line = trussGeometry.lines[i];
+      pattern += `\n    <line x1="${line.x1}" y1="${line.y1}" x2="${line.x2}" y2="${line.y2}" fill="none" stroke="${fgColor}" stroke-width="${trussGeometry.thickness}" stroke-linecap="butt" stroke-linejoin="miter"/>`;
     }
 
     return pattern;
@@ -735,14 +935,44 @@ function createBarPatternSVG(config) {
     return pattern;
   }
 
+  if (currentShader === 13) {
+    const renderData = buildGithubContributionRenderData({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      grid: values.githubContributionGrid
+    });
+
+    renderData.cells.forEach(cell => {
+      if (cell.filled) {
+        pattern += `\n    <rect x="${cell.x}" y="${cell.y}" width="${cell.size}" height="${cell.size}" fill="${fgColor}"/>`;
+      } else {
+        pattern += `\n    <rect x="${cell.x}" y="${cell.y}" width="${cell.size}" height="${cell.size}" fill="none" stroke="${fgColor}" stroke-width="0.85"/>`;
+      }
+    });
+
+    return pattern;
+  }
+
   return pattern;
 }
 
 if (typeof window !== 'undefined') {
   window.createTrussPatternGeometry = createTrussPatternGeometry;
+  window.normalizeGithubContributionGrid = normalizeGithubContributionGrid;
+  window.createSeededGithubContributionGrid = createSeededGithubContributionGrid;
+  window.buildGithubContributionRenderData = buildGithubContributionRenderData;
   window.createBarPatternSVG = createBarPatternSVG;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { createBarPatternSVG, createTrussPatternGeometry, normalizeTrussFamily };
+  module.exports = {
+    createBarPatternSVG,
+    createTrussPatternGeometry,
+    normalizeTrussFamily,
+    normalizeGithubContributionGrid,
+    createSeededGithubContributionGrid,
+    buildGithubContributionRenderData
+  };
 }

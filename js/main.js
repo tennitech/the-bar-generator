@@ -119,6 +119,7 @@ let trussGroup;
 let trussFamilySelect;
 let trussSegmentsSlider;
 let trussSegmentsDisplay;
+let trussMirrorToggle;
 let trussThicknessSlider;
 let trussThicknessDisplay;
 let staffGroup;
@@ -147,6 +148,17 @@ let graphMultiToggle;
 let graphMultiInputs;
 let graphScaleSlider;
 let graphScaleDisplay;
+let githubGroup;
+let githubUploadInput;
+let githubUploadBtn;
+let githubHelpBtn;
+let githubStatusBadge;
+let githubHelpOverlay;
+let githubHelpClose;
+let githubHelpCloseIcon;
+let githubContributionGrid = [];
+let githubContributionMeta = null;
+let githubHelpShown = false;
 
 const TRUSS_FAMILY_OPTIONS = [
   'flat',
@@ -186,13 +198,20 @@ let mobileMenuToggle;
 let saveButton;
 let saveMenu;
 let appMain;
+let logoContainer;
+let sidebarBackdrop;
+let uiThemeToggle;
 let easterEggHint;
 let easterEggHintLabel;
 let easterEggOverlay;
-let easterEggCanvas;
-let easterEggLiveStatus;
+let easterEggRunnerStage;
+let easterEggStageStatus;
 let easterEggCloseButton;
-let easterEggTouchButtons = [];
+let workspaceDefaultControls;
+let easterEggScoreboard;
+let easterEggJumpButton;
+let easterEggScoreValue;
+let easterEggBestValue;
 let easterEggGame = null;
 let easterEggHotspotBounds = null;
 let easterEggHoldRaf = 0;
@@ -320,19 +339,64 @@ let zoomLevel = DEFAULT_ZOOM_LEVEL;
 let panOffset = { x: 0, y: 0 };
 let isPanningMode = false;
 let isAnimated = false;
+const UI_THEME_STORAGE_KEY = 'rpi-logo-generator-ui-theme';
 
 // Zoom/Pan/Playback UI references
 let playbackBtn, iconPause, iconPlay, playbackText, playbackDivider;
 let zoomInBtn, zoomOutBtn, zoomResetBtn, panBtn, zoomLevelDisplay;
 
+const EASTER_EGG_STYLE_VALUE = 'puck-game';
+let lastNonGameStyle = 'solid';
+
 const AVAILABLE_STYLE_VALUES = new Set([
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
-  'numeric', 'morse', 'matrix', 'truss', 'music', 'graph'
+  'numeric', 'morse', 'matrix', 'truss', 'music', 'graph', 'github',
+  EASTER_EGG_STYLE_VALUE
 ]);
 
 function normalizeStyleValue(style) {
   if (style === 'staff') return 'music';
   return AVAILABLE_STYLE_VALUES.has(style) ? style : 'solid';
+}
+
+function getStoredInterfaceTheme() {
+  try {
+    const storedTheme = window.localStorage.getItem(UI_THEME_STORAGE_KEY);
+    return storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function getPreferredInterfaceTheme() {
+  const storedTheme = getStoredInterfaceTheme();
+  if (storedTheme) return storedTheme;
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light';
+}
+
+function applyInterfaceTheme(theme) {
+  const resolvedTheme = theme === 'dark' ? 'dark' : 'light';
+  const isDark = resolvedTheme === 'dark';
+
+  document.body.classList.toggle('ui-theme-dark', isDark);
+
+  if (uiThemeToggle) {
+    uiThemeToggle.setAttribute('aria-pressed', String(isDark));
+    uiThemeToggle.setAttribute('aria-label', isDark ? 'Switch to light interface' : 'Switch to dark interface');
+  }
+
+  try {
+    window.localStorage.setItem(UI_THEME_STORAGE_KEY, resolvedTheme);
+  } catch (error) {
+    // Ignore local storage failures.
+  }
+}
+
+function toggleInterfaceTheme() {
+  applyInterfaceTheme(document.body.classList.contains('ui-theme-dark') ? 'light' : 'dark');
 }
 
 function zoomLevelToDisplayPercent(level) {
@@ -568,6 +632,479 @@ function buildGraphSeriesData(streamTexts) {
   return { seriesList, minValue, maxValue };
 }
 
+function countGithubActiveDays(grid) {
+  if (!Array.isArray(grid)) {
+    return 0;
+  }
+
+  let total = 0;
+  for (let week = 0; week < grid.length; week++) {
+    const column = Array.isArray(grid[week]) ? grid[week] : [];
+    for (let day = 0; day < column.length; day++) {
+      if (normalizeGithubContributionLevel(column[day]) > 0) {
+        total++;
+      }
+    }
+  }
+  return total;
+}
+
+function updateGithubStatusBadge() {
+  if (!githubStatusBadge) return;
+
+  if (!githubContributionMeta || githubContributionMeta.source === 'demo') {
+    githubStatusBadge.textContent = 'USING DEMO DATA';
+    return;
+  }
+
+  const weekCount = githubContributionMeta.weekCount || (Array.isArray(githubContributionGrid) ? githubContributionGrid.length : 0);
+  const activeDays = githubContributionMeta.activeDays || countGithubActiveDays(githubContributionGrid);
+  const sourceLabel = String(githubContributionMeta.sourceLabel || githubContributionMeta.source || 'loaded').toUpperCase();
+  githubStatusBadge.textContent = `${sourceLabel} / ${weekCount} WEEKS / ${activeDays} ACTIVE DAYS`;
+}
+
+function setGithubContributionGrid(grid, meta = {}) {
+  githubContributionGrid = normalizeGithubContributionGrid(grid, { rows: 7, maxWeeks: 53 });
+  githubContributionMeta = {
+    source: meta.source || 'loaded',
+    sourceLabel: meta.sourceLabel || meta.source || 'loaded',
+    weekCount: githubContributionGrid.length,
+    activeDays: countGithubActiveDays(githubContributionGrid)
+  };
+  updateGithubStatusBadge();
+}
+
+function resetGithubContributionGrid(options = {}) {
+  setGithubContributionGrid(createSeededGithubContributionGrid('RPI GitHub', 53, 7), {
+    source: 'demo',
+    sourceLabel: 'demo'
+  });
+
+  if (!options.preserveInputs) {
+    if (githubUploadInput) githubUploadInput.value = '';
+  }
+}
+
+function openGithubHelp() {
+  if (!githubHelpOverlay) return;
+  githubHelpOverlay.classList.remove('hidden');
+  githubHelpOverlay.setAttribute('aria-hidden', 'false');
+}
+
+function closeGithubHelp() {
+  if (!githubHelpOverlay) return;
+  githubHelpOverlay.classList.add('hidden');
+  githubHelpOverlay.setAttribute('aria-hidden', 'true');
+}
+
+function mapGithubContributionCountToLevel(count) {
+  const normalizedCount = Math.max(0, parseInt(count || 0, 10));
+  if (normalizedCount <= 0) return 0;
+  if (normalizedCount < 3) return 1;
+  if (normalizedCount < 7) return 2;
+  if (normalizedCount < 12) return 3;
+  return 4;
+}
+
+function buildGithubGridFromDatedEntries(entries) {
+  const datedEntries = entries
+    .filter(entry => entry && entry.date)
+    .map(entry => ({
+      date: entry.date,
+      level: normalizeGithubContributionLevel(entry.level)
+    }));
+
+  if (datedEntries.length === 0) {
+    return null;
+  }
+
+  datedEntries.sort((a, b) => a.date.localeCompare(b.date));
+  const weeks = new Map();
+
+  for (let i = 0; i < datedEntries.length; i++) {
+    const entry = datedEntries[i];
+    const date = new Date(`${entry.date}T00:00:00`);
+    if (Number.isNaN(date.getTime())) {
+      continue;
+    }
+
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - date.getDay());
+    const weekKey = weekStart.toISOString().slice(0, 10);
+
+    if (!weeks.has(weekKey)) {
+      weeks.set(weekKey, Array(7).fill(0));
+    }
+
+    const column = weeks.get(weekKey);
+    column[date.getDay()] = Math.max(column[date.getDay()], entry.level);
+  }
+
+  return Array.from(weeks.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([, column]) => column);
+}
+
+function clusterGithubPositions(values, tolerance = 1.25) {
+  const sorted = values
+    .filter(value => Number.isFinite(value))
+    .slice()
+    .sort((a, b) => a - b);
+
+  if (sorted.length === 0) {
+    return [];
+  }
+
+  const clusters = [[sorted[0]]];
+  for (let i = 1; i < sorted.length; i++) {
+    const cluster = clusters[clusters.length - 1];
+    const last = cluster[cluster.length - 1];
+    if (Math.abs(sorted[i] - last) <= tolerance) {
+      cluster.push(sorted[i]);
+    } else {
+      clusters.push([sorted[i]]);
+    }
+  }
+
+  return clusters.map(cluster => cluster.reduce((sum, value) => sum + value, 0) / cluster.length);
+}
+
+function nearestGithubPositionIndex(target, positions) {
+  let nearestIndex = 0;
+  let smallestDistance = Infinity;
+
+  for (let i = 0; i < positions.length; i++) {
+    const distance = Math.abs(target - positions[i]);
+    if (distance < smallestDistance) {
+      smallestDistance = distance;
+      nearestIndex = i;
+    }
+  }
+
+  return nearestIndex;
+}
+
+function buildGithubGridFromPositionEntries(entries) {
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return null;
+  }
+
+  const xPositions = clusterGithubPositions(entries.map(entry => entry.x));
+  const yPositions = clusterGithubPositions(entries.map(entry => entry.y)).slice(0, 7);
+
+  if (xPositions.length === 0 || yPositions.length === 0) {
+    return null;
+  }
+
+  const columns = Array.from({ length: xPositions.length }, () => Array(7).fill(0));
+
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    const xIndex = nearestGithubPositionIndex(entry.x, xPositions);
+    const yIndex = Math.min(6, nearestGithubPositionIndex(entry.y, yPositions));
+    columns[xIndex][yIndex] = Math.max(columns[xIndex][yIndex], normalizeGithubContributionLevel(entry.level));
+  }
+
+  return columns;
+}
+
+function parseGithubContributionMarkup(markup) {
+  if (!markup || !markup.trim()) {
+    return null;
+  }
+
+  const parser = new DOMParser();
+  const parsedDocuments = [
+    parser.parseFromString(markup, 'image/svg+xml'),
+    parser.parseFromString(markup, 'text/html')
+  ];
+
+  for (let docIndex = 0; docIndex < parsedDocuments.length; docIndex++) {
+    const doc = parsedDocuments[docIndex];
+    if (!doc || typeof doc.querySelectorAll !== 'function') {
+      continue;
+    }
+
+    let nodes = Array.from(doc.querySelectorAll('rect[data-date]'));
+    if (nodes.length === 0) {
+      nodes = Array.from(doc.querySelectorAll('rect.ContributionCalendar-day, .ContributionCalendar-day'));
+    }
+    if (nodes.length === 0) {
+      nodes = Array.from(doc.querySelectorAll('rect[data-level], rect[data-count]'));
+    }
+
+    const entries = [];
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      const levelAttr = node.getAttribute('data-level');
+      const countAttr = node.getAttribute('data-count');
+      const level = levelAttr != null
+        ? normalizeGithubContributionLevel(levelAttr)
+        : mapGithubContributionCountToLevel(countAttr);
+      const x = parseFloat(node.getAttribute('x'));
+      const y = parseFloat(node.getAttribute('y'));
+      const date = node.getAttribute('data-date') || '';
+
+      if (!Number.isFinite(x) && !date) {
+        continue;
+      }
+
+      entries.push({ x, y, date, level });
+    }
+
+    if (entries.length === 0) {
+      continue;
+    }
+
+    const datedGrid = buildGithubGridFromDatedEntries(entries);
+    if (datedGrid && datedGrid.length > 0) {
+      return normalizeGithubContributionGrid(datedGrid, { rows: 7, maxWeeks: 53 });
+    }
+
+    const positionedGrid = buildGithubGridFromPositionEntries(entries);
+    if (positionedGrid && positionedGrid.length > 0) {
+      return normalizeGithubContributionGrid(positionedGrid, { rows: 7, maxWeeks: 53 });
+    }
+  }
+
+  return null;
+}
+
+function averageGithubCornerColor(imageData, width, height) {
+  const sampleSize = Math.max(1, Math.floor(Math.min(width, height) / 18));
+  const corners = [
+    [0, 0],
+    [Math.max(0, width - sampleSize), 0],
+    [0, Math.max(0, height - sampleSize)],
+    [Math.max(0, width - sampleSize), Math.max(0, height - sampleSize)]
+  ];
+  const total = { r: 0, g: 0, b: 0, count: 0 };
+
+  for (let cornerIndex = 0; cornerIndex < corners.length; cornerIndex++) {
+    const [startX, startY] = corners[cornerIndex];
+    for (let y = startY; y < Math.min(height, startY + sampleSize); y++) {
+      for (let x = startX; x < Math.min(width, startX + sampleSize); x++) {
+        const index = (y * width + x) * 4;
+        total.r += imageData[index];
+        total.g += imageData[index + 1];
+        total.b += imageData[index + 2];
+        total.count++;
+      }
+    }
+  }
+
+  if (total.count === 0) {
+    return { r: 255, g: 255, b: 255 };
+  }
+
+  return {
+    r: total.r / total.count,
+    g: total.g / total.count,
+    b: total.b / total.count
+  };
+}
+
+function githubColorDistance(pixel, background) {
+  const dr = pixel.r - background.r;
+  const dg = pixel.g - background.g;
+  const db = pixel.b - background.b;
+  return Math.sqrt(dr * dr + dg * dg + db * db);
+}
+
+function findGithubRasterBounds(imageData, width, height, background) {
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const index = (y * width + x) * 4;
+      const alpha = imageData[index + 3];
+      if (alpha < 16) {
+        continue;
+      }
+
+      const pixel = {
+        r: imageData[index],
+        g: imageData[index + 1],
+        b: imageData[index + 2]
+      };
+
+      if (githubColorDistance(pixel, background) > 18) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  if (maxX < minX || maxY < minY) {
+    return null;
+  }
+
+  return { minX, minY, maxX, maxY };
+}
+
+function sampleGithubRasterScore(imageData, width, height, bounds, background) {
+  const x0 = Math.max(0, Math.floor(bounds.x0));
+  const y0 = Math.max(0, Math.floor(bounds.y0));
+  const x1 = Math.min(width, Math.ceil(bounds.x1));
+  const y1 = Math.min(height, Math.max(y0 + 1, Math.ceil(bounds.y1)));
+  let total = 0;
+  let count = 0;
+
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      const index = (y * width + x) * 4;
+      const alpha = imageData[index + 3];
+      if (alpha < 16) {
+        continue;
+      }
+
+      total += githubColorDistance({
+        r: imageData[index],
+        g: imageData[index + 1],
+        b: imageData[index + 2]
+      }, background);
+      count++;
+    }
+  }
+
+  return count === 0 ? 0 : total / count;
+}
+
+function mapGithubRasterScoreToLevel(score, maxScore) {
+  if (maxScore <= 0) {
+    return 0;
+  }
+
+  const normalized = score / maxScore;
+  if (normalized < 0.12) return 0;
+  if (normalized < 0.3) return 1;
+  if (normalized < 0.5) return 2;
+  if (normalized < 0.72) return 3;
+  return 4;
+}
+
+function parseGithubContributionRaster(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+
+    image.onload = function () {
+      try {
+        const canvas = document.createElement('canvas');
+        const width = image.naturalWidth || image.width;
+        const height = image.naturalHeight || image.height;
+        canvas.width = width;
+        canvas.height = height;
+
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        context.drawImage(image, 0, 0, width, height);
+
+        const imageData = context.getImageData(0, 0, width, height).data;
+        const background = averageGithubCornerColor(imageData, width, height);
+        const bounds = findGithubRasterBounds(imageData, width, height, background);
+
+        if (!bounds) {
+          reject(new Error('No contribution grid detected in image.'));
+          return;
+        }
+
+        const rows = 7;
+        const weeks = 53;
+        const sampleWidth = bounds.maxX - bounds.minX + 1;
+        const sampleHeight = bounds.maxY - bounds.minY + 1;
+        const sampledColumns = [];
+        const scores = [];
+
+        for (let week = 0; week < weeks; week++) {
+          const column = [];
+          for (let day = 0; day < rows; day++) {
+            const x0 = bounds.minX + (week / weeks) * sampleWidth;
+            const x1 = bounds.minX + ((week + 1) / weeks) * sampleWidth;
+            const y0 = bounds.minY + (day / rows) * sampleHeight;
+            const y1 = bounds.minY + ((day + 1) / rows) * sampleHeight;
+            const insetX = (x1 - x0) * 0.18;
+            const insetY = (y1 - y0) * 0.18;
+            const score = sampleGithubRasterScore(imageData, width, height, {
+              x0: x0 + insetX,
+              x1: x1 - insetX,
+              y0: y0 + insetY,
+              y1: y1 - insetY
+            }, background);
+
+            scores.push(score);
+            column.push(score);
+          }
+          sampledColumns.push(column);
+        }
+
+        const maxScore = scores.reduce((max, score) => Math.max(max, score), 0);
+        if (maxScore < 8) {
+          reject(new Error('Image needs a tighter crop around the GitHub graph.'));
+          return;
+        }
+
+        const grid = sampledColumns.map(column => column.map(score => mapGithubRasterScoreToLevel(score, maxScore)));
+        resolve(normalizeGithubContributionGrid(grid, { rows: 7, maxWeeks: 53 }));
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    image.onerror = function () {
+      reject(new Error('Could not read image file.'));
+    };
+
+    image.src = dataUrl;
+  });
+}
+
+function handleGithubUploadChange(event) {
+  const file = event.target && event.target.files ? event.target.files[0] : null;
+  if (!file) {
+    return;
+  }
+
+  const isMarkupFile = /svg|html/i.test(file.type) || /\.(svg|html?)$/i.test(file.name);
+  const reader = new FileReader();
+
+  reader.onload = async function () {
+    try {
+      let grid = null;
+      if (isMarkupFile) {
+        grid = parseGithubContributionMarkup(String(reader.result || ''));
+      } else {
+        grid = await parseGithubContributionRaster(String(reader.result || ''));
+      }
+
+      if (!grid) {
+        throw new Error('The uploaded file does not look like a GitHub contribution graph.');
+      }
+
+      setGithubContributionGrid(grid, {
+        source: isMarkupFile ? 'file' : 'image',
+        sourceLabel: isMarkupFile ? 'upload' : 'image'
+      });
+      updateUrlParameters();
+      requestUpdate();
+      Toast.show('GitHub graph loaded.', 'success');
+    } catch (error) {
+      console.error('GitHub graph parse error:', error);
+      Toast.show(error.message || 'Unable to load GitHub graph.', 'error');
+      if (githubUploadInput) githubUploadInput.value = '';
+    }
+  };
+
+  if (isMarkupFile) {
+    reader.readAsText(file);
+  } else {
+    reader.readAsDataURL(file);
+  }
+}
+
 // Create texture from numeric data
 
 
@@ -594,11 +1131,9 @@ let shaders = {
 
 async function setup() {
   // Create canvas that fills the container
-  const container = document.getElementById('p5-container');
-  const width = container ? container.offsetWidth : windowWidth;
-  const height = container ? container.offsetHeight : windowHeight;
+  const { width: canvasWidth, height: canvasHeight } = getCanvasContainerSize();
 
-  let canvas = createCanvas(width, height, WEBGL);
+  let canvas = createCanvas(canvasWidth, canvasHeight, WEBGL);
   canvas.parent('p5-container');
 
   // Handle WebGL context loss to prevent crashes
@@ -812,6 +1347,7 @@ async function setup() {
   trussFamilySelect = document.getElementById('truss-family-select');
   trussSegmentsSlider = document.getElementById('truss-segments-slider');
   trussSegmentsDisplay = document.getElementById('truss-segments-display');
+  trussMirrorToggle = document.getElementById('truss-mirror-toggle');
   trussThicknessSlider = document.getElementById('truss-thickness-slider');
   trussThicknessDisplay = document.getElementById('truss-thickness-display');
   staffGroup = document.getElementById('staff-group');
@@ -840,16 +1376,31 @@ async function setup() {
   graphMultiInputs = document.getElementById('graph-multi-inputs');
   graphScaleSlider = document.getElementById('graph-scale-slider');
   graphScaleDisplay = document.getElementById('graph-scale-display');
+  githubGroup = document.getElementById('github-group');
+  githubUploadInput = document.getElementById('github-upload-input');
+  githubUploadBtn = document.getElementById('github-upload-btn');
+  githubHelpBtn = document.getElementById('github-help-btn');
+  githubStatusBadge = document.getElementById('github-status-badge');
+  githubHelpOverlay = document.getElementById('github-help-overlay');
+  githubHelpClose = document.getElementById('github-help-close');
+  githubHelpCloseIcon = document.getElementById('github-help-close-icon');
   appMain = document.querySelector('.app-main');
+  logoContainer = document.querySelector('.logo-container');
   appSidebar = document.getElementById('app-sidebar');
+  sidebarBackdrop = document.getElementById('sidebar-backdrop');
+  uiThemeToggle = document.getElementById('ui-theme-toggle');
   mobileMenuToggle = document.getElementById('mobile-menu-toggle');
   easterEggHint = document.getElementById('easter-egg-hint');
   easterEggHintLabel = document.getElementById('easter-egg-hint-label');
   easterEggOverlay = document.getElementById('easter-egg-overlay');
-  easterEggCanvas = document.getElementById('easter-egg-canvas');
-  easterEggLiveStatus = document.getElementById('easter-egg-live-status');
+  easterEggRunnerStage = document.getElementById('easter-egg-runner-stage');
+  easterEggStageStatus = document.getElementById('easter-egg-stage-status');
   easterEggCloseButton = document.getElementById('easter-egg-close');
-  easterEggTouchButtons = Array.from(document.querySelectorAll('.easter-egg-touch-btn'));
+  workspaceDefaultControls = document.getElementById('workspace-default-controls');
+  easterEggScoreboard = document.getElementById('easter-egg-scoreboard');
+  easterEggJumpButton = document.getElementById('easter-egg-jump-btn');
+  easterEggScoreValue = document.getElementById('easter-egg-score-value');
+  easterEggBestValue = document.getElementById('easter-egg-best-value');
 
   // Get save control references (globals declared at top so toggleSaveMenu can access them)
   saveButton = document.getElementById('save-button');
@@ -918,10 +1469,11 @@ async function setup() {
 
   if (waveformEnvelopeToggle) {
     waveformEnvelopeToggle.addEventListener('change', function () {
-      if (envelopeSettingsGroup) envelopeSettingsGroup.style.display = this.checked ? 'block' : 'none';
+      setElementHidden(envelopeSettingsGroup, !this.checked);
       updateUrlParameters();
       requestUpdate();
     });
+    setElementHidden(envelopeSettingsGroup, !waveformEnvelopeToggle.checked);
   }
   if (waveformEnvelopeType) {
     waveformEnvelopeType.addEventListener('change', function () {
@@ -1060,9 +1612,19 @@ async function setup() {
     });
   }
 
-  // Add click/touch outside to close functionality with improved mobile handling
-  document.addEventListener('click', handleClickOutside);
-  document.addEventListener('touchend', handleClickOutside);
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', () => {
+      if (appSidebar && appSidebar.classList.contains('active')) {
+        toggleMobileMenu();
+      }
+    });
+  }
+
+  if (uiThemeToggle) {
+    uiThemeToggle.addEventListener('click', function () {
+      toggleInterfaceTheme();
+    });
+  }
 
   // Focus trap and Escape key support for sidebar
   appSidebar.addEventListener('keydown', function (e) {
@@ -1355,6 +1917,11 @@ async function setup() {
     });
     if (trussSegmentsDisplay && trussSegmentsSlider) trussSegmentsDisplay.textContent = trussSegmentsSlider.value;
   }
+  if (trussMirrorToggle) {
+    trussMirrorToggle.addEventListener('change', function () {
+      updateUrlParameters(); requestUpdate();
+    });
+  }
   if (trussThicknessSlider) {
     trussThicknessSlider.addEventListener('input', function () {
       if (trussThicknessDisplay) trussThicknessDisplay.textContent = this.value;
@@ -1403,8 +1970,12 @@ async function setup() {
   durationBtns.forEach(btn => {
     btn.addEventListener('click', function (e) {
       e.preventDefault();
-      durationBtns.forEach(b => b.classList.remove('active'));
+      durationBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
       this.classList.add('active');
+      this.setAttribute('aria-pressed', 'true');
       currentNoteDuration = parseFloat(this.getAttribute('data-duration'));
     });
   });
@@ -1412,9 +1983,8 @@ async function setup() {
   // Setup keyboard
   const pianoKeys = document.querySelectorAll('.piano-keyboard .key');
   pianoKeys.forEach(key => {
-    key.addEventListener('mousedown', function (e) {
+    const addStaffNote = function (e) {
       e.preventDefault();
-      this.classList.add('active');
       const noteName = this.getAttribute('data-note');
       const totalDuration = currentStaffNotes.reduce((sum, n) => sum + n.duration, 0);
       if (totalDuration + currentNoteDuration <= 16) {
@@ -1426,9 +1996,13 @@ async function setup() {
           Toast.show('Maximum of 4 measures reached.', 'warning');
         }
       }
-    });
-    key.addEventListener('mouseup', function () { this.classList.remove('active'); });
-    key.addEventListener('mouseleave', function () { this.classList.remove('active'); });
+    };
+
+    key.addEventListener('click', addStaffNote);
+    key.addEventListener('pointerdown', function () { this.classList.add('active'); });
+    key.addEventListener('pointerup', function () { this.classList.remove('active'); });
+    key.addEventListener('pointerleave', function () { this.classList.remove('active'); });
+    key.addEventListener('blur', function () { this.classList.remove('active'); });
   });
 
   if (staffClearBtn) {
@@ -1467,11 +2041,11 @@ async function setup() {
   });
   if (graphMultiToggle) {
     graphMultiToggle.addEventListener('change', function () {
-      if (graphMultiInputs) graphMultiInputs.style.display = this.checked ? 'block' : 'none';
+      setElementHidden(graphMultiInputs, !this.checked);
       updateUrlParameters();
       requestUpdate();
     });
-    if (graphMultiInputs) graphMultiInputs.style.display = graphMultiToggle.checked ? 'block' : 'none';
+    if (graphMultiInputs) setElementHidden(graphMultiInputs, !graphMultiToggle.checked);
   }
   if (graphScaleSlider) {
     graphScaleSlider.addEventListener('input', function () {
@@ -1486,6 +2060,35 @@ async function setup() {
     if (graphScaleDisplay && graphScaleSlider) graphScaleDisplay.textContent = graphScaleSlider.value;
   }
 
+  if (githubUploadBtn && githubUploadInput) {
+    githubUploadBtn.addEventListener('click', function () {
+      githubUploadInput.click();
+    });
+  }
+  if (githubUploadInput) {
+    githubUploadInput.addEventListener('change', handleGithubUploadChange);
+  }
+  if (githubHelpBtn) {
+    githubHelpBtn.addEventListener('click', openGithubHelp);
+  }
+  if (githubHelpClose) {
+    githubHelpClose.addEventListener('click', closeGithubHelp);
+  }
+  if (githubHelpCloseIcon) {
+    githubHelpCloseIcon.addEventListener('click', closeGithubHelp);
+  }
+  if (githubHelpOverlay) {
+    githubHelpOverlay.addEventListener('click', function (event) {
+      if (event.target === githubHelpOverlay) {
+        closeGithubHelp();
+      }
+    });
+  }
+
+  resetGithubContributionGrid({ preserveInputs: true });
+
+  applyInterfaceTheme(getPreferredInterfaceTheme());
+
   // Apply URL parameters if present, otherwise use defaults
   applyUrlParameters();
 
@@ -1499,14 +2102,17 @@ async function setup() {
   // Initialize Web Audio API
   initializeAudio();
 
-  // Initialize custom dropdowns
-  setupCustomDropdowns();
-
   // Initialize the hidden retro rink experience.
   setupEasterEggExperience();
 
   // Add global keyboard event listener for more reliable shift detection
   document.addEventListener('keydown', function (event) {
+    if (event.code === 'Escape' && githubHelpOverlay && !githubHelpOverlay.classList.contains('hidden')) {
+      event.preventDefault();
+      closeGithubHelp();
+      return;
+    }
+
     if (handleEasterEggGameKeydown(event)) {
       return;
     }
@@ -1749,11 +2355,11 @@ function handleCirclesModeChange() {
   const selectedMode = circlesModeSelect.value;
 
   if (selectedMode === 'grid') {
-    circlesPackingControls.style.display = 'none';
-    circlesGridControls.style.display = 'block';
+    setElementHidden(circlesPackingControls, true);
+    setElementHidden(circlesGridControls, false);
   } else {
-    circlesPackingControls.style.display = 'block';
-    circlesGridControls.style.display = 'none';
+    setElementHidden(circlesPackingControls, false);
+    setElementHidden(circlesGridControls, true);
   }
 
   // Invalidate cache when mode changes
@@ -1799,59 +2405,36 @@ function updateCirclesGridOverlapDisplay() {
 function toggleMobileMenu() {
   const isMobile = window.innerWidth <= 768;
 
-  if (isMobile) {
-    const isActive = appSidebar.classList.contains('active');
-    if (!isActive) {
-      // Opening sidebar on mobile
-      lastFocusedElement = document.activeElement;
-      appSidebar.classList.add('active');
-      if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
-
-      setTimeout(() => {
-        const firstFocusable = appSidebar.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        if (firstFocusable) firstFocusable.focus();
-      }, 100);
-    } else {
-      // Closing sidebar on mobile
-      appSidebar.classList.remove('active');
-      if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
-
-      if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
-        lastFocusedElement.focus();
-      } else if (mobileMenuToggle) {
-        mobileMenuToggle.focus();
-      }
-    }
-  } else {
-    // Desktop behavior (collapsible)
-    appSidebar.classList.toggle('sidebar-collapsed');
-
-    // Resize the canvas gracefully to fill the newfound space
-    setTimeout(() => {
-      windowResized();
-    }, 450); // Slightly longer than transition to ensure layout is done
-  }
-}
-
-function handleClickOutside(event) {
-  // Only apply on mobile where sidebar overlays content
-  if (window.innerWidth > 768) return;
-  if (isEasterEggActive()) return;
-
-  // Prevent duplicate events on mobile
-  if (event.type === 'touchend' && event.cancelable) {
-    event.preventDefault();
-  }
-
-  // Don't close if clicking on the toggle button or inside the sidebar
-  if (mobileMenuToggle && mobileMenuToggle.contains(event.target) ||
-    appSidebar && appSidebar.contains(event.target)) {
+  if (!isMobile) {
+    if (appSidebar) appSidebar.classList.remove('active');
+    if (sidebarBackdrop) sidebarBackdrop.classList.add('hidden');
+    if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
     return;
   }
 
-  // Close the sidebar if it's open
-  if (appSidebar && appSidebar.classList.contains('active')) {
-    toggleMobileMenu();
+  const isActive = appSidebar.classList.contains('active');
+  if (!isActive) {
+    // Opening sidebar on mobile
+    lastFocusedElement = document.activeElement;
+    appSidebar.classList.add('active');
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove('hidden');
+    if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
+
+    setTimeout(() => {
+      const firstFocusable = appSidebar.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (firstFocusable) firstFocusable.focus();
+    }, 100);
+  } else {
+    // Closing sidebar on mobile
+    appSidebar.classList.remove('active');
+    if (sidebarBackdrop) sidebarBackdrop.classList.add('hidden');
+    if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
+
+    if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
+      lastFocusedElement.focus();
+    } else if (mobileMenuToggle) {
+      mobileMenuToggle.focus();
+    }
   }
 }
 
@@ -1865,12 +2448,52 @@ function toggleSaveMenu(e) {
   }
 }
 
+function setElementHidden(element, hidden) {
+  if (!element) return;
+  element.hidden = hidden;
+}
+
 function handleStyleChange() {
   // Get the selected style from dropdown
   const selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   if (styleSelect && styleSelect.value !== selectedStyle) {
     styleSelect.value = selectedStyle;
   }
+
+  if (selectedStyle === EASTER_EGG_STYLE_VALUE) {
+    if (binaryGroup && rulerGroup && tickerGroup && waveformGroup && circlesGroup && numericGroup && morseGroup) {
+      setElementHidden(binaryGroup, true);
+      setElementHidden(rulerGroup, true);
+      setElementHidden(tickerGroup, true);
+      setElementHidden(waveformGroup, true);
+      setElementHidden(circlesGroup, true);
+      setElementHidden(numericGroup, true);
+      setElementHidden(morseGroup, true);
+      setElementHidden(matrixGroup, true);
+      setElementHidden(trussGroup, true);
+      setElementHidden(staffGroup, true);
+      setElementHidden(pulseGroup, true);
+      setElementHidden(graphGroup, true);
+      setElementHidden(githubGroup, true);
+    }
+
+    isAnimated = false;
+    if (playbackBtn && playbackDivider) {
+      playbackBtn.classList.add('hidden');
+      playbackDivider.classList.add('hidden');
+    }
+
+    stopAudio();
+    openEasterEggExperience('style');
+    updateAudioControlsUI();
+    requestUpdate();
+    return;
+  }
+
+  if (isEasterEggActive()) {
+    closeEasterEggExperience();
+  }
+  lastNonGameStyle = selectedStyle;
 
   // Set currentShader based on selected style
   switch (selectedStyle) {
@@ -1910,6 +2533,9 @@ function handleStyleChange() {
     case 'graph':
       currentShader = 12;
       break;
+    case 'github':
+      currentShader = 13;
+      break;
     default:
       currentShader = 0;
       break;
@@ -1918,18 +2544,19 @@ function handleStyleChange() {
   // Safely update UI elements only if they exist
   if (binaryGroup && rulerGroup && tickerGroup && waveformGroup && circlesGroup && numericGroup && morseGroup) {
     // Hide all groups first
-    binaryGroup.style.display = 'none';
-    rulerGroup.style.display = 'none';
-    tickerGroup.style.display = 'none';
-    waveformGroup.style.display = 'none';
-    circlesGroup.style.display = 'none';
-    numericGroup.style.display = 'none';
-    morseGroup.style.display = 'none';
-    if (matrixGroup) matrixGroup.style.display = 'none';
-    if (trussGroup) trussGroup.style.display = 'none';
-    if (staffGroup) staffGroup.style.display = 'none';
-    if (pulseGroup) pulseGroup.style.display = 'none';
-    if (graphGroup) graphGroup.style.display = 'none';
+    setElementHidden(binaryGroup, true);
+    setElementHidden(rulerGroup, true);
+    setElementHidden(tickerGroup, true);
+    setElementHidden(waveformGroup, true);
+    setElementHidden(circlesGroup, true);
+    setElementHidden(numericGroup, true);
+    setElementHidden(morseGroup, true);
+    setElementHidden(matrixGroup, true);
+    setElementHidden(trussGroup, true);
+    setElementHidden(staffGroup, true);
+    setElementHidden(pulseGroup, true);
+    setElementHidden(graphGroup, true);
+    setElementHidden(githubGroup, true);
 
     // Show the appropriate group
     // Show the appropriate group and handle playback controls
@@ -1937,41 +2564,48 @@ function handleStyleChange() {
 
     switch (selectedStyle) {
       case 'ruler':
-        rulerGroup.style.display = 'block';
+        setElementHidden(rulerGroup, false);
         break;
       case 'ticker':
-        tickerGroup.style.display = 'block';
+        setElementHidden(tickerGroup, false);
         isAnimated = true;
         break;
       case 'binary':
-        binaryGroup.style.display = 'block';
+        setElementHidden(binaryGroup, false);
         break;
       case 'waveform':
-        waveformGroup.style.display = 'block';
+        setElementHidden(waveformGroup, false);
         isAnimated = true;
         break;
       case 'circles':
-        circlesGroup.style.display = 'block';
+        setElementHidden(circlesGroup, false);
         break;
       case 'numeric':
-        numericGroup.style.display = 'block';
+        setElementHidden(numericGroup, false);
         break;
       case 'morse':
-        morseGroup.style.display = 'block';
+        setElementHidden(morseGroup, false);
         isAnimated = true; // Morse logic handles its own sequence looping with spacebar support
         break;
       case 'matrix':
-        if (matrixGroup) matrixGroup.style.display = 'block';
+        setElementHidden(matrixGroup, false);
         break;
       case 'truss':
-        if (trussGroup) trussGroup.style.display = 'block';
+        setElementHidden(trussGroup, false);
         break;
       case 'music':
-        if (staffGroup) staffGroup.style.display = 'block';
+        setElementHidden(staffGroup, false);
         isAnimated = true;
         break;
       case 'graph':
-        if (graphGroup) graphGroup.style.display = 'block';
+        setElementHidden(graphGroup, false);
+        break;
+      case 'github':
+        setElementHidden(githubGroup, false);
+        if (!githubHelpShown) {
+          githubHelpShown = true;
+          openGithubHelp();
+        }
         break;
     }
 
@@ -2011,30 +2645,16 @@ function handleColorModeChange() {
 }
 
 function applyColorMode(colorMode) {
-  currentColorMode = colorMode;
+  currentColorMode = colors[colorMode] ? colorMode : 'black-on-white';
 
-  // Remove all theme classes first
-  document.body.classList.remove('theme-light', 'theme-dark', 'theme-red', 'theme-inverted');
-
-  // Add appropriate theme class
-  switch (colorMode) {
-    case 'black-on-white':
-      document.body.classList.add('theme-light');
-      break;
-    case 'white-on-black':
-      document.body.classList.add('theme-dark');
-      break;
-    case 'white-on-red':
-      document.body.classList.add('theme-red');
-      break;
-    case 'red-on-white':
-      document.body.classList.add('theme-inverted'); // Assuming inverted style for now
-      break;
-    default:
-      document.body.classList.add('theme-light');
+  if (appMain) {
+    appMain.dataset.canvasTheme = currentColorMode;
+  }
+  if (logoContainer) {
+    logoContainer.setAttribute('data-canvas-theme', currentColorMode);
   }
 
-  console.log('Color mode applied:', colorMode);
+  console.log('Canvas color mode applied:', currentColorMode);
   requestUpdate();
 }
 
@@ -2406,6 +3026,18 @@ function drawEasterEggCloud(x, y, ink, alpha = 70) {
 function drawEasterEggRunInBar(barWidth, barHeight) {
   if (!easterEggGame || !easterEggGame.active) return false;
 
+  noStroke();
+  fill(248);
+  rect(0, 0, barWidth, barHeight);
+  fill(232);
+  rect(0, 0, barWidth, 1);
+  fill(88);
+  rect(0, Math.max(0, barHeight - 2), barWidth, 0.75);
+
+  updateEasterEggHotspotBounds();
+  resizeEasterEggCanvas();
+  return true;
+
   const game = easterEggGame;
   const stadiumHeight = barHeight * 0.84;
   const stadiumTop = -stadiumHeight;
@@ -2648,7 +3280,7 @@ function setEasterEggHintProgress(progress) {
   easterEggHint.style.setProperty('--hold-progress', clampedProgress.toFixed(3));
 }
 
-function setEasterEggHintState(visible, arming = false, label = 'HOLD TO ENTER') {
+function setEasterEggHintState(visible, arming = false, label = 'CLICK TO PLAY') {
   if (!easterEggHint) return;
 
   if (!visible) {
@@ -2730,7 +3362,7 @@ function cancelEasterEggHold(keepVisible = false) {
   easterEggHoldState.active = false;
 
   if (keepVisible) {
-    setEasterEggHintState(true, false, 'HOLD TO ENTER');
+    setEasterEggHintState(true, false, 'CLICK TO PLAY');
   } else if (easterEggHint) {
     easterEggHint.classList.remove('is-arming');
     setEasterEggHintProgress(0);
@@ -2778,12 +3410,9 @@ function handleEasterEggPointerMove(event) {
   updateEasterEggHotspotBounds();
   const inside = isPointInEasterEggHotspot(event.clientX, event.clientY);
 
-  if (inside && !easterEggHoldState.active) {
-    setEasterEggHintState(true, false, 'HOLD TO ENTER');
-  } else if (!inside && !easterEggHoldState.active) {
-    setEasterEggHintState(false);
-  } else if (!inside && easterEggHoldState.active && easterEggHoldState.pointerId === event.pointerId) {
-    cancelEasterEggHold(false);
+  if (inside) {
+    setEasterEggHintState(true, false, 'CLICK TO PLAY');
+  } else if (!easterEggHoldState.active) {
     setEasterEggHintState(false);
   }
 }
@@ -2795,16 +3424,11 @@ function handleEasterEggPointerDown(event) {
   if (!isPointInEasterEggHotspot(event.clientX, event.clientY)) return;
 
   event.preventDefault();
-  beginEasterEggHold(event.pointerId);
+  openEasterEggExperience('click');
 }
 
 function handleEasterEggPointerUp(event) {
-  if (!easterEggHoldState.active) return;
-  if (easterEggHoldState.pointerId !== null && event.pointerId !== easterEggHoldState.pointerId) return;
-
-  const shouldStayVisible = isPointInEasterEggHotspot(event.clientX, event.clientY);
-  cancelEasterEggHold(shouldStayVisible);
-  if (!shouldStayVisible) {
+  if (!isPointInEasterEggHotspot(event.clientX, event.clientY)) {
     setEasterEggHintState(false);
   }
 }
@@ -2817,7 +3441,23 @@ function handleEasterEggPointerLeave() {
 }
 
 function resizeEasterEggCanvas() {
-  return;
+  if (!easterEggOverlay || !easterEggHotspotBounds) return;
+
+  const expandedHeight = Math.max(easterEggHotspotBounds.actualHeight * 2.7, 44);
+  easterEggOverlay.style.left = `${easterEggHotspotBounds.actualLeft}px`;
+  easterEggOverlay.style.top = `${easterEggHotspotBounds.actualTop - 2}px`;
+  easterEggOverlay.style.width = `${easterEggHotspotBounds.actualWidth}px`;
+  easterEggOverlay.style.height = `${expandedHeight}px`;
+
+  const runnerContainer = easterEggOverlay.querySelector('.runner-container');
+  if (runnerContainer) {
+    const scaleY = expandedHeight / 150;
+    runnerContainer.style.transform = `scale(1, ${Math.max(0.08, scaleY)})`;
+  }
+
+  if (easterEggGame && typeof easterEggGame.resize === 'function') {
+    easterEggGame.resize();
+  }
 }
 
 function setEasterEggScoreboardVisibility(active) {
@@ -2833,22 +3473,18 @@ function handleEasterEggGameStateChange(state) {
   const safeState = state || {};
   const score = formatEasterEggScore(safeState.displayScore || safeState.score || 0, 4);
   const best = formatEasterEggScore(safeState.highScore || 0, 4);
-  const combo = formatEasterEggScore(safeState.combo || 0, 2);
+  const round = Math.max(1, parseInt(safeState.round, 10) || 1);
   const status = !safeState.active
-    ? 'Ready'
-    : (safeState.phase === 'boot'
-      ? (safeState.message || 'Rink warming up')
-      : (safeState.gameOver ? 'Press space to retry' : (safeState.rank || 'Skating')));
-  const meter = Math.max(0, Math.min(100, Math.round(safeState.meter || 0)));
+    ? ''
+    : (safeState.gameOver ? 'GAME OVER' : `ROUND ${round}`);
 
   if (easterEggScoreValue) easterEggScoreValue.textContent = score;
   if (easterEggBestValue) easterEggBestValue.textContent = best;
-  if (easterEggComboValue) easterEggComboValue.textContent = combo;
-  if (easterEggStatusValue) easterEggStatusValue.textContent = status;
-  if (easterEggMeterFill) easterEggMeterFill.style.width = `${meter}%`;
-  if (easterEggLiveStatus) easterEggLiveStatus.textContent = status;
-  if (easterEggLaunchButton) {
-    easterEggLaunchButton.textContent = safeState.active ? 'Exit Rink Rush' : 'Activate Rink Rush';
+  if (easterEggJumpButton) {
+    easterEggJumpButton.textContent = safeState.gameOver ? 'Retry' : 'Jump';
+  }
+  if (easterEggStageStatus) {
+    easterEggStageStatus.textContent = status;
   }
 
   return safeState;
@@ -2856,21 +3492,28 @@ function handleEasterEggGameStateChange(state) {
 
 function releaseEasterEggControls() {
   if (!easterEggGame) return;
-  easterEggGame.setControl('duck', false);
-  easterEggGame.setControl('bullet', false);
+  easterEggGame.setControl('jump', false);
 }
 
 function openEasterEggExperience(source = 'secret') {
   if (isEasterEggActive() || !easterEggGame) return;
 
+  cancelEasterEggHold(false);
+  setEasterEggHintState(false);
   easterEggLastFocusedElement = document.activeElement;
   easterEggPreviousPlaybackState = isPlaying;
   easterEggResumeAudio = isAudioPlaying;
 
+  if (styleSelect && styleSelect.value !== EASTER_EGG_STYLE_VALUE) {
+    styleSelect.value = EASTER_EGG_STYLE_VALUE;
+  }
   stopAudio();
   document.body.classList.add('easter-egg-active');
   setEasterEggScoreboardVisibility(true);
+  updateEasterEggHotspotBounds();
+  resizeEasterEggCanvas();
   easterEggGame.open(source);
+  updateUrlParameters();
   loop();
 }
 
@@ -2881,13 +3524,14 @@ function closeEasterEggExperience() {
   easterEggGame.close();
   document.body.classList.remove('easter-egg-active');
   setEasterEggScoreboardVisibility(false);
+  if (styleSelect && styleSelect.value === EASTER_EGG_STYLE_VALUE) {
+    styleSelect.value = lastNonGameStyle;
+  }
   handleEasterEggGameStateChange({
     active: false,
     phase: 'idle',
     displayScore: 0,
     score: 0,
-    combo: 0,
-    meter: 0,
     highScore: easterEggGame.profile ? easterEggGame.profile.highScore : 0
   });
 
@@ -2902,6 +3546,7 @@ function closeEasterEggExperience() {
     startAudio();
   }
   easterEggResumeAudio = false;
+  updateUrlParameters();
   if (easterEggLastFocusedElement && document.body.contains(easterEggLastFocusedElement)) {
     easterEggLastFocusedElement.focus();
   }
@@ -2920,26 +3565,25 @@ function setupEasterEggExperience() {
   }
 
   easterEggGame = new window.RPIRinkRush.RinkRushGame(null, {
-    audio: true,
     onStateChange: handleEasterEggGameStateChange
   });
   setEasterEggScoreboardVisibility(false);
+  if (easterEggOverlay) {
+    easterEggOverlay.classList.add('hidden');
+    easterEggOverlay.setAttribute('aria-hidden', 'true');
+  }
   handleEasterEggGameStateChange({
     active: false,
     phase: 'idle',
     displayScore: 0,
     score: 0,
-    combo: 0,
-    meter: 0,
     highScore: easterEggGame.profile ? easterEggGame.profile.highScore : 0
   });
 
-  if (easterEggLaunchButton) {
-    easterEggLaunchButton.addEventListener('click', function () {
-      if (isEasterEggActive()) {
-        closeEasterEggExperience();
-      } else {
-        openEasterEggExperience('sidebar');
+  if (easterEggCloseButton) {
+    easterEggCloseButton.addEventListener('click', function () {
+      if (easterEggGame) {
+        easterEggGame.restart();
       }
     });
   }
@@ -2978,10 +3622,6 @@ function handleEasterEggGameKeydown(event) {
   if (!isEasterEggActive() || !easterEggGame) return false;
 
   switch (event.code) {
-    case 'Escape':
-      event.preventDefault();
-      closeEasterEggExperience();
-      return true;
     case 'ArrowUp':
     case 'KeyW':
     case 'Space':
@@ -2989,16 +3629,6 @@ function handleEasterEggGameKeydown(event) {
       if (!event.repeat) {
         easterEggGame.setControl('jump', true);
       }
-      return true;
-    case 'ArrowDown':
-    case 'KeyS':
-      event.preventDefault();
-      easterEggGame.setControl('duck', true);
-      return true;
-    case 'ShiftLeft':
-    case 'ShiftRight':
-      event.preventDefault();
-      easterEggGame.setControl('bullet', true);
       return true;
     case 'Enter':
     case 'KeyR':
@@ -3013,20 +3643,7 @@ function handleEasterEggGameKeydown(event) {
 }
 
 function handleEasterEggGameKeyup(event) {
-  if (!isEasterEggActive() || !easterEggGame) return false;
-
-  switch (event.code) {
-    case 'ArrowDown':
-    case 'KeyS':
-      easterEggGame.setControl('duck', false);
-      return true;
-    case 'ShiftLeft':
-    case 'ShiftRight':
-      easterEggGame.setControl('bullet', false);
-      return true;
-    default:
-      return false;
-  }
+  return false;
 }
 
 function styleSupportsAudio(style) {
@@ -4358,7 +4975,8 @@ function getUrlParameters() {
     // Truss parameters
     trussFamily: normalizeTrussFamilyValue(params.get('trussFamily') || 'flat'),
     trussSegments: parseInt(params.get('trussSegments')) || 15,
-    trussThickness: parseFloat(params.get('trussThickness')) || 2,
+    trussMirror: params.get('trussMirror') === 'true',
+    trussThickness: Math.max(1.5, parseFloat(params.get('trussThickness')) || 2),
 
     // Staff parameters
     staffNotes: params.get('staffNotes') || '',
@@ -4448,6 +5066,9 @@ function updateUrlParameters() {
     }
     if (trussSegmentsSlider && parseInt(trussSegmentsSlider.value) !== 15) {
       params.set('trussSegments', trussSegmentsSlider.value);
+    }
+    if (trussMirrorToggle && trussMirrorToggle.checked) {
+      params.set('trussMirror', 'true');
     }
     if (trussThicknessSlider && parseFloat(trussThicknessSlider.value) !== 2) {
       params.set('trussThickness', trussThicknessSlider.value);
@@ -4659,6 +5280,9 @@ function applyUrlParameters() {
   if (trussSegmentsSlider) {
     trussSegmentsSlider.value = params.trussSegments;
   }
+  if (trussMirrorToggle) {
+    trussMirrorToggle.checked = params.trussMirror;
+  }
   if (trussThicknessSlider) {
     trussThicknessSlider.value = params.trussThickness;
   }
@@ -4722,7 +5346,7 @@ function applyUrlParameters() {
     graphMultiToggle.checked = params.graphMulti;
   }
   if (graphMultiInputs) {
-    graphMultiInputs.style.display = params.graphMulti ? 'block' : 'none';
+    setElementHidden(graphMultiInputs, !params.graphMulti);
   }
   if (graphScaleSlider) {
     graphScaleSlider.value = Math.max(GRAPH_SCALE_MIN, params.graphScale);
@@ -4730,6 +5354,7 @@ function applyUrlParameters() {
   if (graphScaleDisplay && graphScaleSlider) {
     graphScaleDisplay.textContent = graphScaleSlider.value;
   }
+  updateGithubStatusBadge();
 
   // Apply ruler parameters
   if (rulerRepeatsSlider) {
@@ -4936,18 +5561,43 @@ function updateAudioParameters() {
   }
 }
 
+function getCanvasContainerSize() {
+  const container = document.getElementById('p5-container');
+  const nextWidth = container ? container.offsetWidth : windowWidth;
+  const nextHeight = container ? container.offsetHeight : windowHeight;
+
+  return {
+    width: Math.max(1, Math.round(nextWidth || windowWidth || 1)),
+    height: Math.max(1, Math.round(nextHeight || windowHeight || 1))
+  };
+}
+
+function syncCanvasToContainer(forceResize = false) {
+  const { width: nextWidth, height: nextHeight } = getCanvasContainerSize();
+  const shouldResize = forceResize ||
+    typeof width !== 'number' ||
+    typeof height !== 'number' ||
+    width !== nextWidth ||
+    height !== nextHeight;
+
+  if (shouldResize) {
+    resizeCanvas(nextWidth, nextHeight);
+  }
+
+  updateEasterEggHotspotBounds();
+  resizeEasterEggCanvas();
+}
+
 let resizeTimeout;
 function windowResized() {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
-    const container = document.getElementById('p5-container');
-    if (container) {
-      resizeCanvas(container.offsetWidth, container.offsetHeight);
-    } else {
-      resizeCanvas(windowWidth, windowHeight);
+    if (window.innerWidth > 768) {
+      if (appSidebar) appSidebar.classList.remove('active');
+      if (sidebarBackdrop) sidebarBackdrop.classList.add('hidden');
+      if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
     }
-    updateEasterEggHotspotBounds();
-    resizeEasterEggCanvas();
+    syncCanvasToContainer();
   }, 100);
 }
 
@@ -5532,6 +6182,7 @@ function drawBottomBar(currentWidth) {
       exactBarWidth,
       barHeight: rectHeight,
       segments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
+      mirrorSegments: trussMirrorToggle ? trussMirrorToggle.checked : false,
       thickness: trussThicknessSlider ? trussThicknessSlider.value : 2,
       family: trussFamilySelect ? trussFamilySelect.value : 'flat'
     });
@@ -5539,8 +6190,22 @@ function drawBottomBar(currentWidth) {
     noFill();
     stroke(fgColor);
     strokeWeight(trussGeometry.thickness);
-    strokeCap(SQUARE);
-    strokeJoin(MITER);
+    drawingContext.lineCap = 'butt';
+    drawingContext.lineJoin = 'miter';
+
+    for (let i = 0; i < trussGeometry.strokes.length; i++) {
+      const strokeShape = trussGeometry.strokes[i];
+      beginShape();
+      for (let j = 0; j < strokeShape.points.length; j++) {
+        const point = strokeShape.points[j];
+        vertex(point.x, point.y);
+      }
+      if (strokeShape.closed) {
+        endShape(CLOSE);
+      } else {
+        endShape();
+      }
+    }
 
     for (let i = 0; i < trussGeometry.lines.length; i++) {
       const lineSegment = trussGeometry.lines[i];
@@ -5634,6 +6299,30 @@ function drawBottomBar(currentWidth) {
         vertex(x, y);
       }
       endShape();
+    }
+  } else if (currentShader === 13) {
+    // GitHub contribution graph adapted to the bar framework
+    resetShader();
+    rectMode(CORNER);
+
+    const renderData = buildGithubContributionRenderData({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight,
+      grid: githubContributionGrid
+    });
+
+    stroke(fgColor);
+    strokeWeight(0.85);
+    for (let i = 0; i < renderData.cells.length; i++) {
+      const cell = renderData.cells[i];
+      if (cell.filled) {
+        fill(fgColor);
+      } else {
+        noFill();
+      }
+      rect(cell.x, cell.y, cell.size, cell.size);
     }
   } else {
     // Fallback to solid with current foreground color
@@ -5752,92 +6441,3 @@ function mouseDragged() {
     return false; // Prevent default browser drag
   }
 }
-
-// --- Custom Dropdown Logic ---
-function setupCustomDropdowns() {
-  const selects = document.querySelectorAll('.control-select');
-
-  selects.forEach(select => {
-    // Check if already initialized to avoid duplicates
-    if (select.parentNode.classList.contains('custom-select-wrapper')) return;
-
-    // Create wrapper
-    const wrapper = document.createElement('div');
-    wrapper.className = 'custom-select-wrapper';
-    select.parentNode.insertBefore(wrapper, select);
-    wrapper.appendChild(select);
-
-    // Create trigger
-    const trigger = document.createElement('div');
-    trigger.className = 'custom-select-trigger';
-    const selectedOption = select.options[select.selectedIndex];
-    trigger.textContent = selectedOption ? selectedOption.textContent : 'Select...';
-    wrapper.appendChild(trigger);
-
-    // Create options list
-    const optionsList = document.createElement('div');
-    optionsList.className = 'custom-select-options';
-    wrapper.appendChild(optionsList);
-
-    // Populate options
-    Array.from(select.options).forEach(option => {
-      const customOption = document.createElement('div');
-      customOption.className = 'custom-option';
-      customOption.textContent = option.textContent;
-      customOption.dataset.value = option.value;
-
-      if (option.selected) {
-        customOption.classList.add('selected');
-      }
-
-      customOption.addEventListener('click', (e) => {
-        e.stopPropagation();
-
-        // Update native select
-        select.value = option.value;
-        select.dispatchEvent(new Event('change'));
-
-        // Update UI
-        trigger.textContent = option.textContent;
-        wrapper.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
-        customOption.classList.add('selected');
-        wrapper.classList.remove('open');
-      });
-
-      optionsList.appendChild(customOption);
-    });
-
-    // Toggle dropdown
-    trigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      // Close all other dropdowns
-      document.querySelectorAll('.custom-select-wrapper').forEach(w => {
-        if (w !== wrapper) w.classList.remove('open');
-      });
-      wrapper.classList.toggle('open');
-    });
-
-    // Listen for external updates to the select (e.g. from keyboard shortcuts)
-    select.addEventListener('change', () => {
-      const newSelected = select.options[select.selectedIndex];
-      trigger.textContent = newSelected.textContent;
-      wrapper.querySelectorAll('.custom-option').forEach(opt => {
-        if (opt.dataset.value === select.value) {
-          opt.classList.add('selected');
-        } else {
-          opt.classList.remove('selected');
-        }
-      });
-    });
-  });
-
-  // click outside to close dropdowns
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.custom-select-wrapper')) {
-      document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
-    }
-  });
-}
-
-// Ensure custom dropdowns are initialized when DOM is ready
-document.addEventListener('DOMContentLoaded', setupCustomDropdowns);
