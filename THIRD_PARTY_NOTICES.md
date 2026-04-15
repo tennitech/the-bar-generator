@@ -7,3 +7,11 @@
 - Local path: `third_party/t-rex-runner`
 
 The embedded easter egg vendors modified copies of the upstream runner source and sprite assets. See `third_party/t-rex-runner/LICENSE` and `third_party/t-rex-runner/NOTICE.md` for the retained license text and modification notes.
+
+## gif.js
+- Source: https://github.com/jnordberg/gif.js
+- Upstream package: `gif.js@0.2.0`
+- License: MIT
+- Local path: `third_party/gif.js`
+
+The looping GIF export vendors the upstream browser encoder distribution locally so animated bar exports do not depend on an external CDN at runtime. See `third_party/gif.js/LICENSE` for the retained license text.

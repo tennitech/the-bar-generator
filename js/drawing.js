@@ -161,10 +161,148 @@ function drawMusicHeadOnGraphics(pg, shape, x, y, rx, ry, filled, fgColor) {
   pg.endShape(CLOSE);
 }
 
-function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight) {
+const EXPORT_REFERENCE_WIDTH = 250;
+const EXPORT_REFERENCE_HEIGHT = 151;
+const EXPORT_BAR_Y = 134;
+const EXPORT_BAR_HEIGHT = 18;
+const EXPORT_PADDING = 20;
+const PNG_EXPORT_SCALE = 1.5;
+const LOOP_GIF_EXPORT_SCALE = 1.25;
+const LOOP_GIF_WORKER_PATH = 'third_party/gif.js/gif.worker.js';
+
+function createExportGraphicsBuffer(scale) {
+  const graphics = createGraphics(
+    Math.ceil(EXPORT_REFERENCE_WIDTH * scale) + EXPORT_PADDING * 2,
+    Math.ceil(EXPORT_REFERENCE_HEIGHT * scale) + EXPORT_PADDING * 2
+  );
+
+  if (typeof graphics.pixelDensity === 'function') {
+    graphics.pixelDensity(1);
+  }
+
+  return graphics;
+}
+
+function drawLoopingRulerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX) {
+  const rulerRepeats = parseInt(rulerRepeatsSlider.value, 10);
+  const rulerUnits = parseInt(rulerUnitsSlider.value, 10);
+  const totalTicks = rulerRepeats * rulerUnits + 1;
+  const tickWidth = exactBarWidth / (2 * totalTicks - 1);
+  const tickSpacing = tickWidth * 2;
+  const repeatWidth = rulerUnits * tickSpacing;
+  const wrappedOffset = ((loopOffsetX % repeatWidth) + repeatWidth) % repeatWidth;
+  const drawStartX = barStartX - wrappedOffset;
+  const drawEndX = barStartX + exactBarWidth;
+
+  for (let repeatX = drawStartX - repeatWidth; repeatX <= drawEndX + repeatWidth; repeatX += repeatWidth) {
+    for (let tickIndex = 0; tickIndex <= rulerUnits; tickIndex++) {
+      const tickX = repeatX + tickIndex * tickSpacing;
+      if (tickX + tickWidth <= barStartX || tickX >= drawEndX) {
+        continue;
+      }
+
+      let tickHeight = rectHeight;
+      if (tickIndex > 0 && tickIndex < rulerUnits) {
+        if (rulerUnits === 10) {
+          if (tickIndex === 5) {
+            tickHeight = rectHeight * 0.75;
+          } else if (tickIndex % 2 === 0) {
+            tickHeight = rectHeight * 0.5;
+          } else {
+            tickHeight = rectHeight * 0.25;
+          }
+        } else if (tickIndex === Math.floor(rulerUnits / 2)) {
+          tickHeight = rectHeight * 0.75;
+        } else {
+          tickHeight = rectHeight * 0.5;
+        }
+      }
+
+      pg.rect(tickX, barY + rectHeight - tickHeight, tickWidth, tickHeight);
+    }
+  }
+}
+
+function drawLoopingTickerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX) {
+  const tickerRatio = parseInt(tickerRatioSlider.value, 10);
+  const tickerWidthRatio = parseInt(tickerWidthRatioSlider.value, 10);
+  const tickerBottomTicks = parseInt(tickerSlider.value, 10);
+  const repeatWidth = exactBarWidth / tickerBottomTicks;
+  const topTickSpacing = repeatWidth / tickerRatio;
+  const topTickWidth = topTickSpacing / 2;
+  const bottomTickWidth = topTickWidth * tickerWidthRatio;
+  const tickerHalfHeight = rectHeight / 2;
+  const wrappedOffset = ((loopOffsetX % repeatWidth) + repeatWidth) % repeatWidth;
+  const drawStartX = barStartX - wrappedOffset;
+  const drawEndX = barStartX + exactBarWidth;
+
+  for (let repeatX = drawStartX - repeatWidth; repeatX <= drawEndX + repeatWidth; repeatX += repeatWidth) {
+    for (let tickIndex = 0; tickIndex < tickerRatio; tickIndex++) {
+      const topTickX = repeatX + tickIndex * topTickSpacing;
+      if (topTickX + topTickWidth > barStartX && topTickX < drawEndX) {
+        pg.rect(topTickX, barY, topTickWidth, tickerHalfHeight);
+      }
+    }
+
+    if (repeatX + bottomTickWidth > barStartX && repeatX < drawEndX) {
+      pg.rect(repeatX, barY + tickerHalfHeight, bottomTickWidth, tickerHalfHeight);
+    }
+  }
+}
+
+function drawExportLogoFrame(pg, options = {}) {
+  const scale = typeof options.scale === 'number' ? options.scale : PNG_EXPORT_SCALE;
+  const backgroundColor = typeof options.backgroundColor === 'string' ? options.backgroundColor : null;
+  const patternOptions = options.patternOptions || {};
+  const colorScheme = colors[currentColorMode];
+  const fgColor = colorScheme ? colorScheme.fg : '#000000';
+
+  if (backgroundColor) {
+    pg.background(backgroundColor);
+  } else {
+    pg.clear();
+  }
+
+  pg.push();
+  pg.translate(EXPORT_PADDING, EXPORT_PADDING);
+  pg.scale(scale);
+  pg.fill(fgColor);
+  pg.noStroke();
+  drawSVGPathOnGraphics(pg, paths.r);
+  drawSVGPathOnGraphics(pg, paths.p);
+  drawSVGPathOnGraphics(pg, paths.i);
+
+  if (currentShader === 0) {
+    const cornerSize = 1.5;
+    pg.beginShape();
+    pg.vertex(cornerSize, EXPORT_BAR_Y);
+    pg.vertex(EXPORT_REFERENCE_WIDTH - cornerSize, EXPORT_BAR_Y);
+    pg.vertex(EXPORT_REFERENCE_WIDTH, EXPORT_BAR_Y + cornerSize);
+    pg.vertex(EXPORT_REFERENCE_WIDTH, EXPORT_BAR_Y + EXPORT_BAR_HEIGHT - cornerSize);
+    pg.vertex(EXPORT_REFERENCE_WIDTH - cornerSize, EXPORT_BAR_Y + EXPORT_BAR_HEIGHT);
+    pg.vertex(cornerSize, EXPORT_BAR_Y + EXPORT_BAR_HEIGHT);
+    pg.vertex(0, EXPORT_BAR_Y + EXPORT_BAR_HEIGHT - cornerSize);
+    pg.vertex(0, EXPORT_BAR_Y + cornerSize);
+    pg.endShape(pg.CLOSE);
+  } else {
+    drawBarPatternOnGraphics(
+      pg,
+      0,
+      EXPORT_BAR_Y,
+      EXPORT_REFERENCE_WIDTH,
+      EXPORT_BAR_HEIGHT,
+      patternOptions
+    );
+  }
+
+  pg.pop();
+}
+
+function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, options = {}) {
   // Get current foreground color
   const colorScheme = colors[currentColorMode];
   const fgColor = colorScheme ? colorScheme.fg : '#000000';
+  const loopOffsetX = typeof options.loopOffsetX === 'number' ? options.loopOffsetX : null;
 
   pg.fill(fgColor);
   pg.noStroke();
@@ -174,6 +312,11 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     // Solid bar
     pg.rect(barStartX, barY, exactBarWidth, rectHeight);
   } else if (currentShader === 1) {
+    if (loopOffsetX !== null) {
+      drawLoopingRulerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX);
+      return;
+    }
+
     // Ruler pattern
     const rulerRepeats = parseInt(rulerRepeatsSlider.value);
     const rulerUnits = parseInt(rulerUnitsSlider.value);
@@ -212,6 +355,11 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       pg.rect(tickX, tickY, rulerTickWidth, tickHeight);
     }
   } else if (currentShader === 2) {
+    if (loopOffsetX !== null) {
+      drawLoopingTickerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX);
+      return;
+    }
+
     // Ticker pattern
     const tickerRatio = parseInt(tickerRatioSlider.value);
     const tickerWidthRatio = parseInt(tickerWidthRatioSlider.value);
@@ -263,7 +411,9 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     const frequency = parseInt(waveformFrequencySlider.value);
     const waveType = parseFloat(waveformTypeSlider.value);
     const speed = parseFloat(waveformSpeedSlider.value);
-    const time = typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0;
+    const time = typeof options.timeSeconds === 'number'
+      ? options.timeSeconds
+      : (typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0);
 
     // Helper function for smooth waveform generation (restored from original working version)
     function generateWaveValue(phase, type) {
@@ -316,12 +466,30 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       rawPhase = Math.round(rawPhase * 1000000) / 1000000;
 
       let wave = generateWaveValue(rawPhase, waveType);
+      const applyEnvelope = waveformEnvelopeToggle && waveformEnvelopeToggle.checked;
+      const envType = waveformEnvelopeType ? waveformEnvelopeType.value : 'sine';
+      const envWaves = waveformEnvelopeWavesSlider
+        ? (typeof normalizeWaveformEnvelopeWaves === 'function'
+          ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
+          : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
+        : 1;
+      const envCenter = waveformEnvelopeCenterSlider ? parseFloat(waveformEnvelopeCenterSlider.value) : 0;
+      const bipolar = waveformEnvelopeBipolarToggle && waveformEnvelopeBipolarToggle.checked;
 
-      // Apply amplitude envelope to pin the edges to zero
-      const envelope = Math.sin(Math.PI * xPortion);
-      wave *= envelope;
+      if (typeof applyWaveformEnvelope === 'function') {
+        wave = applyWaveformEnvelope(wave, {
+          applyEnvelope,
+          envType,
+          envWaves,
+          bipolar,
+          xPortion
+        });
+      }
 
-      const y = barY + rectHeight * (1.0 - Math.max(0, Math.min(1, wave)));
+      const normalizedY = typeof mapWaveformToBarYFraction === 'function'
+        ? mapWaveformToBarYFraction(wave, envCenter)
+        : (1.0 - Math.max(0, Math.min(1, wave)));
+      const y = barY + rectHeight * normalizedY;
 
       pg.vertex(barStartX + x, y);
     }
@@ -459,47 +627,8 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       }
     }
   } else if (currentShader === 8) {
-    // Matrix / Punch Card pattern
-    const text = matrixInput ? matrixInput.value || "RPI" : "RPI";
-    const rows = parseInt(matrixRowsSlider ? matrixRowsSlider.value : 3);
-    const gap = parseInt(matrixGapSlider ? matrixGapSlider.value : 1);
-
-    const binaryDataArray = textToBinary(text);
-
-    if (binaryDataArray.length > 0) {
-      // Calculate sizes to fit perfectly within the rectHeight
-      const totalGapHeight = Math.max(0, rows - 1) * gap;
-      const squareSize = Math.max(1, (rectHeight - totalGapHeight) / rows);
-
-      // Calculate how many columns we can fit
-      const columns = Math.floor((exactBarWidth + gap) / (squareSize + gap));
-
-      // Center horizontally
-      const totalMatrixWidth = columns * squareSize + Math.max(0, columns - 1) * gap;
-      const startXOffset = barStartX + (exactBarWidth - totalMatrixWidth) / 2;
-
-      let bitIndex = 0;
-      for (let c = 0; c < columns; c++) {
-        for (let r = 0; r < rows; r++) {
-          const x = startXOffset + c * (squareSize + gap);
-          const y = barY + r * (squareSize + gap);
-
-          const bit = binaryDataArray[bitIndex % binaryDataArray.length];
-          bitIndex++;
-
-          if (bit === 1) {
-            pg.noStroke();
-            pg.fill(fgColor);
-            pg.rect(x, y, squareSize, squareSize);
-          } else {
-            pg.noFill();
-            pg.stroke(fgColor);
-            pg.strokeWeight(0.5); // Thin stroke for unfilled
-            pg.rect(x, y, squareSize, squareSize);
-          }
-        }
-      }
-    }
+    // Runway pattern sourced from the Flying Club bar asset.
+    drawRunwayBarPattern(pg, barStartX, barY, exactBarWidth, rectHeight, fgColor);
   } else if (currentShader === 9) {
     // Truss / Geometric pattern
     const trussGeometry = createTrussPatternGeometry({
@@ -755,59 +884,8 @@ function savePNG() {
     Toast.show('Generating PNG...', 'info', 2000);
 
     setTimeout(() => {
-      // Create a temporary graphics buffer with transparent background
-      const currentWidth = 250; // Exact width from 250px reference
-      const logoHeight = 151; // 112px letters + 20.5px spacing + 18px bar = 150.5px, rounded to 151
-
-      // Create off-screen graphics buffer with transparent background
-      const exportGraphics = createGraphics(Math.ceil(currentWidth * 1.5) + 40, Math.ceil(logoHeight * 1.5) + 40);
-
-      // Don't set a background - leave it transparent
-      exportGraphics.clear();
-
-      // Draw the logo on the graphics buffer
-      exportGraphics.push();
-      exportGraphics.translate(20, 20); // Add some padding
-      exportGraphics.scale(1.5);
-
-      // Get current foreground color
-      const colorScheme = colors[currentColorMode];
-      const fgColor = colorScheme ? colorScheme.fg : '#000000';
-
-      // Draw letter paths
-      exportGraphics.fill(fgColor);
-      exportGraphics.noStroke();
-      drawSVGPathOnGraphics(exportGraphics, paths.r);
-      drawSVGPathOnGraphics(exportGraphics, paths.p);
-      drawSVGPathOnGraphics(exportGraphics, paths.i);
-
-      // Draw the bar pattern - position exactly 20.5px below letters
-      const barY = 134; // 112px letters + 20.5px spacing
-      const barHeight = 18; // Exact height from specification
-      const exactBarWidth = 250; // Exact width from 250px reference
-      const barStartX = 0; // Exact X position from 250px reference
-
-      // Always draw the bar - solid, ruler, binary, or ticker
-      if (currentShader === 0) {
-        // Solid bar with corner details
-        const cornerSize = 1.5;
-
-        exportGraphics.beginShape();
-        // Start from top-left corner (cut)
-        exportGraphics.vertex(barStartX + cornerSize, barY);
-        exportGraphics.vertex(barStartX + exactBarWidth - cornerSize, barY); // Top edge
-        exportGraphics.vertex(barStartX + exactBarWidth, barY + cornerSize); // Top-right corner cut
-        exportGraphics.vertex(barStartX + exactBarWidth, barY + barHeight - cornerSize); // Right edge
-        exportGraphics.vertex(barStartX + exactBarWidth - cornerSize, barY + barHeight); // Bottom-right corner cut
-        exportGraphics.vertex(barStartX + cornerSize, barY + barHeight); // Bottom edge
-        exportGraphics.vertex(barStartX, barY + barHeight - cornerSize); // Bottom-left corner cut
-        exportGraphics.vertex(barStartX, barY + cornerSize); // Left edge to top-left corner cut
-        exportGraphics.endShape(exportGraphics.CLOSE);
-      } else {
-        drawBarPatternOnGraphics(exportGraphics, barStartX, barY, exactBarWidth, barHeight);
-      }
-
-      exportGraphics.pop();
+      const exportGraphics = createExportGraphicsBuffer(PNG_EXPORT_SCALE);
+      drawExportLogoFrame(exportGraphics);
 
       // Get the graphics buffer canvas and export it
       const exportCanvas = exportGraphics.canvas;
@@ -837,6 +915,124 @@ function savePNG() {
     console.error('PNG save error:', error);
     console.error('Error stack:', error.stack);
     Toast.show('Save failed: ' + error.message, 'error');
+  }
+}
+
+function saveLoopingGIF() {
+  let exportGraphics = null;
+
+  try {
+    const selectedStyle = typeof normalizeStyleValue === 'function'
+      ? normalizeStyleValue(styleSelect ? styleSelect.value : 'solid')
+      : (styleSelect ? styleSelect.value : 'solid');
+
+    if (!window.loopingGifUtils || !window.loopingGifUtils.isLoopingGifEligibleStyle(selectedStyle)) {
+      Toast.show('Looping GIF is only available for ruler, ticker, and waveform.', 'warning');
+      return;
+    }
+
+    if (typeof GIF === 'undefined') {
+      Toast.show('GIF export is not available right now.', 'error');
+      return;
+    }
+
+    if (saveLoopGifButton && saveLoopGifButton.disabled) {
+      Toast.show('GIF export already in progress.', 'info');
+      return;
+    }
+
+    const framePlan = window.loopingGifUtils.getLoopingGifFramePlan(selectedStyle, {
+      rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
+      rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+      tickerRepeats: tickerSlider ? tickerSlider.value : 34,
+      waveformSpeed: waveformSpeedSlider ? waveformSpeedSlider.value : 0.7
+    }, {
+      barWidth: EXPORT_REFERENCE_WIDTH
+    });
+
+    if (!framePlan) {
+      Toast.show('Could not build a looping GIF for this style.', 'error');
+      return;
+    }
+
+    exportGraphics = createExportGraphicsBuffer(LOOP_GIF_EXPORT_SCALE);
+    const colorScheme = colors[currentColorMode];
+    const bgColor = colorScheme ? colorScheme.bg : '#ffffff';
+    const gif = new GIF({
+      workers: 2,
+      quality: 10,
+      repeat: 0,
+      width: exportGraphics.width,
+      height: exportGraphics.height,
+      background: bgColor,
+      workerScript: LOOP_GIF_WORKER_PATH
+    });
+
+    if (saveLoopGifButton) {
+      saveLoopGifButton.disabled = true;
+    }
+    if (saveMenu) {
+      saveMenu.classList.add('hidden');
+    }
+    Toast.show('Rendering looping GIF...', 'info', 2500);
+
+    const finalizeExport = () => {
+      if (saveLoopGifButton) {
+        saveLoopGifButton.disabled = false;
+      }
+      if (exportGraphics) {
+        exportGraphics.remove();
+        exportGraphics = null;
+      }
+    };
+
+    gif.on('finished', (blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `RPI-logo-${selectedStyle}-loop.gif`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      finalizeExport();
+      Toast.show('Looping GIF download started', 'success');
+    });
+
+    gif.on('abort', () => {
+      finalizeExport();
+      Toast.show('GIF export was cancelled.', 'warning');
+    });
+
+    for (let frameIndex = 0; frameIndex < framePlan.frameCount; frameIndex++) {
+      const progress = frameIndex / framePlan.frameCount;
+      const patternOptions = selectedStyle === 'waveform'
+        ? { timeSeconds: framePlan.getTimeSeconds(progress) }
+        : { loopOffsetX: framePlan.getLoopOffsetX(progress) };
+
+      drawExportLogoFrame(exportGraphics, {
+        scale: LOOP_GIF_EXPORT_SCALE,
+        backgroundColor: bgColor,
+        patternOptions
+      });
+
+      gif.addFrame(exportGraphics.canvas, {
+        copy: true,
+        delay: framePlan.frameDelayMs
+      });
+    }
+
+    gif.render();
+  } catch (error) {
+    console.error('Loop GIF save error:', error);
+    if (saveLoopGifButton) {
+      saveLoopGifButton.disabled = false;
+    }
+    if (exportGraphics) {
+      exportGraphics.remove();
+    }
+    Toast.show('GIF export failed: ' + error.message, 'error');
   }
 }
 
@@ -891,6 +1087,15 @@ function saveSVG() {
           waveformType: waveformTypeSlider.value,
           waveformFrequency: waveformFrequencySlider.value,
           waveformSpeed: waveformSpeedSlider.value,
+          waveformEnvelope: waveformEnvelopeToggle ? waveformEnvelopeToggle.checked : false,
+          waveformEnvelopeType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
+          waveformEnvelopeWaves: waveformEnvelopeWavesSlider
+            ? (typeof normalizeWaveformEnvelopeWaves === 'function'
+              ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
+              : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
+            : 1,
+          waveformEnvelopeCenter: waveformEnvelopeCenterSlider ? waveformEnvelopeCenterSlider.value : 0,
+          waveformEnvelopeBipolar: waveformEnvelopeBipolarToggle ? waveformEnvelopeBipolarToggle.checked : false,
           timeSeconds: typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0,
           circlesMode: circlesModeSelect ? circlesModeSelect.value : 'packing',
           circlesFill: circlesFillSelect ? circlesFillSelect.value : 'stroke',
@@ -906,14 +1111,11 @@ function saveSVG() {
           numericValue: numericInput ? numericInput.value : '',
           numericMode: numericModeSelect ? numericModeSelect.value : 'dotmatrix',
           morseText: typeof morseInput !== 'undefined' && morseInput ? morseInput.value : 'RPI',
-          matrixText: matrixInput ? matrixInput.value : 'RPI',
-          matrixRows: matrixRowsSlider ? matrixRowsSlider.value : 3,
-          matrixGap: matrixGapSlider ? matrixGapSlider.value : 1,
           trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
           trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
           trussThickness: trussThicknessSlider ? trussThicknessSlider.value : 2,
-          staffText: staffInput ? staffInput.value : 'RPI',
-          staffThickness: staffThicknessSlider ? staffThicknessSlider.value : 1,
+          staffText: 'RPI',
+          staffThickness: 1,
           staffNotes: typeof currentStaffNotes !== 'undefined' ? currentStaffNotes : [],
           staffNoteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'circle',
           pulseText: pulseInput ? pulseInput.value : 'RPI',

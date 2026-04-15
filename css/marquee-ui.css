@@ -1,0 +1,496 @@
+@font-face {
+  font-family: 'RPIGeist';
+  src: url('../assets/fonts/RPIGeist-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RPIGeist';
+  src: url('../assets/fonts/RPIGeist-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RPIGeistMono';
+  src: url('../assets/fonts/RPIGeistMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --rpi-red: #d6001c;
+  --rcos-red: #d52129;
+  --rpi-white: #ffffff;
+  --rpi-black: #000000;
+  --surface-shadow: rgba(213, 33, 41, 0.2);
+  --content-width: 1400px;
+  --page-padding: clamp(1.5rem, 2.8vw, 3rem);
+  --marquee-tilt: 17deg;
+  --hero-scale: 1;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--rpi-black);
+  color: var(--rpi-white);
+  font-family: 'RPIGeist', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.page-wrapper,
+.main-wrapper,
+.section_marquee_hero {
+  min-height: 100vh;
+}
+
+.padding-global {
+  padding-inline: var(--page-padding);
+}
+
+.container-large {
+  width: min(100%, var(--content-width));
+  margin-inline: auto;
+}
+
+.section_marquee_hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 78%, rgba(214, 0, 28, 0.08), transparent 28%),
+    radial-gradient(circle at 80% 18%, rgba(255, 255, 255, 0.05), transparent 24%),
+    var(--rpi-black);
+}
+
+.marquee_scene {
+  position: absolute;
+  inset: -12vh -24vw;
+  pointer-events: auto;
+  z-index: 0;
+}
+
+.marquee_stage {
+  position: absolute;
+  inset: 0;
+}
+
+.startup_prompt {
+  position: absolute;
+  top: clamp(22px, 2.1vw, 30px);
+  left: 50%;
+  width: fit-content;
+  max-width: calc(100% - 72px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-18px) scale(0.985);
+  transition:
+    opacity 260ms ease,
+    transform 320ms ease,
+    visibility 0s linear 320ms;
+  z-index: 3;
+}
+
+.startup_prompt.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0) scale(1);
+  transition-delay: 0s;
+}
+
+.startup_prompt_inner {
+  position: relative;
+  min-height: clamp(20px, 1.7vw, 25px);
+  border-radius: 999px;
+  border: 2px solid rgba(214, 0, 28, 0.92);
+  background:
+    linear-gradient(180deg, rgba(42, 42, 42, 0.28), rgba(6, 6, 6, 0.46) 46%, rgba(10, 10, 10, 0.36));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 6px 14px rgba(0, 0, 0, 0.18),
+    0 0 8px rgba(214, 0, 28, 0.18);
+  overflow: visible;
+  backdrop-filter: blur(10px) saturate(110%);
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+}
+
+.startup_prompt_inner::before,
+.startup_prompt_inner::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.startup_prompt_inner::before {
+  inset: 0.08rem 8% 34%;
+  border-radius: 999px;
+  background:
+    radial-gradient(ellipse at 26% 18%, rgba(255, 255, 255, 0.08), transparent 22%),
+    radial-gradient(ellipse at 58% 10%, rgba(255, 255, 255, 0.18), transparent 18%),
+    radial-gradient(ellipse at 82% 52%, rgba(255, 255, 255, 0.1), transparent 14%);
+  filter: blur(12px);
+  opacity: 0.72;
+}
+
+.startup_prompt_inner::after {
+  left: -10%;
+  right: -10%;
+  bottom: -46%;
+  height: 78%;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(214, 0, 28, 0.34), rgba(214, 0, 28, 0.16) 34%, rgba(214, 0, 28, 0.05) 58%, transparent 82%);
+  filter: blur(18px);
+  opacity: 0.5;
+}
+
+.startup_prompt_text {
+  position: relative;
+  z-index: 1;
+  min-height: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 clamp(14px, 1.2vw, 20px);
+  color: var(--rpi-white);
+  font-family: 'RPIGeist', 'Geist', sans-serif;
+  font-size: clamp(0.9rem, 0.98vw, 1.02rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.05);
+}
+
+.marquee_row {
+  position: absolute;
+  left: -44vw;
+  width: 220vw;
+  height: var(--row-height, 3rem);
+  overflow: hidden;
+  pointer-events: auto;
+  transform: rotate(var(--marquee-tilt));
+  transform-origin: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.marquee_strip {
+  display: flex;
+  width: max-content;
+  min-width: max-content;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.marquee_track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.marquee_item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  width: calc(var(--asset-width, 26rem) + var(--row-gap, 3rem));
+  height: 100%;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.marquee_item.is-measure {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.marquee_sequence {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--row-gap, 3rem);
+  padding-inline-end: var(--row-gap, 3rem);
+}
+
+.marquee_segment {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.bar_asset_wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--asset-width, 26rem);
+  height: 100%;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: pointer;
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 180ms ease,
+    opacity 180ms ease;
+}
+
+.bar_asset {
+  display: block;
+  width: 100%;
+  height: calc(100% - 0.9rem);
+  margin-block: 0.45rem;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  user-select: none;
+  pointer-events: none;
+  transform: translateZ(0);
+  transition:
+    opacity 180ms ease,
+    filter 180ms ease;
+}
+
+.bar_asset_wrap.is-hovered {
+  transform: translateY(-0.1rem) scale(1.012);
+  filter:
+    drop-shadow(0 0 0.65rem rgba(214, 0, 28, 0.28))
+    drop-shadow(0 0 0.18rem rgba(255, 255, 255, 0.2));
+}
+
+.bar_asset_wrap.is-pressed {
+  transform: translateY(0.02rem) scale(0.988);
+  filter:
+    drop-shadow(0 0 1rem rgba(214, 0, 28, 0.68))
+    drop-shadow(0 0 0.32rem rgba(214, 0, 28, 0.95));
+}
+
+.bar_asset_wrap.is-pressed .bar_asset {
+  opacity: 0.28;
+}
+
+.hero_shell {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hero_layout {
+  position: relative;
+  min-height: 100vh;
+  padding-block: clamp(1.5rem, 2vw, 2.25rem) clamp(2rem, 3vw, 3rem);
+}
+
+.hero_cluster {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 960px;
+  height: 330px;
+  transform-origin: left bottom;
+  transform: scale(var(--hero-scale));
+}
+
+.hero_copy {
+  width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 28px;
+  padding-bottom: 0;
+}
+
+.hero_brand {
+  width: 88px;
+  min-width: 88px;
+  aspect-ratio: 500 / 302;
+  background-color: var(--rpi-red);
+  -webkit-mask: url('../assets/images/RPI Logo.svg') center / contain no-repeat;
+  mask: url('../assets/images/RPI Logo.svg') center / contain no-repeat;
+}
+
+.hero_title {
+  margin: 0;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  font-weight: 700;
+  line-height: 0.88;
+  letter-spacing: 0;
+}
+
+.hero_title-line {
+  display: block;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.hero_title-line.is-top {
+  font-size: 84px;
+}
+
+.hero_title-line.is-bottom {
+  font-size: 124px;
+}
+
+.hero_credit {
+  position: absolute;
+  left: 650px;
+  bottom: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  font-family: 'RPIGeistMono', 'SFMono-Regular', Consolas, monospace;
+  font-size: 16px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+[data-hero-credit-layout='compact'] .hero_credit {
+  left: auto;
+  right: 0;
+  bottom: 58px;
+  gap: 0.25rem;
+  align-items: flex-end;
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.credit_line {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+[data-hero-credit-layout='compact'] .credit_line {
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+[data-hero-credit-layout='compact'] .credit_line:first-child {
+  margin-bottom: 0.45rem;
+}
+
+.credit_logo {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  background-color: var(--rcos-red);
+  -webkit-mask: url('../assets/images/rcos.png') center / contain no-repeat;
+  mask: url('../assets/images/rcos.png') center / contain no-repeat;
+  filter: drop-shadow(0 0 8px var(--surface-shadow));
+}
+
+@media (max-width: 900px) {
+  body {
+    overflow-y: auto;
+  }
+
+  .startup_prompt {
+    top: 16px;
+    width: auto;
+    max-width: calc(100% - 24px);
+  }
+
+  .startup_prompt_inner {
+    min-height: clamp(18px, 4vw, 23px);
+    border-width: 2px;
+  }
+
+  .startup_prompt_text {
+    padding: 0 9px;
+    font-size: clamp(0.72rem, 2.1vw, 0.84rem);
+  }
+
+  .section_marquee_hero,
+  .page-wrapper,
+  .main-wrapper {
+    min-height: 100svh;
+  }
+
+  .marquee_scene {
+    inset: -16vh -52vw;
+  }
+
+  .hero_layout {
+    padding-block: 1.5rem 2.25rem;
+  }
+
+  .hero_cluster {
+    width: 960px;
+    height: 330px;
+  }
+}
+
+@media (max-width: 640px) {
+  .startup_prompt {
+    top: 12px;
+  }
+
+  .startup_prompt_text {
+    padding: 0 8px;
+    font-size: clamp(0.68rem, 3vw, 0.78rem);
+    white-space: normal;
+  }
+}
+
+@media (max-width: 549px) {
+  .hero_credit {
+    display: none;
+  }
+
+  .hero_cluster {
+    left: 50%;
+    bottom: 0;
+    width: var(--mobile-hero-width, 720px);
+    height: var(--mobile-hero-height, 270px);
+    transform-origin: center bottom;
+    transform: translateX(-50%) scale(var(--hero-scale));
+  }
+
+  .hero_copy {
+    width: max-content;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .hero_title {
+    align-items: flex-start;
+    gap: 10px;
+  }
+}

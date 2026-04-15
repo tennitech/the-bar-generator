@@ -9,23 +9,22 @@ const puppeteer = require('puppeteer');
     await page.evaluate(async () => {
         const waitFor = ms => new Promise(r => setTimeout(r, ms));
         
-        // enable audio
-        const audioTgl = document.getElementById('waveform-audio-toggle');
-        audioTgl.click();
+        // start audio preview
+        const audioBtn = document.getElementById('waveform-audio-btn');
+        audioBtn.click();
         
         await waitFor(500);
         
-        // pause via spacebar
-        console.log("Pressing SPACE to PAUSE");
-        document.dispatchEvent(new KeyboardEvent('keydown', {code: 'Space'}));
-        document.dispatchEvent(new KeyboardEvent('keyup',   {code: 'Space'}));
+        // pause motion via preview transport
+        console.log("Clicking motion button to PAUSE");
+        const motionBtn = document.getElementById('waveform-motion-btn');
+        motionBtn.click();
         
         await waitFor(2000); // Wait 2s
         
-        // play via spacebar
-        console.log("Pressing SPACE to PLAY");
-        document.dispatchEvent(new KeyboardEvent('keydown', {code: 'Space'}));
-        document.dispatchEvent(new KeyboardEvent('keyup',   {code: 'Space'}));
+        // resume motion via preview transport
+        console.log("Clicking motion button to PLAY");
+        motionBtn.click();
         
         // Monitor state for 3 seconds
         for(let i=0; i<30; i++) {

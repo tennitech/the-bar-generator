@@ -39,20 +39,17 @@ const LOGO_VERTICAL_OFFSET = -72; // Vertical offset for centering
 // Global variables
 let styleSelect;
 let colorModeSelect;
+let headerLogoPreview;
 let binaryInput;
 let binaryGroup;
-let binaryAudioToggle;
+let binaryAudioBtn;
+let binaryResetBtn;
 let morseInput;
 let morseGroup;
-let morsePlayBtn;
+let morseAudioBtn;
 let morseResetBtn;
-let morseInfoBadge;
-let staffPlayBtn;
+let staffAudioBtn;
 let staffResetBtn;
-let staffInfoBadge;
-let binaryAudioIndicator;
-let tickerAudioIndicator;
-let waveformAudioIndicator;
 let rulerGroup;
 let rulerRepeatsSlider;
 let rulerRepeatsDisplay;
@@ -65,7 +62,9 @@ let tickerRatioSlider;
 let tickerRatioDisplay;
 let tickerWidthRatioSlider;
 let tickerWidthRatioDisplay;
-let tickerAudioToggle;
+let tickerAudioBtn;
+let tickerResetBtn;
+let tickerMotionBtn;
 let waveformGroup;
 let waveformTypeSlider;
 let waveformTypeDisplay;
@@ -73,7 +72,7 @@ let waveformFrequencySlider;
 let waveformFrequencyDisplay;
 let waveformSpeedSlider;
 let waveformSpeedDisplay;
-let waveformAudioToggle;
+let waveformAudioBtn;
 let waveformEnvelopeToggle;
 let envelopeSettingsGroup;
 let waveformEnvelopeType;
@@ -82,8 +81,7 @@ let waveformEnvelopeWavesDisplay;
 let waveformEnvelopeCenterSlider;
 let waveformEnvelopeCenterDisplay;
 let waveformEnvelopeBipolarToggle;
-let waveformAnimateToggle;
-let animationInfoBadge;
+let waveformMotionBtn;
 let circlesGroup;
 let circlesDensitySlider;
 let circlesDensityDisplay;
@@ -109,12 +107,27 @@ let circlesLayoutSelect;
 let numericGroup;
 let numericInput;
 let numericModeSelect;
-let matrixGroup;
-let matrixInput;
-let matrixRowsSlider;
-let matrixRowsDisplay;
-let matrixGapSlider;
-let matrixGapDisplay;
+let circlesGradientGroup;
+let circlesGradientVariantSlider;
+let circlesGradientVariantDisplay;
+let gradientGroup;
+let gradientVariantSlider;
+let gradientVariantDisplay;
+let gridGroup;
+let gridVariantSlider;
+let gridVariantDisplay;
+let linesGroup;
+let linesVariantSlider;
+let linesVariantDisplay;
+let pointConnectGroup;
+let pointConnectVariantSlider;
+let pointConnectVariantDisplay;
+let triangleGridGroup;
+let triangleGridVariantSlider;
+let triangleGridVariantDisplay;
+let trianglesGroup;
+let trianglesVariantSlider;
+let trianglesVariantDisplay;
 let trussGroup;
 let trussFamilySelect;
 let trussSegmentsSlider;
@@ -125,12 +138,10 @@ let staffGroup;
 let staffInstrumentSelect;
 let staffNoteShapeSelect;
 let staffClearBtn;
-let staffAudioToggle;
 let staffReverbToggle;
 let staffTremoloToggle;
 let staffTempoSlider;
 let staffTempoDisplay;
-let morseAudioToggle;
 let currentStaffNotes = [];
 let currentNoteDuration = 1; // quarter note by default
 let pulseGroup;
@@ -182,10 +193,23 @@ function normalizeTrussFamilyValue(value) {
 let staticCircleData = null;
 let lastCircleParams = null;
 let appSidebar;
+let sidebarScroll;
 let mobileMenuToggle;
 let saveButton;
 let saveMenu;
+let saveLoopGifButton;
+let reportProblemBtn;
+let bugReportDialog;
+let bugReportForm;
+let bugReportContext;
+let bugReportCloseBtn;
+let bugReportCancelBtn;
+let bugReportSubjectInput;
+let bugReportDetailsInput;
+let bugReportStepsInput;
+let bugReportEmailInput;
 let appMain;
+let canvasViewport;
 let easterEggHint;
 let easterEggHintLabel;
 let easterEggOverlay;
@@ -244,15 +268,107 @@ let oscillatorGains = {
 };
 let pulseWorkletNode = null;
 let lastFocusedElement = null; // For accessibility focus management
+let bugReportLastFocusedElement = null;
 
 // Color scheme management
-let currentColorMode = 'black-on-white';
-const colors = {
-  'black-on-white': { bg: '#ffffff', fg: '#000000' },
-  'white-on-black': { bg: '#000000', fg: '#ffffff' },
-  'white-on-red': { bg: '#d6001c', fg: '#ffffff' },
-  'red-on-white': { bg: '#ffffff', fg: '#d6001c' }
+const DEFAULT_COLOR_MODE = 'black';
+const AVAILABLE_COLOR_MODES = ['black', 'white', 'red', 'blue', 'link-blue', 'gold', 'silver', 'gray'];
+const AVAILABLE_COLOR_MODE_SET = new Set(AVAILABLE_COLOR_MODES);
+const LEGACY_COLOR_MODE_ALIASES = {
+  'black-on-white': 'black',
+  'white-on-black': 'white',
+  'red-on-white': 'red',
+  'white-on-red': 'white',
+  'light': 'black',
+  'dark': 'white'
 };
+
+let currentColorMode = DEFAULT_COLOR_MODE;
+const colors = {
+  black: { bg: '#ffffff', fg: '#000000' },
+  white: { bg: '#000000', fg: '#ffffff' },
+  red: { bg: '#ffffff', fg: '#d6001c' },
+  blue: { bg: '#ffffff', fg: '#0081CE' },
+  'link-blue': { bg: '#ffffff', fg: '#006EB0' },
+  gold: { bg: '#fffaf0', fg: '#CDAC38' },
+  silver: { bg: '#11161d', fg: '#E1EDF5' },
+  gray: { bg: '#151b21', fg: '#B9CCD8' }
+};
+
+const themeClassByColorMode = {
+  black: 'theme-black',
+  white: 'theme-white',
+  red: 'theme-red',
+  blue: 'theme-blue',
+  'link-blue': 'theme-link-blue',
+  gold: 'theme-gold',
+  silver: 'theme-silver',
+  gray: 'theme-gray'
+};
+
+// Set this to a deployed Google Apps Script web app URL to send reports directly into a Google Sheet.
+const BUG_REPORT_APPS_SCRIPT_URL = '';
+const SURPRISE_TEXT_OPTIONS = [
+  'RPI',
+  'BUILD',
+  'TRY THIS',
+  'WHY NOT',
+  'TROY',
+  'SIGNAL',
+  'VECTOR',
+  'FLIGHT',
+  'LAB',
+  'DEBUG'
+];
+const SURPRISE_NUMERIC_OPTIONS = [
+  'PI',
+  'E',
+  'sqrt(2)',
+  '(1+sqrt(5))/2',
+  'sin(1)+cos(1)',
+  'pow(3,5)',
+  'exp(1)',
+  'log(64)',
+  'round(PI*1000)',
+  'sqrt(5)*PI'
+];
+const SURPRISE_GRAPH_STREAM_SETS = [
+  ['RPI', 'BUILD', 'TEST', 'REBUILD'],
+  ['LIFT', 'DRAG', 'THRUST', 'WING'],
+  ['SIGNAL', 'NOISE', 'SYNC', 'PHASE'],
+  ['DATA', 'MODEL', 'TRAIN', 'DEPLOY'],
+  ['TROY', 'STACK', 'SHIFT', 'SCALE']
+];
+const STAFF_SURPRISE_PATTERNS = [
+  [
+    { note: 'C4', duration: 1 },
+    { note: 'E4', duration: 1 },
+    { note: 'G4', duration: 1 },
+    { note: 'C5', duration: 1 }
+  ],
+  [
+    { note: 'A4', duration: 0.5 },
+    { note: 'G4', duration: 0.5 },
+    { note: 'E4', duration: 1 },
+    { note: 'D4', duration: 1 },
+    { note: 'C4', duration: 1 }
+  ],
+  [
+    { note: 'C4', duration: 0.5 },
+    { note: 'D4', duration: 0.5 },
+    { note: 'E4', duration: 0.5 },
+    { note: 'G4', duration: 0.5 },
+    { note: 'A4', duration: 1 },
+    { note: 'G4', duration: 1 }
+  ],
+  [
+    { note: 'E4', duration: 1 },
+    { note: 'G4', duration: 0.5 },
+    { note: 'A4', duration: 0.5 },
+    { note: 'G4', duration: 1 },
+    { note: 'D4', duration: 1 }
+  ]
+];
 
 const MORSE_DICT = {
   'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
@@ -320,19 +436,664 @@ let zoomLevel = DEFAULT_ZOOM_LEVEL;
 let panOffset = { x: 0, y: 0 };
 let isPanningMode = false;
 let isAnimated = false;
+let lastHeaderPreviewMarkup = '';
+let lastHeaderPreviewUpdateTime = 0;
 
 // Zoom/Pan/Playback UI references
-let playbackBtn, iconPause, iconPlay, playbackText, playbackDivider;
 let zoomInBtn, zoomOutBtn, zoomResetBtn, panBtn, zoomLevelDisplay;
 
 const AVAILABLE_STYLE_VALUES = new Set([
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
-  'numeric', 'morse', 'matrix', 'truss', 'music', 'graph'
+  'numeric', 'morse', 'circles-gradient', 'gradient', 'grid',
+  'lines', 'point-connect', 'triangle-grid', 'triangles',
+  'fibonacci-sequence', 'union', 'wave-quantum',
+  'runway', 'truss', 'music', 'graph'
 ]);
 
 function normalizeStyleValue(style) {
   if (style === 'staff') return 'music';
+  if (style === 'matrix') return 'solid';
   return AVAILABLE_STYLE_VALUES.has(style) ? style : 'solid';
+}
+
+const RESETTABLE_GROUP_STYLE_MAP = {
+  'ruler-group': 'ruler',
+  'binary-group': 'binary',
+  'morse-group': 'morse',
+  'ticker-group': 'ticker',
+  'waveform-group': 'waveform',
+  'circles-group': 'circles',
+  'numeric-group': 'numeric',
+  'circles-gradient-group': 'circles-gradient',
+  'gradient-group': 'gradient',
+  'grid-group': 'grid',
+  'truss-group': 'truss',
+  'staff-group': 'music',
+  'graph-group': 'graph',
+  'lines-group': 'lines',
+  'point-connect-group': 'point-connect',
+  'triangle-grid-group': 'triangle-grid',
+  'triangles-group': 'triangles'
+};
+const SURPRISEABLE_STYLE_SET = new Set(Object.values(RESETTABLE_GROUP_STYLE_MAP));
+
+function syncMotionToggleState() {
+  const motionLabel = isPlaying ? 'PAUSE' : 'PLAY';
+  if (tickerMotionBtn) {
+    tickerMotionBtn.textContent = motionLabel;
+    tickerMotionBtn.classList.toggle('is-active', isPlaying);
+  }
+  if (waveformMotionBtn) {
+    waveformMotionBtn.textContent = motionLabel;
+    waveformMotionBtn.classList.toggle('is-active', isPlaying);
+  }
+}
+
+function setPlaybackState(shouldPlay) {
+  if (shouldPlay !== isPlaying) {
+    togglePlayback();
+  } else {
+    syncMotionToggleState();
+  }
+}
+
+function updateSidebarScrollFadeState() {
+  if (!appSidebar || !sidebarScroll) return;
+  appSidebar.classList.toggle('has-scroll-top', sidebarScroll.scrollTop > 1);
+}
+
+function resetSequencePreviewState() {
+  sequenceContext.currentNote = 0;
+  if (audioContext) {
+    sequenceContext.nextNoteTime = audioContext.currentTime + 0.1;
+  }
+  stopAudio();
+}
+
+function pickRandom(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function randomChance(probability) {
+  return Math.random() < probability;
+}
+
+function getStepPrecision(step) {
+  const stepString = String(step);
+  return stepString.includes('.') ? stepString.split('.')[1].length : 0;
+}
+
+function randomStepValue(min, max, step = 1) {
+  const precision = getStepPrecision(step);
+  const steps = Math.round((max - min) / step);
+  const value = min + (Math.floor(Math.random() * (steps + 1)) * step);
+  return precision > 0 ? value.toFixed(precision) : String(Math.round(value));
+}
+
+function randomSample(array, count) {
+  const copy = Array.from(array);
+  const sample = [];
+  while (copy.length && sample.length < count) {
+    const index = Math.floor(Math.random() * copy.length);
+    sample.push(copy.splice(index, 1)[0]);
+  }
+  return sample;
+}
+
+function setStaffDurationSelection(duration) {
+  currentNoteDuration = duration;
+  document.querySelectorAll('#staff-duration-selector .duration-btn').forEach(btn => {
+    btn.classList.toggle('active', parseFloat(btn.getAttribute('data-duration')) === duration);
+  });
+}
+
+function getStyleDisplayName(style) {
+  const normalizedStyle = normalizeStyleValue(style);
+  const option = styleSelect ? styleSelect.querySelector(`option[value="${normalizedStyle}"]`) : null;
+  return option ? option.textContent.trim() : normalizedStyle.toUpperCase();
+}
+
+function generateRandomStaffPattern() {
+  const basePattern = pickRandom(STAFF_SURPRISE_PATTERNS);
+  return basePattern.map(note => ({ ...note }));
+}
+
+function getCurrentAudioPreviewType() {
+  switch (currentShader) {
+    case 2:
+      return 'ticker';
+    case 3:
+      return 'binary';
+    case 4:
+      return 'waveform';
+    case 7:
+      return 'morse';
+    case 10:
+      return 'staff';
+    default:
+      return null;
+  }
+}
+
+function getAudioButtonConfig() {
+  return [
+    { type: 'binary', button: binaryAudioBtn, reset: binaryResetBtn, currentShader: 3 },
+    { type: 'morse', button: morseAudioBtn, reset: morseResetBtn, currentShader: 7 },
+    { type: 'ticker', button: tickerAudioBtn, reset: tickerResetBtn, currentShader: 2 },
+    { type: 'waveform', button: waveformAudioBtn, reset: null, currentShader: 4 },
+    { type: 'staff', button: staffAudioBtn, reset: staffResetBtn, currentShader: 10 }
+  ];
+}
+
+function resetAudioSequencePosition(type) {
+  const currentType = type || getCurrentAudioPreviewType();
+  if (!currentType) return;
+
+  sequenceContext.currentNote = 0;
+  if (audioContext) {
+    sequenceContext.nextNoteTime = audioContext.currentTime + 0.1;
+  }
+
+  if (currentType === 'waveform') {
+    return;
+  }
+
+  if (currentType === 'staff' && (!currentStaffNotes || currentStaffNotes.length === 0)) {
+    showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
+    return;
+  }
+
+  if (sequenceContext.type === currentType && sequenceContext.active) {
+    stopAudio();
+  }
+}
+
+function togglePreviewAudio(type) {
+  const currentType = getCurrentAudioPreviewType();
+  if (!currentType || currentType !== type) return;
+
+  if (type === 'staff' && (!currentStaffNotes || currentStaffNotes.length === 0)) {
+    showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
+    return;
+  }
+
+  if (isAudioPlaying) {
+    stopAudio();
+    return;
+  }
+
+  if (type !== 'waveform') {
+    resetAudioSequencePosition(type);
+  }
+  startAudio();
+}
+
+function restartPreviewAudio(type) {
+  const currentType = getCurrentAudioPreviewType();
+  if (!currentType || currentType !== type || type === 'waveform') return;
+
+  if (type === 'staff' && (!currentStaffNotes || currentStaffNotes.length === 0)) {
+    showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
+    return;
+  }
+
+  const restartFromStart = () => {
+    sequenceContext.currentNote = 0;
+    if (audioContext) {
+      sequenceContext.nextNoteTime = audioContext.currentTime + 0.1;
+    }
+    startAudio();
+  };
+
+  if (isAudioPlaying) {
+    stopAudio();
+    window.setTimeout(() => {
+      if (getCurrentAudioPreviewType() === type) {
+        restartFromStart();
+      }
+    }, 120);
+    return;
+  }
+
+  restartFromStart();
+}
+
+function resetStyleParameters(style) {
+  stopAudio();
+
+  switch (style) {
+    case 'ruler':
+      if (rulerRepeatsSlider) rulerRepeatsSlider.value = 10;
+      if (rulerUnitsSlider) rulerUnitsSlider.value = 4;
+      updateRulerRepeatsDisplay();
+      updateRulerUnitsDisplay();
+      break;
+    case 'binary':
+      if (binaryInput) binaryInput.value = 'RPI';
+      handleBinaryInput();
+      break;
+    case 'morse':
+      if (morseInput) {
+        morseInput.value = 'RPI';
+        updateMorseData('RPI');
+      }
+      resetSequencePreviewState();
+      break;
+    case 'ticker':
+      if (tickerSlider) tickerSlider.value = 34;
+      if (tickerRatioSlider) tickerRatioSlider.value = 2;
+      if (tickerWidthRatioSlider) tickerWidthRatioSlider.value = 2;
+      updateTickerDisplay();
+      updateTickerRatioDisplay();
+      updateTickerWidthRatioDisplay();
+      setPlaybackState(true);
+      break;
+    case 'waveform':
+      if (waveformTypeSlider) waveformTypeSlider.value = 0;
+      if (waveformFrequencySlider) waveformFrequencySlider.value = 24;
+      if (waveformSpeedSlider) waveformSpeedSlider.value = 0.7;
+      if (waveformEnvelopeToggle) waveformEnvelopeToggle.checked = false;
+      if (waveformEnvelopeType) waveformEnvelopeType.value = 'sine';
+      if (waveformEnvelopeWavesSlider) waveformEnvelopeWavesSlider.value = 1;
+      if (waveformEnvelopeCenterSlider) waveformEnvelopeCenterSlider.value = 0;
+      if (waveformEnvelopeBipolarToggle) waveformEnvelopeBipolarToggle.checked = false;
+      if (envelopeSettingsGroup) envelopeSettingsGroup.style.display = 'none';
+      updateWaveformTypeDisplay();
+      updateWaveformFrequencyDisplay();
+      updateWaveformSpeedDisplay();
+      if (waveformEnvelopeWavesDisplay) waveformEnvelopeWavesDisplay.textContent = '1';
+      if (waveformEnvelopeCenterDisplay) waveformEnvelopeCenterDisplay.textContent = '0';
+      updateAudioParameters();
+      setPlaybackState(true);
+      break;
+    case 'circles':
+      if (circlesModeSelect) circlesModeSelect.value = 'packing';
+      if (circlesFillSelect) circlesFillSelect.value = 'stroke';
+      if (circlesDensitySlider) circlesDensitySlider.value = 50;
+      if (circlesSizeVariationSlider) circlesSizeVariationSlider.value = 0;
+      if (circlesOverlapSlider) circlesOverlapSlider.value = 0;
+      if (circlesRowsSlider) circlesRowsSlider.value = 2;
+      if (circlesGridDensitySlider) circlesGridDensitySlider.value = 100;
+      if (circlesSizeVariationYSlider) circlesSizeVariationYSlider.value = 0;
+      if (circlesSizeVariationXSlider) circlesSizeVariationXSlider.value = 0;
+      if (circlesGridOverlapSlider) circlesGridOverlapSlider.value = 0;
+      if (circlesLayoutSelect) circlesLayoutSelect.value = 'straight';
+      handleCirclesModeChange();
+      updateCirclesDensityDisplay();
+      updateCirclesSizeVariationDisplay();
+      updateCirclesOverlapDisplay();
+      updateCirclesRowsDisplay();
+      updateCirclesGridDensityDisplay();
+      updateCirclesSizeVariationYDisplay();
+      updateCirclesSizeVariationXDisplay();
+      updateCirclesGridOverlapDisplay();
+      break;
+    case 'numeric':
+      if (numericInput) numericInput.value = '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679';
+      if (numericModeSelect) numericModeSelect.value = 'dotmatrix';
+      updateNumericData(numericInput ? numericInput.value : '');
+      break;
+    case 'circles-gradient':
+      if (circlesGradientVariantSlider) circlesGradientVariantSlider.value = 1;
+      updateCirclesGradientVariantDisplay();
+      break;
+    case 'gradient':
+      if (gradientVariantSlider) gradientVariantSlider.value = 1;
+      updateGradientVariantDisplay();
+      break;
+    case 'grid':
+      if (gridVariantSlider) gridVariantSlider.value = 1;
+      updateGridVariantDisplay();
+      break;
+    case 'truss':
+      if (trussFamilySelect) trussFamilySelect.value = 'flat';
+      if (trussSegmentsSlider) trussSegmentsSlider.value = 15;
+      if (trussThicknessSlider) trussThicknessSlider.value = 2;
+      if (trussSegmentsDisplay) trussSegmentsDisplay.textContent = '15';
+      if (trussThicknessDisplay) trussThicknessDisplay.textContent = '2';
+      break;
+    case 'music':
+      if (staffInstrumentSelect) staffInstrumentSelect.value = 'piano';
+      if (staffNoteShapeSelect) staffNoteShapeSelect.value = 'circle';
+      if (staffReverbToggle) staffReverbToggle.checked = false;
+      if (staffTremoloToggle) staffTremoloToggle.checked = false;
+      if (staffTempoSlider) staffTempoSlider.value = 120;
+      if (staffTempoDisplay) staffTempoDisplay.textContent = '120';
+      currentNoteDuration = 1;
+      currentStaffNotes = [];
+      document.querySelectorAll('#staff-duration-selector .duration-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-duration') === '1');
+      });
+      break;
+    case 'graph':
+      if (graphInput) graphInput.value = 'RPI';
+      if (graphInput2) graphInput2.value = '';
+      if (graphInput3) graphInput3.value = '';
+      if (graphInput4) graphInput4.value = '';
+      if (graphInput5) graphInput5.value = '';
+      if (graphMultiToggle) graphMultiToggle.checked = false;
+      if (graphMultiInputs) graphMultiInputs.style.display = 'none';
+      if (graphScaleSlider) graphScaleSlider.value = GRAPH_SCALE_DEFAULT;
+      if (graphScaleDisplay) graphScaleDisplay.textContent = String(GRAPH_SCALE_DEFAULT);
+      break;
+    case 'lines':
+      if (linesVariantSlider) linesVariantSlider.value = 2;
+      updateLinesVariantDisplay();
+      break;
+    case 'point-connect':
+      if (pointConnectVariantSlider) pointConnectVariantSlider.value = 1;
+      updatePointConnectVariantDisplay();
+      break;
+    case 'triangle-grid':
+      if (triangleGridVariantSlider) triangleGridVariantSlider.value = 2;
+      updateTriangleGridVariantDisplay();
+      break;
+    case 'triangles':
+      if (trianglesVariantSlider) trianglesVariantSlider.value = 1;
+      updateTrianglesVariantDisplay();
+      break;
+  }
+
+  syncMotionToggleState();
+  updateStaffEffects();
+  updateUrlParameters();
+  updateAudioControlsUI();
+  requestUpdate();
+}
+
+function setupControlGroupResetButtons() {
+  Object.entries(RESETTABLE_GROUP_STYLE_MAP).forEach(([groupId, style]) => {
+    const group = document.getElementById(groupId);
+    const header = group?.querySelector('.control-header');
+    if (!header || header.querySelector('.control-reset-btn')) return;
+
+    const label = document.createElement('span');
+    label.className = 'control-header-label';
+    label.textContent = header.textContent.trim();
+    header.textContent = '';
+    header.appendChild(label);
+
+    const actions = document.createElement('div');
+    actions.className = 'control-header-actions';
+
+    if (SURPRISEABLE_STYLE_SET.has(style)) {
+      const surpriseBtn = document.createElement('button');
+      surpriseBtn.type = 'button';
+      surpriseBtn.className = 'control-surprise-btn';
+      surpriseBtn.textContent = 'Surprise';
+      surpriseBtn.setAttribute('aria-label', `Randomize ${style} parameters`);
+      surpriseBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        randomizeStyleParameters(style);
+      });
+      actions.appendChild(surpriseBtn);
+    }
+
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.className = 'control-reset-btn';
+    resetBtn.textContent = 'Reset';
+    resetBtn.setAttribute('aria-label', `Reset ${style} parameters`);
+    resetBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      resetStyleParameters(style);
+    });
+    actions.appendChild(resetBtn);
+    header.appendChild(actions);
+  });
+}
+
+function randomizeStyleParameters(style) {
+  stopAudio();
+
+  switch (style) {
+    case 'ruler':
+      if (rulerRepeatsSlider) rulerRepeatsSlider.value = randomStepValue(4, 20, 1);
+      if (rulerUnitsSlider) rulerUnitsSlider.value = pickRandom(['2', '4', '6', '8', '10']);
+      updateRulerRepeatsDisplay();
+      updateRulerUnitsDisplay();
+      break;
+    case 'binary':
+      if (binaryInput) {
+        binaryInput.value = pickRandom(SURPRISE_TEXT_OPTIONS);
+        handleBinaryInput();
+      }
+      break;
+    case 'morse':
+      if (morseInput) {
+        morseInput.value = pickRandom(SURPRISE_TEXT_OPTIONS);
+        updateMorseData(morseInput.value);
+      }
+      resetSequencePreviewState();
+      break;
+    case 'ticker':
+      if (tickerSlider) tickerSlider.value = randomStepValue(8, 40, 1);
+      if (tickerRatioSlider) tickerRatioSlider.value = randomStepValue(1, 5, 1);
+      if (tickerWidthRatioSlider) tickerWidthRatioSlider.value = randomStepValue(1, 5, 1);
+      updateTickerDisplay();
+      updateTickerRatioDisplay();
+      updateTickerWidthRatioDisplay();
+      break;
+    case 'waveform':
+      if (waveformTypeSlider) waveformTypeSlider.value = pickRandom(['0', '1', '2', '3']);
+      if (waveformFrequencySlider) waveformFrequencySlider.value = randomStepValue(12, 88, 1);
+      if (waveformSpeedSlider) waveformSpeedSlider.value = randomStepValue(0.3, 3.6, 0.1);
+      if (waveformEnvelopeToggle) waveformEnvelopeToggle.checked = randomChance(0.65);
+      if (waveformEnvelopeType) waveformEnvelopeType.value = pickRandom(['sine', 'cosine', 'linear', 'inverse']);
+      if (waveformEnvelopeWavesSlider) waveformEnvelopeWavesSlider.value = randomStepValue(1, 10, 1);
+      if (waveformEnvelopeCenterSlider) waveformEnvelopeCenterSlider.value = randomStepValue(-0.5, 0.5, 0.1);
+      if (waveformEnvelopeBipolarToggle) waveformEnvelopeBipolarToggle.checked = randomChance(0.35);
+      if (envelopeSettingsGroup) {
+        envelopeSettingsGroup.style.display = waveformEnvelopeToggle && waveformEnvelopeToggle.checked ? 'block' : 'none';
+      }
+      updateWaveformTypeDisplay();
+      updateWaveformFrequencyDisplay();
+      updateWaveformSpeedDisplay();
+      if (waveformEnvelopeWavesDisplay && waveformEnvelopeWavesSlider) {
+        waveformEnvelopeWavesDisplay.textContent = String(Math.round(parseFloat(waveformEnvelopeWavesSlider.value)));
+      }
+      if (waveformEnvelopeCenterDisplay && waveformEnvelopeCenterSlider) {
+        waveformEnvelopeCenterDisplay.textContent = String(parseFloat(waveformEnvelopeCenterSlider.value));
+      }
+      updateAudioParameters();
+      break;
+    case 'circles':
+      if (circlesModeSelect) circlesModeSelect.value = pickRandom(['packing', 'grid']);
+      if (circlesFillSelect) circlesFillSelect.value = pickRandom(['stroke', 'fill']);
+      handleCirclesModeChange();
+      if (circlesModeSelect && circlesModeSelect.value === 'grid') {
+        if (circlesRowsSlider) circlesRowsSlider.value = randomStepValue(1, 6, 1);
+        if (circlesGridDensitySlider) circlesGridDensitySlider.value = randomStepValue(30, 100, 1);
+        if (circlesSizeVariationYSlider) circlesSizeVariationYSlider.value = randomStepValue(-80, 80, 1);
+        if (circlesSizeVariationXSlider) circlesSizeVariationXSlider.value = randomStepValue(-80, 80, 1);
+        if (circlesGridOverlapSlider) circlesGridOverlapSlider.value = randomStepValue(0, 220, 1);
+        if (circlesLayoutSelect) circlesLayoutSelect.value = pickRandom(['straight', 'stagger']);
+        updateCirclesRowsDisplay();
+        updateCirclesGridDensityDisplay();
+        updateCirclesSizeVariationYDisplay();
+        updateCirclesSizeVariationXDisplay();
+        updateCirclesGridOverlapDisplay();
+      } else {
+        if (circlesDensitySlider) circlesDensitySlider.value = randomStepValue(20, 95, 1);
+        if (circlesSizeVariationSlider) circlesSizeVariationSlider.value = randomStepValue(0, 85, 1);
+        if (circlesOverlapSlider) circlesOverlapSlider.value = randomStepValue(0, 70, 1);
+        updateCirclesDensityDisplay();
+        updateCirclesSizeVariationDisplay();
+        updateCirclesOverlapDisplay();
+      }
+      break;
+    case 'numeric':
+      if (numericInput) numericInput.value = pickRandom(SURPRISE_NUMERIC_OPTIONS);
+      if (numericModeSelect) numericModeSelect.value = pickRandom(['dotmatrix', 'height']);
+      updateNumericData(numericInput ? numericInput.value : '');
+      break;
+    case 'circles-gradient':
+      if (circlesGradientVariantSlider) circlesGradientVariantSlider.value = randomStepValue(1, 3, 1);
+      updateCirclesGradientVariantDisplay();
+      break;
+    case 'gradient':
+      if (gradientVariantSlider) gradientVariantSlider.value = randomStepValue(1, 2, 1);
+      updateGradientVariantDisplay();
+      break;
+    case 'grid':
+      if (gridVariantSlider) gridVariantSlider.value = randomStepValue(1, 3, 1);
+      updateGridVariantDisplay();
+      break;
+    case 'truss':
+      if (trussFamilySelect) trussFamilySelect.value = pickRandom(TRUSS_FAMILY_OPTIONS);
+      if (trussSegmentsSlider) trussSegmentsSlider.value = randomStepValue(8, 32, 1);
+      if (trussThicknessSlider) trussThicknessSlider.value = randomStepValue(1, 4.5, 0.5);
+      if (trussSegmentsDisplay && trussSegmentsSlider) trussSegmentsDisplay.textContent = trussSegmentsSlider.value;
+      if (trussThicknessDisplay && trussThicknessSlider) trussThicknessDisplay.textContent = trussThicknessSlider.value;
+      break;
+    case 'music':
+      if (staffInstrumentSelect) staffInstrumentSelect.value = pickRandom(['piano', 'synth', 'marimba']);
+      if (staffNoteShapeSelect) staffNoteShapeSelect.value = pickRandom(['circle', 'square', 'diamond', 'triangle']);
+      if (staffReverbToggle) staffReverbToggle.checked = randomChance(0.45);
+      if (staffTremoloToggle) staffTremoloToggle.checked = randomChance(0.35);
+      if (staffTempoSlider) staffTempoSlider.value = randomStepValue(76, 176, 1);
+      if (staffTempoDisplay && staffTempoSlider) staffTempoDisplay.textContent = staffTempoSlider.value;
+      currentStaffNotes = generateRandomStaffPattern();
+      setStaffDurationSelection(pickRandom([0.5, 1, 2]));
+      updateStaffEffects();
+      break;
+    case 'graph': {
+      const streamSet = pickRandom(SURPRISE_GRAPH_STREAM_SETS);
+      const multiStreamEnabled = randomChance(0.55);
+      const streamCount = multiStreamEnabled ? randomStepValue(2, Math.min(5, streamSet.length), 1) : '1';
+      if (graphInput) graphInput.value = streamSet[0];
+      if (graphMultiToggle) graphMultiToggle.checked = multiStreamEnabled;
+      if (graphInput2) graphInput2.value = multiStreamEnabled && parseInt(streamCount, 10) > 1 ? streamSet[1] || '' : '';
+      if (graphInput3) graphInput3.value = multiStreamEnabled && parseInt(streamCount, 10) > 2 ? streamSet[2] || '' : '';
+      if (graphInput4) graphInput4.value = multiStreamEnabled && parseInt(streamCount, 10) > 3 ? streamSet[3] || '' : '';
+      if (graphInput5) graphInput5.value = multiStreamEnabled && parseInt(streamCount, 10) > 4 ? streamSet[4] || '' : '';
+      if (graphMultiInputs) graphMultiInputs.style.display = multiStreamEnabled ? 'block' : 'none';
+      if (graphScaleSlider) graphScaleSlider.value = randomStepValue(6, 14, 1);
+      if (graphScaleDisplay && graphScaleSlider) graphScaleDisplay.textContent = graphScaleSlider.value;
+      break;
+    }
+    case 'lines':
+      if (linesVariantSlider) linesVariantSlider.value = randomStepValue(1, 2, 1);
+      updateLinesVariantDisplay();
+      break;
+    case 'point-connect':
+      if (pointConnectVariantSlider) pointConnectVariantSlider.value = randomStepValue(1, 2, 1);
+      updatePointConnectVariantDisplay();
+      break;
+    case 'triangle-grid':
+      if (triangleGridVariantSlider) triangleGridVariantSlider.value = randomStepValue(1, 3, 1);
+      updateTriangleGridVariantDisplay();
+      break;
+    case 'triangles':
+      if (trianglesVariantSlider) trianglesVariantSlider.value = randomStepValue(1, 2, 1);
+      updateTrianglesVariantDisplay();
+      break;
+  }
+
+  syncMotionToggleState();
+  updateStaffEffects();
+  updateUrlParameters();
+  updateAudioControlsUI();
+  requestUpdate();
+}
+
+function getBugReportContextLabel() {
+  const styleLabel = getStyleDisplayName(styleSelect ? styleSelect.value : 'solid');
+  const colorLabel = String(colorModeSelect ? colorModeSelect.value : DEFAULT_COLOR_MODE).replace(/-/g, ' ').toUpperCase();
+  return `${styleLabel}  •  ${colorLabel}  •  ${window.innerWidth}×${window.innerHeight}`;
+}
+
+function buildBugReportPayload() {
+  updateUrlParameters();
+  return {
+    title: bugReportSubjectInput ? bugReportSubjectInput.value.trim() : '',
+    details: bugReportDetailsInput ? bugReportDetailsInput.value.trim() : '',
+    steps: bugReportStepsInput ? bugReportStepsInput.value.trim() : '',
+    email: bugReportEmailInput ? bugReportEmailInput.value.trim() : '',
+    style: normalizeStyleValue(styleSelect ? styleSelect.value : 'solid'),
+    styleLabel: getStyleDisplayName(styleSelect ? styleSelect.value : 'solid'),
+    colorMode: normalizeColorModeValue(colorModeSelect ? colorModeSelect.value : DEFAULT_COLOR_MODE),
+    stateUrl: window.location.href,
+    viewport: `${window.innerWidth}x${window.innerHeight}`,
+    userAgent: navigator.userAgent,
+    timestamp: new Date().toISOString()
+  };
+}
+
+function populateBugReportContext() {
+  if (bugReportContext) {
+    bugReportContext.textContent = getBugReportContextLabel();
+  }
+  if (bugReportSubjectInput && !bugReportSubjectInput.value.trim()) {
+    bugReportSubjectInput.value = `${getStyleDisplayName(styleSelect ? styleSelect.value : 'solid')} issue`;
+  }
+}
+
+function openBugReportDialog() {
+  if (!bugReportDialog) return;
+  bugReportLastFocusedElement = document.activeElement;
+  populateBugReportContext();
+  if (typeof bugReportDialog.showModal === 'function') {
+    bugReportDialog.showModal();
+  } else {
+    bugReportDialog.setAttribute('open', '');
+  }
+  window.requestAnimationFrame(() => {
+    if (bugReportSubjectInput) bugReportSubjectInput.focus();
+  });
+}
+
+function closeBugReportDialog(shouldReset = false) {
+  if (!bugReportDialog) return;
+  if (shouldReset && bugReportForm) {
+    bugReportForm.reset();
+  }
+  if (bugReportDialog.open && typeof bugReportDialog.close === 'function') {
+    bugReportDialog.close();
+  } else {
+    bugReportDialog.removeAttribute('open');
+  }
+  if (bugReportContext) bugReportContext.textContent = '';
+  if (bugReportLastFocusedElement && document.body.contains(bugReportLastFocusedElement)) {
+    bugReportLastFocusedElement.focus();
+  }
+}
+
+async function submitBugReport(event) {
+  event.preventDefault();
+  const payload = buildBugReportPayload();
+
+  if (!payload.title || !payload.details) {
+    showAudioToast('Please include a short title and a description of the issue.', 'error');
+    return;
+  }
+
+  try {
+    if (BUG_REPORT_APPS_SCRIPT_URL) {
+      await fetch(BUG_REPORT_APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify(payload)
+      });
+      showAudioToast('Report sent. Thank you.', 'success');
+    } else {
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      showAudioToast('Report details copied. Add your Google Apps Script URL in js/main.js to send reports to Sheets.', 'info');
+    }
+    closeBugReportDialog(true);
+  } catch (error) {
+    console.error('Failed to submit bug report:', error);
+    showAudioToast('Could not send the report. Please try again.', 'error');
+  }
+}
+
+function normalizeColorModeValue(colorMode) {
+  const normalized = String(colorMode || DEFAULT_COLOR_MODE).trim().toLowerCase();
+  if (AVAILABLE_COLOR_MODE_SET.has(normalized)) return normalized;
+  return LEGACY_COLOR_MODE_ALIASES[normalized] || DEFAULT_COLOR_MODE;
 }
 
 function zoomLevelToDisplayPercent(level) {
@@ -642,14 +1403,12 @@ async function setup() {
   colorModeSelect = document.getElementById('color-mode-select');
   binaryInput = document.getElementById('binary-input');
   binaryGroup = document.getElementById('binary-group');
-  binaryAudioToggle = document.getElementById('binary-audio-toggle');
-  binaryAudioIndicator = document.getElementById('binary-audio-indicator');
+  binaryAudioBtn = document.getElementById('binary-audio-btn');
+  binaryResetBtn = document.getElementById('binary-reset-btn');
   morseInput = document.getElementById('morse-input');
   morseGroup = document.getElementById('morse-group');
-  morsePlayBtn = document.getElementById('morse-play-btn');
+  morseAudioBtn = document.getElementById('morse-audio-btn');
   morseResetBtn = document.getElementById('morse-reset-btn');
-  morseInfoBadge = document.getElementById('morse-info-badge');
-  morseAudioToggle = document.getElementById('morse-audio-toggle');
   rulerGroup = document.getElementById('ruler-group');
   rulerRepeatsSlider = document.getElementById('ruler-repeats-slider');
   rulerRepeatsDisplay = document.getElementById('ruler-repeats-display');
@@ -662,8 +1421,9 @@ async function setup() {
   tickerRatioDisplay = document.getElementById('ticker-ratio-display');
   tickerWidthRatioSlider = document.getElementById('ticker-width-ratio-slider');
   tickerWidthRatioDisplay = document.getElementById('ticker-width-ratio-display');
-  tickerAudioToggle = document.getElementById('ticker-audio-toggle');
-  tickerAudioIndicator = document.getElementById('ticker-audio-indicator');
+  tickerAudioBtn = document.getElementById('ticker-audio-btn');
+  tickerResetBtn = document.getElementById('ticker-reset-btn');
+  tickerMotionBtn = document.getElementById('ticker-motion-btn');
   waveformGroup = document.getElementById('waveform-group');
   waveformTypeSlider = document.getElementById('waveform-type-slider');
   waveformTypeDisplay = document.getElementById('waveform-type-display');
@@ -671,8 +1431,7 @@ async function setup() {
   waveformFrequencyDisplay = document.getElementById('waveform-frequency-display');
   waveformSpeedSlider = document.getElementById('waveform-speed-slider');
   waveformSpeedDisplay = document.getElementById('waveform-speed-display');
-  waveformAudioToggle = document.getElementById('waveform-audio-toggle');
-  waveformAudioIndicator = document.getElementById('waveform-audio-indicator');
+  waveformAudioBtn = document.getElementById('waveform-audio-btn');
   waveformEnvelopeToggle = document.getElementById('waveform-envelope-toggle');
   envelopeSettingsGroup = document.getElementById('envelope-settings-group');
   waveformEnvelopeType = document.getElementById('waveform-envelope-type');
@@ -681,30 +1440,16 @@ async function setup() {
   waveformEnvelopeCenterSlider = document.getElementById('waveform-envelope-center-slider');
   waveformEnvelopeCenterDisplay = document.getElementById('waveform-envelope-center-display');
   waveformEnvelopeBipolarToggle = document.getElementById('waveform-envelope-bipolar-toggle');
+  waveformMotionBtn = document.getElementById('waveform-motion-btn');
   circlesGroup = document.getElementById('circles-group');
   circlesDensitySlider = document.getElementById('circles-density-slider');
   circlesDensityDisplay = document.getElementById('circles-density-display');
-
-  // Get new control references for Phase 2c
-  playbackBtn = document.getElementById('playback-btn');
-  iconPause = document.getElementById('icon-pause');
-  iconPlay = document.getElementById('icon-play');
-  playbackText = document.getElementById('playback-text');
-  playbackDivider = document.getElementById('playback-divider');
 
   zoomInBtn = document.getElementById('zoom-in-btn');
   zoomOutBtn = document.getElementById('zoom-out-btn');
   zoomResetBtn = document.getElementById('zoom-reset-btn');
   panBtn = document.getElementById('pan-btn');
   zoomLevelDisplay = document.getElementById('zoom-level');
-
-  // Setup Playback Listeners
-  if (playbackBtn) {
-    playbackBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      togglePlayback();
-    });
-  }
 
   // Setup Zoom Listeners and Input
   let zoomInterval = null;
@@ -780,6 +1525,7 @@ async function setup() {
   if (panBtn) {
     panBtn.addEventListener('click', togglePanMode);
   }
+  document.addEventListener('pointerdown', handlePanModeOutsidePointerDown, true);
   circlesSizeVariationSlider = document.getElementById('circles-size-variation-slider');
   circlesSizeVariationDisplay = document.getElementById('circles-size-variation-display');
   circlesOverlapSlider = document.getElementById('circles-overlap-slider');
@@ -802,12 +1548,27 @@ async function setup() {
   numericGroup = document.getElementById('numeric-group');
   numericInput = document.getElementById('numeric-input');
   numericModeSelect = document.getElementById('numeric-mode-select');
-  matrixGroup = document.getElementById('matrix-group');
-  matrixInput = document.getElementById('matrix-input');
-  matrixRowsSlider = document.getElementById('matrix-rows-slider');
-  matrixRowsDisplay = document.getElementById('matrix-rows-display');
-  matrixGapSlider = document.getElementById('matrix-gap-slider');
-  matrixGapDisplay = document.getElementById('matrix-gap-display');
+  circlesGradientGroup = document.getElementById('circles-gradient-group');
+  circlesGradientVariantSlider = document.getElementById('circles-gradient-variant-slider');
+  circlesGradientVariantDisplay = document.getElementById('circles-gradient-variant-display');
+  gradientGroup = document.getElementById('gradient-group');
+  gradientVariantSlider = document.getElementById('gradient-variant-slider');
+  gradientVariantDisplay = document.getElementById('gradient-variant-display');
+  gridGroup = document.getElementById('grid-group');
+  gridVariantSlider = document.getElementById('grid-variant-slider');
+  gridVariantDisplay = document.getElementById('grid-variant-display');
+  linesGroup = document.getElementById('lines-group');
+  linesVariantSlider = document.getElementById('lines-variant-slider');
+  linesVariantDisplay = document.getElementById('lines-variant-display');
+  pointConnectGroup = document.getElementById('point-connect-group');
+  pointConnectVariantSlider = document.getElementById('point-connect-variant-slider');
+  pointConnectVariantDisplay = document.getElementById('point-connect-variant-display');
+  triangleGridGroup = document.getElementById('triangle-grid-group');
+  triangleGridVariantSlider = document.getElementById('triangle-grid-variant-slider');
+  triangleGridVariantDisplay = document.getElementById('triangle-grid-variant-display');
+  trianglesGroup = document.getElementById('triangles-group');
+  trianglesVariantSlider = document.getElementById('triangles-variant-slider');
+  trianglesVariantDisplay = document.getElementById('triangles-variant-display');
   trussGroup = document.getElementById('truss-group');
   trussFamilySelect = document.getElementById('truss-family-select');
   trussSegmentsSlider = document.getElementById('truss-segments-slider');
@@ -815,13 +1576,11 @@ async function setup() {
   trussThicknessSlider = document.getElementById('truss-thickness-slider');
   trussThicknessDisplay = document.getElementById('truss-thickness-display');
   staffGroup = document.getElementById('staff-group');
-  staffPlayBtn = document.getElementById('staff-play-btn');
+  staffAudioBtn = document.getElementById('staff-audio-btn');
   staffResetBtn = document.getElementById('staff-reset-btn');
-  staffInfoBadge = document.getElementById('staff-info-badge');
   staffInstrumentSelect = document.getElementById('staff-instrument-select');
   staffNoteShapeSelect = document.getElementById('staff-note-shape-select');
   staffClearBtn = document.getElementById('staff-clear-btn');
-  staffAudioToggle = document.getElementById('staff-audio-toggle');
   staffReverbToggle = document.getElementById('staff-reverb-toggle');
   staffTremoloToggle = document.getElementById('staff-tremolo-toggle');
   staffTempoSlider = document.getElementById('staff-tempo-slider');
@@ -841,8 +1600,21 @@ async function setup() {
   graphScaleSlider = document.getElementById('graph-scale-slider');
   graphScaleDisplay = document.getElementById('graph-scale-display');
   appMain = document.querySelector('.app-main');
+  canvasViewport = document.querySelector('.canvas-viewport');
   appSidebar = document.getElementById('app-sidebar');
+  sidebarScroll = document.getElementById('sidebar-scroll');
+  headerLogoPreview = document.getElementById('header-logo-preview');
   mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  reportProblemBtn = document.getElementById('report-problem-btn');
+  bugReportDialog = document.getElementById('bug-report-dialog');
+  bugReportForm = document.getElementById('bug-report-form');
+  bugReportContext = document.getElementById('bug-report-context');
+  bugReportCloseBtn = document.getElementById('bug-report-close');
+  bugReportCancelBtn = document.getElementById('bug-report-cancel');
+  bugReportSubjectInput = document.getElementById('bug-report-subject');
+  bugReportDetailsInput = document.getElementById('bug-report-details');
+  bugReportStepsInput = document.getElementById('bug-report-steps');
+  bugReportEmailInput = document.getElementById('bug-report-email');
   easterEggHint = document.getElementById('easter-egg-hint');
   easterEggHintLabel = document.getElementById('easter-egg-hint-label');
   easterEggOverlay = document.getElementById('easter-egg-overlay');
@@ -856,8 +1628,12 @@ async function setup() {
   saveMenu = document.getElementById('save-menu');
   const savePngButton = document.getElementById('save-png');
   const saveSvgButton = document.getElementById('save-svg');
-  waveformAnimateToggle = document.getElementById('waveform-animate-toggle');
-  animationInfoBadge = document.getElementById('animation-info-badge');
+  saveLoopGifButton = document.getElementById('save-loop-gif');
+
+  updateSidebarScrollFadeState();
+  if (sidebarScroll) {
+    sidebarScroll.addEventListener('scroll', updateSidebarScrollFadeState, { passive: true });
+  }
 
   // Setup ruler sliders with display updates
   rulerRepeatsSlider.addEventListener('input', function () {
@@ -931,14 +1707,22 @@ async function setup() {
   }
   if (waveformEnvelopeWavesSlider) {
     waveformEnvelopeWavesSlider.addEventListener('input', function () {
-      if (waveformEnvelopeWavesDisplay) waveformEnvelopeWavesDisplay.textContent = this.value;
+      const normalizedValue = typeof normalizeWaveformEnvelopeWaves === 'function'
+        ? normalizeWaveformEnvelopeWaves(this.value)
+        : Math.max(1, Math.min(10, Math.round(parseFloat(this.value)) || 1));
+      this.value = normalizedValue;
+      if (waveformEnvelopeWavesDisplay) waveformEnvelopeWavesDisplay.textContent = normalizedValue;
       updateUrlParameters();
       requestUpdate();
     });
   }
   if (waveformEnvelopeCenterSlider) {
     waveformEnvelopeCenterSlider.addEventListener('input', function () {
-      if (waveformEnvelopeCenterDisplay) waveformEnvelopeCenterDisplay.textContent = this.value;
+      const normalizedValue = typeof normalizeWaveformEnvelopeCenter === 'function'
+        ? normalizeWaveformEnvelopeCenter(this.value)
+        : Math.max(-0.5, Math.min(0.5, parseFloat(this.value) || 0));
+      this.value = normalizedValue;
+      if (waveformEnvelopeCenterDisplay) waveformEnvelopeCenterDisplay.textContent = normalizedValue;
       updateUrlParameters();
       requestUpdate();
     });
@@ -950,23 +1734,42 @@ async function setup() {
     });
   }
 
-  if (waveformAudioToggle) {
-    waveformAudioToggle.addEventListener('change', function () {
-      if (this.checked && currentShader === 4 && isPlaying) {
-        startAudio();
-      } else {
-        stopAudio();
-      }
-      updateUrlParameters();
+  if (waveformAudioBtn) {
+    waveformAudioBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      togglePreviewAudio('waveform');
     });
   }
 
-  if (waveformAnimateToggle) {
-    waveformAnimateToggle.addEventListener('change', function () {
+  if (waveformMotionBtn) {
+    waveformMotionBtn.addEventListener('click', function (e) {
+      e.preventDefault();
       if (currentShader === 4) {
         togglePlayback();
       }
-      updateUrlParameters();
+    });
+  }
+
+  if (tickerMotionBtn) {
+    tickerMotionBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (currentShader === 2) {
+        togglePlayback();
+      }
+    });
+  }
+
+  if (tickerAudioBtn) {
+    tickerAudioBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      togglePreviewAudio('ticker');
+    });
+  }
+
+  if (tickerResetBtn) {
+    tickerResetBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      restartPreviewAudio('ticker');
     });
   }
 
@@ -1060,6 +1863,54 @@ async function setup() {
     });
   }
 
+  syncSidebarToggleState();
+  setupControlGroupResetButtons();
+
+  if (reportProblemBtn) {
+    reportProblemBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      openBugReportDialog();
+    });
+  }
+
+  if (bugReportCloseBtn) {
+    bugReportCloseBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      closeBugReportDialog();
+    });
+  }
+
+  if (bugReportCancelBtn) {
+    bugReportCancelBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      closeBugReportDialog();
+    });
+  }
+
+  if (bugReportForm) {
+    bugReportForm.addEventListener('submit', submitBugReport);
+  }
+
+  if (bugReportDialog) {
+    bugReportDialog.addEventListener('click', function (event) {
+      const dialogBounds = bugReportDialog.getBoundingClientRect();
+      const clickedBackdrop = event.clientX < dialogBounds.left ||
+        event.clientX > dialogBounds.right ||
+        event.clientY < dialogBounds.top ||
+        event.clientY > dialogBounds.bottom;
+
+      if (clickedBackdrop) {
+        closeBugReportDialog();
+      }
+    });
+    bugReportDialog.addEventListener('close', function () {
+      if (bugReportContext) bugReportContext.textContent = '';
+      if (bugReportLastFocusedElement && document.body.contains(bugReportLastFocusedElement)) {
+        bugReportLastFocusedElement.focus();
+      }
+    });
+  }
+
   // Add click/touch outside to close functionality with improved mobile handling
   document.addEventListener('click', handleClickOutside);
   document.addEventListener('touchend', handleClickOutside);
@@ -1112,6 +1963,9 @@ async function setup() {
   }
   if (saveSvgButton) {
     saveSvgButton.addEventListener('click', saveSVG);
+  }
+  if (saveLoopGifButton) {
+    saveLoopGifButton.addEventListener('click', saveLoopingGIF);
   }
 
   const copyEmbedButton = document.getElementById('copy-embed');
@@ -1195,96 +2049,45 @@ async function setup() {
     }
   }
 
-  if (morsePlayBtn) {
-    morsePlayBtn.addEventListener('click', function () {
-      if (currentShader !== 7) return;
-
-      if (isAudioPlaying) {
-        stopAudio();
-      } else {
-        startAudio();
-      }
+  if (morseAudioBtn) {
+    morseAudioBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      togglePreviewAudio('morse');
     });
   }
 
   if (morseResetBtn) {
-    morseResetBtn.addEventListener('click', function () {
-      if (currentShader === 7) {
-        sequenceContext.currentNote = 0;
-        if (audioContext) {
-          sequenceContext.nextNoteTime = audioContext.currentTime + 0.1;
-        }
-        if (isAudioPlaying && !sequenceContext.active) {
-          startAudio();
-        }
-      }
+    morseResetBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      restartPreviewAudio('morse');
     });
   }
 
-  if (binaryAudioToggle) {
-    binaryAudioToggle.addEventListener('change', function () {
-      if (currentShader === 3) {
-        if (this.checked) {
-          startAudio();
-        } else {
-          stopAudio();
-        }
-      }
-      updateUrlParameters();
+  if (binaryAudioBtn) {
+    binaryAudioBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      togglePreviewAudio('binary');
     });
   }
 
-  if (tickerAudioToggle) {
-    tickerAudioToggle.addEventListener('change', function () {
-      if (currentShader === 2) {
-        if (this.checked) {
-          startAudio();
-        } else {
-          stopAudio();
-        }
-      }
-      updateUrlParameters();
+  if (binaryResetBtn) {
+    binaryResetBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      restartPreviewAudio('binary');
     });
   }
 
-  if (staffAudioToggle) {
-    staffAudioToggle.addEventListener('change', function () {
-      if (currentShader === 10) {
-        if (this.checked) {
-          startAudio();
-        } else {
-          stopAudio();
-        }
-      }
-      updateUrlParameters();
-    });
-  }
-
-  if (staffPlayBtn) {
-    staffPlayBtn.addEventListener('click', function () {
-      if (currentShader !== 10) return;
-
-      if (isAudioPlaying) {
-        stopAudio();
-      } else {
-        if (staffAudioToggle) staffAudioToggle.checked = true;
-        startAudio();
-      }
-      updateUrlParameters();
+  if (staffAudioBtn) {
+    staffAudioBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      togglePreviewAudio('staff');
     });
   }
 
   if (staffResetBtn) {
-    staffResetBtn.addEventListener('click', function () {
-      if (currentShader !== 10) return;
-
-      sequenceContext.currentNote = 0;
-      if (audioContext) {
-        sequenceContext.nextNoteTime = audioContext.currentTime + 0.1;
-      }
-      if (isAudioPlaying && !sequenceContext.active) {
-        startAudio();
-      }
+    staffResetBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      restartPreviewAudio('staff');
     });
   }
 
@@ -1321,25 +2124,67 @@ async function setup() {
     requestUpdate();
   });
 
-  // Setup matrix input and sliders
-  if (matrixInput) {
-    matrixInput.addEventListener('input', function () { updateUrlParameters(); requestUpdate(); });
-    matrixInput.addEventListener('keyup', function () { updateUrlParameters(); requestUpdate(); });
-    if (!window.location.search) matrixInput.value = "RPI";
-  }
-  if (matrixRowsSlider) {
-    matrixRowsSlider.addEventListener('input', function () {
-      if (matrixRowsDisplay) matrixRowsDisplay.textContent = this.value;
-      updateUrlParameters(); requestUpdate();
+  if (circlesGradientVariantSlider) {
+    circlesGradientVariantSlider.addEventListener('input', function () {
+      updateCirclesGradientVariantDisplay();
+      updateUrlParameters();
+      requestUpdate();
     });
-    if (matrixRowsDisplay && matrixRowsSlider) matrixRowsDisplay.textContent = matrixRowsSlider.value;
+    updateCirclesGradientVariantDisplay();
   }
-  if (matrixGapSlider) {
-    matrixGapSlider.addEventListener('input', function () {
-      if (matrixGapDisplay) matrixGapDisplay.textContent = this.value;
-      updateUrlParameters(); requestUpdate();
+
+  if (gradientVariantSlider) {
+    gradientVariantSlider.addEventListener('input', function () {
+      updateGradientVariantDisplay();
+      updateUrlParameters();
+      requestUpdate();
     });
-    if (matrixGapDisplay && matrixGapSlider) matrixGapDisplay.textContent = matrixGapSlider.value;
+    updateGradientVariantDisplay();
+  }
+
+  if (gridVariantSlider) {
+    gridVariantSlider.addEventListener('input', function () {
+      updateGridVariantDisplay();
+      updateUrlParameters();
+      requestUpdate();
+    });
+    updateGridVariantDisplay();
+  }
+
+  if (linesVariantSlider) {
+    linesVariantSlider.addEventListener('input', function () {
+      updateLinesVariantDisplay();
+      updateUrlParameters();
+      requestUpdate();
+    });
+    updateLinesVariantDisplay();
+  }
+
+  if (pointConnectVariantSlider) {
+    pointConnectVariantSlider.addEventListener('input', function () {
+      updatePointConnectVariantDisplay();
+      updateUrlParameters();
+      requestUpdate();
+    });
+    updatePointConnectVariantDisplay();
+  }
+
+  if (triangleGridVariantSlider) {
+    triangleGridVariantSlider.addEventListener('input', function () {
+      updateTriangleGridVariantDisplay();
+      updateUrlParameters();
+      requestUpdate();
+    });
+    updateTriangleGridVariantDisplay();
+  }
+
+  if (trianglesVariantSlider) {
+    trianglesVariantSlider.addEventListener('input', function () {
+      updateTrianglesVariantDisplay();
+      updateUrlParameters();
+      requestUpdate();
+    });
+    updateTrianglesVariantDisplay();
   }
 
   // Setup truss sliders
@@ -1493,7 +2338,7 @@ async function setup() {
   if (!window.location.search) {
     styleSelect.value = "solid";
     currentShader = 0;
-    applyColorMode('black-on-white');
+    applyColorMode(DEFAULT_COLOR_MODE);
   }
 
   // Initialize Web Audio API
@@ -1501,6 +2346,7 @@ async function setup() {
 
   // Initialize custom dropdowns
   setupCustomDropdowns();
+  updateHeaderBrandPreview(true);
 
   // Initialize the hidden retro rink experience.
   setupEasterEggExperience();
@@ -1520,10 +2366,26 @@ async function setup() {
       return;
     }
 
-    // Handle spacebar for playback
+    const targetTag = event.target && event.target.tagName ? event.target.tagName : '';
+    const isTypingContext = (
+      event.target &&
+      (
+        event.target.isContentEditable ||
+        targetTag === 'INPUT' ||
+        targetTag === 'TEXTAREA' ||
+        targetTag === 'SELECT' ||
+        targetTag === 'BUTTON'
+      )
+    );
+
+    if (isTypingContext) {
+      return;
+    }
+
+    // Handle spacebar for motion and audio preview shortcuts.
     if (event.code === 'Space' && !event.shiftKey) {
-      // Morse uses spacebar for audio transport only (do not freeze rendering).
-      if (currentShader === 7) {
+      // Morse and music use spacebar for audio transport.
+      if (currentShader === 7 || currentShader === 10) {
         event.preventDefault();
         if (isAudioPlaying) {
           stopAudio();
@@ -1533,7 +2395,7 @@ async function setup() {
         return;
       }
 
-      // Allow spacebar pausing on any shader mode that supports animation
+      // Ticker and waveform use spacebar to pause or resume motion.
       if (isAnimated) {
         event.preventDefault();
         togglePlayback();
@@ -1566,7 +2428,7 @@ async function setup() {
     if (event.shiftKey && (event.code === 'ArrowUp' || event.code === 'ArrowDown')) {
       event.preventDefault();
 
-      const colorModes = ['black-on-white', 'white-on-black', 'white-on-red', 'red-on-white'];
+      const colorModes = AVAILABLE_COLOR_MODES;
       const currentIndex = colorModes.indexOf(currentColorMode);
 
       let nextIndex;
@@ -1697,6 +2559,41 @@ function updateTickerWidthRatioDisplay() {
   setTickerWidthRatioDisplayValue(tickerWidthRatioSlider, tickerWidthRatioDisplay);
 }
 
+function updateCirclesGradientVariantDisplay() {
+  if (!circlesGradientVariantSlider || !circlesGradientVariantDisplay) return;
+  circlesGradientVariantDisplay.textContent = circlesGradientVariantSlider.value;
+}
+
+function updateGradientVariantDisplay() {
+  if (!gradientVariantSlider || !gradientVariantDisplay) return;
+  gradientVariantDisplay.textContent = gradientVariantSlider.value;
+}
+
+function updateGridVariantDisplay() {
+  if (!gridVariantSlider || !gridVariantDisplay) return;
+  gridVariantDisplay.textContent = gridVariantSlider.value;
+}
+
+function updateLinesVariantDisplay() {
+  if (!linesVariantSlider || !linesVariantDisplay) return;
+  linesVariantDisplay.textContent = parseInt(linesVariantSlider.value, 10) === 1 ? 'LG' : 'MD';
+}
+
+function updatePointConnectVariantDisplay() {
+  if (!pointConnectVariantSlider || !pointConnectVariantDisplay) return;
+  pointConnectVariantDisplay.textContent = pointConnectVariantSlider.value;
+}
+
+function updateTriangleGridVariantDisplay() {
+  if (!triangleGridVariantSlider || !triangleGridVariantDisplay) return;
+  triangleGridVariantDisplay.textContent = triangleGridVariantSlider.value;
+}
+
+function updateTrianglesVariantDisplay() {
+  if (!trianglesVariantSlider || !trianglesVariantDisplay) return;
+  trianglesVariantDisplay.textContent = trianglesVariantSlider.value;
+}
+
 function updateWaveformTypeDisplay() {
   const sliderValue = parseFloat(waveformTypeSlider.value);
   let displayText = '';
@@ -1814,7 +2711,6 @@ function toggleMobileMenu() {
     } else {
       // Closing sidebar on mobile
       appSidebar.classList.remove('active');
-      if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
 
       if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
         lastFocusedElement.focus();
@@ -1831,6 +2727,8 @@ function toggleMobileMenu() {
       windowResized();
     }, 450); // Slightly longer than transition to ensure layout is done
   }
+
+  syncSidebarToggleState();
 }
 
 function handleClickOutside(event) {
@@ -1859,10 +2757,37 @@ function toggleSaveMenu(e) {
   if (e) e.stopPropagation();
 
   if (saveMenu) {
+    updateLoopingGifSaveOption();
     saveMenu.classList.toggle('hidden');
     const isExpanded = !saveMenu.classList.contains('hidden');
     if (saveButton) saveButton.setAttribute('aria-expanded', isExpanded);
   }
+}
+
+function updateLoopingGifSaveOption() {
+  if (!saveLoopGifButton) return;
+
+  const selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
+  const canExportLoopGif = Boolean(
+    typeof GIF !== 'undefined' &&
+    window.loopingGifUtils &&
+    typeof window.loopingGifUtils.isLoopingGifEligibleStyle === 'function' &&
+    window.loopingGifUtils.isLoopingGifEligibleStyle(selectedStyle)
+  );
+
+  saveLoopGifButton.hidden = !canExportLoopGif;
+}
+
+function syncSidebarToggleState() {
+  if (!mobileMenuToggle || !appSidebar) return;
+
+  const isMobile = window.innerWidth <= 768;
+  const isExpanded = isMobile
+    ? appSidebar.classList.contains('active')
+    : !appSidebar.classList.contains('sidebar-collapsed');
+
+  mobileMenuToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+  mobileMenuToggle.setAttribute('aria-label', isExpanded ? 'Close design controls' : 'Open design controls');
 }
 
 function handleStyleChange() {
@@ -1898,7 +2823,37 @@ function handleStyleChange() {
     case 'morse':
       currentShader = 7;
       break;
-    case 'matrix':
+    case 'circles-gradient':
+      currentShader = 16;
+      break;
+    case 'gradient':
+      currentShader = 17;
+      break;
+    case 'grid':
+      currentShader = 18;
+      break;
+    case 'lines':
+      currentShader = 13;
+      break;
+    case 'point-connect':
+      currentShader = 14;
+      break;
+    case 'triangle-grid':
+      currentShader = 15;
+      break;
+    case 'triangles':
+      currentShader = 19;
+      break;
+    case 'fibonacci-sequence':
+      currentShader = 20;
+      break;
+    case 'union':
+      currentShader = 21;
+      break;
+    case 'wave-quantum':
+      currentShader = 22;
+      break;
+    case 'runway':
       currentShader = 8;
       break;
     case 'truss':
@@ -1925,7 +2880,13 @@ function handleStyleChange() {
     circlesGroup.style.display = 'none';
     numericGroup.style.display = 'none';
     morseGroup.style.display = 'none';
-    if (matrixGroup) matrixGroup.style.display = 'none';
+    if (circlesGradientGroup) circlesGradientGroup.style.display = 'none';
+    if (gradientGroup) gradientGroup.style.display = 'none';
+    if (gridGroup) gridGroup.style.display = 'none';
+    if (linesGroup) linesGroup.style.display = 'none';
+    if (pointConnectGroup) pointConnectGroup.style.display = 'none';
+    if (triangleGridGroup) triangleGridGroup.style.display = 'none';
+    if (trianglesGroup) trianglesGroup.style.display = 'none';
     if (trussGroup) trussGroup.style.display = 'none';
     if (staffGroup) staffGroup.style.display = 'none';
     if (pulseGroup) pulseGroup.style.display = 'none';
@@ -1958,87 +2919,209 @@ function handleStyleChange() {
         break;
       case 'morse':
         morseGroup.style.display = 'block';
-        isAnimated = true; // Morse logic handles its own sequence looping with spacebar support
         break;
-      case 'matrix':
-        if (matrixGroup) matrixGroup.style.display = 'block';
+      case 'circles-gradient':
+        if (circlesGradientGroup) circlesGradientGroup.style.display = 'block';
+        break;
+      case 'gradient':
+        if (gradientGroup) gradientGroup.style.display = 'block';
+        break;
+      case 'grid':
+        if (gridGroup) gridGroup.style.display = 'block';
+        break;
+      case 'lines':
+        if (linesGroup) linesGroup.style.display = 'block';
+        break;
+      case 'point-connect':
+        if (pointConnectGroup) pointConnectGroup.style.display = 'block';
+        break;
+      case 'triangle-grid':
+        if (triangleGridGroup) triangleGridGroup.style.display = 'block';
+        break;
+      case 'triangles':
+        if (trianglesGroup) trianglesGroup.style.display = 'block';
         break;
       case 'truss':
         if (trussGroup) trussGroup.style.display = 'block';
         break;
       case 'music':
         if (staffGroup) staffGroup.style.display = 'block';
-        isAnimated = true;
         break;
       case 'graph':
         if (graphGroup) graphGroup.style.display = 'block';
         break;
     }
 
-    // Toggle playback controls visibility
-    if (playbackBtn && playbackDivider) {
-      if (isAnimated) {
-        playbackBtn.classList.remove('hidden');
-        playbackDivider.classList.remove('hidden');
-        // Ensure the render loop is active when entering animated styles.
-        if (!isPlaying) togglePlayback();
-      } else {
-        playbackBtn.classList.add('hidden');
-        playbackDivider.classList.add('hidden');
-        // Ensure we loop for static draws (or noLoop logic might interfere with interactions?)
-        // Static modes usually call noLoop() or just draw once?
-        // This app seems to run draw loop constantly for all modes currently.
-        if (!isPlaying) togglePlayback(); // Resume loop if it was paused
-      }
+    // Motion pause/resume is only exposed on ticker and waveform.
+    // Other styles should keep the render loop active so their previews remain responsive.
+    if (!isAnimated && !isPlaying) {
+      togglePlayback();
+    } else {
+      syncMotionToggleState();
     }
 
-    // Handle audio state transitions
-    if (shouldAutoStartAudioForStyle(selectedStyle) && isPlaying) {
-      startAudio();
-    } else {
-      stopAudio();
-    }
+    stopAudio();
   }
 
   console.log('Style changed to:', selectedStyle, 'currentShader:', currentShader);
+  updateLoopingGifSaveOption();
+  updateSidebarScrollFadeState();
   updateAudioControlsUI();
   requestUpdate();
 }
 
 function handleColorModeChange() {
-  const selectedColorMode = colorModeSelect ? colorModeSelect.value : 'black-on-white';
+  const selectedColorMode = colorModeSelect ? colorModeSelect.value : DEFAULT_COLOR_MODE;
   applyColorMode(selectedColorMode);
 }
 
 function applyColorMode(colorMode) {
-  currentColorMode = colorMode;
+  currentColorMode = normalizeColorModeValue(colorMode);
 
   // Remove all theme classes first
-  document.body.classList.remove('theme-light', 'theme-dark', 'theme-red', 'theme-inverted');
+  document.body.classList.remove(...new Set(Object.values(themeClassByColorMode)));
 
   // Add appropriate theme class
-  switch (colorMode) {
-    case 'black-on-white':
-      document.body.classList.add('theme-light');
-      break;
-    case 'white-on-black':
-      document.body.classList.add('theme-dark');
-      break;
-    case 'white-on-red':
-      document.body.classList.add('theme-red');
-      break;
-    case 'red-on-white':
-      document.body.classList.add('theme-inverted'); // Assuming inverted style for now
-      break;
-    default:
-      document.body.classList.add('theme-light');
+  const themeClass = themeClassByColorMode[currentColorMode] || themeClassByColorMode[DEFAULT_COLOR_MODE];
+  if (themeClass) {
+    document.body.classList.add(themeClass);
   }
 
-  console.log('Color mode applied:', colorMode);
+  if (colorModeSelect) {
+    if (colorModeSelect.value !== currentColorMode) {
+      colorModeSelect.value = currentColorMode;
+    }
+
+    const customSelectWrapper = colorModeSelect.parentElement;
+    const customSelectLabel = customSelectWrapper?.querySelector('.custom-select-trigger');
+    if (customSelectLabel) {
+      const selectedOption = colorModeSelect.options[colorModeSelect.selectedIndex];
+      customSelectLabel.textContent = selectedOption ? selectedOption.textContent : currentColorMode;
+    }
+
+    customSelectWrapper?.querySelectorAll('.custom-option').forEach(option => {
+      option.classList.toggle('selected', option.dataset.value === currentColorMode);
+    });
+  }
+
+  console.log('Color mode applied:', currentColorMode);
   requestUpdate();
 }
 
+function buildHeaderPreviewSVG() {
+  const currentWidth = 250;
+  const logoHeight = 149.411;
+  const fgColor = 'currentColor';
+  const barY = 132.911;
+  const barHeight = 18;
+  const exactBarWidth = 250;
+  const barStartX = 0;
+  const timeSeconds = typeof window.animationTime !== 'undefined'
+    ? window.animationTime
+    : (typeof millis === 'function' ? millis() / 1000.0 : 0);
+
+  let svgContent = `
+<svg viewBox="0 0 ${currentWidth} ${logoHeight}" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true">
+  <path d="${paths.r}" fill="${fgColor}"/>
+  <path d="${paths.p}" fill="${fgColor}"/>
+  <path d="${paths.i}" fill="${fgColor}"/>`;
+
+  if (currentShader === 0) {
+    const cornerSize = 1.5;
+    const pathData = `M ${barStartX + cornerSize} ${barY} L ${barStartX + exactBarWidth - cornerSize} ${barY} L ${barStartX + exactBarWidth} ${barY + cornerSize} L ${barStartX + exactBarWidth} ${barY + barHeight - cornerSize} L ${barStartX + exactBarWidth - cornerSize} ${barY + barHeight} L ${barStartX + cornerSize} ${barY + barHeight} L ${barStartX} ${barY + barHeight - cornerSize} L ${barStartX} ${barY + cornerSize} Z`;
+    svgContent += `\n  <path d="${pathData}" fill="${fgColor}"/>`;
+  } else if (typeof createBarPatternSVG === 'function') {
+    svgContent += createBarPatternSVG({
+      currentShader,
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      fgColor,
+      textToBinary,
+      textToMorse,
+      parseNumericString,
+      generateGridCircles,
+      generateStaticPackedCircles,
+      values: {
+        rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
+        rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+        tickerRepeats: tickerSlider ? tickerSlider.value : 34,
+        tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
+        tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
+        binaryText: binaryInput ? (binaryInput.value || 'RPI') : 'RPI',
+        waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
+        waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
+        waveformSpeed: waveformSpeedSlider ? waveformSpeedSlider.value : 0.7,
+        waveformEnvelope: waveformEnvelopeToggle ? waveformEnvelopeToggle.checked : false,
+        waveformEnvelopeType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
+        waveformEnvelopeWaves: waveformEnvelopeWavesSlider
+          ? (typeof normalizeWaveformEnvelopeWaves === 'function'
+            ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
+            : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
+          : 1,
+        waveformEnvelopeCenter: waveformEnvelopeCenterSlider ? waveformEnvelopeCenterSlider.value : 0,
+        waveformEnvelopeBipolar: waveformEnvelopeBipolarToggle ? waveformEnvelopeBipolarToggle.checked : false,
+        timeSeconds,
+        circlesMode: circlesModeSelect ? circlesModeSelect.value : 'packing',
+        circlesFill: circlesFillSelect ? circlesFillSelect.value : 'stroke',
+        circlesDensity: circlesDensitySlider ? circlesDensitySlider.value : 50,
+        circlesSizeVariation: circlesSizeVariationSlider ? circlesSizeVariationSlider.value : 0,
+        circlesOverlap: circlesOverlapSlider ? circlesOverlapSlider.value : 0,
+        circlesRows: circlesRowsSlider ? circlesRowsSlider.value : 2,
+        circlesGridDensity: circlesGridDensitySlider ? circlesGridDensitySlider.value : 100,
+        circlesSizeVariationY: circlesSizeVariationYSlider ? circlesSizeVariationYSlider.value : 0,
+        circlesSizeVariationX: circlesSizeVariationXSlider ? circlesSizeVariationXSlider.value : 0,
+        circlesGridOverlap: circlesGridOverlapSlider ? circlesGridOverlapSlider.value : 0,
+        circlesLayout: circlesLayoutSelect ? circlesLayoutSelect.value : 'straight',
+        numericValue: numericInput ? numericInput.value : '',
+        numericMode: numericModeSelect ? numericModeSelect.value : 'dotmatrix',
+        circlesGradientVariant: circlesGradientVariantSlider ? circlesGradientVariantSlider.value : 1,
+        gradientVariant: gradientVariantSlider ? gradientVariantSlider.value : 1,
+        gridVariant: gridVariantSlider ? gridVariantSlider.value : 1,
+        linesVariant: linesVariantSlider ? linesVariantSlider.value : 2,
+        pointConnectVariant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1,
+        triangleGridVariant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2,
+        trianglesVariant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
+        morseText: morseInput ? morseInput.value : 'RPI',
+        trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
+        trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
+        trussThickness: trussThicknessSlider ? trussThicknessSlider.value : 2,
+        staffText: 'RPI',
+        staffThickness: 1,
+        staffNotes: typeof currentStaffNotes !== 'undefined' ? currentStaffNotes : [],
+        staffNoteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'circle',
+        pulseText: pulseInput ? pulseInput.value : 'RPI',
+        pulseIntensity: pulseIntensitySlider ? pulseIntensitySlider.value : 5,
+        graphText: graphInput ? graphInput.value : 'RPI',
+        graphText2: graphInput2 ? graphInput2.value : '',
+        graphText3: graphInput3 ? graphInput3.value : '',
+        graphText4: graphInput4 ? graphInput4.value : '',
+        graphText5: graphInput5 ? graphInput5.value : '',
+        graphMulti: graphMultiToggle ? graphMultiToggle.checked : false,
+        graphScale: graphScaleSlider ? graphScaleSlider.value : 10
+      }
+    });
+  }
+
+  svgContent += `\n</svg>`;
+  return svgContent.trim();
+}
+
+function updateHeaderBrandPreview(force = false) {
+  if (!headerLogoPreview) return;
+
+  const markup = buildHeaderPreviewSVG();
+  if (!force && markup === lastHeaderPreviewMarkup) return;
+
+  headerLogoPreview.innerHTML = markup;
+  lastHeaderPreviewMarkup = markup;
+  lastHeaderPreviewUpdateTime = typeof millis === 'function' ? millis() : Date.now();
+}
+
 function requestUpdate() {
+  updateHeaderBrandPreview();
+
   if (!isPlaying) {
     redraw();
   }
@@ -3033,49 +4116,25 @@ function styleSupportsAudio(style) {
   return style === 'binary' || style === 'ticker' || style === 'waveform' || style === 'morse' || style === 'music';
 }
 
-function shouldAutoStartAudioForStyle(style) {
-  if (style === 'binary') return !!(binaryAudioToggle && binaryAudioToggle.checked);
-  if (style === 'ticker') return !!(tickerAudioToggle && tickerAudioToggle.checked);
-  if (style === 'waveform') return !!(waveformAudioToggle && waveformAudioToggle.checked);
-  if (style === 'music') return !!(staffAudioToggle && staffAudioToggle.checked);
-  return false;
-}
-
-function setAudioIndicator(indicator, isActive) {
-  if (!indicator) return;
-  if (isActive) {
-    indicator.classList.add('active');
-  } else {
-    indicator.classList.remove('active');
-  }
-}
-
 function showAudioToast(message, type = 'info') {
   if (typeof Toast !== 'undefined' && Toast && typeof Toast.show === 'function') {
     Toast.show(message, type);
   }
 }
 
-function updateMorseAudioUI() {
-  if (morsePlayBtn) {
-    morsePlayBtn.textContent = (currentShader === 7 && isAudioPlaying) ? 'PAUSE AUDIO' : 'PLAY AUDIO';
-  }
-  setAudioIndicator(morseInfoBadge, currentShader === 7 && isAudioPlaying);
-}
-
-function updateStaffAudioUI() {
-  if (staffPlayBtn) {
-    staffPlayBtn.textContent = (currentShader === 10 && isAudioPlaying) ? 'PAUSE AUDIO' : 'PLAY AUDIO';
-  }
-  setAudioIndicator(staffInfoBadge, currentShader === 10 && isAudioPlaying);
-}
-
 function updateAudioControlsUI() {
-  setAudioIndicator(binaryAudioIndicator, currentShader === 3 && isAudioPlaying);
-  setAudioIndicator(tickerAudioIndicator, currentShader === 2 && isAudioPlaying);
-  setAudioIndicator(waveformAudioIndicator, currentShader === 4 && isAudioPlaying);
-  updateMorseAudioUI();
-  updateStaffAudioUI();
+  const activeType = getCurrentAudioPreviewType();
+  getAudioButtonConfig().forEach(({ type, button, reset, currentShader: shaderId }) => {
+    if (button) {
+      const isActive = activeType === type && isAudioPlaying;
+      button.textContent = isActive ? 'PAUSE' : 'PLAY';
+      button.classList.toggle('is-active', isActive);
+      button.disabled = type === 'staff' && shaderId === 10 && (!currentStaffNotes || currentStaffNotes.length === 0);
+    }
+    if (reset) {
+      reset.disabled = type === 'staff' && shaderId === 10 && (!currentStaffNotes || currentStaffNotes.length === 0);
+    }
+  });
 }
 
 
@@ -3706,27 +4765,16 @@ async function startAudio() {
     }
 
     if (currentShader === 4) {
-      if (!waveformAudioToggle || !waveformAudioToggle.checked) {
-        updateAudioControlsUI();
-        return;
-      }
       startWaveformAudio();
     } else if (currentShader === 3) {
-      if (!binaryAudioToggle || !binaryAudioToggle.checked) {
-        updateAudioControlsUI();
-        return;
-      }
       startSequenceAudio('binary');
     } else if (currentShader === 7) {
       startSequenceAudio('morse');
     } else if (currentShader === 2) {
-      if (!tickerAudioToggle || !tickerAudioToggle.checked) {
-        updateAudioControlsUI();
-        return;
-      }
       startSequenceAudio('ticker');
     } else if (currentShader === 10) {
-      if (!staffAudioToggle || !staffAudioToggle.checked) {
+      if (!currentStaffNotes || currentStaffNotes.length === 0) {
+        showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
         updateAudioControlsUI();
         return;
       }
@@ -4303,7 +5351,7 @@ function getUrlParameters() {
   const params = new URLSearchParams(window.location.search);
   return {
     style: normalizeStyleValue(params.get('style') || 'solid'),
-    colorMode: params.get('colorMode') || 'black-on-white',
+    colorMode: normalizeColorModeValue(params.get('colorMode') || DEFAULT_COLOR_MODE),
 
     // Binary parameters
     binaryText: params.get('binaryText') || 'RPI',
@@ -4311,6 +5359,15 @@ function getUrlParameters() {
     // Numeric parameters
     numericValue: params.get('numericValue') || '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679',
     numericMode: params.get('numericMode') || 'dotmatrix',
+    circlesGradientVariant: Math.max(1, Math.min(3, parseInt(params.get('circlesGradientVariant')) || 1)),
+    gradientVariant: Math.max(1, Math.min(2, parseInt(params.get('gradientVariant')) || 1)),
+    gridVariant: Math.max(1, Math.min(3, parseInt(params.get('gridVariant')) || 1)),
+
+    // Reference pattern parameters
+    linesVariant: Math.max(1, Math.min(2, parseInt(params.get('linesVariant')) || 2)),
+    pointConnectVariant: Math.max(1, Math.min(2, parseInt(params.get('pointConnectVariant')) || 1)),
+    triangleGridVariant: Math.max(1, Math.min(3, parseInt(params.get('triangleGridVariant')) || 2)),
+    trianglesVariant: Math.max(1, Math.min(2, parseInt(params.get('trianglesVariant')) || 1)),
 
     // Ruler parameters
     rulerRepeats: parseInt(params.get('rulerRepeats')) || 10,
@@ -4328,12 +5385,13 @@ function getUrlParameters() {
 
     waveformEnvelope: params.get('waveformEnvelope') || 'false',
     waveformEnvelopeType: params.get('waveformEnvelopeType') || 'sine',
-    waveformEnvelopeWaves: params.get('waveformEnvelopeWaves'),
-    waveformEnvelopeCenter: params.get('waveformEnvelopeCenter'),
+    waveformEnvelopeWaves: typeof normalizeWaveformEnvelopeWaves === 'function'
+      ? normalizeWaveformEnvelopeWaves(params.get('waveformEnvelopeWaves'))
+      : Math.max(1, Math.min(10, Math.round(parseFloat(params.get('waveformEnvelopeWaves'))) || 1)),
+    waveformEnvelopeCenter: typeof normalizeWaveformEnvelopeCenter === 'function'
+      ? normalizeWaveformEnvelopeCenter(params.get('waveformEnvelopeCenter'))
+      : Math.max(-0.5, Math.min(0.5, parseFloat(params.get('waveformEnvelopeCenter')) || 0)),
     waveformEnvelopeBipolar: params.get('waveformEnvelopeBipolar') || 'false',
-
-    waveformAudio: params.get('waveformAudio') === 'true',
-    waveformAnimate: params.get('waveformAnimate') !== 'false',
 
     // Circles parameters
     circlesMode: params.get('circlesMode') || 'packing',
@@ -4350,11 +5408,6 @@ function getUrlParameters() {
     circlesGridOverlap: parseInt(params.get('circlesGridOverlap')) || 0,
     circlesLayout: params.get('circlesLayout') || 'straight',
 
-    // Matrix parameters
-    matrixText: params.get('matrixText') || 'RPI',
-    matrixRows: parseInt(params.get('matrixRows')) || 3,
-    matrixGap: parseInt(params.get('matrixGap')) || 1,
-
     // Truss parameters
     trussFamily: normalizeTrussFamilyValue(params.get('trussFamily') || 'flat'),
     trussSegments: parseInt(params.get('trussSegments')) || 15,
@@ -4365,7 +5418,6 @@ function getUrlParameters() {
     staffTempo: parseInt(params.get('staffTempo')) || 120,
     staffInstrument: params.get('staffInstrument') || 'piano',
     staffNoteShape: normalizeMusicNoteShape(params.get('staffNoteShape') || 'circle'),
-    staffAudio: params.get('staffAudio') === 'true',
     staffReverb: params.get('staffReverb') === 'true',
     staffTremolo: params.get('staffTremolo') === 'true',
 
@@ -4383,10 +5435,7 @@ function getUrlParameters() {
     graphScale: Math.max(GRAPH_SCALE_MIN, parseInt(params.get('graphScale')) || GRAPH_SCALE_DEFAULT),
 
     // Additional parameters
-    morseText: params.get('morseText') || 'RPI',
-    binaryAudio: params.get('binaryAudio') === 'true',
-    morseAudio: params.get('morseAudio') === 'true',
-    tickerAudio: params.get('tickerAudio') === 'true'
+    morseText: params.get('morseText') || 'RPI'
   };
 }
 
@@ -4398,7 +5447,7 @@ function updateUrlParameters() {
     params.set('style', styleSelect.value);
   }
 
-  if (colorModeSelect && colorModeSelect.value !== 'black-on-white') {
+  if (colorModeSelect && colorModeSelect.value !== DEFAULT_COLOR_MODE) {
     params.set('colorMode', colorModeSelect.value);
   }
 
@@ -4407,17 +5456,11 @@ function updateUrlParameters() {
     if (binaryInput && binaryInput.value !== 'RPI') {
       params.set('binaryText', binaryInput.value);
     }
-    if (binaryAudioToggle && binaryAudioToggle.checked) {
-      params.set('binaryAudio', 'true');
-    }
   }
 
   if (styleSelect && styleSelect.value === 'morse') {
     if (morseInput && morseInput.value !== 'RPI') {
       params.set('morseText', morseInput.value);
-    }
-    if (morseAudioToggle && morseAudioToggle.checked) {
-      params.set('morseAudio', 'true');
     }
   }
 
@@ -4430,15 +5473,45 @@ function updateUrlParameters() {
     }
   }
 
-  if (styleSelect && styleSelect.value === 'matrix') {
-    if (matrixInput && matrixInput.value !== 'RPI') {
-      params.set('matrixText', matrixInput.value);
+  if (styleSelect && styleSelect.value === 'circles-gradient') {
+    if (circlesGradientVariantSlider && parseInt(circlesGradientVariantSlider.value, 10) !== 1) {
+      params.set('circlesGradientVariant', circlesGradientVariantSlider.value);
     }
-    if (matrixRowsSlider && parseInt(matrixRowsSlider.value) !== 3) {
-      params.set('matrixRows', matrixRowsSlider.value);
+  }
+
+  if (styleSelect && styleSelect.value === 'gradient') {
+    if (gradientVariantSlider && parseInt(gradientVariantSlider.value, 10) !== 1) {
+      params.set('gradientVariant', gradientVariantSlider.value);
     }
-    if (matrixGapSlider && parseInt(matrixGapSlider.value) !== 1) {
-      params.set('matrixGap', matrixGapSlider.value);
+  }
+
+  if (styleSelect && styleSelect.value === 'grid') {
+    if (gridVariantSlider && parseInt(gridVariantSlider.value, 10) !== 1) {
+      params.set('gridVariant', gridVariantSlider.value);
+    }
+  }
+
+  if (styleSelect && styleSelect.value === 'lines') {
+    if (linesVariantSlider && parseInt(linesVariantSlider.value, 10) !== 2) {
+      params.set('linesVariant', linesVariantSlider.value);
+    }
+  }
+
+  if (styleSelect && styleSelect.value === 'point-connect') {
+    if (pointConnectVariantSlider && parseInt(pointConnectVariantSlider.value, 10) !== 1) {
+      params.set('pointConnectVariant', pointConnectVariantSlider.value);
+    }
+  }
+
+  if (styleSelect && styleSelect.value === 'triangle-grid') {
+    if (triangleGridVariantSlider && parseInt(triangleGridVariantSlider.value, 10) !== 2) {
+      params.set('triangleGridVariant', triangleGridVariantSlider.value);
+    }
+  }
+
+  if (styleSelect && styleSelect.value === 'triangles') {
+    if (trianglesVariantSlider && parseInt(trianglesVariantSlider.value, 10) !== 1) {
+      params.set('trianglesVariant', trianglesVariantSlider.value);
     }
   }
 
@@ -4464,9 +5537,6 @@ function updateUrlParameters() {
     }
     if (staffNoteShapeSelect && staffNoteShapeSelect.value !== 'circle') {
       params.set('staffNoteShape', staffNoteShapeSelect.value);
-    }
-    if (staffAudioToggle && staffAudioToggle.checked) {
-      params.set('staffAudio', 'true');
     }
     if (staffReverbToggle && staffReverbToggle.checked) {
       params.set('staffReverb', 'true');
@@ -4519,9 +5589,6 @@ function updateUrlParameters() {
     if (tickerWidthRatioSlider && parseInt(tickerWidthRatioSlider.value) !== 2) {
       params.set('tickerWidthRatio', tickerWidthRatioSlider.value);
     }
-    if (tickerAudioToggle && tickerAudioToggle.checked) {
-      params.set('tickerAudio', 'true');
-    }
   }
 
   if (styleSelect && styleSelect.value === 'waveform') {
@@ -4541,21 +5608,24 @@ function updateUrlParameters() {
     if (waveformEnvelopeType && waveformEnvelopeType.value !== 'sine') {
       params.set('waveformEnvelopeType', waveformEnvelopeType.value);
     }
-    if (waveformEnvelopeWavesSlider && parseFloat(waveformEnvelopeWavesSlider.value) !== 1) {
-      params.set('waveformEnvelopeWaves', waveformEnvelopeWavesSlider.value);
+    const normalizedEnvelopeWaves = waveformEnvelopeWavesSlider
+      ? (typeof normalizeWaveformEnvelopeWaves === 'function'
+        ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
+        : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
+      : 1;
+    if (waveformEnvelopeWavesSlider && normalizedEnvelopeWaves !== 1) {
+      params.set('waveformEnvelopeWaves', normalizedEnvelopeWaves);
     }
-    if (waveformEnvelopeCenterSlider && parseFloat(waveformEnvelopeCenterSlider.value) !== 0) {
-      params.set('waveformEnvelopeCenter', waveformEnvelopeCenterSlider.value);
+    const normalizedEnvelopeCenter = waveformEnvelopeCenterSlider
+      ? (typeof normalizeWaveformEnvelopeCenter === 'function'
+        ? normalizeWaveformEnvelopeCenter(waveformEnvelopeCenterSlider.value)
+        : Math.max(-0.5, Math.min(0.5, parseFloat(waveformEnvelopeCenterSlider.value) || 0)))
+      : 0;
+    if (waveformEnvelopeCenterSlider && normalizedEnvelopeCenter !== 0) {
+      params.set('waveformEnvelopeCenter', normalizedEnvelopeCenter);
     }
     if (waveformEnvelopeBipolarToggle && waveformEnvelopeBipolarToggle.checked) {
       params.set('waveformEnvelopeBipolar', 'true');
-    }
-
-    if (waveformAudioToggle && waveformAudioToggle.checked) {
-      params.set('waveformAudio', 'true');
-    }
-    if (waveformAnimateToggle && !waveformAnimateToggle.checked) {
-      params.set('waveformAnimate', 'false');
     }
   }
 
@@ -4622,9 +5692,6 @@ function applyUrlParameters() {
   if (binaryInput) {
     binaryInput.value = params.binaryText;
   }
-  if (binaryAudioToggle) {
-    binaryAudioToggle.checked = params.binaryAudio;
-  }
 
   // Apply morse parameters
   if (morseInput) {
@@ -4641,15 +5708,34 @@ function applyUrlParameters() {
     numericModeSelect.value = params.numericMode;
   }
 
-  // Apply matrix parameters
-  if (matrixInput) {
-    matrixInput.value = params.matrixText;
+  if (circlesGradientVariantSlider) {
+    circlesGradientVariantSlider.value = params.circlesGradientVariant;
+    updateCirclesGradientVariantDisplay();
   }
-  if (matrixRowsSlider) {
-    matrixRowsSlider.value = params.matrixRows;
+  if (gradientVariantSlider) {
+    gradientVariantSlider.value = params.gradientVariant;
+    updateGradientVariantDisplay();
   }
-  if (matrixGapSlider) {
-    matrixGapSlider.value = params.matrixGap;
+  if (gridVariantSlider) {
+    gridVariantSlider.value = params.gridVariant;
+    updateGridVariantDisplay();
+  }
+
+  if (linesVariantSlider) {
+    linesVariantSlider.value = params.linesVariant;
+    updateLinesVariantDisplay();
+  }
+  if (pointConnectVariantSlider) {
+    pointConnectVariantSlider.value = params.pointConnectVariant;
+    updatePointConnectVariantDisplay();
+  }
+  if (triangleGridVariantSlider) {
+    triangleGridVariantSlider.value = params.triangleGridVariant;
+    updateTriangleGridVariantDisplay();
+  }
+  if (trianglesVariantSlider) {
+    trianglesVariantSlider.value = params.trianglesVariant;
+    updateTrianglesVariantDisplay();
   }
 
   // Apply truss parameters
@@ -4683,9 +5769,6 @@ function applyUrlParameters() {
   }
   if (staffNoteShapeSelect) {
     staffNoteShapeSelect.value = params.staffNoteShape;
-  }
-  if (staffAudioToggle) {
-    staffAudioToggle.checked = params.staffAudio;
   }
   if (staffReverbToggle) {
     staffReverbToggle.checked = params.staffReverb;
@@ -4749,9 +5832,6 @@ function applyUrlParameters() {
   if (tickerWidthRatioSlider) {
     tickerWidthRatioSlider.value = params.tickerWidthRatio;
   }
-  if (tickerAudioToggle) {
-    tickerAudioToggle.checked = params.tickerAudio;
-  }
 
   // Apply waveform parameters
   if (waveformTypeSlider) {
@@ -4763,16 +5843,29 @@ function applyUrlParameters() {
   if (waveformSpeedSlider) {
     waveformSpeedSlider.value = params.waveformSpeed;
   }
-  if (waveformAudioToggle) {
-    waveformAudioToggle.checked = params.waveformAudio;
+  if (waveformEnvelopeToggle) {
+    waveformEnvelopeToggle.checked = params.waveformEnvelope === 'true';
   }
-  if (waveformAnimateToggle) {
-    waveformAnimateToggle.checked = params.waveformAnimate;
-    if (!params.waveformAnimate && isPlaying) {
-      togglePlayback();
-    } else if (params.waveformAnimate && !isPlaying) {
-      togglePlayback();
-    }
+  if (envelopeSettingsGroup) {
+    envelopeSettingsGroup.style.display = params.waveformEnvelope === 'true' ? 'block' : 'none';
+  }
+  if (waveformEnvelopeType) {
+    waveformEnvelopeType.value = params.waveformEnvelopeType;
+  }
+  if (waveformEnvelopeWavesSlider) {
+    waveformEnvelopeWavesSlider.value = params.waveformEnvelopeWaves;
+  }
+  if (waveformEnvelopeWavesDisplay) {
+    waveformEnvelopeWavesDisplay.textContent = params.waveformEnvelopeWaves;
+  }
+  if (waveformEnvelopeCenterSlider) {
+    waveformEnvelopeCenterSlider.value = params.waveformEnvelopeCenter;
+  }
+  if (waveformEnvelopeCenterDisplay) {
+    waveformEnvelopeCenterDisplay.textContent = params.waveformEnvelopeCenter;
+  }
+  if (waveformEnvelopeBipolarToggle) {
+    waveformEnvelopeBipolarToggle.checked = params.waveformEnvelopeBipolar === 'true';
   }
 
   // Apply circles parameters
@@ -4940,6 +6033,7 @@ let resizeTimeout;
 function windowResized() {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
+    syncSidebarToggleState();
     const container = document.getElementById('p5-container');
     if (container) {
       resizeCanvas(container.offsetWidth, container.offsetHeight);
@@ -4975,13 +6069,8 @@ function draw() {
   // Get current color scheme
   const colorScheme = colors[currentColorMode];
 
-  // Set background color based on current color mode
-  if (colorScheme) {
-    const bgColor = color(colorScheme.bg);
-    background(bgColor);
-  } else {
-    background(255); // Fallback to white
-  }
+  // Keep the canvas transparent so the mark sits directly on the themed workspace.
+  clear();
 
   // Use exact 250px reference dimensions
   const currentWidth = REFERENCE_WIDTH;
@@ -5024,6 +6113,10 @@ function draw() {
 
   // Draw bottom bar
   drawBottomBar(currentWidth);
+
+  if (isAnimated && currentTime - lastHeaderPreviewUpdateTime >= 120) {
+    updateHeaderBrandPreview(true);
+  }
 }
 
 function drawBottomBar(currentWidth) {
@@ -5281,38 +6374,27 @@ function drawBottomBar(currentWidth) {
 
       const applyEnvelope = waveformEnvelopeToggle && waveformEnvelopeToggle.checked;
       const envType = waveformEnvelopeType ? waveformEnvelopeType.value : 'sine';
-      const envWaves = waveformEnvelopeWavesSlider ? parseFloat(waveformEnvelopeWavesSlider.value) : 1;
+      const envWaves = waveformEnvelopeWavesSlider
+        ? (typeof normalizeWaveformEnvelopeWaves === 'function'
+          ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
+          : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
+        : 1;
       const envCenter = waveformEnvelopeCenterSlider ? parseFloat(waveformEnvelopeCenterSlider.value) : 0;
       const bipolar = waveformEnvelopeBipolarToggle && waveformEnvelopeBipolarToggle.checked;
-
-      let envelope = 1;
-      if (applyEnvelope) {
-        let ePhase = xPortion * envWaves;
-        if (envType === 'sine') {
-          envelope = Math.sin(Math.PI * ePhase);
-        } else if (envType === 'cosine') {
-          envelope = Math.cos(Math.PI * ePhase);
-        } else if (envType === 'linear') {
-          // Triangle wave mapping 0..1 to 0..1..0
-          envelope = 1.0 - Math.abs((ePhase % 1) * 2 - 1);
-        } else if (envType === 'inverse') {
-          envelope = 1.0 - Math.sin(Math.PI * ePhase);
-        }
-
-        if (!bipolar) {
-          envelope = Math.abs(envelope);
-        }
+      if (typeof applyWaveformEnvelope === 'function') {
+        wave = applyWaveformEnvelope(wave, {
+          applyEnvelope,
+          envType,
+          envWaves,
+          bipolar,
+          xPortion
+        });
       }
 
-      if (applyEnvelope && bipolar) {
-        wave = (wave * 2 - 1) * envelope;
-        wave = (wave + 1) * 0.5;
-      } else if (applyEnvelope) {
-        wave *= envelope;
-      }
-
-      const centerOffset = envCenter * rectHeight * 0.5;
-      const y = rectHeight * (1.0 - Math.max(0, Math.min(1, wave))) - centerOffset;
+      const normalizedY = typeof mapWaveformToBarYFraction === 'function'
+        ? mapWaveformToBarYFraction(wave, envCenter)
+        : (1.0 - Math.max(0, Math.min(1, wave)));
+      const y = rectHeight * normalizedY;
 
       vertex(barStartX + x, y);
     }
@@ -5483,46 +6565,9 @@ function drawBottomBar(currentWidth) {
       }
     }
   } else if (currentShader === 8) {
-    // Matrix / Punch Card pattern
+    // Runway pattern sourced from the Flying Club bar asset.
     resetShader();
-    const text = matrixInput ? matrixInput.value || "RPI" : "RPI";
-    const rows = parseInt(matrixRowsSlider ? matrixRowsSlider.value : 3);
-    const gap = parseInt(matrixGapSlider ? matrixGapSlider.value : 1);
-
-    const numCols = text.length > 0 ? text.length * 8 : Math.floor(exactBarWidth / rectHeight);
-    const sqSize = (rectHeight - (rows - 1) * gap) / rows;
-    const colWidth = sqSize + gap;
-    const totalWidth = numCols * colWidth - gap;
-    const startXOffset = barStartX + (exactBarWidth - totalWidth) / 2;
-
-    stroke(fgColor);
-    strokeWeight(1);
-    fill(fgColor);
-
-    for (let c = 0; c < numCols; c++) {
-      const charIndex = Math.floor(c / 8);
-      let charVal = 0;
-      if (charIndex < text.length) {
-        charVal = text.charCodeAt(charIndex);
-      }
-      const bitIndex = 7 - (c % 8);
-      const isBitSet = (charVal & (1 << bitIndex)) !== 0;
-
-      for (let r = 0; r < rows; r++) {
-        const x = startXOffset + c * colWidth;
-        const y = 0 + r * (sqSize + gap);
-
-        if (isBitSet && (r % 2 === Math.floor(charVal / 10) % 2 || r === 1)) {
-          rect(x, y, sqSize, sqSize);
-        } else if (!isBitSet && (r === Math.floor(charVal / 20) % rows)) {
-          rect(x, y, sqSize, sqSize);
-        } else {
-          noFill();
-          rect(x, y, sqSize, sqSize);
-          fill(fgColor);
-        }
-      }
-    }
+    drawRunwayBarPattern(null, barStartX, 0, exactBarWidth, rectHeight, fgColor);
   } else if (currentShader === 9) {
     // Truss / Geometric pattern
     resetShader();
@@ -5562,22 +6607,216 @@ function drawBottomBar(currentWidth) {
     stroke(fgColor);
     strokeWeight(renderData.lineThickness);
     renderData.staffLines.forEach(segment => line(segment.x1, segment.y1, segment.x2, segment.y2));
-    renderData.barLines.forEach(segment => line(segment.x1, segment.y1, segment.x2, segment.y2));
 
     renderData.notes.forEach(noteRender => {
-      stroke(fgColor);
-      strokeWeight(renderData.lineThickness);
-      noteRender.ledgerLines.forEach(segment => line(segment.x1, segment.y1, segment.x2, segment.y2));
-      noteRender.accidentalLines.forEach(segment => line(segment.x1, segment.y1, segment.x2, segment.y2));
-      drawMusicHeadP5(noteRender.noteShape, noteRender.noteX, noteRender.noteY, noteRender.rx, noteRender.ry, noteRender.headFill, fgColor);
-      stroke(fgColor);
-      strokeWeight(renderData.lineThickness);
-      if (noteRender.stem) {
-        line(noteRender.stem.x1, noteRender.stem.y1, noteRender.stem.x2, noteRender.stem.y2);
-      }
-      noteRender.flags.forEach(segment => line(segment.x1, segment.y1, segment.x2, segment.y2));
+      drawMusicHeadP5('circle', noteRender.noteX, noteRender.noteY, noteRender.rx, noteRender.ry, true, fgColor);
     });
 
+  } else if (currentShader === 13) {
+    // Lines pattern
+    resetShader();
+    noStroke();
+    fill(fgColor);
+
+    const geometry = createLinesPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight,
+      variant: linesVariantSlider ? linesVariantSlider.value : 2
+    });
+
+    for (let i = 0; i < geometry.rects.length; i++) {
+      const rectData = geometry.rects[i];
+      rect(rectData.x, rectData.y, rectData.width, rectData.height);
+    }
+  } else if (currentShader === 14) {
+    // Point Connect pattern
+    resetShader();
+    noFill();
+    const geometry = createPointConnectPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight,
+      variant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1
+    });
+
+    stroke(fgColor);
+    strokeWeight(geometry.thickness);
+    strokeCap(SQUARE);
+    strokeJoin(MITER);
+
+    for (let i = 0; i < geometry.lines.length; i++) {
+      const lineSegment = geometry.lines[i];
+      line(lineSegment.x1, lineSegment.y1, lineSegment.x2, lineSegment.y2);
+    }
+  } else if (currentShader === 15) {
+    // Triangle grid pattern
+    resetShader();
+    noFill();
+    const geometry = createTriangleGridPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight,
+      variant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2
+    });
+
+    stroke(fgColor);
+    strokeWeight(geometry.thickness);
+    strokeCap(SQUARE);
+    strokeJoin(MITER);
+
+    for (let i = 0; i < geometry.lines.length; i++) {
+      const lineSegment = geometry.lines[i];
+      line(lineSegment.x1, lineSegment.y1, lineSegment.x2, lineSegment.y2);
+    }
+  } else if (currentShader === 16) {
+    // Circles gradient pattern
+    resetShader();
+    noStroke();
+    fill(fgColor);
+    const geometry = createCirclesGradientPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight,
+      variant: circlesGradientVariantSlider ? circlesGradientVariantSlider.value : 1
+    });
+
+    for (let i = 0; i < geometry.rects.length; i++) {
+      const rectData = geometry.rects[i];
+      rect(rectData.x, rectData.y, rectData.width, rectData.height);
+    }
+    for (let i = 0; i < geometry.circles.length; i++) {
+      const circleData = geometry.circles[i];
+      circle(circleData.cx, circleData.cy, circleData.r * 2);
+    }
+  } else if (currentShader === 17) {
+    // Gradient pattern
+    resetShader();
+    noStroke();
+    fill(fgColor);
+    const geometry = createGradientPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight,
+      variant: gradientVariantSlider ? gradientVariantSlider.value : 1
+    });
+
+    for (let i = 0; i < geometry.rects.length; i++) {
+      const rectData = geometry.rects[i];
+      rect(rectData.x, rectData.y, rectData.width, rectData.height, rectData.radius);
+    }
+  } else if (currentShader === 18) {
+    // Grid pattern
+    resetShader();
+    noFill();
+    const geometry = createGridPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight,
+      variant: gridVariantSlider ? gridVariantSlider.value : 1
+    });
+
+    stroke(fgColor);
+    strokeWeight(geometry.thickness);
+    strokeCap(SQUARE);
+    strokeJoin(MITER);
+
+    for (let i = 0; i < geometry.lines.length; i++) {
+      const lineSegment = geometry.lines[i];
+      line(lineSegment.x1, lineSegment.y1, lineSegment.x2, lineSegment.y2);
+    }
+  } else if (currentShader === 19) {
+    // Triangles pattern
+    resetShader();
+    noStroke();
+    fill(fgColor);
+    const geometry = createTrianglesPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight,
+      variant: trianglesVariantSlider ? trianglesVariantSlider.value : 1
+    });
+
+    for (let i = 0; i < geometry.polygons.length; i++) {
+      beginShape();
+      for (let j = 0; j < geometry.polygons[i].length; j++) {
+        const point = geometry.polygons[i][j];
+        vertex(point.x, point.y);
+      }
+      endShape(CLOSE);
+    }
+  } else if (currentShader === 20) {
+    // Fibonacci sequence pattern
+    resetShader();
+    noStroke();
+    fill(fgColor);
+    const geometry = createFibonacciPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight
+    });
+
+    for (let i = 0; i < geometry.rects.length; i++) {
+      const rectData = geometry.rects[i];
+      rect(rectData.x, rectData.y, rectData.width, rectData.height);
+    }
+  } else if (currentShader === 21) {
+    // Union pattern
+    resetShader();
+    noStroke();
+    fill(fgColor);
+    const geometry = createUnionPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight
+    });
+
+    for (let i = 0; i < geometry.topRects.length; i++) {
+      const rectData = geometry.topRects[i];
+      rect(rectData.x, rectData.y, rectData.width, rectData.height);
+    }
+
+    for (let i = 0; i < geometry.lowerPaths.length; i++) {
+      beginShape();
+      for (let j = 0; j < geometry.lowerPaths[i].length; j++) {
+        const point = geometry.lowerPaths[i][j];
+        vertex(point.x, point.y);
+      }
+      endShape(CLOSE);
+    }
+  } else if (currentShader === 22) {
+    // Wave Quantum pattern
+    resetShader();
+    noFill();
+    const geometry = createWaveQuantumPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight
+    });
+
+    stroke(fgColor);
+    strokeWeight(geometry.thickness);
+    strokeCap(ROUND);
+    strokeJoin(ROUND);
+
+    for (let i = 0; i < geometry.paths.length; i++) {
+      beginShape();
+      for (let j = 0; j < geometry.paths[i].length; j++) {
+        const point = geometry.paths[i][j];
+        vertex(point.x, point.y);
+      }
+      endShape();
+    }
   } else if (currentShader === 11) {
     // Pulse / Centerline pattern
     resetShader();
@@ -5654,17 +6893,6 @@ function togglePlayback() {
 
   if (isPlaying) {
     loop();
-    if (iconPlay) iconPlay.classList.add('hidden');
-    if (iconPause) iconPause.classList.remove('hidden');
-    if (playbackText) playbackText.textContent = "SPACE TO PAUSE";
-    if (playbackBtn) playbackBtn.setAttribute('aria-label', 'Pause Animation');
-
-    if (animationInfoBadge) animationInfoBadge.textContent = "PRESS SPACEBAR TO PAUSE ANIMATION";
-    if (waveformAnimateToggle && !waveformAnimateToggle.checked) {
-      waveformAnimateToggle.checked = true;
-    }
-
-    startAudio();
   } else {
     // Snap animation phase to mathematical zero-crossing for symmetry
     if (currentShader === 4 && waveformSpeedSlider) {
@@ -5678,21 +6906,10 @@ function togglePlayback() {
 
     noLoop();
     redraw(); // Force draw of the perfectly snapped frame
-
-    if (iconPause) iconPause.classList.add('hidden');
-    if (iconPlay) iconPlay.classList.remove('hidden');
-    if (playbackText) playbackText.textContent = "SPACE TO PLAY";
-    if (playbackBtn) playbackBtn.setAttribute('aria-label', 'Play Animation');
-
-    if (animationInfoBadge) animationInfoBadge.textContent = "PRESS SPACEBAR TO PLAY ANIMATION";
-    if (waveformAnimateToggle && waveformAnimateToggle.checked) {
-      waveformAnimateToggle.checked = false;
-    }
-
-    stopAudio();
   }
 
-  updateAudioControlsUI();
+  syncMotionToggleState();
+  requestUpdate();
 }
 
 function clampPanOffset() {
@@ -5726,9 +6943,8 @@ function zoomCanvas(amount) {
   if (!isPlaying) redraw();
 }
 
-function togglePanMode() {
-  isPanningMode = !isPanningMode;
-
+function setPanMode(nextActive) {
+  isPanningMode = !!nextActive;
   if (panBtn) {
     panBtn.classList.toggle('is-active', isPanningMode);
     document.body.style.cursor = isPanningMode ? 'move' : 'default';
@@ -5740,6 +6956,18 @@ function togglePanMode() {
   } else {
     updateEasterEggHotspotBounds();
   }
+}
+
+function togglePanMode() {
+  setPanMode(!isPanningMode);
+}
+
+function handlePanModeOutsidePointerDown(event) {
+  if (!isPanningMode) return;
+  if (panBtn && panBtn.contains(event.target)) return;
+  if (canvasViewport && canvasViewport.contains(event.target)) return;
+
+  setPanMode(false);
 }
 
 function mouseDragged() {
@@ -5779,8 +7007,29 @@ function setupCustomDropdowns() {
     optionsList.className = 'custom-select-options';
     wrapper.appendChild(optionsList);
 
-    // Populate options
-    Array.from(select.options).forEach(option => {
+    const fadeTop = document.createElement('div');
+    fadeTop.className = 'custom-select-scroll-fade custom-select-scroll-fade-top';
+    optionsList.appendChild(fadeTop);
+
+    const optionsViewport = document.createElement('div');
+    optionsViewport.className = 'custom-select-options-scroll';
+    optionsList.appendChild(optionsViewport);
+
+    const fadeBottom = document.createElement('div');
+    fadeBottom.className = 'custom-select-scroll-fade custom-select-scroll-fade-bottom';
+    optionsList.appendChild(fadeBottom);
+
+    const updateScrollFades = () => {
+      const canScroll = optionsViewport.scrollHeight > optionsViewport.clientHeight + 1;
+      const hasScrollTop = canScroll && optionsViewport.scrollTop > 1;
+      const hasScrollBottom = canScroll &&
+        optionsViewport.scrollTop + optionsViewport.clientHeight < optionsViewport.scrollHeight - 1;
+
+      optionsList.classList.toggle('has-scroll-top', hasScrollTop);
+      optionsList.classList.toggle('has-scroll-bottom', hasScrollBottom);
+    };
+
+    const appendCustomOption = (option) => {
       const customOption = document.createElement('div');
       customOption.className = 'custom-option';
       customOption.textContent = option.textContent;
@@ -5802,9 +7051,27 @@ function setupCustomDropdowns() {
         wrapper.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
         customOption.classList.add('selected');
         wrapper.classList.remove('open');
+        updateScrollFades();
       });
 
-      optionsList.appendChild(customOption);
+      optionsViewport.appendChild(customOption);
+    };
+
+    // Populate options, preserving optgroup headings where present.
+    Array.from(select.children).forEach(child => {
+      if (child.tagName === 'OPTGROUP') {
+        const groupLabel = document.createElement('div');
+        groupLabel.className = 'custom-option-group-label';
+        groupLabel.textContent = child.label;
+        optionsViewport.appendChild(groupLabel);
+
+        Array.from(child.children).forEach(option => appendCustomOption(option));
+        return;
+      }
+
+      if (child.tagName === 'OPTION') {
+        appendCustomOption(child);
+      }
     });
 
     // Toggle dropdown
@@ -5815,6 +7082,7 @@ function setupCustomDropdowns() {
         if (w !== wrapper) w.classList.remove('open');
       });
       wrapper.classList.toggle('open');
+      requestAnimationFrame(updateScrollFades);
     });
 
     // Listen for external updates to the select (e.g. from keyboard shortcuts)
@@ -5828,7 +7096,11 @@ function setupCustomDropdowns() {
           opt.classList.remove('selected');
         }
       });
+      requestAnimationFrame(updateScrollFades);
     });
+
+    optionsViewport.addEventListener('scroll', updateScrollFades);
+    requestAnimationFrame(updateScrollFades);
   });
 
   // click outside to close dropdowns

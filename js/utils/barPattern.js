@@ -35,6 +35,71 @@ function generateWaveValue(phase, type) {
   return square + (pulse - square) * t;
 }
 
+function clampWaveformValue(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function normalizeWaveformEnvelopeWaves(value) {
+  const parsedValue = Math.round(parseFloat(value));
+  if (!Number.isFinite(parsedValue)) {
+    return 1;
+  }
+
+  return clampWaveformValue(parsedValue, 1, 10);
+}
+
+function normalizeWaveformEnvelopeCenter(value) {
+  const parsedValue = parseFloat(value);
+  if (!Number.isFinite(parsedValue)) {
+    return 0;
+  }
+
+  return clampWaveformValue(parsedValue, -0.5, 0.5);
+}
+
+function applyWaveformEnvelope(wave, options = {}) {
+  const applyEnvelope = !!options.applyEnvelope;
+  if (!applyEnvelope) {
+    return clampWaveformValue(wave, 0, 1);
+  }
+
+  const envType = options.envType || 'sine';
+  const envWaves = normalizeWaveformEnvelopeWaves(options.envWaves);
+  const bipolar = !!options.bipolar;
+  const xPortion = clampWaveformValue(Number(options.xPortion) || 0, 0, 1);
+  const envelopePhase = xPortion * envWaves;
+  let envelope = 1;
+
+  if (envType === 'sine') {
+    envelope = Math.sin(Math.PI * envelopePhase);
+  } else if (envType === 'cosine') {
+    envelope = Math.cos(Math.PI * envelopePhase);
+  } else if (envType === 'linear') {
+    envelope = 1.0 - Math.abs((envelopePhase % 1) * 2 - 1);
+  } else if (envType === 'inverse') {
+    envelope = 1.0 - Math.sin(Math.PI * envelopePhase);
+  }
+
+  if (!bipolar) {
+    envelope = Math.abs(envelope);
+    return clampWaveformValue(wave * envelope, 0, 1);
+  }
+
+  const centeredWave = (wave * 2) - 1;
+  return clampWaveformValue(((centeredWave * envelope) + 1) * 0.5, 0, 1);
+}
+
+function mapWaveformToBarYFraction(wave, centerOffset = 0) {
+  const clampedWave = clampWaveformValue(wave, 0, 1);
+  const clampedCenterOffset = normalizeWaveformEnvelopeCenter(centerOffset);
+  const centerFraction = 0.5 - clampedCenterOffset * 0.5;
+  const amplitudeLimit = Math.max(0, Math.min(centerFraction, 1 - centerFraction));
+  const amplitudeScale = amplitudeLimit * 2;
+  const centeredWave = clampedWave - 0.5;
+
+  return clampWaveformValue(centerFraction - centeredWave * amplitudeScale, 0, 1);
+}
+
 function createMusicHeadSVG(shape, x, y, rx, ry, filled, fgColor, lineThickness) {
   const normalizedShape = normalizeMusicNoteShape(shape);
   const fill = filled ? fgColor : 'none';
@@ -52,6 +117,450 @@ function createMusicHeadSVG(shape, x, y, rx, ry, filled, fgColor, lineThickness)
     ? `${x},${y - ry} ${x + rx},${y} ${x},${y + ry} ${x - rx},${y}`
     : `${x},${y - ry} ${x + rx},${y + ry} ${x - rx},${y + ry}`;
   return `<polygon points="${points}" fill="${fill}"${strokeAttr}/>`;
+}
+
+function clampPatternVariant(value, max) {
+  const parsed = parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return 1;
+  return Math.max(1, Math.min(max, parsed));
+}
+
+function createLinesPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const variant = clampPatternVariant(options.variant || 2, 2);
+  const fullBarCount = variant === 1 ? 20 : 24;
+  const barWidth = exactBarWidth / (2 * fullBarCount - 1);
+  const halfHeight = barHeight / 2;
+  const rects = [];
+
+  for (let i = 0; i < fullBarCount; i++) {
+    rects.push({
+      x: barStartX + i * barWidth * 2,
+      y: barY,
+      width: barWidth,
+      height: barHeight
+    });
+  }
+
+  for (let i = 0; i < fullBarCount - 1; i++) {
+    rects.push({
+      x: barStartX + ((i * 2) + 1) * barWidth,
+      y: barY + halfHeight,
+      width: barWidth,
+      height: halfHeight
+    });
+  }
+
+  return { rects };
+}
+
+function createPointConnectPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const variant = clampPatternVariant(options.variant || 1, 2);
+  const thickness = Math.max(0.75, parseFloat(options.thickness || Math.max(1, barHeight * 0.075)));
+  const cellCount = variant === 1 ? 8 : 14;
+  const halfThickness = thickness / 2;
+  const left = barStartX + halfThickness;
+  const right = barStartX + exactBarWidth - halfThickness;
+  const top = barY + halfThickness;
+  const bottom = barY + barHeight - halfThickness;
+  const cellWidth = (right - left) / cellCount;
+  const lines = [];
+  const addLine = (x1, y1, x2, y2) => {
+    lines.push({ x1, y1, x2, y2 });
+  };
+
+  addLine(left, top, right, top);
+  addLine(left, bottom, right, bottom);
+
+  for (let i = 0; i <= cellCount; i++) {
+    const x = left + i * cellWidth;
+    addLine(x, top, x, bottom);
+  }
+
+  for (let i = 0; i < cellCount; i++) {
+    const x0 = left + i * cellWidth;
+    const xMid = x0 + cellWidth / 2;
+    const x1 = x0 + cellWidth;
+
+    addLine(xMid, top, xMid, bottom);
+    addLine(x0, top, xMid, bottom);
+    addLine(x0, bottom, xMid, top);
+    addLine(xMid, top, x1, bottom);
+    addLine(xMid, bottom, x1, top);
+  }
+
+  return { lines, thickness };
+}
+
+function createTriangleGridPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const variant = clampPatternVariant(options.variant || 2, 3);
+  const thickness = Math.max(0.75, parseFloat(options.thickness || Math.max(1, barHeight * 0.075)));
+  const rowCount = variant + 1;
+  const halfThickness = thickness / 2;
+  const left = barStartX + halfThickness;
+  const right = barStartX + exactBarWidth - halfThickness;
+  const top = barY + halfThickness;
+  const bottom = barY + barHeight - halfThickness;
+  const innerWidth = Math.max(0.1, right - left);
+  const innerHeight = Math.max(0.1, bottom - top);
+  const rowHeight = innerHeight / rowCount;
+  const targetCellWidth = (2 * rowHeight) / Math.sqrt(3);
+  const columnCount = Math.max(8, Math.round(innerWidth / Math.max(1, targetCellWidth)));
+  const cellWidth = innerWidth / columnCount;
+  const lines = [];
+  const addLine = (x1, y1, x2, y2) => {
+    lines.push({ x1, y1, x2, y2 });
+  };
+  const rowPoints = [];
+
+  addLine(left, top, right, top);
+  addLine(left, bottom, right, bottom);
+  addLine(left, top, left, bottom);
+  addLine(right, top, right, bottom);
+
+  for (let row = 0; row <= rowCount; row++) {
+    const y = top + row * rowHeight;
+    const offset = row % 2 === 0 ? 0 : cellWidth / 2;
+    const points = [];
+    const pointCount = row % 2 === 0 ? columnCount + 1 : columnCount;
+
+    for (let i = 0; i < pointCount; i++) {
+      points.push({ x: left + offset + i * cellWidth, y });
+    }
+    rowPoints.push(points);
+
+    if (row > 0 && row < rowCount) {
+      addLine(left, y, right, y);
+    }
+  }
+
+  for (let row = 0; row < rowCount; row++) {
+    const upper = rowPoints[row];
+    const lower = rowPoints[row + 1];
+    const targetOffset = cellWidth / 2;
+
+    for (let i = 0; i < upper.length; i++) {
+      for (let j = 0; j < lower.length; j++) {
+        const delta = lower[j].x - upper[i].x;
+        if (Math.abs(Math.abs(delta) - targetOffset) < 0.001) {
+          addLine(upper[i].x, upper[i].y, lower[j].x, lower[j].y);
+        }
+      }
+    }
+  }
+
+  return { lines, thickness };
+}
+
+function createGradientPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const variant = clampPatternVariant(options.variant || 1, 2);
+  const rects = [];
+  const addRect = (x, y, width, height) => {
+    rects.push({
+      x,
+      y,
+      width,
+      height,
+      radius: height / 2
+    });
+  };
+
+  if (variant === 1) {
+    const rowCount = 7;
+    const colCount = 8;
+    const gapY = barHeight * 0.05;
+    const rowHeight = (barHeight - gapY * (rowCount - 1)) / rowCount;
+    const cellWidth = exactBarWidth / colCount;
+
+    for (let row = 0; row < rowCount; row++) {
+      const y = barY + row * (rowHeight + gapY);
+      for (let col = 0; col < colCount; col++) {
+        const widthFactor = Math.max(0.25, 0.96 - col * 0.11);
+        const width = Math.max(rowHeight * 2.2, cellWidth * widthFactor);
+        addRect(barStartX + col * cellWidth, y, width, rowHeight);
+      }
+    }
+  } else {
+    const rowCount = 5;
+    const gapY = barHeight * 0.08;
+    const rowHeight = (barHeight - gapY * (rowCount - 1)) / rowCount;
+    const segments = [
+      { x: 0, width: exactBarWidth * 0.2 },
+      { x: exactBarWidth * 0.2, width: exactBarWidth * 0.4 },
+      { x: exactBarWidth * 0.6, width: exactBarWidth * 0.4 }
+    ];
+
+    for (let row = 0; row < rowCount; row++) {
+      const y = barY + row * (rowHeight + gapY);
+      for (let i = 0; i < segments.length; i++) {
+        const segment = segments[i];
+        addRect(barStartX + segment.x, y, segment.width, rowHeight);
+      }
+    }
+  }
+
+  return { rects };
+}
+
+function createCirclesGradientPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const variant = clampPatternVariant(options.variant || 1, 3);
+  const circles = [];
+  const rects = [];
+  const addCircleRow = (count, y, radius, offset = 0) => {
+    const spacing = exactBarWidth / Math.max(1, count - 1);
+    for (let i = 0; i < count; i++) {
+      circles.push({
+        cx: barStartX + i * spacing + offset,
+        cy: y,
+        r: radius
+      });
+    }
+  };
+
+  if (variant === 1) {
+    addCircleRow(30, barY + barHeight * 0.2, barHeight * 0.19);
+    addCircleRow(31, barY + barHeight * 0.55, barHeight * 0.12, exactBarWidth / 60);
+    addCircleRow(30, barY + barHeight * 0.82, barHeight * 0.085);
+  } else if (variant === 2) {
+    rects.push({
+      x: barStartX,
+      y: barY + barHeight * 0.52,
+      width: exactBarWidth,
+      height: barHeight * 0.34
+    });
+    addCircleRow(30, barY + barHeight * 0.52, barHeight * 0.15);
+    addCircleRow(32, barY + barHeight * 0.28, barHeight * 0.1, exactBarWidth / 64);
+    addCircleRow(34, barY + barHeight * 0.06, barHeight * 0.055, exactBarWidth / 68);
+  } else {
+    const rows = 4;
+    const cols = 52;
+    for (let row = 0; row < rows; row++) {
+      const y = barY + barHeight * (0.08 + row * 0.24);
+      for (let col = 0; col < cols; col++) {
+        const xFraction = col / (cols - 1);
+        const sizeFactor = Math.pow(xFraction, 1.55);
+        const radius = barHeight * (0.015 + sizeFactor * (0.06 + row * 0.02));
+        const offset = row % 2 === 0 ? 0 : exactBarWidth / (cols * 2);
+        circles.push({
+          cx: barStartX + xFraction * exactBarWidth + offset,
+          cy: y,
+          r: radius
+        });
+      }
+    }
+  }
+
+  return { rects, circles };
+}
+
+function createGridPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const variant = clampPatternVariant(options.variant || 1, 3);
+  const rowCount = variant + 1;
+  const colCount = Math.max(8, Math.round(exactBarWidth / (barHeight / rowCount)));
+  const thickness = Math.max(0.75, barHeight * 0.08);
+  const lines = [];
+  const left = barStartX + thickness / 2;
+  const right = barStartX + exactBarWidth - thickness / 2;
+  const top = barY + thickness / 2;
+  const bottom = barY + barHeight - thickness / 2;
+  const cellWidth = (right - left) / colCount;
+  const cellHeight = (bottom - top) / rowCount;
+  const addLine = (x1, y1, x2, y2) => lines.push({ x1, y1, x2, y2 });
+
+  for (let row = 0; row <= rowCount; row++) {
+    const y = top + row * cellHeight;
+    addLine(left, y, right, y);
+  }
+  for (let col = 0; col <= colCount; col++) {
+    const x = left + col * cellWidth;
+    addLine(x, top, x, bottom);
+  }
+
+  return { lines, thickness };
+}
+
+function createTrianglesPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const variant = clampPatternVariant(options.variant || 1, 2);
+  const polygons = [];
+
+  const addRow = (count, y, height) => {
+    const cellWidth = exactBarWidth / count;
+    for (let i = 0; i < count; i++) {
+      const x = barStartX + i * cellWidth;
+      polygons.push([
+        { x, y },
+        { x: x + cellWidth, y: y + height },
+        { x, y: y + height }
+      ]);
+    }
+  };
+
+  if (variant === 1) {
+    addRow(14, barY, barHeight);
+  } else {
+    addRow(15, barY, barHeight * 0.48);
+    addRow(30, barY + barHeight * 0.48, barHeight * 0.2);
+    addRow(60, barY + barHeight * 0.68, barHeight * 0.12);
+    addRow(120, barY + barHeight * 0.8, barHeight * 0.08);
+  }
+
+  return { polygons };
+}
+
+function createFibonacciPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const weights = [34, 21, 13, 8, 5, 3, 1];
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  const gapWidth = Math.max(0.9, exactBarWidth * 0.004442);
+  const totalGapWidth = gapWidth * (weights.length - 1);
+  const usableWidth = Math.max(0, exactBarWidth - totalGapWidth);
+  const rects = [];
+  let x = barStartX;
+
+  for (let i = 0; i < weights.length; i++) {
+    const width = i === weights.length - 1
+      ? barStartX + exactBarWidth - x
+      : (usableWidth * weights[i]) / total;
+    rects.push({ x, y: barY, width, height: barHeight });
+    x += width + (i < weights.length - 1 ? gapWidth : 0);
+  }
+
+  return { rects, gapWidth };
+}
+
+function createUnionPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const moduleCount = 5;
+  const moduleGap = Math.max(0.9, exactBarWidth * 0.003978);
+  const moduleWidth = (exactBarWidth - moduleGap * (moduleCount - 1)) / moduleCount;
+  const topBandHeight = barHeight * (8.35254 / 36);
+  const lowerTop = barY + barHeight * (10.9414 / 36);
+  const lowerBottom = barY + barHeight;
+  const lowerSpanTemplate = [6.71289, 24.44241, 5.8232, 24.4502, 5.8242, 24.4463, 6.7139];
+  const templateTotal = lowerSpanTemplate.reduce((sum, span) => sum + span, 0);
+  const topRects = [];
+  const lowerPaths = [];
+
+  function buildLowerPath(moduleX) {
+    const spans = lowerSpanTemplate.map((span) => (span / templateTotal) * moduleWidth);
+    const bottomPoints = [];
+    let cursorX = moduleX;
+
+    bottomPoints.push({ x: moduleX, y: lowerBottom });
+    cursorX += spans[0];
+    bottomPoints.push({ x: cursorX, y: lowerBottom });
+
+    for (let archIndex = 0; archIndex < 3; archIndex++) {
+      const archWidth = spans[archIndex * 2 + 1];
+      const flatWidth = spans[archIndex * 2 + 2] || 0;
+      const radius = archWidth * 0.5;
+      const centerX = cursorX + radius;
+      const steps = 20;
+
+      for (let step = 1; step <= steps; step++) {
+        const t = step / steps;
+        const x = cursorX + archWidth * t;
+        const dx = x - centerX;
+        bottomPoints.push({
+          x,
+          y: lowerBottom - Math.sqrt(Math.max(0, radius * radius - dx * dx))
+        });
+      }
+
+      cursorX += archWidth;
+      if (flatWidth > 0) {
+        cursorX += flatWidth;
+        bottomPoints.push({ x: cursorX, y: lowerBottom });
+      }
+    }
+
+    bottomPoints[bottomPoints.length - 1] = { x: moduleX + moduleWidth, y: lowerBottom };
+
+    return [
+      { x: moduleX, y: lowerTop },
+      { x: moduleX + moduleWidth, y: lowerTop },
+      { x: moduleX + moduleWidth, y: lowerBottom },
+      ...bottomPoints.slice(0, -1).reverse()
+    ];
+  }
+
+  for (let i = 0; i < moduleCount; i++) {
+    const moduleX = barStartX + i * (moduleWidth + moduleGap);
+    topRects.push({
+      x: moduleX,
+      y: barY,
+      width: moduleWidth,
+      height: topBandHeight
+    });
+    lowerPaths.push(buildLowerPath(moduleX));
+  }
+
+  return {
+    topRects,
+    lowerPaths,
+    moduleGap,
+    moduleWidth,
+    topBandHeight,
+    lowerTop
+  };
+}
+
+function createWaveQuantumPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const thickness = Math.max(1.2, barHeight * 0.1);
+  const centerY = barY + barHeight / 2;
+  const amplitude = barHeight * 0.48;
+  const cycles = 11;
+  const points = Math.max(220, Math.round(exactBarWidth * 1.2));
+  const phases = [0, Math.PI / 3, (2 * Math.PI) / 3];
+  const paths = phases.map((phase) => {
+    const pointsList = [];
+    for (let i = 0; i <= points; i++) {
+      const portion = i / points;
+      const x = barStartX + portion * exactBarWidth;
+      const y = centerY - Math.sin(portion * cycles * 2 * Math.PI + phase) * amplitude;
+      pointsList.push({ x, y });
+    }
+    return pointsList;
+  });
+
+  return { paths, thickness };
 }
 
 function normalizeTrussFamily(family) {
@@ -305,6 +814,118 @@ function createTrussPatternGeometry(options = {}) {
   };
 }
 
+const RUNWAY_BAR_REFERENCE_WIDTH = 500;
+const RUNWAY_BAR_REFERENCE_HEIGHT = 36;
+const RUNWAY_BAR_RECTS = [
+  [0, 0, 500, 1],
+  [0, 0, 1, 36],
+  [2, 2, 60, 2],
+  [162, 8, 20, 3],
+  [162, 12, 20, 3],
+  [162, 4, 20, 3],
+  [92, 2.5, 40, 2.5],
+  [92, 7.5, 40, 2.5],
+  [92, 12.5, 40, 2.5],
+  [92, 26, 40, 2.5],
+  [92, 21, 40, 2.5],
+  [92, 31, 40, 2.5],
+  [368, 2.5, 40, 2.5],
+  [368, 7.5, 40, 2.5],
+  [368, 12.5, 40, 2.5],
+  [368, 26, 40, 2.5],
+  [368, 21, 40, 2.5],
+  [368, 31, 40, 2.5],
+  [212, 7, 20, 8],
+  [212, 21, 20, 8],
+  [268, 7, 20, 8],
+  [268, 21, 20, 8],
+  [162, 25, 20, 3],
+  [162, 29, 20, 3],
+  [162, 21, 20, 3],
+  [2, 5, 60, 2],
+  [2, 8, 60, 2],
+  [2, 11, 60, 2],
+  [2, 14, 60, 2],
+  [253, 17.5, 17, 1],
+  [230, 17.5, 17, 1],
+  [207, 17.5, 17, 1],
+  [184, 17.5, 17, 1],
+  [161, 17.5, 17, 1],
+  [138, 17.5, 17, 1],
+  [115, 17.5, 17, 1],
+  [92, 17.5, 17, 1],
+  [69, 17.5, 17, 1],
+  [276, 17.5, 17, 1],
+  [299, 17.5, 17, 1],
+  [322, 17.5, 17, 1],
+  [345, 17.5, 17, 1],
+  [368, 17.5, 17, 1],
+  [391, 17.5, 17, 1],
+  [414, 17.5, 17, 1],
+  [2, 29, 60, 2],
+  [2, 26, 60, 2],
+  [2, 23, 60, 2],
+  [2, 20, 60, 2],
+  [2, 32, 60, 2],
+  [0, 35, 500, 1],
+  [499, 0, 1, 36],
+  [438, 2, 60, 2],
+  [438, 5, 60, 2],
+  [438, 8, 60, 2],
+  [438, 11, 60, 2],
+  [438, 14, 60, 2],
+  [438, 29, 60, 2],
+  [438, 26, 60, 2],
+  [438, 23, 60, 2],
+  [438, 20, 60, 2],
+  [438, 32, 60, 2],
+  [318, 8, 20, 3],
+  [318, 12, 20, 3],
+  [318, 4, 20, 3],
+  [318, 25, 20, 3],
+  [318, 29, 20, 3],
+  [318, 21, 20, 3]
+];
+
+function forEachRunwayBarRect(barStartX, barY, exactBarWidth, barHeight, callback) {
+  const scaleX = exactBarWidth / RUNWAY_BAR_REFERENCE_WIDTH;
+  const scaleY = barHeight / RUNWAY_BAR_REFERENCE_HEIGHT;
+
+  for (let i = 0; i < RUNWAY_BAR_RECTS.length; i++) {
+    const [x, y, width, height] = RUNWAY_BAR_RECTS[i];
+    callback(
+      barStartX + x * scaleX,
+      barY + y * scaleY,
+      width * scaleX,
+      height * scaleY
+    );
+  }
+}
+
+function drawRunwayBarPattern(target, barStartX, barY, exactBarWidth, barHeight, fgColor) {
+  const surface = target || window;
+
+  surface.noStroke();
+  surface.fill(fgColor);
+  if (typeof surface.rectMode === 'function') {
+    surface.rectMode(surface.CORNER);
+  }
+
+  forEachRunwayBarRect(barStartX, barY, exactBarWidth, barHeight, (x, y, width, height) => {
+    surface.rect(x, y, width, height);
+  });
+}
+
+function createRunwayBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor) {
+  let pattern = '';
+
+  forEachRunwayBarRect(barStartX, barY, exactBarWidth, barHeight, (x, y, width, height) => {
+    pattern += `\n    <rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${fgColor}"/>`;
+  });
+
+  return pattern;
+}
+
 function createBarPatternSVG(config) {
   const {
     currentShader,
@@ -409,6 +1030,11 @@ function createBarPatternSVG(config) {
     const waveType = parseFloat(values.waveformType);
     const speed = parseFloat(values.waveformSpeed);
     const time = parseFloat(values.timeSeconds || 0);
+    const applyEnvelope = values.waveformEnvelope === true || values.waveformEnvelope === 'true';
+    const envType = values.waveformEnvelopeType || 'sine';
+    const envWaves = normalizeWaveformEnvelopeWaves(values.waveformEnvelopeWaves);
+    const envCenter = parseFloat(values.waveformEnvelopeCenter || 0);
+    const bipolar = values.waveformEnvelopeBipolar === true || values.waveformEnvelopeBipolar === 'true';
 
     const basePoints = Math.max(300, exactBarWidth * 3);
     const frequencyMultiplier = Math.max(1, frequency / 10);
@@ -416,10 +1042,18 @@ function createBarPatternSVG(config) {
 
     let pathData = `M ${barStartX} ${barY + barHeight}`;
     for (let i = 0; i <= points; i++) {
-      const x = (i / points) * exactBarWidth;
-      const phase = ((x / exactBarWidth) * frequency) - (time * speed);
-      const wave = generateWaveValue(phase, waveType);
-      const y = barY + barHeight * (1.0 - Math.max(0, Math.min(1, wave)));
+      const xPortion = i / points;
+      const x = xPortion * exactBarWidth;
+      const phase = (xPortion * frequency) - (time * speed);
+      let wave = generateWaveValue(phase, waveType);
+      wave = applyWaveformEnvelope(wave, {
+        applyEnvelope,
+        envType,
+        envWaves,
+        bipolar,
+        xPortion
+      });
+      const y = barY + barHeight * mapWaveformToBarYFraction(wave, envCenter);
       pathData += ` L ${barStartX + x} ${y}`;
     }
     pathData += ` L ${barStartX + exactBarWidth} ${barY + barHeight} Z`;
@@ -520,38 +1154,6 @@ function createBarPatternSVG(config) {
     return pattern;
   }
 
-  if (currentShader === 8) {
-    const text = values.matrixText || 'RPI';
-    const rows = parseInt(values.matrixRows || 3, 10);
-    const gap = parseInt(values.matrixGap || 1, 10);
-    const binaryDataArray = textToBinary(text);
-
-    if (binaryDataArray.length > 0) {
-      const totalGapHeight = Math.max(0, rows - 1) * gap;
-      const squareSize = Math.max(1, (barHeight - totalGapHeight) / rows);
-      const columns = Math.floor((exactBarWidth + gap) / (squareSize + gap));
-      const totalMatrixWidth = columns * squareSize + Math.max(0, columns - 1) * gap;
-      const startXOffset = barStartX + (exactBarWidth - totalMatrixWidth) / 2;
-
-      let bitIndex = 0;
-      for (let c = 0; c < columns; c++) {
-        for (let r = 0; r < rows; r++) {
-          const x = startXOffset + c * (squareSize + gap);
-          const y = barY + r * (squareSize + gap);
-          const bit = binaryDataArray[bitIndex % binaryDataArray.length];
-          bitIndex++;
-
-          if (bit === 1) {
-            pattern += `\n    <rect x="${x}" y="${y}" width="${squareSize}" height="${squareSize}" fill="${fgColor}"/>`;
-          } else {
-            pattern += `\n    <rect x="${x}" y="${y}" width="${squareSize}" height="${squareSize}" fill="none" stroke="${fgColor}" stroke-width="0.5"/>`;
-          }
-        }
-      }
-    }
-    return pattern;
-  }
-
   if (currentShader === 7) {
     const text = values.morseText || 'RPI';
     const validMorseData = typeof textToMorse !== 'undefined' ? textToMorse(text) : [];
@@ -580,6 +1182,10 @@ function createBarPatternSVG(config) {
       }
     }
     return pattern;
+  }
+
+  if (currentShader === 8) {
+    return createRunwayBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor);
   }
 
   if (currentShader === 9) {
@@ -620,24 +1226,191 @@ function createBarPatternSVG(config) {
     renderData.staffLines.forEach(segment => {
       pattern += `\n    <line x1="${segment.x1}" y1="${segment.y1}" x2="${segment.x2}" y2="${segment.y2}" stroke="${fgColor}" stroke-width="${renderData.lineThickness}"/>`;
     });
-    renderData.barLines.forEach(segment => {
-      pattern += `\n    <line x1="${segment.x1}" y1="${segment.y1}" x2="${segment.x2}" y2="${segment.y2}" stroke="${fgColor}" stroke-width="${renderData.lineThickness}"/>`;
-    });
     renderData.notes.forEach(noteRender => {
-      noteRender.ledgerLines.forEach(segment => {
-        pattern += `\n    <line x1="${segment.x1}" y1="${segment.y1}" x2="${segment.x2}" y2="${segment.y2}" stroke="${fgColor}" stroke-width="${renderData.lineThickness}"/>`;
-      });
-      noteRender.accidentalLines.forEach(segment => {
-        pattern += `\n    <line x1="${segment.x1}" y1="${segment.y1}" x2="${segment.x2}" y2="${segment.y2}" stroke="${fgColor}" stroke-width="${renderData.lineThickness}"/>`;
-      });
-      pattern += `\n    ${createMusicHeadSVG(noteRender.noteShape, noteRender.noteX, noteRender.noteY, noteRender.rx, noteRender.ry, noteRender.headFill, fgColor, renderData.lineThickness)}`;
-      if (noteRender.stem) {
-        pattern += `\n    <line x1="${noteRender.stem.x1}" y1="${noteRender.stem.y1}" x2="${noteRender.stem.x2}" y2="${noteRender.stem.y2}" stroke="${fgColor}" stroke-width="${renderData.lineThickness}"/>`;
-      }
-      noteRender.flags.forEach(segment => {
-        pattern += `\n    <line x1="${segment.x1}" y1="${segment.y1}" x2="${segment.x2}" y2="${segment.y2}" stroke="${fgColor}" stroke-width="${renderData.lineThickness}"/>`;
-      });
+      pattern += `\n    ${createMusicHeadSVG('circle', noteRender.noteX, noteRender.noteY, noteRender.rx, noteRender.ry, true, fgColor, renderData.lineThickness)}`;
     });
+    return pattern;
+  }
+
+  if (currentShader === 13) {
+    const geometry = createLinesPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      variant: values.linesVariant
+    });
+
+    for (let i = 0; i < geometry.rects.length; i++) {
+      const rect = geometry.rects[i];
+      pattern += `\n    <rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" fill="${fgColor}"/>`;
+    }
+    return pattern;
+  }
+
+  if (currentShader === 14) {
+    const geometry = createPointConnectPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      variant: values.pointConnectVariant
+    });
+
+    let pathData = '';
+    for (let i = 0; i < geometry.lines.length; i++) {
+      const line = geometry.lines[i];
+      pathData += ` M ${line.x1} ${line.y1} L ${line.x2} ${line.y2}`;
+    }
+    if (pathData) {
+      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${geometry.thickness}" stroke-linecap="square" stroke-linejoin="miter"/>`;
+    }
+    return pattern;
+  }
+
+  if (currentShader === 15) {
+    const geometry = createTriangleGridPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      variant: values.triangleGridVariant
+    });
+
+    let pathData = '';
+    for (let i = 0; i < geometry.lines.length; i++) {
+      const line = geometry.lines[i];
+      pathData += ` M ${line.x1} ${line.y1} L ${line.x2} ${line.y2}`;
+    }
+    if (pathData) {
+      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${geometry.thickness}" stroke-linecap="square" stroke-linejoin="miter"/>`;
+    }
+    return pattern;
+  }
+
+  if (currentShader === 16) {
+    const geometry = createCirclesGradientPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      variant: values.circlesGradientVariant
+    });
+
+    for (let i = 0; i < geometry.rects.length; i++) {
+      const rect = geometry.rects[i];
+      pattern += `\n    <rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" fill="${fgColor}"/>`;
+    }
+    for (let i = 0; i < geometry.circles.length; i++) {
+      const circle = geometry.circles[i];
+      pattern += `\n    <circle cx="${circle.cx}" cy="${circle.cy}" r="${circle.r}" fill="${fgColor}"/>`;
+    }
+    return pattern;
+  }
+
+  if (currentShader === 17) {
+    const geometry = createGradientPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      variant: values.gradientVariant
+    });
+
+    for (let i = 0; i < geometry.rects.length; i++) {
+      const rect = geometry.rects[i];
+      pattern += `\n    <rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" rx="${rect.radius}" fill="${fgColor}"/>`;
+    }
+    return pattern;
+  }
+
+  if (currentShader === 18) {
+    const geometry = createGridPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      variant: values.gridVariant
+    });
+
+    let pathData = '';
+    for (let i = 0; i < geometry.lines.length; i++) {
+      const line = geometry.lines[i];
+      pathData += ` M ${line.x1} ${line.y1} L ${line.x2} ${line.y2}`;
+    }
+    if (pathData) {
+      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${geometry.thickness}" stroke-linecap="square" stroke-linejoin="miter"/>`;
+    }
+    return pattern;
+  }
+
+  if (currentShader === 19) {
+    const geometry = createTrianglesPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      variant: values.trianglesVariant
+    });
+
+    for (let i = 0; i < geometry.polygons.length; i++) {
+      const points = geometry.polygons[i].map(point => `${point.x},${point.y}`).join(' ');
+      pattern += `\n    <polygon points="${points}" fill="${fgColor}"/>`;
+    }
+    return pattern;
+  }
+
+  if (currentShader === 20) {
+    const geometry = createFibonacciPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight
+    });
+
+    for (let i = 0; i < geometry.rects.length; i++) {
+      const rect = geometry.rects[i];
+      pattern += `\n    <rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" fill="${fgColor}"/>`;
+    }
+    return pattern;
+  }
+
+  if (currentShader === 21) {
+    const geometry = createUnionPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight
+    });
+
+    for (let i = 0; i < geometry.topRects.length; i++) {
+      const rect = geometry.topRects[i];
+      pattern += `\n    <rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" fill="${fgColor}"/>`;
+    }
+
+    for (let i = 0; i < geometry.lowerPaths.length; i++) {
+      const points = geometry.lowerPaths[i].map(point => `${point.x},${point.y}`).join(' ');
+      pattern += `\n    <polygon points="${points}" fill="${fgColor}"/>`;
+    }
+    return pattern;
+  }
+
+  if (currentShader === 22) {
+    const geometry = createWaveQuantumPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight
+    });
+
+    for (let i = 0; i < geometry.paths.length; i++) {
+      const points = geometry.paths[i];
+      let pathData = '';
+      for (let j = 0; j < points.length; j++) {
+        pathData += `${j === 0 ? 'M' : ' L'} ${points[j].x} ${points[j].y}`;
+      }
+      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${geometry.thickness}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
     return pattern;
   }
 
@@ -739,10 +1512,42 @@ function createBarPatternSVG(config) {
 }
 
 if (typeof window !== 'undefined') {
+  window.applyWaveformEnvelope = applyWaveformEnvelope;
+  window.createCirclesGradientPatternGeometry = createCirclesGradientPatternGeometry;
+  window.createFibonacciPatternGeometry = createFibonacciPatternGeometry;
+  window.createGradientPatternGeometry = createGradientPatternGeometry;
+  window.createGridPatternGeometry = createGridPatternGeometry;
+  window.createLinesPatternGeometry = createLinesPatternGeometry;
+  window.createPointConnectPatternGeometry = createPointConnectPatternGeometry;
+  window.createTriangleGridPatternGeometry = createTriangleGridPatternGeometry;
   window.createTrussPatternGeometry = createTrussPatternGeometry;
+  window.createTrianglesPatternGeometry = createTrianglesPatternGeometry;
+  window.createUnionPatternGeometry = createUnionPatternGeometry;
   window.createBarPatternSVG = createBarPatternSVG;
+  window.createWaveQuantumPatternGeometry = createWaveQuantumPatternGeometry;
+  window.mapWaveformToBarYFraction = mapWaveformToBarYFraction;
+  window.normalizeWaveformEnvelopeCenter = normalizeWaveformEnvelopeCenter;
+  window.normalizeWaveformEnvelopeWaves = normalizeWaveformEnvelopeWaves;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { createBarPatternSVG, createTrussPatternGeometry, normalizeTrussFamily };
+  module.exports = {
+    applyWaveformEnvelope,
+    createBarPatternSVG,
+    createCirclesGradientPatternGeometry,
+    createFibonacciPatternGeometry,
+    createGradientPatternGeometry,
+    createGridPatternGeometry,
+    createLinesPatternGeometry,
+    createPointConnectPatternGeometry,
+    createTriangleGridPatternGeometry,
+    createTrussPatternGeometry,
+    createTrianglesPatternGeometry,
+    createUnionPatternGeometry,
+    createWaveQuantumPatternGeometry,
+    mapWaveformToBarYFraction,
+    normalizeWaveformEnvelopeCenter,
+    normalizeWaveformEnvelopeWaves,
+    normalizeTrussFamily
+  };
 }

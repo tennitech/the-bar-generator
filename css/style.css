@@ -1038,6 +1038,781 @@ body.theme-inverted {
   display: none !important;
 }
 
+/* ────────────────────────────────────────
+   Current UI Recovery Overrides
+   ──────────────────────────────────────── */
+
+:root {
+  --surface-panel: #ffffff;
+  --surface-subtle: #f2f4f7;
+  --surface-subtle-hover: #e7ebf0;
+  --surface-subtle-strong: #dbe1e8;
+  --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.08);
+  --shadow-float: 0 24px 60px rgba(0, 0, 0, 0.2);
+  --shadow-rgb: 0, 0, 0;
+}
+
+body.theme-black {
+  --bg-app: #10161d;
+  --bg-sidebar: #1b222b;
+  --bg-canvas: #10161d;
+  --bg-header: #000000;
+  --text-primary: #f4f7fb;
+  --text-secondary: #aab6c2;
+  --text-on-header: #ffffff;
+  --border-color: #34404b;
+  --input-bg: #202933;
+  --input-focus-bg: #26313c;
+  --input-border: #3a4752;
+  --accent-color: #ffffff;
+  --surface-panel: #202933;
+  --surface-subtle: #26313c;
+  --surface-subtle-hover: #2d3945;
+  --surface-subtle-strong: #34414d;
+}
+
+body.theme-white {
+  --bg-app: #f7f8fa;
+  --bg-sidebar: #ffffff;
+  --bg-canvas: #ffffff;
+  --bg-header: #edf2f6;
+  --text-primary: #111111;
+  --text-secondary: #6f7882;
+  --text-on-header: #111111;
+  --border-color: #d7dde4;
+  --input-bg: #ffffff;
+  --input-focus-bg: #ffffff;
+  --input-border: #d7dde4;
+  --accent-color: #111111;
+  --surface-panel: #ffffff;
+  --surface-subtle: #f3f5f8;
+  --surface-subtle-hover: #e8edf2;
+  --surface-subtle-strong: #dde4eb;
+}
+
+body.theme-red {
+  --bg-app: #fff7f8;
+  --bg-sidebar: #fffdfd;
+  --bg-canvas: #fffdfd;
+  --bg-header: #d6001c;
+  --text-primary: #111111;
+  --text-secondary: #7c5e63;
+  --text-on-header: #ffffff;
+  --border-color: #ead4d8;
+  --input-bg: #fffdfd;
+  --input-focus-bg: #ffffff;
+  --input-border: #ead4d8;
+  --accent-color: #d6001c;
+  --surface-panel: #fffdfd;
+  --surface-subtle: #fbf2f4;
+  --surface-subtle-hover: #f5e5e9;
+  --surface-subtle-strong: #eed8de;
+}
+
+body.theme-blue {
+  --bg-app: #f5faff;
+  --bg-sidebar: #ffffff;
+  --bg-canvas: #ffffff;
+  --bg-header: #0081CE;
+  --text-primary: #111111;
+  --text-secondary: #5d6f82;
+  --text-on-header: #ffffff;
+  --border-color: #d5e2ee;
+  --input-bg: #ffffff;
+  --input-focus-bg: #ffffff;
+  --input-border: #d5e2ee;
+  --accent-color: #0081CE;
+  --surface-panel: #ffffff;
+  --surface-subtle: #f1f7fd;
+  --surface-subtle-hover: #e4eff9;
+  --surface-subtle-strong: #d7e7f4;
+}
+
+body.theme-link-blue {
+  --bg-app: #f5faff;
+  --bg-sidebar: #ffffff;
+  --bg-canvas: #ffffff;
+  --bg-header: #006EB0;
+  --text-primary: #111111;
+  --text-secondary: #5d6f82;
+  --text-on-header: #ffffff;
+  --border-color: #d5e2ee;
+  --input-bg: #ffffff;
+  --input-focus-bg: #ffffff;
+  --input-border: #d5e2ee;
+  --accent-color: #006EB0;
+  --surface-panel: #ffffff;
+  --surface-subtle: #f1f7fd;
+  --surface-subtle-hover: #e4eff9;
+  --surface-subtle-strong: #d7e7f4;
+}
+
+body.theme-gold {
+  --bg-app: #fffaf0;
+  --bg-sidebar: #fffdf8;
+  --bg-canvas: #fffdf8;
+  --bg-header: #cdac38;
+  --text-primary: #111111;
+  --text-secondary: #8a7640;
+  --text-on-header: #111111;
+  --border-color: #e7d9a7;
+  --input-bg: #fffdf8;
+  --input-focus-bg: #ffffff;
+  --input-border: #e7d9a7;
+  --accent-color: #cdac38;
+  --surface-panel: #fffdf8;
+  --surface-subtle: #fbf8ec;
+  --surface-subtle-hover: #f4eed9;
+  --surface-subtle-strong: #ece2be;
+}
+
+body.theme-silver {
+  --bg-app: #11161d;
+  --bg-sidebar: #1b222b;
+  --bg-canvas: #11161d;
+  --bg-header: #dbe6ef;
+  --text-primary: #e1edf5;
+  --text-secondary: #9aabbb;
+  --text-on-header: #111111;
+  --border-color: #42505c;
+  --input-bg: #202933;
+  --input-focus-bg: #26313c;
+  --input-border: #42505c;
+  --accent-color: #e1edf5;
+  --surface-panel: #202933;
+  --surface-subtle: #26313c;
+  --surface-subtle-hover: #2f3b47;
+  --surface-subtle-strong: #374550;
+}
+
+body.theme-gray {
+  --bg-app: #151b21;
+  --bg-sidebar: #20272f;
+  --bg-canvas: #151b21;
+  --bg-header: #b9ccd8;
+  --text-primary: #f1f5f7;
+  --text-secondary: #9fafbb;
+  --text-on-header: #111111;
+  --border-color: #404c57;
+  --input-bg: #252e37;
+  --input-focus-bg: #2d3843;
+  --input-border: #404c57;
+  --accent-color: #b9ccd8;
+  --surface-panel: #252e37;
+  --surface-subtle: #2b3540;
+  --surface-subtle-hover: #33404b;
+  --surface-subtle-strong: #3a4853;
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+}
+
+.app-header {
+  background-color: var(--bg-header);
+  color: var(--text-on-header);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+}
+
+.header-brand {
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 56px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+}
+
+.brand-mark svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.brand-title {
+  color: currentColor;
+  opacity: 0.66;
+}
+
+.header-actions {
+  gap: 10px;
+}
+
+.save-button.primary-button {
+  height: 38px;
+  padding: 0 16px;
+  background: color-mix(in srgb, var(--surface-panel) 96%, transparent);
+  color: currentColor;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  box-shadow: none;
+  filter: none;
+}
+
+.save-button.primary-button:hover,
+.save-button.primary-button:focus-visible {
+  background: color-mix(in srgb, var(--surface-panel) 82%, currentColor 18%);
+  box-shadow: var(--shadow-soft);
+  outline: none;
+}
+
+.header_icon-button,
+.mobile-menu-toggle {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  background: color-mix(in srgb, var(--surface-panel) 96%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 2px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.header_icon-button:hover,
+.header_icon-button:focus-visible,
+.mobile-menu-toggle:hover,
+.mobile-menu-toggle:focus-visible {
+  background: color-mix(in srgb, var(--surface-panel) 82%, currentColor 18%);
+  border-color: color-mix(in srgb, currentColor 32%, transparent);
+  box-shadow: var(--shadow-soft);
+  outline: none;
+}
+
+.header_icon,
+.menu-toggle_icon {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.menu-toggle_icon-close {
+  display: none;
+}
+
+.mobile-menu-toggle[aria-expanded="true"] .menu-toggle_icon-menu {
+  display: none;
+}
+
+.mobile-menu-toggle[aria-expanded="true"] .menu-toggle_icon-close {
+  display: block;
+}
+
+.app-layout {
+  flex-direction: row-reverse;
+}
+
+.app-sidebar {
+  border-right: 0;
+  border-left: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+  transition: margin-right 0.4s var(--ease-out-expo), transform 0.4s var(--ease-out-expo);
+}
+
+.app-sidebar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg-sidebar) 100%, transparent) 0%,
+    color-mix(in srgb, var(--bg-sidebar) 76%, transparent) 48%,
+    transparent 100%
+  );
+  transition: opacity var(--duration-fast) ease;
+}
+
+.app-sidebar.has-scroll-top::before {
+  opacity: 1;
+}
+
+.app-sidebar.sidebar-collapsed {
+  margin-left: 0;
+  margin-right: calc(var(--sidebar-width) * -1);
+}
+
+.sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.sidebar-content {
+  flex: 1 0 auto;
+  position: relative;
+}
+
+.sidebar-divider {
+  background-color: transparent;
+}
+
+.control-label span {
+  color: var(--text-primary);
+}
+
+.control-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.control-header-label {
+  flex: 1;
+}
+
+.control-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-surprise-btn {
+  appearance: none;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--input-border);
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.control-surprise-btn:hover,
+.control-surprise-btn:focus-visible {
+  background: var(--surface-subtle-hover);
+  border-color: var(--text-secondary);
+  box-shadow: var(--shadow-soft);
+  outline: none;
+}
+
+.control-reset-btn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0.76;
+  transition: color var(--duration-fast) ease, opacity var(--duration-fast) ease;
+}
+
+.control-reset-btn:hover,
+.control-reset-btn:focus-visible {
+  color: var(--text-primary);
+  opacity: 1;
+  outline: none;
+}
+
+.control_subheader {
+  margin-bottom: 10px;
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.control_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.control_row-label {
+  margin-bottom: 0;
+}
+
+.control_row-preview {
+  align-items: center;
+}
+
+.preview_section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.audio-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.preview-control-btn {
+  flex: 1;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background: var(--surface-panel);
+  transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease, border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+  border-radius: 2px;
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-family: 'RPIGeistMono', monospace;
+  letter-spacing: 0.08em;
+}
+
+.audio-controls .preview-control-btn {
+  flex: 0 0 auto;
+  min-width: 86px;
+}
+
+.preview-control-btn:hover,
+.preview-control-btn:focus-visible {
+  background: var(--surface-subtle-hover);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
+  outline: none;
+}
+
+.preview-control-btn:active {
+  background: var(--surface-subtle-strong);
+}
+
+.preview-control-btn.is-active {
+  color: var(--text-primary);
+  border-color: var(--accent-color);
+  background: color-mix(in srgb, var(--surface-panel) 82%, var(--accent-color) 18%);
+}
+
+.preview-control-btn:disabled {
+  cursor: default;
+  opacity: 0.46;
+  color: var(--text-secondary);
+  background: var(--surface-panel);
+  border-color: var(--border-color);
+  box-shadow: none;
+}
+
+.slider-control {
+  margin-bottom: 12px;
+}
+
+.control-slider {
+  margin: 16px 0 14px;
+}
+
+.slider-control + .control:not(.slider-control) {
+  margin-top: 10px;
+}
+
+.sub-group + .control {
+  margin-top: 10px;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  padding: 18px 20px 20px;
+  background: var(--bg-sidebar);
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+}
+
+.sidebar-footer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -24px;
+  height: 24px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--bg-sidebar) 76%, transparent) 52%,
+    color-mix(in srgb, var(--bg-sidebar) 100%, transparent) 100%
+  );
+}
+
+.sidebar-feedback-btn {
+  width: 100%;
+  min-height: 40px;
+  appearance: none;
+  border: 1px solid var(--input-border);
+  border-radius: 2px;
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.sidebar-feedback-btn:hover,
+.sidebar-feedback-btn:focus-visible {
+  background: var(--surface-subtle-hover);
+  border-color: var(--text-secondary);
+  box-shadow: var(--shadow-soft);
+  outline: none;
+}
+
+.report_dialog {
+  position: fixed;
+  inset: 0;
+  width: min(30rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-float);
+  overflow: hidden;
+}
+
+.report_dialog::backdrop {
+  background: rgba(var(--shadow-rgb), 0.42);
+  backdrop-filter: blur(6px);
+}
+
+.report_dialog-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: clamp(16px, 2.5vw, 20px);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
+.report_dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.report_dialog-kicker,
+.report_dialog-label {
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.report_dialog-title {
+  font-family: 'RPIGeist', sans-serif;
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.report_dialog-copy,
+.report_dialog-context {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.report_dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.report_dialog-input,
+.report_dialog-textarea {
+  width: 100%;
+  appearance: none;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 2px;
+  padding: 10px 12px;
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 12px;
+  color: var(--text-primary);
+  transition: all var(--duration-fast) ease;
+}
+
+.report_dialog-input:focus,
+.report_dialog-textarea:focus {
+  outline: none;
+  background-color: var(--input-focus-bg);
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.report_dialog-required {
+  color: var(--rpi-red);
+}
+
+.report_dialog-close,
+.report_dialog-secondary,
+.report_dialog-primary {
+  appearance: none;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.report_dialog-close {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--input-border);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+}
+
+.report_dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.report_dialog-secondary,
+.report_dialog-primary {
+  min-height: 36px;
+  padding: 0 12px;
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.report_dialog-secondary {
+  border: 1px solid var(--input-border);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+}
+
+.report_dialog-primary {
+  border: 1px solid var(--accent-color);
+  background: color-mix(in srgb, var(--surface-panel) 82%, var(--accent-color) 18%);
+  color: var(--text-primary);
+}
+
+.custom-select-trigger {
+  background: var(--surface-panel);
+  border: 1px solid var(--input-border);
+}
+
+.custom-select-trigger:hover {
+  background: var(--surface-subtle-hover);
+}
+
+.custom-select-options {
+  left: 0;
+  right: 0;
+  border: 1px solid var(--input-border);
+  border-top: 0;
+  background: var(--bg-sidebar);
+  box-shadow: var(--shadow-soft);
+  max-height: none;
+  overflow: hidden;
+  padding: 0;
+}
+
+.custom-select-options-scroll {
+  position: relative;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.custom-select-scroll-fade {
+  position: absolute;
+  left: 0;
+  right: 12px;
+  height: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast) ease;
+  z-index: 2;
+}
+
+.custom-select-scroll-fade-top {
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg-sidebar) 100%, transparent) 0%,
+    color-mix(in srgb, var(--bg-sidebar) 76%, transparent) 48%,
+    transparent 100%
+  );
+}
+
+.custom-select-scroll-fade-bottom {
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--bg-sidebar) 76%, transparent) 52%,
+    color-mix(in srgb, var(--bg-sidebar) 100%, transparent) 100%
+  );
+}
+
+.custom-select-options.has-scroll-top .custom-select-scroll-fade-top,
+.custom-select-options.has-scroll-bottom .custom-select-scroll-fade-bottom {
+  opacity: 1;
+}
+
+.custom-option-group-label {
+  padding: 10px 10px 4px;
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0.78;
+}
+
+.custom-select-options-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-select-options-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-select-options-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
 .sub-group {
   padding-top: 4px;
 }
