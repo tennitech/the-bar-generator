@@ -206,9 +206,14 @@ body {
   margin-left: calc(var(--sidebar-width) * -1);
 }
 
-/* Thin scrollbar */
+.app-sidebar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 .app-sidebar::-webkit-scrollbar {
-  width: 4px;
+  width: 0;
+  height: 0;
 }
 
 .app-sidebar::-webkit-scrollbar-track {
@@ -1351,10 +1356,13 @@ body {
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .sidebar-scroll::-webkit-scrollbar {
-  width: 4px;
+  width: 0;
+  height: 0;
 }
 
 .sidebar-scroll::-webkit-scrollbar-track {
@@ -1751,13 +1759,12 @@ body {
   position: relative;
   max-height: 220px;
   overflow-y: auto;
-  scrollbar-gutter: stable;
 }
 
 .custom-select-scroll-fade {
   position: absolute;
   left: 0;
-  right: 12px;
+  right: 0;
   height: 24px;
   opacity: 0;
   pointer-events: none;
@@ -1801,7 +1808,8 @@ body {
 }
 
 .custom-select-options-scroll::-webkit-scrollbar {
-  width: 4px;
+  width: 0;
+  height: 0;
 }
 
 .custom-select-options-scroll::-webkit-scrollbar-track {
@@ -2228,6 +2236,7 @@ body.easter-egg-active .workspace-controls {
 :root {
   --control-focus-ring: color-mix(in srgb, var(--accent-color) 28%, transparent);
   --menu-shadow: 0 18px 44px rgba(var(--shadow-rgb), 0.14);
+  --dropdown-edge-fill-width: 18px;
 }
 
 body.theme-black,
@@ -2418,7 +2427,7 @@ body.theme-gold {
   --slider-thumb-hover: #cdac38;
   --slider-thumb-ring: rgba(205, 172, 56, 0.22);
   --toggle-track-active: #cdac38;
-  --toggle-knob-active: #111111;
+  --toggle-knob-active: #ffffff;
   --toggle-ring: rgba(205, 172, 56, 0.2);
 }
 
@@ -2579,8 +2588,8 @@ body.theme-gray {
 .report_dialog-textarea:focus,
 .custom-select-wrapper.open .custom-select-trigger {
   background: var(--control-surface);
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px var(--control-focus-ring);
+  border-color: color-mix(in srgb, var(--accent-color) 36%, var(--control-border) 64%);
+  box-shadow: none;
 }
 
 .custom-select-trigger::after {
@@ -2602,12 +2611,18 @@ body.theme-gray {
 .custom-option:hover {
   background: var(--menu-option-hover-bg);
   color: var(--menu-option-hover-text);
+  box-shadow: inset calc(var(--dropdown-edge-fill-width) * -1) 0 0 var(--menu-option-hover-bg);
+}
+
+.custom-option {
+  width: 100%;
 }
 
 .custom-option.selected,
 .custom-option.selected:hover {
   background: var(--menu-option-selected-bg);
   color: var(--menu-option-selected-text);
+  box-shadow: inset calc(var(--dropdown-edge-fill-width) * -1) 0 0 var(--menu-option-selected-bg);
 }
 
 .custom-option-group-label {
@@ -2706,6 +2721,11 @@ body.theme-gray {
 .control-slider:focus::-moz-range-thumb {
   box-shadow: 0 0 0 2px var(--bg-sidebar), 0 0 0 5px var(--slider-thumb-ring);
   transform: scale(1.08);
+}
+
+.switch:hover .slider:before,
+.switch:focus-within .slider:before {
+  box-shadow: 0 0 0 4px var(--toggle-ring), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .slider {
