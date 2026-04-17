@@ -44,6 +44,7 @@ describe('theme mode utils', () => {
 
   test('falls back to the default color mode for unknown values', () => {
     expect(normalizeColorModeValue('unknown-theme')).toBe(DEFAULT_COLOR_MODE);
+    expect(normalizeColorModeValue('link-blue')).toBe(DEFAULT_COLOR_MODE);
     expect(normalizeColorModeValue('')).toBe(DEFAULT_COLOR_MODE);
     expect(normalizeColorModeValue(null)).toBe(DEFAULT_COLOR_MODE);
   });

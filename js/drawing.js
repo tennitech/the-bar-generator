@@ -601,7 +601,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     }
   } else if (currentShader === 7) {
     // Morse code mode
-    const text = typeof morseInput !== 'undefined' && morseInput ? morseInput.value || "RPI" : "RPI";
+    const text = typeof morseInput !== 'undefined' && morseInput ? morseInput.value : "RPI";
     const validMorseData = typeof textToMorse !== 'undefined' ? textToMorse(text) : [];
 
     if (validMorseData && validMorseData.length > 0) {

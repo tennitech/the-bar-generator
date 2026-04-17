@@ -50,7 +50,6 @@
   --rpi-silver: #E1EDF5;
   --rpi-gray: #B9CCD8;
   --rpi-blue: #0081CE;
-  --rpi-link-blue: #006EB0;
   --rpi-gold: #CDAC38;
 
   /* Functional Neutrals */
@@ -1133,25 +1132,6 @@ body.theme-blue {
   --surface-subtle-strong: #d7e7f4;
 }
 
-body.theme-link-blue {
-  --bg-app: #f5faff;
-  --bg-sidebar: #ffffff;
-  --bg-canvas: #ffffff;
-  --bg-header: #006EB0;
-  --text-primary: #111111;
-  --text-secondary: #5d6f82;
-  --text-on-header: #ffffff;
-  --border-color: #d5e2ee;
-  --input-bg: #ffffff;
-  --input-focus-bg: #ffffff;
-  --input-border: #d5e2ee;
-  --accent-color: #006EB0;
-  --surface-panel: #ffffff;
-  --surface-subtle: #f1f7fd;
-  --surface-subtle-hover: #e4eff9;
-  --surface-subtle-strong: #d7e7f4;
-}
-
 body.theme-gold {
   --bg-app: #fffaf0;
   --bg-sidebar: #fffdf8;
@@ -1409,7 +1389,7 @@ body {
   height: 24px;
   padding: 0 8px;
   border: 1px solid var(--input-border);
-  border-radius: 999px;
+  border-radius: 4px;
   background: var(--surface-subtle);
   color: var(--text-primary);
   font-family: 'RPIGeistMono', monospace;
@@ -2292,7 +2272,6 @@ body.easter-egg-active .workspace-controls {
 body.theme-black,
 body.theme-red,
 body.theme-blue,
-body.theme-link-blue,
 body.theme-gold {
   --bg-sidebar: #ffffff;
   --surface-panel: #ffffff;
@@ -2437,27 +2416,6 @@ body.theme-blue {
   --toggle-track-active: #0081ce;
   --toggle-knob-active: #ffffff;
   --toggle-ring: rgba(0, 129, 206, 0.18);
-}
-
-body.theme-link-blue {
-  --bg-app: #f5faff;
-  --bg-canvas: #ffffff;
-  --bg-header: #006eb0;
-  --text-on-header: #ffffff;
-  --accent-color: #006eb0;
-  --header-control-bg: rgba(255, 255, 255, 0.94);
-  --header-control-bg-hover: #ffffff;
-  --header-control-border: rgba(255, 255, 255, 0.68);
-  --header-control-text: #00568a;
-  --menu-option-hover-bg: #e7f1fa;
-  --menu-option-selected-bg: #006eb0;
-  --menu-option-selected-text: #ffffff;
-  --toolbar-active-bg: #006eb0;
-  --slider-thumb-hover: #006eb0;
-  --slider-thumb-ring: rgba(0, 110, 176, 0.2);
-  --toggle-track-active: #006eb0;
-  --toggle-knob-active: #ffffff;
-  --toggle-ring: rgba(0, 110, 176, 0.18);
 }
 
 body.theme-gold {
@@ -2806,7 +2764,6 @@ input:checked + .slider:before {
 
 @media (max-width: 768px) {
   :root {
-    --header-height: 48px;
     --sidebar-width: 280px;
   }
 
@@ -2817,19 +2774,16 @@ input:checked + .slider:before {
   .app-sidebar {
     position: absolute;
     top: 0;
-    left: 0;
+    right: 0;
+    left: auto;
     bottom: 0;
-    transform: translateX(-100%);
+    transform: translateX(100%);
     box-shadow: none;
   }
 
   .app-sidebar.active {
     transform: translateX(0);
-    box-shadow: 16px 0 48px rgba(0, 0, 0, 0.15);
-  }
-
-  .canvas-viewport {
-    padding: 16px;
+    box-shadow: -16px 0 48px rgba(0, 0, 0, 0.15);
   }
 
   .primary-button {

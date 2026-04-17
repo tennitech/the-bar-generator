@@ -1252,7 +1252,7 @@ function createBarPatternSVG(config) {
   }
 
   if (currentShader === 7) {
-    const text = values.morseText || 'RPI';
+    const text = Object.prototype.hasOwnProperty.call(values, 'morseText') ? values.morseText : 'RPI';
     const validMorseData = typeof textToMorse !== 'undefined' ? textToMorse(text) : [];
 
     if (validMorseData.length > 0) {

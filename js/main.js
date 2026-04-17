@@ -276,7 +276,7 @@ const DEFAULT_COLOR_MODE = themeModeUtils && typeof themeModeUtils.DEFAULT_COLOR
   : 'black';
 const AVAILABLE_COLOR_MODES = themeModeUtils && Array.isArray(themeModeUtils.AVAILABLE_COLOR_MODES)
   ? themeModeUtils.AVAILABLE_COLOR_MODES.slice()
-  : ['black', 'white', 'red', 'blue', 'link-blue', 'gold', 'silver', 'gray'];
+  : ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray'];
 const AVAILABLE_COLOR_MODE_SET = themeModeUtils && themeModeUtils.AVAILABLE_COLOR_MODE_SET instanceof Set
   ? themeModeUtils.AVAILABLE_COLOR_MODE_SET
   : new Set(AVAILABLE_COLOR_MODES);
@@ -329,7 +329,6 @@ const colors = {
   white: { bg: '#000000', fg: '#ffffff' },
   red: { bg: '#ffffff', fg: '#d6001c' },
   blue: { bg: '#ffffff', fg: '#0081CE' },
-  'link-blue': { bg: '#ffffff', fg: '#006EB0' },
   gold: { bg: '#fffaf0', fg: '#CDAC38' },
   silver: { bg: '#11161d', fg: '#E1EDF5' },
   gray: { bg: '#151b21', fg: '#B9CCD8' }
@@ -340,7 +339,6 @@ const themeClassByColorMode = {
   white: 'theme-white',
   red: 'theme-red',
   blue: 'theme-blue',
-  'link-blue': 'theme-link-blue',
   gold: 'theme-gold',
   silver: 'theme-silver',
   gray: 'theme-gray'
@@ -422,9 +420,10 @@ const MORSE_DICT = {
 };
 
 function textToMorse(text) {
-  if (!text || typeof text !== 'string') text = "RPI";
+  if (typeof text !== 'string') text = "RPI";
 
   text = text.trim().toUpperCase().substring(0, 100);
+  if (!text) return [];
 
   let morseArray = [];
   const words = text.split(' ');
@@ -474,10 +473,21 @@ const MAX_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MAX_DISPLAY_ZOOM_PERCENT / 100);
 
 let zoomLevel = DEFAULT_ZOOM_LEVEL;
 let panOffset = { x: 0, y: 0 };
+let panTargetOffset = { x: 0, y: 0 };
+let panVelocity = { x: 0, y: 0 };
+let panAnimationFrame = 0;
+let isPanDragging = false;
 let isPanningMode = false;
 let isAnimated = false;
 let lastHeaderPreviewMarkup = '';
 let lastHeaderPreviewUpdateTime = 0;
+
+const PAN_DRAG_RESISTANCE = 0.42;
+const PAN_FOLLOW_EASE = 0.26;
+const PAN_INERTIA_DECAY = 0.88;
+const PAN_INERTIA_STOP_THRESHOLD = 0.025;
+const PAN_SETTLE_THRESHOLD = 0.04;
+const PAN_EDGE_PADDING = 12;
 
 // Zoom/Pan/Playback UI references
 let zoomInBtn, zoomOutBtn, zoomResetBtn, panBtn, zoomLevelDisplay;
@@ -883,7 +893,7 @@ function setupControlGroupResetButtons() {
       const surpriseBtn = document.createElement('button');
       surpriseBtn.type = 'button';
       surpriseBtn.className = 'control-surprise-btn';
-      surpriseBtn.textContent = 'Surprise';
+      surpriseBtn.textContent = 'Randomize';
       surpriseBtn.setAttribute('aria-label', `Randomize ${style} parameters`);
       surpriseBtn.addEventListener('click', (event) => {
         event.preventDefault();
@@ -1599,7 +1609,7 @@ async function setup() {
   if (zoomResetBtn) {
     zoomResetBtn.addEventListener('click', () => {
       zoomLevel = DEFAULT_ZOOM_LEVEL;
-      panOffset = { x: 0, y: 0 };
+      setPanOffset({ x: 0, y: 0 }, { immediate: true });
       if (zoomLevelDisplay) {
         zoomLevelDisplay.value = '100%';
       }
@@ -2149,14 +2159,14 @@ async function setup() {
 
   // Setup morse input with real-time updates
   if (morseInput) {
-    const handleMorseInput = function () {
-      updateMorseData(morseInput.value);
+    const syncMorseInput = function () {
+      handleMorseInput();
       updateUrlParameters();
       requestUpdate();
     };
-    morseInput.addEventListener('input', handleMorseInput);
-    morseInput.addEventListener('keyup', handleMorseInput);
-    morseInput.addEventListener('paste', handleMorseInput);
+    morseInput.addEventListener('input', syncMorseInput);
+    morseInput.addEventListener('keyup', syncMorseInput);
+    morseInput.addEventListener('paste', syncMorseInput);
     if (!window.location.search) {
       morseInput.value = "RPI"; // Set default value
     }
@@ -2581,6 +2591,10 @@ function handleBinaryInput() {
   updateBinaryData(text);
 }
 
+function handleMorseInput() {
+  updateMorseData(morseInput.value);
+}
+
 function updateBinaryData(text) {
   // Use profanity filter if available
   let cleanText = text;
@@ -2603,7 +2617,7 @@ function updateBinaryData(text) {
 }
 
 function updateMorseData(text) {
-  let cleanText = text || "RPI";
+  let cleanText = typeof text === 'string' ? text : "RPI";
   if (window.ProfanityFilter && typeof window.ProfanityFilter.sanitizeText === 'function') {
     cleanText = window.ProfanityFilter.sanitizeText(cleanText);
     if (cleanText !== text) {
@@ -5541,7 +5555,7 @@ function getUrlParameters() {
     graphScale: Math.max(GRAPH_SCALE_MIN, parseInt(params.get('graphScale')) || GRAPH_SCALE_DEFAULT),
 
     // Additional parameters
-    morseText: params.get('morseText') || 'RPI'
+    morseText: params.has('morseText') ? params.get('morseText') : 'RPI'
   };
 }
 
@@ -6657,7 +6671,7 @@ function drawBottomBar(currentWidth) {
     noStroke();
     rectMode(CORNER);
 
-    const text = morseInput ? morseInput.value || "RPI" : "RPI";
+    const text = morseInput ? morseInput.value : "RPI";
     const validMorseData = textToMorse(text);
 
     if (validMorseData && validMorseData.length > 0) {
@@ -7058,21 +7072,122 @@ function togglePlayback() {
   requestUpdate();
 }
 
-function clampPanOffset() {
-  let minX = 125 * zoomLevel - width / (2 * LOGO_SCALE);
-  let maxX = width / (2 * LOGO_SCALE) - 125 * zoomLevel;
+function applyPanEdgeInset(min, max) {
+  if (min > max) {
+    return { min: max, max: min };
+  }
+
+  const edgeInset = PAN_EDGE_PADDING / LOGO_SCALE;
+  if (max - min <= edgeInset * 2) {
+    const midpoint = (min + max) / 2;
+    return { min: midpoint, max: midpoint };
+  }
+
+  return { min: min + edgeInset, max: max - edgeInset };
+}
+
+function getPanBounds() {
+  const horizontalBounds = applyPanEdgeInset(
+    125 * zoomLevel - width / (2 * LOGO_SCALE),
+    width / (2 * LOGO_SCALE) - 125 * zoomLevel
+  );
+  let minX = horizontalBounds.min;
+  let maxX = horizontalBounds.max;
   if (minX > maxX) {
     let temp = minX; minX = maxX; maxX = temp;
   }
 
-  let minY = 72 * zoomLevel - height / (2 * LOGO_SCALE);
-  let maxY = height / (2 * LOGO_SCALE) - 79 * zoomLevel;
+  const verticalBounds = applyPanEdgeInset(
+    72 * zoomLevel - height / (2 * LOGO_SCALE),
+    height / (2 * LOGO_SCALE) - 79 * zoomLevel
+  );
+  let minY = verticalBounds.min;
+  let maxY = verticalBounds.max;
   if (minY > maxY) {
     let temp = minY; minY = maxY; maxY = temp;
   }
 
-  panOffset.x = constrain(panOffset.x, minX, maxX);
-  panOffset.y = constrain(panOffset.y, minY, maxY);
+  return { minX, maxX, minY, maxY };
+}
+
+function clampPanPoint(point) {
+  const bounds = getPanBounds();
+  point.x = constrain(point.x, bounds.minX, bounds.maxX);
+  point.y = constrain(point.y, bounds.minY, bounds.maxY);
+  return point;
+}
+
+function stopPanAnimation() {
+  if (panAnimationFrame) {
+    cancelAnimationFrame(panAnimationFrame);
+    panAnimationFrame = 0;
+  }
+}
+
+function renderPanOffsetChange() {
+  updateEasterEggHotspotBounds();
+  if (!isPlaying) redraw();
+}
+
+function setPanOffset(nextOffset, options = {}) {
+  const clampedOffset = clampPanPoint({ x: nextOffset.x, y: nextOffset.y });
+  panTargetOffset = { ...clampedOffset };
+  panVelocity = { x: 0, y: 0 };
+
+  if (options.immediate) {
+    stopPanAnimation();
+    panOffset = { ...clampedOffset };
+    renderPanOffsetChange();
+    return;
+  }
+
+  startPanAnimation();
+}
+
+function clampPanOffset() {
+  clampPanPoint(panOffset);
+  clampPanPoint(panTargetOffset);
+}
+
+function startPanAnimation() {
+  if (panAnimationFrame) return;
+  panAnimationFrame = requestAnimationFrame(animatePanOffset);
+}
+
+function animatePanOffset() {
+  panAnimationFrame = 0;
+
+  if (!isPanDragging) {
+    panTargetOffset.x += panVelocity.x;
+    panTargetOffset.y += panVelocity.y;
+    clampPanPoint(panTargetOffset);
+
+    const hitHorizontalEdge = panTargetOffset.x === getPanBounds().minX || panTargetOffset.x === getPanBounds().maxX;
+    const hitVerticalEdge = panTargetOffset.y === getPanBounds().minY || panTargetOffset.y === getPanBounds().maxY;
+    panVelocity.x = hitHorizontalEdge ? 0 : panVelocity.x * PAN_INERTIA_DECAY;
+    panVelocity.y = hitVerticalEdge ? 0 : panVelocity.y * PAN_INERTIA_DECAY;
+  }
+
+  const deltaX = panTargetOffset.x - panOffset.x;
+  const deltaY = panTargetOffset.y - panOffset.y;
+  panOffset.x += deltaX * PAN_FOLLOW_EASE;
+  panOffset.y += deltaY * PAN_FOLLOW_EASE;
+  clampPanPoint(panOffset);
+  renderPanOffsetChange();
+
+  const isStillMoving = Math.abs(deltaX) > PAN_SETTLE_THRESHOLD ||
+    Math.abs(deltaY) > PAN_SETTLE_THRESHOLD ||
+    Math.abs(panVelocity.x) > PAN_INERTIA_STOP_THRESHOLD ||
+    Math.abs(panVelocity.y) > PAN_INERTIA_STOP_THRESHOLD;
+
+  if (isStillMoving) {
+    startPanAnimation();
+    return;
+  }
+
+  panOffset = { ...panTargetOffset };
+  panVelocity = { x: 0, y: 0 };
+  renderPanOffsetChange();
 }
 
 function zoomCanvas(amount) {
@@ -7091,6 +7206,12 @@ function zoomCanvas(amount) {
 
 function setPanMode(nextActive) {
   isPanningMode = !!nextActive;
+  if (!isPanningMode) {
+    isPanDragging = false;
+    stopPanAnimation();
+    panTargetOffset = { ...panOffset };
+    panVelocity = { x: 0, y: 0 };
+  }
   if (panBtn) {
     panBtn.classList.toggle('is-active', isPanningMode);
     document.body.style.cursor = isPanningMode ? 'move' : 'default';
@@ -7118,13 +7239,31 @@ function handlePanModeOutsidePointerDown(event) {
 
 function mouseDragged() {
   if (isPanningMode) {
-    panOffset.x += movedX;
-    panOffset.y += movedY;
-    clampPanOffset();
-    updateEasterEggHotspotBounds();
-    if (!isPlaying) redraw();
+    isPanDragging = true;
+    const resistedX = movedX * PAN_DRAG_RESISTANCE;
+    const resistedY = movedY * PAN_DRAG_RESISTANCE;
+    panTargetOffset.x += resistedX;
+    panTargetOffset.y += resistedY;
+    panVelocity.x = resistedX;
+    panVelocity.y = resistedY;
+    clampPanPoint(panTargetOffset);
+    startPanAnimation();
     return false; // Prevent default browser drag
   }
+}
+
+function endPanDrag() {
+  if (!isPanDragging) return;
+  isPanDragging = false;
+  startPanAnimation();
+}
+
+function mouseReleased() {
+  endPanDrag();
+}
+
+function touchEnded() {
+  endPanDrag();
 }
 
 // --- Custom Dropdown Logic ---

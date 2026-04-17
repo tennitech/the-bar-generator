@@ -57,6 +57,7 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Reduced the node count again and enlarged the remaining nodes so the neural bar reads with fewer circles and stronger dot presence at generator scale.
     - Reintroduced controlled diagonal cross-links after review so the bar preserves a clearer neural-network character without returning to the earlier dense all-to-all mesh.
 - **[2026-04-17] Exported-Mark-First Theme System Recovered And Refined**:
+    - Removed `LINK BLUE` from the active color-theme set, including the picker option, export color mapping, CSS theme class, theme availability lists, and legacy color-mode alias handling.
     - Restored the intended contrasting workspace families so `BLACK` now renders in the light UI family while `WHITE`, `SILVER`, and `GRAY` remain on dark workspace surfaces, matching the generator's exported mark-color model again.
     - Replaced the remaining generic theme-state styling with explicit semantic tokens for header controls, dropdown rows, save-menu states, preview/report buttons, workspace chrome, sliders, and toggles so every color theme follows the same interaction logic without falling back to unreadable defaults.
     - Removed the last contrast-breaking assumptions from the custom-select system, including hardcoded light-on-accent selected rows that could fail on pale themes such as `WHITE`, `SILVER`, and `GRAY`.
@@ -68,6 +69,12 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Added versioned local asset URLs for the updated stylesheet and main preview scripts to reduce Safari cache-staleness after these UI changes.
     - Simplified that preview transport pass again after review: the controls now use a more minimal single-line treatment with smaller icon marks, lighter borders, and a restrained active indicator instead of the heavier two-line card-style presentation.
     - Replaced that experimental rail treatment after review with a stricter toolbar-style transport pattern: preview rows now use the same compact icon-button language as the workspace controls, visible text labels and extra restart actions are gone, and motion/audio state is communicated only through the gray play-pause and volume icons themselves.
+    - Fixed the `MORSE CODE` text input so clearing the field no longer falls back to visible `RPI` output in the live canvas or SVG pattern path, renamed `SURPRISE` controls to `RANDOMIZE`, and squared their radius to match the compact toolbar hover-button language.
+    - Corrected the mobile controls drawer so the sidebar remains a right-edge panel at small widths instead of switching to a left-side slide-in.
+    - Removed the mobile-only workspace padding so the canvas background fills edge-to-edge like the desktop layout instead of exposing colored app edges around the logo area.
+    - Softened logo panning with resisted drag deltas, eased offset following, and short decaying inertia so the pan tool feels less twitchy while preserving the existing pan bounds.
+    - Added a small shared pan-edge inset so the logo can get close to the viewport edges on desktop and mobile without clamping flush against them.
+    - Kept the header height consistent across desktop and mobile by removing the mobile-only shorter header override.
 - **[2026-04-15] Runtime Control Redesign Rolled Back After Stylesheet Corruption**:
     - Restored `css/style.css` after it was accidentally overwritten, then reapplied the current right-sidebar shell, scroll-fade, sticky report rail, report dialog, and parameter-header utility styling as an override layer.
     - Reverted the unfinished `LIVE` runtime-control treatment back to the prior `PREVIEW` structure so the interface returns to the last stable control layout.
@@ -102,10 +109,10 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 - **[2026-04-15] Pan Tool Now Releases On First Outside Click**:
     - Reworked the viewport pan tool so any pointer-down outside the main canvas viewport immediately exits pan mode instead of consuming the user's first sidebar or workspace-control interaction.
     - Kept drag behavior unchanged inside the canvas area, including the active logo/bar repositioning flow, while leaving the pan button itself responsible for its own toggle state.
-- **[2026-04-15] Sidebar Reporting And Parameter Surprise Controls Added**:
+- **[2026-04-15] Sidebar Reporting And Parameter Randomize Controls Added**:
     - Added a persistent `Report a Problem` action to the bottom of the sidebar and implemented a native dialog-based reporting flow that captures the current style, theme, viewport, browser, timestamp, and sharable state URL automatically.
     - Wired the reporting flow so it is ready for a static-site-friendly Google Sheets pipeline through a deployable Google Apps Script URL, while preserving a clipboard fallback during local development until that endpoint is configured.
-    - Added contextual `SURPRISE` controls beside `RESET` inside each parameterized style panel so users can rapidly generate valid random variations without changing bar style, color theme, or preview-state toggles.
+    - Added contextual randomize controls beside `RESET` inside each parameterized style panel so users can rapidly generate valid random variations without changing bar style, color theme, or preview-state toggles.
 - **[2026-04-15] Header Added Direct Repository Shortcut**:
     - Added a dedicated GitHub icon action to the main header so the project source is reachable as a secondary utility without competing with the primary `Download Asset` CTA.
     - Placed the repository shortcut inside the existing right-side action cluster between download and the sidebar toggle, keeping the brand lockup clean and aligning the new link with the same bordered icon-control treatment already used in the header chrome.
@@ -120,7 +127,7 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Moved motion pause/resume back into the relevant sidebar styles (`TICKER` and `WAVEFORM`) so preview controls now live with the parameters they affect.
     - Unified audio interaction across preview-capable styles by giving `MORSE` and `MUSIC` the same explicit audio toggle pattern as the other audio bars, while leaving their play/restart controls as secondary transport actions.
 - **[2026-04-15] Toggle Active Colors Aligned With Theme Identity**:
-    - Made the active toggle track and hover-ring tokens explicit for the chromatic themes so `RED`, `BLUE`, `LINK BLUE`, and `GOLD` now reliably use their own theme color instead of falling back to a generic red on-state.
+    - Made the active toggle track and hover-ring tokens explicit for the chromatic themes so `RED`, `BLUE`, and `GOLD` now reliably use their own theme color instead of falling back to a generic red on-state.
     - Kept the neutral themes contrast-aware by preserving specialized active-toggle treatments for `WHITE`, `SILVER`, and `GRAY`, and explicitly setting `BLACK` to use a black track with a light knob for legibility.
 - **[2026-04-15] Slider And Toggle Interaction States Made Contrast-Aware**:
     - Added universal slider thumb hover and focus treatment using a ring/halo and slight scale change so neutral themes like `BLACK` and `WHITE` still show meaningful interaction feedback even when the fill color barely changes.
@@ -163,7 +170,7 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Added an explicit expanded/collapsed visual state and matching accessible label updates for the sidebar toggle so the header control accurately reflects whether the design-controls panel is open on both desktop and mobile.
 - **[2026-04-14] Color Theme System Normalized Around Exported Mark Color**:
     - Reworked the generator theme model so the selected color theme name now refers to the actual exported RPI mark color first, with the UI family indicated in the visible dropdown labels.
-    - Split the themes into consistent light-UI and dark-UI families so high-value light marks such as White, Silver, and Gray render on supportive dark workspace surfaces, while Black, Red, Blue, Link Blue, and Gold use lighter interface treatments.
+    - Split the themes into consistent light-UI and dark-UI families so high-value light marks such as White, Silver, and Gray render on supportive dark workspace surfaces, while Black, Red, Blue, and Gold use lighter interface treatments.
     - Removed the visible `INVERTED` option from the current theme selector and kept legacy query-string values compatible by normalizing old color-mode aliases onto the new theme names.
     - Introduced shared semantic UI tokens for headers, controls, hover states, sliders, toggles, menus, and workspace chrome so each theme applies color with the same interaction logic instead of bespoke per-component overrides.
     - Simplified the visible theme labels back down to the exported mark color names only, and tightened dark-theme contrast for custom dropdown lists, slider values, slider thumbs, and the bottom workspace controls.
@@ -184,7 +191,7 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Applied that same colored-header treatment to the red theme so it now uses RPI Red in the header while preserving readable header controls through the shared contrast-layer tokens.
 - **[2026-04-14] Expanded Main Generator Color Themes**:
     - Renamed the main sidebar controls to `BAR STYLE` and `COLOR THEME` for clearer wording in the generator UI.
-    - Added new RPI brand color themes for Silver, Gray, Blue, Link Blue, and Gold, including matching rendered wordmark/bar colors in the main canvas.
+    - Added new RPI brand color themes for Silver, Gray, Blue, and Gold, including matching rendered wordmark/bar colors in the main canvas.
     - Extended the interface theming system so each color mode now carries through the header, sidebar, page background, borders, inputs, buttons, dropdown states, and other accent surfaces instead of recoloring only part of the UI.
     - Removed the separate canvas backdrop so the RPI mark now sits directly on the workspace theme background instead of on a white block.
     - This earlier expansion was later normalized into the exported-mark-first theme model above, so `BLACK / LIGHT UI` and `WHITE / DARK UI` now replace the older light/dark naming while keeping legacy URLs compatible.
