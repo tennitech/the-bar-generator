@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Experimental next-gen marquee interface for the RPI Bar Generator.">
+  <title>RPI Bar Generator Marquee Experiment</title>
+  <link href="css/marquee-ui.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <div class="page-wrapper marquee_page">
+    <main class="main-wrapper">
+      <section class="section_marquee_hero">
+        <div class="marquee_scene" aria-hidden="true">
+          <div class="marquee_stage" id="marquee-stage" data-marquee-stage></div>
+        </div>
+
+        <div id="startup-style-prompt" class="startup_prompt" aria-hidden="true" role="status" aria-live="polite"
+          aria-atomic="true">
+          <div class="startup_prompt_inner">
+            <p class="startup_prompt_text">Select a bar design below to get started</p>
+          </div>
+        </div>
+
+        <div class="padding-global hero_shell">
+          <div class="container-large hero_layout">
+            <div class="hero_cluster">
+              <div class="hero_copy">
+                <div class="hero_brand" role="img" aria-label="RPI logo"></div>
+                <h1 class="hero_title">
+                  <span class="hero_title-line is-top">The Bar</span>
+                  <span class="hero_title-line is-bottom">Generator</span>
+                </h1>
+              </div>
+
+              <div class="hero_credit" aria-label="Made in RCOS by Kaden Tennent and Dakota Pace">
+                <p class="credit_line">
+                  <span>Made in RCOS</span>
+                  <span class="credit_logo" aria-hidden="true"></span>
+                </p>
+                <p class="credit_line">By Kaden Tennent &amp; Dakota Pace</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="js/marqueeUi.js"></script>
+</body>
+
+</html>
