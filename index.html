@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Generate unique, brand-compliant RPI logos and lockups with dynamic bar patterns.">
   <title>RPI Logo Generator</title>
-  <link href="css/style.css" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20260417-preview-icons" rel="stylesheet" type="text/css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 </head>
 
@@ -100,6 +100,7 @@
                 <option value="grid">GRID</option>
                 <option value="lines">LINES</option>
                 <option value="point-connect">POINT CONNECT</option>
+                <option value="neural-network">NEURAL NETWORK</option>
                 <option value="triangle-grid">TRIANGLE GRID</option>
                 <option value="triangles">TRIANGLES</option>
                 <option value="fibonacci-sequence">FIBONACCI SEQUENCE</option>
@@ -164,9 +165,9 @@
             <div class="control_subheader">PREVIEW</div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
-              <div class="audio-controls">
-                <button id="binary-audio-btn" class="preview-control-btn">PLAY</button>
-                <button id="binary-reset-btn" class="preview-control-btn preview-control-btn-secondary">RESTART</button>
+              <div class="preview-controls">
+                <button id="binary-audio-btn" class="preview-control-btn" data-preview-kind="audio"
+                  aria-label="Play audio preview"></button>
               </div>
             </div>
           </div>
@@ -184,9 +185,9 @@
             <div class="control_subheader">PREVIEW</div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
-              <div class="audio-controls">
-                <button id="morse-audio-btn" class="preview-control-btn">PLAY</button>
-                <button id="morse-reset-btn" class="preview-control-btn preview-control-btn-secondary">RESTART</button>
+              <div class="preview-controls">
+                <button id="morse-audio-btn" class="preview-control-btn" data-preview-kind="audio"
+                  aria-label="Play audio preview"></button>
               </div>
             </div>
           </div>
@@ -217,15 +218,16 @@
             <div class="control_subheader">PREVIEW</div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">MOTION</div>
-              <div class="audio-controls">
-                <button id="ticker-motion-btn" class="preview-control-btn">PAUSE</button>
+              <div class="preview-controls">
+                <button id="ticker-motion-btn" class="preview-control-btn" data-preview-kind="motion"
+                  aria-label="Pause motion preview"></button>
               </div>
             </div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
-              <div class="audio-controls">
-                <button id="ticker-audio-btn" class="preview-control-btn">PLAY</button>
-                <button id="ticker-reset-btn" class="preview-control-btn preview-control-btn-secondary">RESTART</button>
+              <div class="preview-controls">
+                <button id="ticker-audio-btn" class="preview-control-btn" data-preview-kind="audio"
+                  aria-label="Play audio preview"></button>
               </div>
             </div>
           </div>
@@ -299,14 +301,16 @@
             <div class="control_subheader">PREVIEW</div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">MOTION</div>
-              <div class="audio-controls">
-                <button id="waveform-motion-btn" class="preview-control-btn">PAUSE</button>
+              <div class="preview-controls">
+                <button id="waveform-motion-btn" class="preview-control-btn" data-preview-kind="motion"
+                  aria-label="Pause motion preview"></button>
               </div>
             </div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
-              <div class="audio-controls">
-                <button id="waveform-audio-btn" class="preview-control-btn">PLAY</button>
+              <div class="preview-controls">
+                <button id="waveform-audio-btn" class="preview-control-btn" data-preview-kind="audio"
+                  aria-label="Play audio preview"></button>
               </div>
             </div>
           </div>
@@ -544,9 +548,9 @@
             <div class="control_subheader">PREVIEW</div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
-              <div class="audio-controls">
-                <button id="staff-audio-btn" class="preview-control-btn">PLAY</button>
-                <button id="staff-reset-btn" class="preview-control-btn preview-control-btn-secondary">RESTART</button>
+              <div class="preview-controls">
+                <button id="staff-audio-btn" class="preview-control-btn" data-preview-kind="audio"
+                  aria-label="Play audio preview"></button>
               </div>
             </div>
           </div>
@@ -646,6 +650,17 @@
             <input type="range" id="point-connect-variant-slider" min="1" max="2" value="1" class="control-slider"
               aria-label="Point Connect Variant">
           </div>
+        </div>
+
+        <div id="neural-network-group" class="control-group" style="display: none;">
+          <div class="control-header">PARAMETERS</div>
+          <div class="control slider-control">
+            <label for="neural-network-hidden-layers-slider" class="control-label">HIDDEN LAYERS <span
+                id="neural-network-hidden-layers-display">1</span></label>
+            <input type="range" id="neural-network-hidden-layers-slider" min="1" max="5" value="1"
+              class="control-slider" aria-label="Neural Network Hidden Layers">
+          </div>
+          <div class="control-hint">Adjusts the number of interior network layers in the bar</div>
         </div>
 
         <div id="triangle-grid-group" class="control-group" style="display: none;">
@@ -818,11 +833,12 @@
   <script src="js/utils/musicStyle.js"></script>
   <script src="js/utils/barPattern.js"></script>
   <script src="js/utils/loopingGif.js"></script>
-  <script src="js/utils/themeMode.js"></script>
+  <script src="js/utils/themeMode.js?v=20260417-preview-icons"></script>
+  <script src="js/utils/previewControls.js?v=20260417-preview-icons"></script>
   <script src="js/ui.js"></script>
   <script src="js/easter-egg.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/drawing.js"></script>
+  <script src="js/main.js?v=20260417-preview-icons"></script>
+  <script src="js/drawing.js?v=20260417-preview-icons"></script>
 </body>
 
 </html>

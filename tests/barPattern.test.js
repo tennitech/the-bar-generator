@@ -6,6 +6,7 @@ const {
   createGradientPatternGeometry,
   createGridPatternGeometry,
   createLinesPatternGeometry,
+  createNeuralNetworkPatternGeometry,
   createPointConnectPatternGeometry,
   createTriangleGridPatternGeometry,
   createTrianglesPatternGeometry,
@@ -58,6 +59,7 @@ function makeBaseConfig(overrides = {}) {
       gridVariant: 1,
       linesVariant: 2,
       pointConnectVariant: 1,
+      neuralNetworkHiddenLayers: 1,
       triangleGridVariant: 2,
       trianglesVariant: 1,
       trussFamily: 'flat'
@@ -249,6 +251,45 @@ describe('createBarPatternSVG', () => {
     expect(triangleGrid).toContain('<path d="');
   });
 
+  test('builds and serializes a neural-network bar layout', () => {
+    const geometry = createNeuralNetworkPatternGeometry({
+      barStartX: 0,
+      barY: 0,
+      exactBarWidth: 250,
+      barHeight: 18,
+      hiddenLayers: 1
+    });
+    const svg = createBarPatternSVG(makeBaseConfig({ currentShader: 23 }));
+
+    expect(geometry.nodes.length).toBe(7);
+    expect(geometry.lines.length).toBe(8);
+    expect(svg).toContain('<path d="');
+    expect(svg).toContain('<circle');
+  });
+
+  test('changes neural-network density when hidden layers increase', () => {
+    const shallow = createNeuralNetworkPatternGeometry({
+      barStartX: 0,
+      barY: 0,
+      exactBarWidth: 250,
+      barHeight: 18,
+      hiddenLayers: 1
+    });
+    const deep = createNeuralNetworkPatternGeometry({
+      barStartX: 0,
+      barY: 0,
+      exactBarWidth: 250,
+      barHeight: 18,
+      hiddenLayers: 4
+    });
+
+    expect(deep.hiddenLayers).toBe(4);
+    expect(deep.nodes.length).toBeGreaterThan(shallow.nodes.length);
+    expect(deep.lines.length).toBeGreaterThan(shallow.lines.length);
+    expect(deep.nodes.length).toBe(16);
+    expect(deep.lines.length).toBe(26);
+  });
+
   test('builds dense line geometry for point connect and triangle grid styles', () => {
     const pointConnect = createPointConnectPatternGeometry({
       barStartX: 0,
@@ -298,6 +339,7 @@ describe('createBarPatternSVG', () => {
         trianglesVariant: 2
       }
     }));
+    const neuralNetwork = createBarPatternSVG(makeBaseConfig({ currentShader: 23 }));
     const fibonacci = createBarPatternSVG(makeBaseConfig({ currentShader: 20 }));
     const union = createBarPatternSVG(makeBaseConfig({ currentShader: 21 }));
     const waveQuantum = createBarPatternSVG(makeBaseConfig({ currentShader: 22 }));
@@ -306,6 +348,7 @@ describe('createBarPatternSVG', () => {
     expect(gradient).toContain('<rect');
     expect(grid).toContain('<path d="');
     expect(triangles).toContain('<polygon');
+    expect(neuralNetwork).toContain('<circle');
     expect(fibonacci).toContain('<rect');
     expect(union).toContain('<polygon');
     expect(waveQuantum).toContain('<path d="');

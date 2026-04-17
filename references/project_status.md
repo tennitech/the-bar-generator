@@ -48,6 +48,14 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   [ ] **AI Exploration:** (Future) Event-specific background generation.
 
 ## 5. Recent Updates
+- **[2026-04-17] Added `NEURAL NETWORK` As A New Scientific Bar Pattern**:
+    - Introduced a new `NEURAL NETWORK` bar style in the main generator, designed as a feedforward multilayer node-and-connection diagram that stays inside the official bar geometry and uses the existing one-color brand system.
+    - Implemented the pattern through the shared `js/utils/barPattern.js` geometry/export pipeline so live preview, header preview, and SVG export all use the same source of truth instead of drifting.
+    - Added regression coverage for the new geometry and SVG serialization so the network stays stable as additional bar styles are added later.
+    - Refined the geometry after review so the network now uses much more of the official bar height and added a `HIDDEN LAYERS` parameter to control the depth of the interior network structure directly from the UI and URL state.
+    - Tightened that geometry again after visual review by switching to a fixed node count per layer and sparse adjacent-layer connectivity, which removes the overloaded corner fan-outs and keeps the network legible across the full bar span.
+    - Reduced the node count again and enlarged the remaining nodes so the neural bar reads with fewer circles and stronger dot presence at generator scale.
+    - Reintroduced controlled diagonal cross-links after review so the bar preserves a clearer neural-network character without returning to the earlier dense all-to-all mesh.
 - **[2026-04-17] Exported-Mark-First Theme System Recovered And Refined**:
     - Restored the intended contrasting workspace families so `BLACK` now renders in the light UI family while `WHITE`, `SILVER`, and `GRAY` remain on dark workspace surfaces, matching the generator's exported mark-color model again.
     - Replaced the remaining generic theme-state styling with explicit semantic tokens for header controls, dropdown rows, save-menu states, preview/report buttons, workspace chrome, sliders, and toggles so every color theme follows the same interaction logic without falling back to unreadable defaults.
@@ -55,6 +63,11 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Added a shared `themeMode` utility plus regression tests for legacy alias normalization and custom-select sync so the exported-mark-first theme naming and dropdown state behavior are less likely to drift again.
     - Followed that recovery with a Safari-specific polish pass for the `GOLD` theme: active toggle knobs now stay white, open dropdown triggers no longer show the old red focus box, toggle switches reuse the slider halo-style hover treatment, and the custom-select scrollbar gutter is hidden so selected gold rows fill cleanly to the right edge.
     - Hid the visible sidebar scrollbar across engines so overflow now relies on the existing top and bottom fade cues instead of showing a separate track/thumb inside the control rail.
+    - Rebuilt the preview/audio transport controls into a shared icon-driven system across `TICKER`, `WAVEFORM`, `BINARY`, `MORSE CODE`, and `MUSIC`, with unified play/pause button logic, compact restart actions, live-state animation, and disabled guidance for music when no notes are present.
+    - Added a dedicated `previewControls` utility plus regression tests so transport labels, ARIA copy, active states, and restart semantics stay consistent as preview behavior evolves.
+    - Added versioned local asset URLs for the updated stylesheet and main preview scripts to reduce Safari cache-staleness after these UI changes.
+    - Simplified that preview transport pass again after review: the controls now use a more minimal single-line treatment with smaller icon marks, lighter borders, and a restrained active indicator instead of the heavier two-line card-style presentation.
+    - Replaced that experimental rail treatment after review with a stricter toolbar-style transport pattern: preview rows now use the same compact icon-button language as the workspace controls, visible text labels and extra restart actions are gone, and motion/audio state is communicated only through the gray play-pause and volume icons themselves.
 - **[2026-04-15] Runtime Control Redesign Rolled Back After Stylesheet Corruption**:
     - Restored `css/style.css` after it was accidentally overwritten, then reapplied the current right-sidebar shell, scroll-fade, sticky report rail, report dialog, and parameter-header utility styling as an override layer.
     - Reverted the unfinished `LIVE` runtime-control treatment back to the prior `PREVIEW` structure so the interface returns to the last stable control layout.

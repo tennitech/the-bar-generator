@@ -43,13 +43,10 @@ let headerLogoPreview;
 let binaryInput;
 let binaryGroup;
 let binaryAudioBtn;
-let binaryResetBtn;
 let morseInput;
 let morseGroup;
 let morseAudioBtn;
-let morseResetBtn;
 let staffAudioBtn;
-let staffResetBtn;
 let rulerGroup;
 let rulerRepeatsSlider;
 let rulerRepeatsDisplay;
@@ -63,7 +60,6 @@ let tickerRatioDisplay;
 let tickerWidthRatioSlider;
 let tickerWidthRatioDisplay;
 let tickerAudioBtn;
-let tickerResetBtn;
 let tickerMotionBtn;
 let waveformGroup;
 let waveformTypeSlider;
@@ -122,6 +118,9 @@ let linesVariantDisplay;
 let pointConnectGroup;
 let pointConnectVariantSlider;
 let pointConnectVariantDisplay;
+let neuralNetworkGroup;
+let neuralNetworkHiddenLayersSlider;
+let neuralNetworkHiddenLayersDisplay;
 let triangleGridGroup;
 let triangleGridVariantSlider;
 let triangleGridVariantDisplay;
@@ -291,6 +290,38 @@ const LEGACY_COLOR_MODE_ALIASES = themeModeUtils && themeModeUtils.LEGACY_COLOR_
     'light': 'black',
     'dark': 'white'
   };
+const previewControlUtils = typeof window !== 'undefined' ? window.previewControlUtils || null : null;
+const getPreviewButtonMarkup = previewControlUtils && typeof previewControlUtils.getPreviewButtonMarkup === 'function'
+  ? previewControlUtils.getPreviewButtonMarkup
+  : function fallbackGetPreviewButtonMarkup(kind) {
+    return kind === 'restart' ? 'RESTART' : 'PLAY';
+  };
+const getPreviewButtonState = previewControlUtils && typeof previewControlUtils.getPreviewButtonState === 'function'
+  ? previewControlUtils.getPreviewButtonState
+  : function fallbackGetPreviewButtonState(kind, options = {}) {
+    if (kind === 'restart') {
+      return {
+        icon: 'restart',
+        actionText: 'Restart',
+        statusText: 'From start',
+        ariaLabel: 'Restart preview',
+        active: false,
+        animated: false,
+        disabled: !!options.disabled
+      };
+    }
+
+    const active = !!options.active;
+    return {
+      icon: active ? 'pause' : 'play',
+      actionText: active ? 'Pause' : 'Play',
+      statusText: kind === 'motion' ? 'Motion preview' : 'Audio preview',
+      ariaLabel: `${active ? 'Pause' : 'Play'} ${kind === 'motion' ? 'motion' : 'audio'} preview`,
+      active,
+      animated: active,
+      disabled: !!options.disabled
+    };
+  };
 
 let currentColorMode = DEFAULT_COLOR_MODE;
 const colors = {
@@ -454,7 +485,7 @@ let zoomInBtn, zoomOutBtn, zoomResetBtn, panBtn, zoomLevelDisplay;
 const AVAILABLE_STYLE_VALUES = new Set([
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
   'numeric', 'morse', 'circles-gradient', 'gradient', 'grid',
-  'lines', 'point-connect', 'triangle-grid', 'triangles',
+  'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles',
   'fibonacci-sequence', 'union', 'wave-quantum',
   'runway', 'truss', 'music', 'graph'
 ]);
@@ -481,21 +512,70 @@ const RESETTABLE_GROUP_STYLE_MAP = {
   'graph-group': 'graph',
   'lines-group': 'lines',
   'point-connect-group': 'point-connect',
+  'neural-network-group': 'neural-network',
   'triangle-grid-group': 'triangle-grid',
   'triangles-group': 'triangles'
 };
 const SURPRISEABLE_STYLE_SET = new Set(Object.values(RESETTABLE_GROUP_STYLE_MAP));
 
+function ensurePreviewButtonMarkup(button, kind) {
+  if (!button) return;
+
+  const resolvedKind = kind || button.dataset.previewKind || 'audio';
+  button.dataset.previewKind = resolvedKind;
+
+  if (button.dataset.previewHydrated === 'true') {
+    return;
+  }
+
+  button.innerHTML = getPreviewButtonMarkup(resolvedKind);
+  button.dataset.previewHydrated = 'true';
+}
+
+function renderPreviewButton(button, kind, options = {}) {
+  if (!button) return;
+
+  ensurePreviewButtonMarkup(button, kind);
+
+  const state = getPreviewButtonState(kind, {
+    ...options,
+    target: options.target || button.dataset.previewTarget || kind
+  });
+
+  button.dataset.previewIcon = state.icon;
+  button.dataset.previewAnimated = state.animated ? 'true' : 'false';
+  button.classList.toggle('is-active', !!state.active);
+  button.disabled = !!state.disabled;
+  button.setAttribute('aria-label', state.ariaLabel);
+  button.title = state.disabled && state.statusText ? state.statusText : state.ariaLabel;
+
+  const srLabel = button.querySelector('.preview-control-btn_sr');
+  if (srLabel) {
+    srLabel.textContent = state.ariaLabel;
+  } else {
+    button.textContent = state.actionText;
+  }
+}
+
+function initializePreviewButtons() {
+  [
+    [binaryAudioBtn, 'audio'],
+    [morseAudioBtn, 'audio'],
+    [tickerMotionBtn, 'motion'],
+    [tickerAudioBtn, 'audio'],
+    [waveformMotionBtn, 'motion'],
+    [waveformAudioBtn, 'audio'],
+    [staffAudioBtn, 'audio']
+  ].forEach(([button, kind]) => ensurePreviewButtonMarkup(button, kind));
+}
+
 function syncMotionToggleState() {
-  const motionLabel = isPlaying ? 'PAUSE' : 'PLAY';
-  if (tickerMotionBtn) {
-    tickerMotionBtn.textContent = motionLabel;
-    tickerMotionBtn.classList.toggle('is-active', isPlaying);
-  }
-  if (waveformMotionBtn) {
-    waveformMotionBtn.textContent = motionLabel;
-    waveformMotionBtn.classList.toggle('is-active', isPlaying);
-  }
+  renderPreviewButton(tickerMotionBtn, 'motion', {
+    active: currentShader === 2 && isPlaying
+  });
+  renderPreviewButton(waveformMotionBtn, 'motion', {
+    active: currentShader === 4 && isPlaying
+  });
 }
 
 function setPlaybackState(shouldPlay) {
@@ -586,11 +666,11 @@ function getCurrentAudioPreviewType() {
 
 function getAudioButtonConfig() {
   return [
-    { type: 'binary', button: binaryAudioBtn, reset: binaryResetBtn, currentShader: 3 },
-    { type: 'morse', button: morseAudioBtn, reset: morseResetBtn, currentShader: 7 },
-    { type: 'ticker', button: tickerAudioBtn, reset: tickerResetBtn, currentShader: 2 },
-    { type: 'waveform', button: waveformAudioBtn, reset: null, currentShader: 4 },
-    { type: 'staff', button: staffAudioBtn, reset: staffResetBtn, currentShader: 10 }
+    { type: 'binary', button: binaryAudioBtn, currentShader: 3 },
+    { type: 'morse', button: morseAudioBtn, currentShader: 7 },
+    { type: 'ticker', button: tickerAudioBtn, currentShader: 2 },
+    { type: 'waveform', button: waveformAudioBtn, currentShader: 4 },
+    { type: 'staff', button: staffAudioBtn, currentShader: 10 }
   ];
 }
 
@@ -635,36 +715,6 @@ function togglePreviewAudio(type) {
     resetAudioSequencePosition(type);
   }
   startAudio();
-}
-
-function restartPreviewAudio(type) {
-  const currentType = getCurrentAudioPreviewType();
-  if (!currentType || currentType !== type || type === 'waveform') return;
-
-  if (type === 'staff' && (!currentStaffNotes || currentStaffNotes.length === 0)) {
-    showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
-    return;
-  }
-
-  const restartFromStart = () => {
-    sequenceContext.currentNote = 0;
-    if (audioContext) {
-      sequenceContext.nextNoteTime = audioContext.currentTime + 0.1;
-    }
-    startAudio();
-  };
-
-  if (isAudioPlaying) {
-    stopAudio();
-    window.setTimeout(() => {
-      if (getCurrentAudioPreviewType() === type) {
-        restartFromStart();
-      }
-    }, 120);
-    return;
-  }
-
-  restartFromStart();
 }
 
 function resetStyleParameters(style) {
@@ -792,6 +842,10 @@ function resetStyleParameters(style) {
     case 'point-connect':
       if (pointConnectVariantSlider) pointConnectVariantSlider.value = 1;
       updatePointConnectVariantDisplay();
+      break;
+    case 'neural-network':
+      if (neuralNetworkHiddenLayersSlider) neuralNetworkHiddenLayersSlider.value = 1;
+      updateNeuralNetworkHiddenLayersDisplay();
       break;
     case 'triangle-grid':
       if (triangleGridVariantSlider) triangleGridVariantSlider.value = 2;
@@ -988,6 +1042,10 @@ function randomizeStyleParameters(style) {
     case 'point-connect':
       if (pointConnectVariantSlider) pointConnectVariantSlider.value = randomStepValue(1, 2, 1);
       updatePointConnectVariantDisplay();
+      break;
+    case 'neural-network':
+      if (neuralNetworkHiddenLayersSlider) neuralNetworkHiddenLayersSlider.value = randomStepValue(1, 5, 1);
+      updateNeuralNetworkHiddenLayersDisplay();
       break;
     case 'triangle-grid':
       if (triangleGridVariantSlider) triangleGridVariantSlider.value = randomStepValue(1, 3, 1);
@@ -1465,11 +1523,9 @@ async function setup() {
   binaryInput = document.getElementById('binary-input');
   binaryGroup = document.getElementById('binary-group');
   binaryAudioBtn = document.getElementById('binary-audio-btn');
-  binaryResetBtn = document.getElementById('binary-reset-btn');
   morseInput = document.getElementById('morse-input');
   morseGroup = document.getElementById('morse-group');
   morseAudioBtn = document.getElementById('morse-audio-btn');
-  morseResetBtn = document.getElementById('morse-reset-btn');
   rulerGroup = document.getElementById('ruler-group');
   rulerRepeatsSlider = document.getElementById('ruler-repeats-slider');
   rulerRepeatsDisplay = document.getElementById('ruler-repeats-display');
@@ -1483,7 +1539,6 @@ async function setup() {
   tickerWidthRatioSlider = document.getElementById('ticker-width-ratio-slider');
   tickerWidthRatioDisplay = document.getElementById('ticker-width-ratio-display');
   tickerAudioBtn = document.getElementById('ticker-audio-btn');
-  tickerResetBtn = document.getElementById('ticker-reset-btn');
   tickerMotionBtn = document.getElementById('ticker-motion-btn');
   waveformGroup = document.getElementById('waveform-group');
   waveformTypeSlider = document.getElementById('waveform-type-slider');
@@ -1624,6 +1679,9 @@ async function setup() {
   pointConnectGroup = document.getElementById('point-connect-group');
   pointConnectVariantSlider = document.getElementById('point-connect-variant-slider');
   pointConnectVariantDisplay = document.getElementById('point-connect-variant-display');
+  neuralNetworkGroup = document.getElementById('neural-network-group');
+  neuralNetworkHiddenLayersSlider = document.getElementById('neural-network-hidden-layers-slider');
+  neuralNetworkHiddenLayersDisplay = document.getElementById('neural-network-hidden-layers-display');
   triangleGridGroup = document.getElementById('triangle-grid-group');
   triangleGridVariantSlider = document.getElementById('triangle-grid-variant-slider');
   triangleGridVariantDisplay = document.getElementById('triangle-grid-variant-display');
@@ -1638,7 +1696,6 @@ async function setup() {
   trussThicknessDisplay = document.getElementById('truss-thickness-display');
   staffGroup = document.getElementById('staff-group');
   staffAudioBtn = document.getElementById('staff-audio-btn');
-  staffResetBtn = document.getElementById('staff-reset-btn');
   staffInstrumentSelect = document.getElementById('staff-instrument-select');
   staffNoteShapeSelect = document.getElementById('staff-note-shape-select');
   staffClearBtn = document.getElementById('staff-clear-btn');
@@ -1690,6 +1747,8 @@ async function setup() {
   const savePngButton = document.getElementById('save-png');
   const saveSvgButton = document.getElementById('save-svg');
   saveLoopGifButton = document.getElementById('save-loop-gif');
+
+  initializePreviewButtons();
 
   updateSidebarScrollFadeState();
   if (sidebarScroll) {
@@ -1824,13 +1883,6 @@ async function setup() {
     tickerAudioBtn.addEventListener('click', function (e) {
       e.preventDefault();
       togglePreviewAudio('ticker');
-    });
-  }
-
-  if (tickerResetBtn) {
-    tickerResetBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      restartPreviewAudio('ticker');
     });
   }
 
@@ -2117,13 +2169,6 @@ async function setup() {
     });
   }
 
-  if (morseResetBtn) {
-    morseResetBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      restartPreviewAudio('morse');
-    });
-  }
-
   if (binaryAudioBtn) {
     binaryAudioBtn.addEventListener('click', function (e) {
       e.preventDefault();
@@ -2131,24 +2176,10 @@ async function setup() {
     });
   }
 
-  if (binaryResetBtn) {
-    binaryResetBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      restartPreviewAudio('binary');
-    });
-  }
-
   if (staffAudioBtn) {
     staffAudioBtn.addEventListener('click', function (e) {
       e.preventDefault();
       togglePreviewAudio('staff');
-    });
-  }
-
-  if (staffResetBtn) {
-    staffResetBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      restartPreviewAudio('staff');
     });
   }
 
@@ -2228,6 +2259,15 @@ async function setup() {
       requestUpdate();
     });
     updatePointConnectVariantDisplay();
+  }
+
+  if (neuralNetworkHiddenLayersSlider) {
+    neuralNetworkHiddenLayersSlider.addEventListener('input', function () {
+      updateNeuralNetworkHiddenLayersDisplay();
+      updateUrlParameters();
+      requestUpdate();
+    });
+    updateNeuralNetworkHiddenLayersDisplay();
   }
 
   if (triangleGridVariantSlider) {
@@ -2325,6 +2365,7 @@ async function setup() {
       const totalDuration = currentStaffNotes.reduce((sum, n) => sum + n.duration, 0);
       if (totalDuration + currentNoteDuration <= 16) {
         currentStaffNotes.push({ note: noteName, duration: currentNoteDuration });
+        updateAudioControlsUI();
         updateUrlParameters();
         requestUpdate();
       } else {
@@ -2341,6 +2382,7 @@ async function setup() {
     staffClearBtn.addEventListener('click', function (e) {
       e.preventDefault();
       currentStaffNotes = [];
+      updateAudioControlsUI();
       updateUrlParameters();
       requestUpdate();
     });
@@ -2645,6 +2687,11 @@ function updatePointConnectVariantDisplay() {
   pointConnectVariantDisplay.textContent = pointConnectVariantSlider.value;
 }
 
+function updateNeuralNetworkHiddenLayersDisplay() {
+  if (!neuralNetworkHiddenLayersSlider || !neuralNetworkHiddenLayersDisplay) return;
+  neuralNetworkHiddenLayersDisplay.textContent = neuralNetworkHiddenLayersSlider.value;
+}
+
 function updateTriangleGridVariantDisplay() {
   if (!triangleGridVariantSlider || !triangleGridVariantDisplay) return;
   triangleGridVariantDisplay.textContent = triangleGridVariantSlider.value;
@@ -2899,6 +2946,9 @@ function handleStyleChange() {
     case 'point-connect':
       currentShader = 14;
       break;
+    case 'neural-network':
+      currentShader = 23;
+      break;
     case 'triangle-grid':
       currentShader = 15;
       break;
@@ -2946,6 +2996,7 @@ function handleStyleChange() {
     if (gridGroup) gridGroup.style.display = 'none';
     if (linesGroup) linesGroup.style.display = 'none';
     if (pointConnectGroup) pointConnectGroup.style.display = 'none';
+    if (neuralNetworkGroup) neuralNetworkGroup.style.display = 'none';
     if (triangleGridGroup) triangleGridGroup.style.display = 'none';
     if (trianglesGroup) trianglesGroup.style.display = 'none';
     if (trussGroup) trussGroup.style.display = 'none';
@@ -2995,6 +3046,9 @@ function handleStyleChange() {
         break;
       case 'point-connect':
         if (pointConnectGroup) pointConnectGroup.style.display = 'block';
+        break;
+      case 'neural-network':
+        if (neuralNetworkGroup) neuralNetworkGroup.style.display = 'block';
         break;
       case 'triangle-grid':
         if (triangleGridGroup) triangleGridGroup.style.display = 'block';
@@ -3130,6 +3184,7 @@ function buildHeaderPreviewSVG() {
         gridVariant: gridVariantSlider ? gridVariantSlider.value : 1,
         linesVariant: linesVariantSlider ? linesVariantSlider.value : 2,
         pointConnectVariant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1,
+        neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1,
         triangleGridVariant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2,
         trianglesVariant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
         morseText: morseInput ? morseInput.value : 'RPI',
@@ -4173,16 +4228,17 @@ function showAudioToast(message, type = 'info') {
 
 function updateAudioControlsUI() {
   const activeType = getCurrentAudioPreviewType();
-  getAudioButtonConfig().forEach(({ type, button, reset, currentShader: shaderId }) => {
-    if (button) {
-      const isActive = activeType === type && isAudioPlaying;
-      button.textContent = isActive ? 'PAUSE' : 'PLAY';
-      button.classList.toggle('is-active', isActive);
-      button.disabled = type === 'staff' && shaderId === 10 && (!currentStaffNotes || currentStaffNotes.length === 0);
-    }
-    if (reset) {
-      reset.disabled = type === 'staff' && shaderId === 10 && (!currentStaffNotes || currentStaffNotes.length === 0);
-    }
+  const staffPreviewDisabled = !currentStaffNotes || currentStaffNotes.length === 0;
+
+  getAudioButtonConfig().forEach(({ type, button, currentShader: shaderId }) => {
+    const isStaffControl = type === 'staff' && shaderId === 10;
+    const disabled = isStaffControl && staffPreviewDisabled;
+
+    renderPreviewButton(button, 'audio', {
+      active: activeType === type && isAudioPlaying,
+      disabled,
+      disabledReason: 'Add notes first'
+    });
   });
 }
 
@@ -5415,6 +5471,7 @@ function getUrlParameters() {
     // Reference pattern parameters
     linesVariant: Math.max(1, Math.min(2, parseInt(params.get('linesVariant')) || 2)),
     pointConnectVariant: Math.max(1, Math.min(2, parseInt(params.get('pointConnectVariant')) || 1)),
+    neuralNetworkHiddenLayers: Math.max(1, Math.min(5, parseInt(params.get('neuralNetworkHiddenLayers')) || 1)),
     triangleGridVariant: Math.max(1, Math.min(3, parseInt(params.get('triangleGridVariant')) || 2)),
     trianglesVariant: Math.max(1, Math.min(2, parseInt(params.get('trianglesVariant')) || 1)),
 
@@ -5549,6 +5606,12 @@ function updateUrlParameters() {
   if (styleSelect && styleSelect.value === 'point-connect') {
     if (pointConnectVariantSlider && parseInt(pointConnectVariantSlider.value, 10) !== 1) {
       params.set('pointConnectVariant', pointConnectVariantSlider.value);
+    }
+  }
+
+  if (styleSelect && styleSelect.value === 'neural-network') {
+    if (neuralNetworkHiddenLayersSlider && parseInt(neuralNetworkHiddenLayersSlider.value, 10) !== 1) {
+      params.set('neuralNetworkHiddenLayers', neuralNetworkHiddenLayersSlider.value);
     }
   }
 
@@ -5779,6 +5842,10 @@ function applyUrlParameters() {
     pointConnectVariantSlider.value = params.pointConnectVariant;
     updatePointConnectVariantDisplay();
   }
+  if (neuralNetworkHiddenLayersSlider) {
+    neuralNetworkHiddenLayersSlider.value = params.neuralNetworkHiddenLayers;
+    updateNeuralNetworkHiddenLayersDisplay();
+  }
   if (triangleGridVariantSlider) {
     triangleGridVariantSlider.value = params.triangleGridVariant;
     updateTriangleGridVariantDisplay();
@@ -5982,6 +6049,7 @@ function updateAllDisplays() {
   updateCirclesSizeVariationYDisplay();
   updateCirclesSizeVariationXDisplay();
   updateCirclesGridOverlapDisplay();
+  updateNeuralNetworkHiddenLayersDisplay();
 }
 
 function updateAudioParameters() {
@@ -6700,6 +6768,34 @@ function drawBottomBar(currentWidth) {
     for (let i = 0; i < geometry.lines.length; i++) {
       const lineSegment = geometry.lines[i];
       line(lineSegment.x1, lineSegment.y1, lineSegment.x2, lineSegment.y2);
+    }
+  } else if (currentShader === 23) {
+    // Neural network pattern
+    resetShader();
+    const geometry = createNeuralNetworkPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight,
+      hiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1
+    });
+
+    noFill();
+    stroke(fgColor);
+    strokeWeight(geometry.thickness);
+    strokeCap(ROUND);
+    strokeJoin(ROUND);
+
+    for (let i = 0; i < geometry.lines.length; i++) {
+      const lineSegment = geometry.lines[i];
+      line(lineSegment.x1, lineSegment.y1, lineSegment.x2, lineSegment.y2);
+    }
+
+    noStroke();
+    fill(fgColor);
+    for (let i = 0; i < geometry.nodes.length; i++) {
+      const node = geometry.nodes[i];
+      circle(node.x, node.y, node.r * 2);
     }
   } else if (currentShader === 15) {
     // Triangle grid pattern

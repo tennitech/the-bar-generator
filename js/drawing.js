@@ -770,6 +770,33 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       }
       pg.endShape();
     }
+  } else if (currentShader === 23) {
+    // Neural network pattern
+    const geometry = createNeuralNetworkPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight: rectHeight,
+      hiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1
+    });
+
+    pg.noFill();
+    pg.stroke(fgColor);
+    pg.strokeWeight(geometry.thickness);
+    pg.strokeCap(pg.ROUND);
+    pg.strokeJoin(pg.ROUND);
+
+    for (let i = 0; i < geometry.lines.length; i++) {
+      const lineSegment = geometry.lines[i];
+      pg.line(lineSegment.x1, lineSegment.y1, lineSegment.x2, lineSegment.y2);
+    }
+
+    pg.noStroke();
+    pg.fill(fgColor);
+    for (let i = 0; i < geometry.nodes.length; i++) {
+      const node = geometry.nodes[i];
+      pg.circle(node.x, node.y, node.r * 2);
+    }
   }
 }
 
@@ -1110,6 +1137,7 @@ function saveSVG() {
           circlesLayout: circlesLayoutSelect ? circlesLayoutSelect.value : 'straight',
           numericValue: numericInput ? numericInput.value : '',
           numericMode: numericModeSelect ? numericModeSelect.value : 'dotmatrix',
+          neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1,
           morseText: typeof morseInput !== 'undefined' && morseInput ? morseInput.value : 'RPI',
           trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
           trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,

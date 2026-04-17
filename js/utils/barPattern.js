@@ -199,6 +199,103 @@ function createPointConnectPatternGeometry(options = {}) {
   return { lines, thickness };
 }
 
+function createNeuralNetworkPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const hiddenLayers = Math.max(1, Math.min(5, parseInt(options.hiddenLayers || 1, 10) || 1));
+  const thickness = Math.max(0.65, parseFloat(options.thickness || Math.max(0.8, barHeight * 0.045)));
+  const endpointNodeCount = 2;
+  const hiddenNodeCount = 3;
+  const layerNodeCounts = [endpointNodeCount];
+  for (let i = 0; i < hiddenLayers; i++) {
+    layerNodeCounts.push(hiddenNodeCount);
+  }
+  layerNodeCounts.push(endpointNodeCount);
+  const layerCount = layerNodeCounts.length;
+  const maxNodes = Math.max(...layerNodeCounts);
+  const coreRadius = Math.max(thickness * 1.35, Math.min(barHeight * 0.12, (barHeight * 0.92) / (maxNodes * 1.8)));
+  const sideInset = Math.max(coreRadius * 0.9, exactBarWidth * 0.012);
+  const verticalInset = Math.max(coreRadius * 0.7, barHeight * 0.015);
+  const left = barStartX + sideInset;
+  const right = barStartX + exactBarWidth - sideInset;
+  const top = barY + verticalInset;
+  const bottom = barY + barHeight - verticalInset;
+  const layers = [];
+  const lines = [];
+  const nodes = [];
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  for (let layerIndex = 0; layerIndex < layerCount; layerIndex++) {
+    const nodeCount = layerNodeCounts[layerIndex];
+    const layerNodes = [];
+    const x = layerCount === 1 ? barStartX + exactBarWidth / 2 : lerp(left, right, layerIndex / (layerCount - 1));
+    const stepY = nodeCount === 1 ? 0 : (bottom - top) / (nodeCount - 1);
+
+    for (let nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
+      const yBase = nodeCount === 1 ? (top + bottom) / 2 : top + stepY * nodeIndex;
+      const layerParityOffset = layerIndex > 0 && layerIndex < layerCount - 1
+        ? (layerIndex % 2 === 0 ? -1 : 1) * stepY * 0.04
+        : 0;
+      const y = Math.max(top, Math.min(bottom, yBase + layerParityOffset));
+      const node = { x, y, r: coreRadius, layerIndex, nodeIndex };
+
+      layerNodes.push(node);
+      nodes.push(node);
+    }
+
+    layers.push(layerNodes);
+  }
+
+  const addTrimmedLine = (a, b) => {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < 0.001) return;
+
+    const trimStart = a.r + thickness * 0.35;
+    const trimEnd = b.r + thickness * 0.35;
+    if (distance <= trimStart + trimEnd) return;
+
+    const unitX = dx / distance;
+    const unitY = dy / distance;
+    lines.push({
+      x1: a.x + unitX * trimStart,
+      y1: a.y + unitY * trimStart,
+      x2: b.x - unitX * trimEnd,
+      y2: b.y - unitY * trimEnd
+    });
+  };
+
+  const normalizeNodePosition = (index, count) => (count <= 1 ? 0.5 : index / (count - 1));
+  const targetNeighborSpan = endpointNodeCount === hiddenNodeCount ? 1 : 2;
+
+  for (let layerIndex = 0; layerIndex < layers.length - 1; layerIndex++) {
+    const currentLayer = layers[layerIndex];
+    const nextLayer = layers[layerIndex + 1];
+
+    for (let i = 0; i < currentLayer.length; i++) {
+      const currentPosition = normalizeNodePosition(i, currentLayer.length);
+      let connectionCount = 0;
+
+      for (let j = 0; j < nextLayer.length; j++) {
+        const nextPosition = normalizeNodePosition(j, nextLayer.length);
+        const positionDelta = Math.abs(currentPosition - nextPosition);
+        const isPrimaryNeighbor = positionDelta <= 0.01;
+        const isDiagonalNeighbor = positionDelta > 0.01 && positionDelta <= 0.51;
+
+        if (isPrimaryNeighbor || (isDiagonalNeighbor && connectionCount < targetNeighborSpan)) {
+          addTrimmedLine(currentLayer[i], nextLayer[j]);
+          connectionCount++;
+        }
+      }
+    }
+  }
+
+  return { lines, nodes, thickness, hiddenLayers };
+}
+
 function createTriangleGridPatternGeometry(options = {}) {
   const barStartX = Number(options.barStartX || 0);
   const barY = Number(options.barY || 0);
@@ -1268,6 +1365,31 @@ function createBarPatternSVG(config) {
     return pattern;
   }
 
+  if (currentShader === 23) {
+    const geometry = createNeuralNetworkPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      hiddenLayers: values.neuralNetworkHiddenLayers
+    });
+
+    let pathData = '';
+    for (let i = 0; i < geometry.lines.length; i++) {
+      const line = geometry.lines[i];
+      pathData += ` M ${line.x1} ${line.y1} L ${line.x2} ${line.y2}`;
+    }
+    if (pathData) {
+      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${geometry.thickness}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+
+    for (let i = 0; i < geometry.nodes.length; i++) {
+      const node = geometry.nodes[i];
+      pattern += `\n    <circle cx="${node.x}" cy="${node.y}" r="${node.r}" fill="${fgColor}"/>`;
+    }
+    return pattern;
+  }
+
   if (currentShader === 15) {
     const geometry = createTriangleGridPatternGeometry({
       barStartX,
@@ -1518,6 +1640,7 @@ if (typeof window !== 'undefined') {
   window.createGradientPatternGeometry = createGradientPatternGeometry;
   window.createGridPatternGeometry = createGridPatternGeometry;
   window.createLinesPatternGeometry = createLinesPatternGeometry;
+  window.createNeuralNetworkPatternGeometry = createNeuralNetworkPatternGeometry;
   window.createPointConnectPatternGeometry = createPointConnectPatternGeometry;
   window.createTriangleGridPatternGeometry = createTriangleGridPatternGeometry;
   window.createTrussPatternGeometry = createTrussPatternGeometry;
@@ -1539,6 +1662,7 @@ if (typeof module !== 'undefined' && module.exports) {
     createGradientPatternGeometry,
     createGridPatternGeometry,
     createLinesPatternGeometry,
+    createNeuralNetworkPatternGeometry,
     createPointConnectPatternGeometry,
     createTriangleGridPatternGeometry,
     createTrussPatternGeometry,
