@@ -182,8 +182,15 @@ let appSidebar;
 let sidebarScroll;
 let mobileMenuToggle;
 let saveButton;
+let saveButtonLabel;
 let saveMenu;
+let savePngButton;
+let saveSvgButton;
 let saveLoopGifButton;
+let copyEmbedButton;
+let styleSelectLabel;
+let colorModeSelectLabel;
+let reportProblemLabel;
 let reportProblemBtn;
 let bugReportDialog;
 let bugReportForm;
@@ -219,6 +226,68 @@ let easterEggResumeAudio = false;
 let easterEggLastFocusedElement = null;
 let easterEggProfile = null;
 let easterEggRunState = null;
+const ARTEMIS_II_SPLASHDOWN_AT = Date.parse('2026-04-10T20:07:00-04:00');
+const ARTEMIS_CREDIT_LINKS = {
+  reidWiseman: 'https://news.rpi.edu/2026/04/13/engineers-who-reached-moon-how-rpi-became-launchpad-stars',
+  rpiEngineers: 'https://news.rpi.edu/2026/03/31/meet-rpi-engineers-guiding-artemis-ii-moon-and-back',
+  lunarImageCredit: 'https://github.com/the-astronot/boromir/blob/main/README.md'
+};
+const DEFAULT_SAVE_MENU_COPY = {
+  button: 'Download Asset',
+  png: {
+    label: 'PNG IMAGE',
+    description: 'High resolution raster'
+  },
+  svg: {
+    label: 'SVG VECTOR',
+    description: 'Scalable format'
+  },
+  gif: {
+    label: 'LOOPING GIF',
+    description: 'Seamless animation for repeat styles'
+  },
+  copy: {
+    label: 'COPY EMBED CODE',
+    description: 'For Frontify / Web'
+  }
+};
+const MISSION_CONTROL_SAVE_MENU_COPY = {
+  button: 'Learn About RPI x Artemis',
+  png: {
+    label: "Reid Wiseman '97",
+    description: 'Commander'
+  },
+  svg: {
+    label: "Maeve Marshall '23, M.Eng. '24",
+    description: 'GNC Engineer'
+  },
+  gif: {
+    label: "Paul McKee '17, MS '18, Ph.D. '23",
+    description: 'Orion Optical Navigation Engineer'
+  },
+  copy: {
+    label: 'Moon Surface Credit',
+    description: "Maeve Marshall's thesis image source"
+  }
+};
+const DEFAULT_INTERFACE_COPY = {
+  styleLabel: 'BAR STYLE',
+  colorLabel: 'COLOR THEME',
+  reportProblem: 'Report a Problem'
+};
+const MISSION_CONTROL_INTERFACE_COPY = {
+  styleLabel: 'SIGNAL',
+  colorLabel: 'DISPLAY MODE',
+  reportProblem: 'Report Anomaly'
+};
+let lunarCounterRoot = null;
+let lunarCounterToggle = null;
+let lunarCounterDetail = null;
+let lunarCounterDays = null;
+let lunarCounterHours = null;
+let lunarCounterMinutes = null;
+let lunarCounterSeconds = null;
+let lunarCounterInterval = 0;
 let tickerShader1, tickerShader2, binaryShader;
 let currentShader = 1;
 let barBuffer;
@@ -322,6 +391,92 @@ const colors = {
   silver: { bg: '#11161d', fg: '#E1EDF5' },
   gray: { bg: '#151b21', fg: '#B9CCD8' }
 };
+
+function padCounterValue(value, digits) {
+  return String(Math.max(0, Math.floor(value) || 0)).padStart(digits, '0');
+}
+
+function updateLunarSplashdownCounter(now = Date.now()) {
+  if (!lunarCounterRoot || Number.isNaN(ARTEMIS_II_SPLASHDOWN_AT)) return;
+
+  const elapsedSeconds = Math.max(0, Math.floor((now - ARTEMIS_II_SPLASHDOWN_AT) / 1000));
+  const days = Math.floor(elapsedSeconds / 86400);
+  const hours = Math.floor((elapsedSeconds % 86400) / 3600);
+  const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+  const seconds = elapsedSeconds % 60;
+
+  if (lunarCounterDays) lunarCounterDays.textContent = padCounterValue(days, 3);
+  if (lunarCounterHours) lunarCounterHours.textContent = padCounterValue(hours, 2);
+  if (lunarCounterMinutes) lunarCounterMinutes.textContent = padCounterValue(minutes, 2);
+  if (lunarCounterSeconds) lunarCounterSeconds.textContent = padCounterValue(seconds, 2);
+
+  lunarCounterRoot.setAttribute(
+    'aria-label',
+    `Time since Artemis II splashdown: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`
+  );
+  if (lunarCounterToggle) {
+    lunarCounterToggle.setAttribute(
+      'aria-label',
+      `Show Artemis II splashdown details. Elapsed time: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`
+    );
+  }
+}
+
+function setupLunarSplashdownCounter() {
+  lunarCounterRoot = document.getElementById('lunar-splashdown-counter');
+  lunarCounterToggle = document.getElementById('lunar-counter-detail-toggle');
+  lunarCounterDetail = document.getElementById('lunar-counter-detail');
+  lunarCounterDays = document.getElementById('lunar-counter-days');
+  lunarCounterHours = document.getElementById('lunar-counter-hours');
+  lunarCounterMinutes = document.getElementById('lunar-counter-minutes');
+  lunarCounterSeconds = document.getElementById('lunar-counter-seconds');
+
+  if (!lunarCounterRoot) return;
+
+  if (lunarCounterToggle && lunarCounterDetail) {
+    lunarCounterToggle.addEventListener('click', toggleLunarCounterDetail);
+    document.addEventListener('click', handleLunarCounterOutsideClick);
+    document.addEventListener('keydown', handleLunarCounterKeydown);
+  }
+
+  updateLunarSplashdownCounter();
+  if (lunarCounterInterval) {
+    clearInterval(lunarCounterInterval);
+  }
+  lunarCounterInterval = setInterval(updateLunarSplashdownCounter, 1000);
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      updateLunarSplashdownCounter();
+    }
+  });
+}
+
+function toggleLunarCounterDetail(event) {
+  if (event) event.stopPropagation();
+  if (!lunarCounterToggle || !lunarCounterDetail) return;
+
+  const shouldOpen = lunarCounterDetail.hidden;
+  lunarCounterDetail.hidden = !shouldOpen;
+  lunarCounterToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+}
+
+function closeLunarCounterDetail() {
+  if (!lunarCounterToggle || !lunarCounterDetail || lunarCounterDetail.hidden) return;
+
+  lunarCounterDetail.hidden = true;
+  lunarCounterToggle.setAttribute('aria-expanded', 'false');
+}
+
+function handleLunarCounterOutsideClick(event) {
+  if (!lunarCounterRoot || lunarCounterRoot.contains(event.target)) return;
+  closeLunarCounterDetail();
+}
+
+function handleLunarCounterKeydown(event) {
+  if (event.key !== 'Escape') return;
+  closeLunarCounterDetail();
+}
 
 const themeClassByColorMode = {
   lunar: 'theme-lunar',
@@ -466,6 +621,10 @@ let panOffset = { x: 0, y: 0 };
 let panTargetOffset = { x: 0, y: 0 };
 let panVelocity = { x: 0, y: 0 };
 let panAnimationFrame = 0;
+let responsiveWorkspaceResizeObserver = null;
+let responsiveWorkspaceSyncFrame = 0;
+let workspaceResizeTransitionFrame = 0;
+let lastCanvasSize = { width: 0, height: 0 };
 let isPanDragging = false;
 let isPanningMode = false;
 let isAnimated = false;
@@ -481,6 +640,12 @@ const PAN_EDGE_PADDING = 12;
 
 const CIRCLES_GRID_ROWS = 2;
 const CIRCLES_GRID_LAYOUT = 'straight';
+const MISSION_CONTROL_GRID_TARGET_CELL = 64;
+const MISSION_CONTROL_GRID_GROUP_SIZE = 10;
+const MISSION_CONTROL_GRID_MIN_COLUMNS = 10;
+const MISSION_CONTROL_GRID_MAX_COLUMNS = 40;
+const MISSION_CONTROL_GRID_MIN_ROWS = 10;
+const MISSION_CONTROL_GRID_MAX_ROWS = 30;
 
 // Zoom/Pan/Playback UI references
 let zoomInBtn, zoomOutBtn, zoomResetBtn, panBtn, zoomLevelDisplay;
@@ -1464,6 +1629,106 @@ function buildGraphSeriesData(streamTexts) {
 
 // Create texture from numeric data
 
+function quantizeMissionControlGridCount(size, minCount, maxCount) {
+  const rawGroupCount = Math.max(1, Math.round(size / (MISSION_CONTROL_GRID_TARGET_CELL * MISSION_CONTROL_GRID_GROUP_SIZE)));
+  const quantizedCount = rawGroupCount * MISSION_CONTROL_GRID_GROUP_SIZE;
+  return Math.max(minCount, Math.min(maxCount, quantizedCount));
+}
+
+function syncMissionControlGrid() {
+  const logoContainer = document.querySelector('.logo-container');
+  if (!logoContainer) return;
+
+  const width = logoContainer.clientWidth;
+  const height = logoContainer.clientHeight;
+  if (!width || !height) return;
+
+  const columns = quantizeMissionControlGridCount(
+    width,
+    MISSION_CONTROL_GRID_MIN_COLUMNS,
+    MISSION_CONTROL_GRID_MAX_COLUMNS
+  );
+  const rows = quantizeMissionControlGridCount(
+    height,
+    MISSION_CONTROL_GRID_MIN_ROWS,
+    MISSION_CONTROL_GRID_MAX_ROWS
+  );
+
+  const cellX = width / columns;
+  const cellY = height / rows;
+
+  logoContainer.style.setProperty('--lunar-grid-cell-x', `${cellX}px`);
+  logoContainer.style.setProperty('--lunar-grid-cell-y', `${cellY}px`);
+  logoContainer.style.setProperty('--lunar-grid-major-x', `${cellX * 5}px`);
+  logoContainer.style.setProperty('--lunar-grid-major-y', `${cellY * 5}px`);
+}
+
+function syncResponsiveWorkspaceSizing() {
+  responsiveWorkspaceSyncFrame = 0;
+  syncSidebarToggleState();
+  syncMissionControlGrid();
+
+  const container = document.getElementById('p5-container');
+  if (container && typeof resizeCanvas === 'function') {
+    const nextWidth = Math.round(container.offsetWidth);
+    const nextHeight = Math.round(container.offsetHeight);
+
+    if (
+      nextWidth > 0 &&
+      nextHeight > 0 &&
+      (lastCanvasSize.width !== nextWidth || lastCanvasSize.height !== nextHeight)
+    ) {
+      resizeCanvas(nextWidth, nextHeight);
+      lastCanvasSize = { width: nextWidth, height: nextHeight };
+      clampPanOffset();
+      renderPanOffsetChange();
+    }
+  }
+
+  updateEasterEggHotspotBounds();
+  resizeEasterEggCanvas();
+}
+
+function requestResponsiveWorkspaceSizing() {
+  if (responsiveWorkspaceSyncFrame) return;
+  responsiveWorkspaceSyncFrame = requestAnimationFrame(syncResponsiveWorkspaceSizing);
+}
+
+function startWorkspaceResizeTransitionSync(duration = 450) {
+  if (workspaceResizeTransitionFrame) {
+    cancelAnimationFrame(workspaceResizeTransitionFrame);
+  }
+
+  const startedAt = performance.now();
+  const step = (now) => {
+    requestResponsiveWorkspaceSizing();
+    if (now - startedAt < duration) {
+      workspaceResizeTransitionFrame = requestAnimationFrame(step);
+      return;
+    }
+    workspaceResizeTransitionFrame = 0;
+    requestResponsiveWorkspaceSizing();
+  };
+
+  workspaceResizeTransitionFrame = requestAnimationFrame(step);
+}
+
+function setupResponsiveWorkspaceSizing() {
+  requestResponsiveWorkspaceSizing();
+
+  if (responsiveWorkspaceResizeObserver) {
+    responsiveWorkspaceResizeObserver.disconnect();
+  }
+
+  const resizeTarget = document.querySelector('.canvas-viewport');
+  if (!resizeTarget || typeof ResizeObserver === 'undefined') return;
+
+  responsiveWorkspaceResizeObserver = new ResizeObserver(() => {
+    requestResponsiveWorkspaceSizing();
+  });
+  responsiveWorkspaceResizeObserver.observe(resizeTarget);
+}
+
 
 // Shader storage
 let shaders = {
@@ -1494,6 +1759,8 @@ async function setup() {
 
   let canvas = createCanvas(width, height, WEBGL);
   canvas.parent('p5-container');
+  lastCanvasSize = { width, height };
+  setupResponsiveWorkspaceSizing();
 
   // Handle WebGL context loss to prevent crashes
   canvas.elt.addEventListener('webglcontextlost', (event) => {
@@ -1724,7 +1991,10 @@ async function setup() {
   sidebarScroll = document.getElementById('sidebar-scroll');
   headerLogoPreview = document.getElementById('header-logo-preview');
   mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  styleSelectLabel = document.getElementById('style-select-label');
+  colorModeSelectLabel = document.getElementById('color-mode-select-label');
   reportProblemBtn = document.getElementById('report-problem-btn');
+  reportProblemLabel = document.getElementById('report-problem-label');
   bugReportDialog = document.getElementById('bug-report-dialog');
   bugReportForm = document.getElementById('bug-report-form');
   bugReportContext = document.getElementById('bug-report-context');
@@ -1744,10 +2014,14 @@ async function setup() {
 
   // Get save control references (globals declared at top so toggleSaveMenu can access them)
   saveButton = document.getElementById('save-button');
+  saveButtonLabel = document.getElementById('save-button-label');
   saveMenu = document.getElementById('save-menu');
-  const savePngButton = document.getElementById('save-png');
-  const saveSvgButton = document.getElementById('save-svg');
+  savePngButton = document.getElementById('save-png');
+  saveSvgButton = document.getElementById('save-svg');
   saveLoopGifButton = document.getElementById('save-loop-gif');
+  copyEmbedButton = document.getElementById('copy-embed');
+  syncMissionControlInterfaceCopy();
+  syncMissionControlSaveMenu();
 
   initializePreviewButtons();
 
@@ -2042,34 +2316,17 @@ async function setup() {
   });
 
   if (savePngButton) {
-    savePngButton.addEventListener('click', savePNG);
+    savePngButton.addEventListener('click', handleSavePngClick);
   }
   if (saveSvgButton) {
-    saveSvgButton.addEventListener('click', saveSVG);
+    saveSvgButton.addEventListener('click', handleSaveSvgClick);
   }
   if (saveLoopGifButton) {
-    saveLoopGifButton.addEventListener('click', saveLoopingGIF);
+    saveLoopGifButton.addEventListener('click', handleSaveLoopGifClick);
   }
 
-  const copyEmbedButton = document.getElementById('copy-embed');
   if (copyEmbedButton) {
-    copyEmbedButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-
-      // Get current URL which includes all active parameters
-      const embedUrl = window.location.href;
-      const embedCode = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0" allowfullscreen style="border: none; overflow: hidden; background: transparent;"></iframe>`;
-
-      navigator.clipboard.writeText(embedCode).then(() => {
-        Toast.show('Embed code copied to clipboard!', 'success');
-      }).catch(err => {
-        console.error('Failed to copy:', err);
-        Toast.show('Failed to copy embed code: ' + err.message, 'error');
-      });
-
-      // Hide menu
-      if (saveMenu) saveMenu.classList.add('hidden');
-    });
+    copyEmbedButton.addEventListener('click', handleCopyEmbedClick);
   }
 
   // Close save menu when clicking outside
@@ -2079,8 +2336,7 @@ async function setup() {
 
     if (btn && menu && !btn.contains(event.target) && !menu.contains(event.target)) {
       if (!menu.classList.contains('hidden')) {
-        menu.classList.add('hidden');
-        btn.setAttribute('aria-expanded', 'false');
+        hideSaveMenu();
       }
     }
   });
@@ -2423,6 +2679,8 @@ async function setup() {
   syncAllCustomSelects();
   updateHeaderBrandPreview(true);
 
+  setupLunarSplashdownCounter();
+
   // Initialize the hidden retro rink experience.
   setupEasterEggExperience();
 
@@ -2762,11 +3020,8 @@ function toggleMobileMenu() {
   } else {
     // Desktop behavior (collapsible)
     appSidebar.classList.toggle('sidebar-collapsed');
-
-    // Resize the canvas gracefully to fill the newfound space
-    setTimeout(() => {
-      windowResized();
-    }, 450); // Slightly longer than transition to ensure layout is done
+    requestResponsiveWorkspaceSizing();
+    startWorkspaceResizeTransitionSync(460);
   }
 
   syncSidebarToggleState();
@@ -2794,11 +3049,130 @@ function handleClickOutside(event) {
   }
 }
 
+function isMissionControlCreditsMenuActive() {
+  return currentColorMode === 'lunar';
+}
+
+function hideSaveMenu() {
+  if (saveMenu) saveMenu.classList.add('hidden');
+  if (saveButton) saveButton.setAttribute('aria-expanded', 'false');
+}
+
+function openMissionControlCreditLink(url) {
+  const linkedWindow = window.open(url, '_blank', 'noopener,noreferrer');
+  if (linkedWindow) linkedWindow.opener = null;
+  hideSaveMenu();
+}
+
+function setSaveOptionCopy(optionElement, optionCopy) {
+  if (!optionElement || !optionCopy) return;
+
+  const labelElement = optionElement.querySelector('.option-label');
+  const descriptionElement = optionElement.querySelector('.option-desc');
+
+  if (labelElement) labelElement.textContent = optionCopy.label;
+  if (descriptionElement) descriptionElement.textContent = optionCopy.description;
+  optionElement.setAttribute('aria-label', `${optionCopy.label}: ${optionCopy.description}`);
+}
+
+function syncMissionControlInterfaceCopy() {
+  const missionControlActive = isMissionControlCreditsMenuActive();
+  const interfaceCopy = missionControlActive ? MISSION_CONTROL_INTERFACE_COPY : DEFAULT_INTERFACE_COPY;
+
+  if (styleSelectLabel) styleSelectLabel.textContent = interfaceCopy.styleLabel;
+  if (colorModeSelectLabel) colorModeSelectLabel.textContent = interfaceCopy.colorLabel;
+  if (reportProblemLabel) reportProblemLabel.textContent = interfaceCopy.reportProblem;
+  if (reportProblemBtn) {
+    reportProblemBtn.setAttribute('aria-label', interfaceCopy.reportProblem);
+  }
+  if (!missionControlActive) closeLunarCounterDetail();
+}
+
+function syncMissionControlSaveMenu() {
+  const missionControlActive = isMissionControlCreditsMenuActive();
+  const menuCopy = missionControlActive ? MISSION_CONTROL_SAVE_MENU_COPY : DEFAULT_SAVE_MENU_COPY;
+
+  if (saveButtonLabel) saveButtonLabel.textContent = menuCopy.button;
+  if (saveButton) {
+    saveButton.setAttribute(
+      'aria-label',
+      missionControlActive ? 'Open RPI x Artemis II credits' : 'Open asset download menu'
+    );
+  }
+
+  setSaveOptionCopy(savePngButton, menuCopy.png);
+  setSaveOptionCopy(saveSvgButton, menuCopy.svg);
+  setSaveOptionCopy(saveLoopGifButton, menuCopy.gif);
+  setSaveOptionCopy(copyEmbedButton, menuCopy.copy);
+
+  if (saveLoopGifButton && missionControlActive) {
+    saveLoopGifButton.hidden = false;
+  } else {
+    updateLoopingGifSaveOption();
+  }
+}
+
+function handleSavePngClick(event) {
+  if (isMissionControlCreditsMenuActive()) {
+    event.preventDefault();
+    event.stopPropagation();
+    openMissionControlCreditLink(ARTEMIS_CREDIT_LINKS.reidWiseman);
+    return;
+  }
+
+  savePNG();
+}
+
+function handleSaveSvgClick(event) {
+  if (isMissionControlCreditsMenuActive()) {
+    event.preventDefault();
+    event.stopPropagation();
+    openMissionControlCreditLink(ARTEMIS_CREDIT_LINKS.rpiEngineers);
+    return;
+  }
+
+  saveSVG();
+}
+
+function handleSaveLoopGifClick(event) {
+  if (isMissionControlCreditsMenuActive()) {
+    event.preventDefault();
+    event.stopPropagation();
+    openMissionControlCreditLink(ARTEMIS_CREDIT_LINKS.rpiEngineers);
+    return;
+  }
+
+  saveLoopingGIF();
+}
+
+function handleCopyEmbedClick(event) {
+  event.stopPropagation();
+
+  if (isMissionControlCreditsMenuActive()) {
+    event.preventDefault();
+    openMissionControlCreditLink(ARTEMIS_CREDIT_LINKS.lunarImageCredit);
+    return;
+  }
+
+  // Get current URL which includes all active parameters
+  const embedUrl = window.location.href;
+  const embedCode = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0" allowfullscreen style="border: none; overflow: hidden; background: transparent;"></iframe>`;
+
+  navigator.clipboard.writeText(embedCode).then(() => {
+    Toast.show('Embed code copied to clipboard!', 'success');
+  }).catch(err => {
+    console.error('Failed to copy:', err);
+    Toast.show('Failed to copy embed code: ' + err.message, 'error');
+  });
+
+  hideSaveMenu();
+}
+
 function toggleSaveMenu(e) {
   if (e) e.stopPropagation();
 
   if (saveMenu) {
-    updateLoopingGifSaveOption();
+    syncMissionControlSaveMenu();
     saveMenu.classList.toggle('hidden');
     const isExpanded = !saveMenu.classList.contains('hidden');
     if (saveButton) saveButton.setAttribute('aria-expanded', isExpanded);
@@ -2807,6 +3181,10 @@ function toggleSaveMenu(e) {
 
 function updateLoopingGifSaveOption() {
   if (!saveLoopGifButton) return;
+  if (isMissionControlCreditsMenuActive()) {
+    saveLoopGifButton.hidden = false;
+    return;
+  }
 
   const selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const canExportLoopGif = Boolean(
@@ -3020,7 +3398,7 @@ function handleStyleChange() {
   }
 
   console.log('Style changed to:', selectedStyle, 'currentShader:', currentShader);
-  updateLoopingGifSaveOption();
+  syncMissionControlSaveMenu();
   updateSidebarScrollFadeState();
   updateAudioControlsUI();
   requestUpdate();
@@ -3057,6 +3435,8 @@ function applyColorMode(colorMode) {
     syncCustomSelectUI(colorModeSelect, customSelectWrapper, currentColorMode, currentColorMode);
   }
 
+  syncMissionControlInterfaceCopy();
+  syncMissionControlSaveMenu();
   console.log('Color mode applied:', currentColorMode);
   requestUpdate();
 }
@@ -6048,16 +6428,8 @@ let resizeTimeout;
 function windowResized() {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
-    syncSidebarToggleState();
-    const container = document.getElementById('p5-container');
-    if (container) {
-      resizeCanvas(container.offsetWidth, container.offsetHeight);
-    } else {
-      resizeCanvas(windowWidth, windowHeight);
-    }
-    updateEasterEggHotspotBounds();
-    resizeEasterEggCanvas();
-  }, 100);
+    requestResponsiveWorkspaceSizing();
+  }, 16);
 }
 
 // Frame rate limiting for performance

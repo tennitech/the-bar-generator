@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Generate unique, brand-compliant RPI logos and lockups with dynamic bar patterns.">
   <title>RPI Logo Generator</title>
-  <link href="css/style.css?v=20260419-lunar-theme" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20260420-mission-control-polish" rel="stylesheet" type="text/css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 </head>
 
@@ -18,16 +18,58 @@
       <span class="brand-divider">|</span>
       <span class="brand-title">THE BAR GENERATOR</span>
     </div>
+    <section id="lunar-splashdown-counter" class="lunar_counter" aria-label="Time since Artemis II splashdown">
+      <button id="lunar-counter-detail-toggle" class="lunar_counter-toggle" type="button" aria-expanded="false"
+        aria-controls="lunar-counter-detail">
+        <span class="lunar_counter-heading">
+          <span class="lunar_counter-kicker">T-PLUS</span>
+          <span class="lunar_counter-caption">Since splashdown</span>
+        </span>
+        <time class="lunar_counter-readout" datetime="2026-04-10T20:07:00-04:00" aria-live="polite">
+          <span class="lunar_counter-unit">
+            <span id="lunar-counter-days" class="lunar_counter-value">000</span>
+            <span class="lunar_counter-label">D</span>
+          </span>
+          <span class="lunar_counter-separator" aria-hidden="true">:</span>
+          <span class="lunar_counter-unit">
+            <span id="lunar-counter-hours" class="lunar_counter-value">00</span>
+            <span class="lunar_counter-label">H</span>
+          </span>
+          <span class="lunar_counter-separator" aria-hidden="true">:</span>
+          <span class="lunar_counter-unit">
+            <span id="lunar-counter-minutes" class="lunar_counter-value">00</span>
+            <span class="lunar_counter-label">M</span>
+          </span>
+          <span class="lunar_counter-separator" aria-hidden="true">:</span>
+          <span class="lunar_counter-unit">
+            <span id="lunar-counter-seconds" class="lunar_counter-value">00</span>
+            <span class="lunar_counter-label">S</span>
+          </span>
+        </time>
+      </button>
+      <div id="lunar-counter-detail" class="lunar_counter-detail" hidden>
+        <span class="lunar_counter-detail-label">Splashdown</span>
+        <strong>April 10, 2026 / 8:07 PM EDT</strong>
+        <span>Earth return clock synchronized.</span>
+      </div>
+    </section>
     <div class="header-actions">
       <div class="save-section">
         <button id="save-button" class="save-button primary-button" aria-haspopup="true" aria-expanded="false"
           aria-controls="save-menu">
-          Download Asset
-          <svg class="icon-right" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <span id="save-button-label">Download Asset</span>
+          <svg class="icon-right icon-download" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="7 10 12 15 17 10"></polyline>
             <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <svg class="icon-right icon-book" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path>
           </svg>
         </button>
         <div id="save-menu" class="save-menu hidden" role="menu">
@@ -84,7 +126,7 @@
         <div class="sidebar-content">
           <div class="control-group">
           <div class="control">
-            <label for="style-select" class="control-label">BAR STYLE</label>
+            <label id="style-select-label" for="style-select" class="control-label">BAR STYLE</label>
             <div class="select-wrapper">
               <select id="style-select" class="control-select">
                 <option value="solid">SOLID</option>
@@ -124,7 +166,7 @@
           </div>
 
           <div class="control">
-            <label for="color-mode-select" class="control-label">COLOR THEME</label>
+            <label id="color-mode-select-label" for="color-mode-select" class="control-label">COLOR THEME</label>
             <div class="select-wrapper">
               <select id="color-mode-select" class="control-select">
                 <option value="black">BLACK</option>
@@ -134,13 +176,22 @@
                 <option value="gold">GOLD</option>
                 <option value="silver">SILVER</option>
                 <option value="gray">GRAY</option>
-                <option value="lunar">LUNAR 🌙</option>
+                <option value="lunar">MISSION CONTROL</option>
               </select>
             </div>
           </div>
         </div>
 
         <div class="sidebar-divider"></div>
+
+        <aside class="lunar_source-note" aria-label="Mission Control lunar surface credit">
+          <span class="lunar_source-kicker">BOROMIR - Lunar surface source</span>
+          <p>
+            Thesis imagery by Maeve Marshall.
+            <a href="https://github.com/the-astronot/boromir/blob/main/README.md" target="_blank"
+              rel="noopener noreferrer">View repository</a>
+          </p>
+        </aside>
 
         <!-- Dynamic Control Groups -->
         <div id="ruler-group" class="control-group" style="display: none;">
@@ -162,7 +213,7 @@
           <div class="control-header">PARAMETERS</div>
           <div class="control">
             <label for="binary-input" class="control-label">INPUT TEXT</label>
-            <input type="text" id="binary-input" placeholder="ENTER TEXT..." class="control-input"
+            <input type="text" id="binary-input" placeholder="Enter text..." class="control-input"
               aria-label="Binary Text Input">
             <div class="control-hint">Type to translate to binary code</div>
           </div>
@@ -182,7 +233,7 @@
           <div class="control-header">PARAMETERS</div>
           <div class="control">
             <label for="morse-input" class="control-label">INPUT TEXT</label>
-            <input type="text" id="morse-input" placeholder="ENTER TEXT..." class="control-input"
+            <input type="text" id="morse-input" placeholder="Enter text..." class="control-input"
               aria-label="Morse Text Input">
             <div class="control-hint">Type to translate to morse code</div>
           </div>
@@ -641,7 +692,7 @@
         <div class="sidebar-footer">
           <button id="report-problem-btn" class="sidebar-feedback-btn" type="button" aria-haspopup="dialog"
             aria-controls="bug-report-dialog">
-            Report a Problem
+            <span id="report-problem-label">Report a Problem</span>
           </button>
         </div>
       </div>
@@ -679,14 +730,15 @@
 
       <!-- Visual Workspace Actions -->
       <div class="workspace-controls">
-        <button id="zoom-out-btn" class="workspace-btn" aria-label="Zoom Out">
+        <button id="zoom-out-btn" class="workspace-btn" aria-label="Zoom Out" data-tooltip="Zoom out">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
         </button>
-        <input type="text" id="zoom-level" class="zoom-level-input" value="100%" aria-label="Zoom Level">
-        <button id="zoom-in-btn" class="workspace-btn" aria-label="Zoom In">
+        <input type="text" id="zoom-level" class="zoom-level-input" value="100%" aria-label="Zoom Level"
+          title="Set zoom level">
+        <button id="zoom-in-btn" class="workspace-btn" aria-label="Zoom In" data-tooltip="Zoom in">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -694,15 +746,15 @@
           </svg>
         </button>
         <div class="workspace-divider"></div>
-        <button id="zoom-reset-btn" class="workspace-btn" aria-label="Reset Zoom">
+        <button id="zoom-reset-btn" class="workspace-btn" aria-label="Reset Zoom" data-tooltip="Reset view">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
             <path d="M3 3v5h5"></path>
           </svg>
         </button>
-        <button id="pan-btn" class="workspace-btn" type="button" aria-label="Pan Tool" hidden aria-hidden="true"
-          tabindex="-1">
+        <button id="pan-btn" class="workspace-btn" type="button" aria-label="Pan Tool" data-tooltip="Pan mode" hidden
+          aria-hidden="true" tabindex="-1">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="5 9 2 12 5 15"></polyline>
@@ -792,7 +844,7 @@
   <script src="js/utils/previewControls.js?v=20260417-morse-randomize"></script>
   <script src="js/ui.js"></script>
   <script src="js/easter-egg.js"></script>
-  <script src="js/main.js?v=20260420-lunar-color-ticker-ratio-label-sync"></script>
+  <script src="js/main.js?v=20260420-mission-control-polish"></script>
   <script src="js/drawing.js?v=20260420-lunar-color-ticker-ratio-limits"></script>
 </body>
 

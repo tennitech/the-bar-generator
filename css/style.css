@@ -258,6 +258,7 @@ body {
 }
 
 .logo-container {
+  position: relative;
   width: 100%;
   height: 100%;
   display: flex;
@@ -302,6 +303,7 @@ body {
 }
 
 .workspace-btn {
+  position: relative;
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -332,6 +334,36 @@ body {
   color: var(--accent-color);
   background: var(--neutral-100);
   box-shadow: 0 0 0 1px var(--accent-color);
+}
+
+.workspace-btn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 3;
+  width: max-content;
+  max-width: 11rem;
+  padding: 5px 7px;
+  border-radius: 4px;
+  background: var(--bg-sidebar);
+  color: var(--text-primary);
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 10px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  box-shadow: 0 0 0 1px var(--border-color), 0 8px 20px rgba(0, 0, 0, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition: opacity var(--duration-fast) ease, transform var(--duration-fast) ease;
+}
+
+.workspace-btn[data-tooltip]:hover::after,
+.workspace-btn[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .workspace-divider {
@@ -421,6 +453,45 @@ body {
   color: var(--text-secondary);
   margin-top: 4px;
   font-style: italic;
+}
+
+.lunar_source-note {
+  display: none;
+  margin-top: 4px;
+  padding: 10px 11px;
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  background: var(--control-surface);
+  color: var(--text-secondary);
+}
+
+.lunar_source-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.lunar_source-note p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.lunar_source-note a {
+  color: var(--accent-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.lunar_source-note a:hover,
+.lunar_source-note a:focus-visible {
+  text-decoration: underline;
 }
 
 /* ─── Selects & Inputs ─── */
@@ -566,6 +637,10 @@ body {
   opacity: 0.85;
 }
 
+.icon-book {
+  display: none;
+}
+
 /* Save Menu Dropdown */
 .save-menu {
   position: absolute;
@@ -685,7 +760,8 @@ input:checked+.slider:before {
   font-weight: 500;
   font-size: 12px;
   color: var(--text-primary);
-  letter-spacing: 0.04em;
+  line-height: 1.25;
+  letter-spacing: 0;
 }
 
 .save-option:hover .option-label,
@@ -1902,6 +1978,18 @@ body {
   }
 }
 
+@keyframes lunarCounterDetailReveal {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.96) translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1) translateY(0);
+  }
+}
+
 @keyframes slideInRight {
   to {
     opacity: 1;
@@ -2502,6 +2590,21 @@ body.theme-gray {
 }
 
 body.theme-lunar {
+  --lunar-red-rgb: 214, 0, 28;
+  --lunar-blue-rgb: 0, 129, 206;
+  --lunar-divider: color-mix(in srgb, var(--rpi-blue) 32%, #243752 68%);
+  --lunar-divider-strong: color-mix(in srgb, var(--rpi-blue) 46%, #243752 54%);
+  --lunar-divider-muted: color-mix(in srgb, var(--lunar-divider) 62%, transparent);
+  --lunar-panel: rgba(3, 6, 13, 0.86);
+  --lunar-panel-strong: rgba(5, 9, 20, 0.96);
+  --lunar-grid-cell-x: 64px;
+  --lunar-grid-cell-y: 64px;
+  --lunar-grid-major-x: 320px;
+  --lunar-grid-major-y: 320px;
+  --lunar-grid-line: rgba(0, 129, 206, 0.055);
+  --lunar-grid-major: rgba(0, 129, 206, 0.105);
+  --lunar-red-glow: rgba(214, 0, 28, 0.28);
+  --lunar-blue-glow: rgba(0, 129, 206, 0.22);
   --bg-app: #060b16;
   --bg-canvas: #03060d;
   --bg-sidebar: #0b1422;
@@ -2509,34 +2612,34 @@ body.theme-lunar {
   --text-primary: #f7f9fc;
   --text-secondary: #b0bfd1;
   --text-on-header: #f4f7fb;
-  --border-color: #243752;
+  --border-color: var(--lunar-divider);
   --accent-color: var(--rpi-red);
   --input-bg: #101b2d;
   --input-focus-bg: #14233a;
-  --input-border: #2a405f;
-  --control-surface: #101b2d;
-  --control-surface-hover: #172844;
-  --control-surface-active: #1e3454;
-  --control-border: #2a405f;
+  --input-border: var(--lunar-divider);
+  --control-surface: #091525;
+  --control-surface-hover: #10233b;
+  --control-surface-active: #172c48;
+  --control-border: var(--lunar-divider);
   --menu-surface: #0f1a2b;
-  --menu-border: #2d4363;
+  --menu-border: var(--lunar-divider);
   --menu-option-hover-text: #f4f7fb;
-  --header-control-bg: rgba(15, 26, 43, 0.94);
-  --header-control-bg-hover: #172844;
-  --header-control-border: #2d4363;
+  --header-control-bg: rgba(5, 9, 20, 0.88);
+  --header-control-bg-hover: #10233b;
+  --header-control-border: var(--lunar-divider);
   --header-control-text: #f4f7fb;
-  --menu-option-hover-bg: #1b2f4d;
+  --menu-option-hover-bg: color-mix(in srgb, var(--rpi-blue) 26%, #0f1a2b 74%);
   --menu-option-selected-bg: var(--rpi-red);
   --menu-option-selected-text: #ffffff;
-  --toolbar-surface: rgba(6, 11, 22, 0.84);
-  --toolbar-surface-hover: #172844;
-  --toolbar-border: rgba(214, 0, 28, 0.28);
-  --toolbar-text: #b8c3ce;
+  --toolbar-surface: rgba(3, 6, 13, 0.9);
+  --toolbar-surface-hover: #10233b;
+  --toolbar-border: var(--lunar-divider);
+  --toolbar-text: var(--rpi-silver);
   --toolbar-active-text: #ffffff;
   --toolbar-active-bg: var(--rpi-red);
-  --slider-track: #2a405f;
+  --slider-track: color-mix(in srgb, var(--rpi-blue) 36%, #243752 64%);
   --slider-thumb: #f4f7fb;
-  --slider-thumb-hover: #ffffff;
+  --slider-thumb-hover: var(--rpi-red);
   --slider-thumb-ring: rgba(214, 0, 28, 0.32);
   --toggle-track: #334762;
   --toggle-knob: #ffffff;
@@ -2549,6 +2652,11 @@ body.theme-lunar {
 
 body.theme-lunar .logo-container {
   background:
+    linear-gradient(90deg, var(--lunar-grid-major) 1px, transparent 1px) 0 0 / var(--lunar-grid-major-x) var(--lunar-grid-major-y),
+    linear-gradient(var(--lunar-grid-major) 1px, transparent 1px) 0 0 / var(--lunar-grid-major-x) var(--lunar-grid-major-y),
+    linear-gradient(90deg, var(--lunar-grid-line) 1px, transparent 1px) 0 0 / var(--lunar-grid-cell-x) var(--lunar-grid-cell-y),
+    linear-gradient(var(--lunar-grid-line) 1px, transparent 1px) 0 0 / var(--lunar-grid-cell-x) var(--lunar-grid-cell-y),
+    repeating-linear-gradient(180deg, transparent 0, transparent 3px, rgba(225, 237, 245, 0.014) 4px),
     linear-gradient(180deg, rgba(3, 6, 13, 0.06), rgba(3, 6, 13, 0.28)),
     url("../assets/images/lunar-canvas-backdrop.png") center top / cover no-repeat,
     var(--bg-canvas);
@@ -2559,19 +2667,80 @@ body.theme-lunar .logo-container {
     --lunar-backdrop-y: clamp(-120rem, calc(90vh - 66vw), 4rem);
     --lunar-backdrop-min-width: calc((100vh - var(--lunar-backdrop-y)) * 0.8);
     background:
+      linear-gradient(90deg, var(--lunar-grid-major) 1px, transparent 1px) 0 0 / var(--lunar-grid-major-x) var(--lunar-grid-major-y),
+      linear-gradient(var(--lunar-grid-major) 1px, transparent 1px) 0 0 / var(--lunar-grid-major-x) var(--lunar-grid-major-y),
+      linear-gradient(90deg, var(--lunar-grid-line) 1px, transparent 1px) 0 0 / var(--lunar-grid-cell-x) var(--lunar-grid-cell-y),
+      linear-gradient(var(--lunar-grid-line) 1px, transparent 1px) 0 0 / var(--lunar-grid-cell-x) var(--lunar-grid-cell-y),
+      repeating-linear-gradient(180deg, transparent 0, transparent 3px, rgba(225, 237, 245, 0.014) 4px),
       linear-gradient(180deg, rgba(3, 6, 13, 0.06), rgba(3, 6, 13, 0.28)),
       url("../assets/images/lunar-canvas-backdrop.png") center var(--lunar-backdrop-y) / max(100%, var(--lunar-backdrop-min-width)) auto no-repeat,
       var(--bg-canvas);
   }
 }
 
+body.theme-lunar .logo-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    repeating-linear-gradient(90deg, var(--lunar-divider-strong) 0 1px, transparent 1px var(--lunar-grid-cell-x)) left top / 100% 10px no-repeat,
+    repeating-linear-gradient(180deg, var(--lunar-divider-strong) 0 1px, transparent 1px var(--lunar-grid-cell-y)) left top / 10px 100% no-repeat;
+  opacity: 0.24;
+  pointer-events: none;
+}
+
+body.theme-lunar .app-header {
+  position: relative;
+  background-color: var(--bg-header);
+  border-bottom-color: var(--lunar-divider-muted);
+}
+
 body.theme-lunar .app-sidebar {
-  border-left-color: color-mix(in srgb, var(--rpi-red) 24%, var(--border-color) 76%);
+  background-color: var(--bg-sidebar);
+  border-left-color: var(--lunar-divider-muted);
 }
 
 body.theme-lunar .control-label,
 body.theme-lunar .parameter-group-title {
-  color: color-mix(in srgb, var(--text-secondary) 92%, var(--rpi-red) 8%);
+  color: color-mix(in srgb, var(--rpi-silver) 84%, var(--rpi-blue) 16%);
+}
+
+body.theme-lunar .control-header {
+  color: var(--rpi-silver);
+  border-bottom-color: var(--lunar-divider-muted);
+}
+
+body.theme-lunar .control-header::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 1px;
+  background: var(--rpi-red);
+  box-shadow: 0 0 14px var(--lunar-red-glow);
+}
+
+body.theme-lunar .lunar_source-note {
+  display: block;
+  background:
+    linear-gradient(180deg, rgba(225, 237, 245, 0.035), transparent),
+    var(--control-surface);
+  border-color: var(--lunar-divider);
+}
+
+body.theme-lunar .lunar_source-note a {
+  color: var(--rpi-silver);
+}
+
+body.theme-lunar .control-input,
+body.theme-lunar .custom-select-trigger,
+body.theme-lunar .preview-control-btn,
+body.theme-lunar .audio-control-btn,
+body.theme-lunar .sidebar-feedback-btn {
+  background:
+    linear-gradient(180deg, rgba(225, 237, 245, 0.035), transparent),
+    var(--control-surface);
 }
 
 body.theme-lunar .save-button.primary-button:hover,
@@ -2594,7 +2763,7 @@ body.theme-lunar .report_dialog-secondary:hover,
 body.theme-lunar .report_dialog-secondary:focus-visible,
 body.theme-lunar .report_dialog-close:hover,
 body.theme-lunar .report_dialog-close:focus-visible {
-  border-color: color-mix(in srgb, var(--accent-color) 18%, var(--control-border) 82%);
+  border-color: var(--lunar-divider-strong);
 }
 
 body.theme-lunar .save-button.primary-button:focus-visible,
@@ -2611,8 +2780,11 @@ body.theme-lunar .report_dialog-secondary:focus-visible,
 body.theme-lunar .report_dialog-close:focus-visible,
 body.theme-lunar .report_dialog-primary:focus-visible,
 body.theme-lunar .zoom-level-input:focus {
-  border-color: color-mix(in srgb, var(--accent-color) 42%, var(--control-border) 58%);
-  box-shadow: 0 0 0 2px var(--control-focus-ring), var(--shadow-soft);
+  border-color: var(--lunar-divider-strong);
+  box-shadow:
+    inset 2px 0 0 var(--rpi-red),
+    0 0 0 2px rgba(var(--lunar-blue-rgb), 0.28),
+    var(--shadow-soft);
 }
 
 .app-header {
@@ -2684,6 +2856,232 @@ body.theme-lunar .zoom-level-input:focus {
   color: var(--toolbar-active-text);
   background: var(--toolbar-active-bg);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--toolbar-active-bg) 84%, transparent);
+}
+
+body.theme-lunar .workspace-controls {
+  border-radius: 8px;
+  background: var(--toolbar-surface);
+  border-color: var(--toolbar-border);
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(225, 237, 245, 0.04),
+    0 0 28px var(--lunar-blue-glow);
+}
+
+body.theme-lunar .workspace-btn[data-tooltip]::after {
+  background: var(--lunar-panel-strong);
+  color: var(--rpi-silver);
+  box-shadow: 0 0 0 1px var(--lunar-divider), 0 8px 22px rgba(0, 0, 0, 0.32);
+}
+
+body.theme-lunar .workspace-btn:focus-visible {
+  box-shadow:
+    inset 2px 0 0 var(--rpi-red),
+    0 0 0 2px rgba(var(--lunar-blue-rgb), 0.28);
+}
+
+body.theme-lunar .workspace-controls::before {
+  content: none;
+}
+
+body.theme-lunar .workspace-controls::after {
+  content: none;
+}
+
+body.theme-lunar .save-divider,
+body.theme-lunar .sidebar-divider,
+body.theme-lunar .workspace-divider {
+  background-color: var(--lunar-divider-muted);
+}
+
+body.theme-lunar .save-menu {
+  min-width: min(340px, calc(100vw - 48px));
+}
+
+body.theme-lunar .save-button .icon-download {
+  display: none;
+}
+
+body.theme-lunar .save-button .icon-book {
+  display: block;
+}
+
+body.theme-lunar .save-option .option-label {
+  max-width: 100%;
+  white-space: normal;
+}
+
+.lunar_counter {
+  display: none;
+}
+
+body.theme-lunar .lunar_counter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  display: block;
+  transform: translate(-50%, -50%);
+  font-family: 'RPIGeistMono', monospace;
+}
+
+.lunar_counter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+  padding: 5px 12px;
+  border: 1px solid var(--lunar-divider);
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(225, 237, 245, 0.045), transparent),
+    var(--header-control-bg);
+  color: inherit;
+  cursor: pointer;
+  font-family: 'RPIGeistMono', monospace;
+  box-shadow:
+    inset 2px 0 0 var(--rpi-red),
+    0 0 22px rgba(var(--lunar-blue-rgb), 0.12);
+}
+
+.lunar_counter-toggle:hover,
+.lunar_counter-toggle:focus-visible {
+  border-color: var(--lunar-divider-strong);
+  background:
+    linear-gradient(180deg, rgba(225, 237, 245, 0.07), transparent),
+    var(--header-control-bg-hover);
+  outline: none;
+  box-shadow:
+    inset 2px 0 0 var(--rpi-red),
+    0 0 0 2px rgba(var(--lunar-blue-rgb), 0.28),
+    0 0 22px rgba(var(--lunar-blue-rgb), 0.12);
+}
+
+.lunar_counter-heading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  padding-right: 12px;
+  border-right: 1px solid var(--lunar-divider-muted);
+}
+
+.lunar_counter-kicker {
+  color: var(--rpi-silver);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.lunar_counter-caption {
+  color: color-mix(in srgb, var(--rpi-silver) 64%, var(--rpi-blue) 36%);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.lunar_counter-readout {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lunar_counter-unit {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.lunar_counter-value {
+  min-width: 2ch;
+  color: var(--rpi-red);
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 12px rgba(var(--lunar-red-rgb), 0.36);
+}
+
+.lunar_counter-unit:first-child .lunar_counter-value {
+  min-width: 3ch;
+}
+
+.lunar_counter-label {
+  color: color-mix(in srgb, var(--rpi-silver) 72%, var(--rpi-blue) 28%);
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.lunar_counter-separator {
+  color: color-mix(in srgb, var(--rpi-silver) 78%, var(--rpi-blue) 22%);
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lunar_counter-detail {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 50%;
+  min-width: 18rem;
+  padding: 10px 12px;
+  border: 1px solid var(--lunar-divider);
+  border-radius: 6px;
+  background: var(--menu-surface);
+  color: var(--text-secondary);
+  box-shadow: var(--menu-shadow);
+  transform: translateX(-50%);
+  transform-origin: top center;
+  animation: lunarCounterDetailReveal 0.15s var(--ease-out-expo);
+}
+
+.lunar_counter-detail[hidden] {
+  display: none;
+}
+
+.lunar_counter-detail-label {
+  display: block;
+  margin-bottom: 4px;
+  color: color-mix(in srgb, var(--rpi-silver) 68%, var(--rpi-blue) 32%);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.lunar_counter-detail strong,
+.lunar_counter-detail span {
+  display: block;
+}
+
+.lunar_counter-detail strong {
+  margin-bottom: 3px;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.lunar_counter-detail span:last-child {
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+@media (max-width: 900px) {
+  body.theme-lunar .lunar_counter {
+    display: none;
+  }
 }
 
 .zoom-level-input:focus {
