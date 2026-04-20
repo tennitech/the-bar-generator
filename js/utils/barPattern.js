@@ -254,11 +254,11 @@ function createTickerPatternGeometry(options = {}) {
   }
 
   const topTicks = tickerRepeats * tickerRatio;
-  const tickerSpacing = exactBarWidth / topTicks;
-  const topTickWidth = tickerSpacing / 2;
-  const repeatWidth = exactBarWidth / tickerRepeats;
+  const topTickWidth = exactBarWidth / ((topTicks * 2) - 1);
+  const tickerSpacing = topTickWidth * 2;
+  const repeatWidth = tickerSpacing * tickerRatio;
   const bottomTickWidth = Math.min(topTickWidth * tickerWidthRatio, repeatWidth);
-  const patternEndX = barStartX + exactBarWidth - tickerSpacing + topTickWidth;
+  const patternEndX = barStartX + exactBarWidth;
 
   for (let i = 0; i < topTicks; i++) {
     addRect({
@@ -1155,6 +1155,41 @@ function createRunwayBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fg
   return pattern;
 }
 
+function getLunarBarSVGSource() {
+  if (typeof window !== 'undefined' && window.LUNAR_BAR_SVG_SOURCE) {
+    return window.LUNAR_BAR_SVG_SOURCE;
+  }
+
+  if (typeof LUNAR_BAR_SVG_SOURCE !== 'undefined') {
+    return LUNAR_BAR_SVG_SOURCE;
+  }
+
+  if (typeof require !== 'undefined') {
+    try {
+      return require('./lunarBarAsset').LUNAR_BAR_SVG_SOURCE || '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  return '';
+}
+
+function createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor) {
+  const lunarSource = getLunarBarSVGSource();
+  const lunarContentMatch = lunarSource.match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/i);
+  const lunarContent = lunarContentMatch ? lunarContentMatch[1].trim() : '';
+
+  if (!lunarContent) {
+    return '';
+  }
+
+  const scaleX = exactBarWidth / 499.92;
+  const scaleY = barHeight / 36;
+
+  return `\n    <g fill="${fgColor}" color="${fgColor}" transform="translate(${barStartX} ${barY}) scale(${scaleX} ${scaleY})">\n      ${lunarContent}\n    </g>`;
+}
+
 function ensureCirclePatternCoverageForSVG(circles, barWidth, barHeight) {
   if (!Array.isArray(circles) || barWidth <= 0 || barHeight <= 0) {
     return [];
@@ -1201,7 +1236,7 @@ function createFullBleedCircleFallbackForSVG(barWidth, barHeight, radius) {
   const circles = [];
   const safeRadius = Math.max(1.25, Math.min(barHeight * 0.36, radius));
   const cols = Math.max(8, Math.ceil(barWidth / Math.max(5, safeRadius * 2.8)));
-  const rows = 3;
+  const rows = barHeight > safeRadius * 3 ? 3 : 2;
 
   for (let row = 0; row < rows; row++) {
     const y = rows === 1 ? barHeight / 2 : (row / (rows - 1)) * barHeight;
@@ -1532,6 +1567,10 @@ function createBarPatternSVG(config) {
 
   if (currentShader === 8) {
     return createRunwayBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor);
+  }
+
+  if (currentShader === 24) {
+    return createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor);
   }
 
   if (currentShader === 9) {

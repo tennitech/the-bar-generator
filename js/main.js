@@ -263,7 +263,7 @@ const DEFAULT_COLOR_MODE = themeModeUtils && typeof themeModeUtils.DEFAULT_COLOR
   : 'black';
 const AVAILABLE_COLOR_MODES = themeModeUtils && Array.isArray(themeModeUtils.AVAILABLE_COLOR_MODES)
   ? themeModeUtils.AVAILABLE_COLOR_MODES.slice()
-  : ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray'];
+  : ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray', 'lunar'];
 const AVAILABLE_COLOR_MODE_SET = themeModeUtils && themeModeUtils.AVAILABLE_COLOR_MODE_SET instanceof Set
   ? themeModeUtils.AVAILABLE_COLOR_MODE_SET
   : new Set(AVAILABLE_COLOR_MODES);
@@ -311,7 +311,9 @@ const getPreviewButtonState = previewControlUtils && typeof previewControlUtils.
   };
 
 let currentColorMode = DEFAULT_COLOR_MODE;
+let lastNonLunarColorMode = DEFAULT_COLOR_MODE;
 const colors = {
+  lunar: { bg: '#05070a', fg: '#f4f7fb' },
   black: { bg: '#ffffff', fg: '#000000' },
   white: { bg: '#000000', fg: '#ffffff' },
   red: { bg: '#ffffff', fg: '#d6001c' },
@@ -322,6 +324,7 @@ const colors = {
 };
 
 const themeClassByColorMode = {
+  lunar: 'theme-lunar',
   black: 'theme-black',
   white: 'theme-white',
   red: 'theme-red',
@@ -487,7 +490,7 @@ const AVAILABLE_STYLE_VALUES = new Set([
   'numeric', 'morse', 'circles-gradient', 'gradient', 'grid',
   'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles',
   'fibonacci-sequence', 'union', 'wave-quantum',
-  'runway', 'truss', 'music', 'graph'
+  'runway', 'lunar', 'truss', 'music', 'graph'
 ]);
 
 function normalizeStyleValue(style) {
@@ -921,7 +924,10 @@ function randomizeStyleParameters(style) {
     case 'ticker':
       if (tickerSlider) tickerSlider.value = randomStepValue(8, 40, 1);
       if (tickerRatioSlider) tickerRatioSlider.value = randomStepValue(1, 5, 1);
-      if (tickerWidthRatioSlider) tickerWidthRatioSlider.value = randomStepValue(1, 5, 1);
+      if (tickerWidthRatioSlider) {
+        applyTickerWidthRatioBounds(tickerRatioSlider, tickerWidthRatioSlider);
+        tickerWidthRatioSlider.value = randomStepValue(1, parseInt(tickerWidthRatioSlider.max, 10), 1);
+      }
       updateTickerDisplay();
       updateTickerRatioDisplay();
       updateTickerWidthRatioDisplay();
@@ -1188,6 +1194,39 @@ function syncAllCustomSelects() {
       selectedOption ? selectedOption.textContent : selectElement.value
     );
   });
+}
+
+function isLunarStyleSelected() {
+  return normalizeStyleValue(styleSelect ? styleSelect.value : 'solid') === 'lunar';
+}
+
+function getSelectableColorModes() {
+  return isLunarStyleSelected()
+    ? AVAILABLE_COLOR_MODES.slice()
+    : AVAILABLE_COLOR_MODES.filter(mode => mode !== 'lunar');
+}
+
+function syncLunarColorOptionAvailability() {
+  if (!colorModeSelect) return;
+
+  const allowLunarTheme = isLunarStyleSelected();
+  const lunarOption = colorModeSelect.querySelector('option[value="lunar"]');
+
+  if (lunarOption) {
+    lunarOption.hidden = !allowLunarTheme;
+    lunarOption.disabled = !allowLunarTheme;
+  }
+
+  const wrapperElement = colorModeSelect.parentElement;
+  const customLunarOption = wrapperElement
+    ? wrapperElement.querySelector('.custom-option[data-value="lunar"]')
+    : null;
+
+  if (customLunarOption) {
+    customLunarOption.classList.toggle('is-hidden', !allowLunarTheme);
+    customLunarOption.setAttribute('aria-hidden', String(!allowLunarTheme));
+    customLunarOption.setAttribute('aria-disabled', String(!allowLunarTheme));
+  }
 }
 
 function zoomLevelToDisplayPercent(level) {
@@ -2380,6 +2419,8 @@ async function setup() {
 
   // Initialize custom dropdowns
   setupCustomDropdowns();
+  syncLunarColorOptionAvailability();
+  syncAllCustomSelects();
   updateHeaderBrandPreview(true);
 
   // Initialize the hidden retro rink experience.
@@ -2462,8 +2503,8 @@ async function setup() {
     if (event.shiftKey && (event.code === 'ArrowUp' || event.code === 'ArrowDown')) {
       event.preventDefault();
 
-      const colorModes = AVAILABLE_COLOR_MODES;
-      const currentIndex = colorModes.indexOf(currentColorMode);
+      const colorModes = getSelectableColorModes();
+      const currentIndex = Math.max(0, colorModes.indexOf(currentColorMode));
 
       let nextIndex;
       if (event.code === 'ArrowUp') {
@@ -2591,9 +2632,12 @@ function updateTickerRatioDisplay() {
   // Display the current ticker ratio slider value as ratio
   const sliderValue = parseInt(tickerRatioSlider.value);
   tickerRatioDisplay.textContent = sliderValue + ':1';
+  applyTickerWidthRatioBounds(tickerRatioSlider, tickerWidthRatioSlider);
+  setTickerWidthRatioDisplayValue(tickerWidthRatioSlider, tickerWidthRatioDisplay);
 }
 
 function updateTickerWidthRatioDisplay() {
+  applyTickerWidthRatioBounds(tickerRatioSlider, tickerWidthRatioSlider);
   setTickerWidthRatioDisplayValue(tickerWidthRatioSlider, tickerWidthRatioDisplay);
 }
 
@@ -2794,6 +2838,11 @@ function handleStyleChange() {
     styleSelect.value = selectedStyle;
   }
 
+  syncLunarColorOptionAvailability();
+  if (selectedStyle !== 'lunar' && currentColorMode === 'lunar') {
+    applyColorMode(lastNonLunarColorMode || DEFAULT_COLOR_MODE);
+  }
+
   // Set currentShader based on selected style
   switch (selectedStyle) {
     case 'solid':
@@ -2855,6 +2904,9 @@ function handleStyleChange() {
       break;
     case 'runway':
       currentShader = 8;
+      break;
+    case 'lunar':
+      currentShader = 24;
       break;
     case 'truss':
       currentShader = 9;
@@ -2980,7 +3032,16 @@ function handleColorModeChange() {
 }
 
 function applyColorMode(colorMode) {
-  currentColorMode = normalizeColorModeValue(colorMode);
+  const normalizedColorMode = normalizeColorModeValue(colorMode);
+  currentColorMode = normalizedColorMode === 'lunar' && !isLunarStyleSelected()
+    ? (lastNonLunarColorMode || DEFAULT_COLOR_MODE)
+    : normalizedColorMode;
+
+  if (currentColorMode !== 'lunar') {
+    lastNonLunarColorMode = currentColorMode;
+  }
+
+  syncLunarColorOptionAvailability();
 
   // Remove all theme classes first
   document.body.classList.remove(...new Set(Object.values(themeClassByColorMode)));
@@ -5338,9 +5399,15 @@ function scheduleStaffNote() {
 // URL parameter management
 function getUrlParameters() {
   const params = new URLSearchParams(window.location.search);
+  const style = normalizeStyleValue(params.get('style') || 'solid');
+  const requestedColorMode = normalizeColorModeValue(params.get('colorMode') || DEFAULT_COLOR_MODE);
+  const colorMode = style === 'lunar' || requestedColorMode !== 'lunar'
+    ? requestedColorMode
+    : DEFAULT_COLOR_MODE;
+
   return {
-    style: normalizeStyleValue(params.get('style') || 'solid'),
-    colorMode: normalizeColorModeValue(params.get('colorMode') || DEFAULT_COLOR_MODE),
+    style,
+    colorMode,
 
     // Binary parameters
     binaryText: params.get('binaryText') || 'RPI',
@@ -6496,6 +6563,10 @@ function drawBottomBar(currentWidth) {
     // Runway pattern sourced from the Flying Club bar asset.
     resetShader();
     drawRunwayBarPattern(null, barStartX, 0, exactBarWidth, rectHeight, fgColor);
+  } else if (currentShader === 24) {
+    // Lunar pattern sourced from the Artemis bar asset.
+    resetShader();
+    drawLunarBarPattern(null, barStartX, 0, exactBarWidth, rectHeight, colorScheme ? colorScheme.fg : '#000000');
   } else if (currentShader === 9) {
     // Truss / Geometric pattern
     resetShader();
@@ -7120,8 +7191,17 @@ function setupCustomDropdowns() {
         customOption.classList.add('selected');
       }
 
+      if (option.hidden || option.disabled) {
+        customOption.classList.add('is-hidden');
+        customOption.setAttribute('aria-hidden', 'true');
+        customOption.setAttribute('aria-disabled', 'true');
+      }
+
       customOption.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (customOption.classList.contains('is-hidden') || customOption.getAttribute('aria-disabled') === 'true') {
+          return;
+        }
 
         // Update native select
         select.value = option.value;

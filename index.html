@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Generate unique, brand-compliant RPI logos and lockups with dynamic bar patterns.">
   <title>RPI Logo Generator</title>
-  <link href="css/style.css?v=20260417-morse-randomize" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20260419-lunar-theme" rel="stylesheet" type="text/css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 </head>
 
@@ -111,6 +111,9 @@
                 <optgroup label="ORGANIZATIONS">
                   <option value="runway">RUNWAY - RPI FLYING CLUB</option>
                 </optgroup>
+                <optgroup label="SPECIAL">
+                  <option value="lunar">ARTEMIS II</option>
+                </optgroup>
                 <optgroup label="UNDER CONSTRUCTION">
                   <option value="music">MUSIC</option>
                   <option value="graph">DATA GRAPH</option>
@@ -131,6 +134,7 @@
                 <option value="gold">GOLD</option>
                 <option value="silver">SILVER</option>
                 <option value="gray">GRAY</option>
+                <option value="lunar">LUNAR 🌙</option>
               </select>
             </div>
           </div>
@@ -212,7 +216,7 @@
           <div class="control slider-control">
             <label for="ticker-width-ratio-slider" class="control-label">WIDTH RATIO <span
                 id="ticker-width-ratio-display">1:2</span></label>
-            <input type="range" id="ticker-width-ratio-slider" min="1" max="5" value="2" class="control-slider"
+            <input type="range" id="ticker-width-ratio-slider" min="1" max="3" value="2" class="control-slider"
               aria-label="Ticker Width Ratio">
           </div>
           <div class="control preview_section">
@@ -781,14 +785,15 @@
   <script src="js/utils/profanityFilter.js"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/barPattern.js?v=20260419-ticker-pattern-bounds"></script>
+  <script src="js/utils/lunarBarAsset.js?v=20260419-lunar-color"></script>
+  <script src="js/utils/barPattern.js?v=20260420-lunar-color-ticker-ratio-limits"></script>
   <script src="js/utils/loopingGif.js"></script>
-  <script src="js/utils/themeMode.js?v=20260417-morse-randomize"></script>
+  <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
   <script src="js/utils/previewControls.js?v=20260417-morse-randomize"></script>
   <script src="js/ui.js"></script>
   <script src="js/easter-egg.js"></script>
-  <script src="js/main.js?v=20260419-ticker-pattern-bounds"></script>
-  <script src="js/drawing.js?v=20260419-ticker-pattern-bounds"></script>
+  <script src="js/main.js?v=20260420-lunar-color-ticker-ratio-label-sync"></script>
+  <script src="js/drawing.js?v=20260420-lunar-color-ticker-ratio-limits"></script>
 </body>
 
 </html>

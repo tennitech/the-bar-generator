@@ -1189,6 +1189,25 @@ body.theme-gray {
   --surface-subtle-strong: #3a4853;
 }
 
+body.theme-lunar {
+  --bg-app: #060b16;
+  --bg-sidebar: #0b1422;
+  --bg-canvas: #03060d;
+  --bg-header: #050914;
+  --text-primary: #f7f9fc;
+  --text-secondary: #b0bfd1;
+  --text-on-header: #f4f7fb;
+  --border-color: #243752;
+  --input-bg: #101b2d;
+  --input-focus-bg: #14233a;
+  --input-border: #2a405f;
+  --accent-color: var(--rpi-red);
+  --surface-panel: #0f1a2b;
+  --surface-subtle: #142238;
+  --surface-subtle-hover: #1a2b45;
+  --surface-subtle-strong: #233857;
+}
+
 body {
   background-color: var(--bg-app);
   color: var(--text-primary);
@@ -2304,7 +2323,8 @@ body.theme-gold {
 
 body.theme-white,
 body.theme-silver,
-body.theme-gray {
+body.theme-gray,
+body.theme-lunar {
   --bg-sidebar: #1b232c;
   --surface-panel: #202933;
   --surface-subtle: #27323d;
@@ -2481,6 +2501,120 @@ body.theme-gray {
   --toggle-ring: rgba(185, 204, 216, 0.22);
 }
 
+body.theme-lunar {
+  --bg-app: #060b16;
+  --bg-canvas: #03060d;
+  --bg-sidebar: #0b1422;
+  --bg-header: #050914;
+  --text-primary: #f7f9fc;
+  --text-secondary: #b0bfd1;
+  --text-on-header: #f4f7fb;
+  --border-color: #243752;
+  --accent-color: var(--rpi-red);
+  --input-bg: #101b2d;
+  --input-focus-bg: #14233a;
+  --input-border: #2a405f;
+  --control-surface: #101b2d;
+  --control-surface-hover: #172844;
+  --control-surface-active: #1e3454;
+  --control-border: #2a405f;
+  --menu-surface: #0f1a2b;
+  --menu-border: #2d4363;
+  --menu-option-hover-text: #f4f7fb;
+  --header-control-bg: rgba(15, 26, 43, 0.94);
+  --header-control-bg-hover: #172844;
+  --header-control-border: #2d4363;
+  --header-control-text: #f4f7fb;
+  --menu-option-hover-bg: #1b2f4d;
+  --menu-option-selected-bg: var(--rpi-red);
+  --menu-option-selected-text: #ffffff;
+  --toolbar-surface: rgba(6, 11, 22, 0.84);
+  --toolbar-surface-hover: #172844;
+  --toolbar-border: rgba(214, 0, 28, 0.28);
+  --toolbar-text: #b8c3ce;
+  --toolbar-active-text: #ffffff;
+  --toolbar-active-bg: var(--rpi-red);
+  --slider-track: #2a405f;
+  --slider-thumb: #f4f7fb;
+  --slider-thumb-hover: #ffffff;
+  --slider-thumb-ring: rgba(214, 0, 28, 0.32);
+  --toggle-track: #334762;
+  --toggle-knob: #ffffff;
+  --toggle-track-active: var(--rpi-red);
+  --toggle-knob-active: #ffffff;
+  --toggle-ring: rgba(214, 0, 28, 0.26);
+  --control-focus-ring: rgba(214, 0, 28, 0.34);
+  --menu-shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+}
+
+body.theme-lunar .logo-container {
+  background:
+    linear-gradient(180deg, rgba(3, 6, 13, 0.06), rgba(3, 6, 13, 0.28)),
+    url("../assets/images/lunar-canvas-backdrop.png") center top / cover no-repeat,
+    var(--bg-canvas);
+}
+
+@media (min-width: 769px) {
+  body.theme-lunar .logo-container {
+    --lunar-backdrop-y: clamp(-120rem, calc(90vh - 66vw), 4rem);
+    --lunar-backdrop-min-width: calc((100vh - var(--lunar-backdrop-y)) * 0.8);
+    background:
+      linear-gradient(180deg, rgba(3, 6, 13, 0.06), rgba(3, 6, 13, 0.28)),
+      url("../assets/images/lunar-canvas-backdrop.png") center var(--lunar-backdrop-y) / max(100%, var(--lunar-backdrop-min-width)) auto no-repeat,
+      var(--bg-canvas);
+  }
+}
+
+body.theme-lunar .app-sidebar {
+  border-left-color: color-mix(in srgb, var(--rpi-red) 24%, var(--border-color) 76%);
+}
+
+body.theme-lunar .control-label,
+body.theme-lunar .parameter-group-title {
+  color: color-mix(in srgb, var(--text-secondary) 92%, var(--rpi-red) 8%);
+}
+
+body.theme-lunar .save-button.primary-button:hover,
+body.theme-lunar .save-button.primary-button:focus-visible,
+body.theme-lunar .header_icon-button:hover,
+body.theme-lunar .header_icon-button:focus-visible,
+body.theme-lunar .mobile-menu-toggle:hover,
+body.theme-lunar .mobile-menu-toggle:focus-visible,
+body.theme-lunar .control-input:hover,
+body.theme-lunar .report_dialog-input:hover,
+body.theme-lunar .report_dialog-textarea:hover,
+body.theme-lunar .custom-select-trigger:hover,
+body.theme-lunar .preview-control-btn:hover,
+body.theme-lunar .preview-control-btn:focus-visible,
+body.theme-lunar .audio-control-btn:hover,
+body.theme-lunar .audio-control-btn:focus-visible,
+body.theme-lunar .sidebar-feedback-btn:hover,
+body.theme-lunar .sidebar-feedback-btn:focus-visible,
+body.theme-lunar .report_dialog-secondary:hover,
+body.theme-lunar .report_dialog-secondary:focus-visible,
+body.theme-lunar .report_dialog-close:hover,
+body.theme-lunar .report_dialog-close:focus-visible {
+  border-color: color-mix(in srgb, var(--accent-color) 18%, var(--control-border) 82%);
+}
+
+body.theme-lunar .save-button.primary-button:focus-visible,
+body.theme-lunar .header_icon-button:focus-visible,
+body.theme-lunar .mobile-menu-toggle:focus-visible,
+body.theme-lunar .control-input:focus,
+body.theme-lunar .report_dialog-input:focus,
+body.theme-lunar .report_dialog-textarea:focus,
+body.theme-lunar .custom-select-wrapper.open .custom-select-trigger,
+body.theme-lunar .preview-control-btn:focus-visible,
+body.theme-lunar .audio-control-btn:focus-visible,
+body.theme-lunar .sidebar-feedback-btn:focus-visible,
+body.theme-lunar .report_dialog-secondary:focus-visible,
+body.theme-lunar .report_dialog-close:focus-visible,
+body.theme-lunar .report_dialog-primary:focus-visible,
+body.theme-lunar .zoom-level-input:focus {
+  border-color: color-mix(in srgb, var(--accent-color) 42%, var(--control-border) 58%);
+  box-shadow: 0 0 0 2px var(--control-focus-ring), var(--shadow-soft);
+}
+
 .app-header {
   border-bottom: 1px solid color-mix(in srgb, var(--header-control-border) 46%, transparent);
 }
@@ -2624,6 +2758,10 @@ body.theme-gray {
 
 .custom-option {
   width: 100%;
+}
+
+.custom-option.is-hidden {
+  display: none;
 }
 
 .custom-option.selected,

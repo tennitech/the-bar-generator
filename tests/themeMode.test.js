@@ -36,6 +36,7 @@ function createClassList(initialClasses = []) {
 
 describe('theme mode utils', () => {
   test('normalizes legacy aliases onto the exported-mark-first theme names', () => {
+    expect(normalizeColorModeValue('LUNAR')).toBe('lunar');
     expect(normalizeColorModeValue('LIGHT')).toBe(LEGACY_COLOR_MODE_ALIASES.light);
     expect(normalizeColorModeValue('dark')).toBe(LEGACY_COLOR_MODE_ALIASES.dark);
     expect(normalizeColorModeValue('black-on-white')).toBe('black');

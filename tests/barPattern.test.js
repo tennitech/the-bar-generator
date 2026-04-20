@@ -69,12 +69,12 @@ function makeBaseConfig(overrides = {}) {
   };
 }
 
-function expectTickerRectsInsideBar(rects, barStartX = 0, barY = 0, exactBarWidth = 250, barHeight = 18) {
+function expectTickerRectsInsideBar(rects, barStartX = 0, barY = 0, exactBarWidth = 500, barHeight = 36) {
   const violations = getTickerRectBoundsViolations(rects, barStartX, barY, exactBarWidth, barHeight);
   expect(violations).toEqual([]);
 }
 
-function getTickerRectBoundsViolations(rects, barStartX = 0, barY = 0, exactBarWidth = 250, barHeight = 18, context = '') {
+function getTickerRectBoundsViolations(rects, barStartX = 0, barY = 0, exactBarWidth = 500, barHeight = 36, context = '') {
   const epsilon = 0.000001;
   const violations = [];
 
@@ -105,6 +105,16 @@ function getTickerRectBoundsViolations(rects, barStartX = 0, barY = 0, exactBarW
   });
 
   return violations;
+}
+
+function getAllowedTickerWidthRatioMax(countRatio) {
+  return {
+    1: 2,
+    2: 3,
+    3: 5,
+    4: 7,
+    5: 10
+  }[countRatio];
 }
 
 describe('createBarPatternSVG', () => {
@@ -223,17 +233,18 @@ describe('createBarPatternSVG', () => {
     expect(numeric).toContain('<rect');
   });
 
-
   test('clips ticker SVG rectangles to the visible ticker pattern bounds for wide bottom ticks', () => {
     const geometry = createTickerPatternGeometry({
-      exactBarWidth: 250,
-      barHeight: 18,
+      exactBarWidth: 500,
+      barHeight: 36,
       tickerRepeats: 34,
       tickerRatio: 1,
       tickerWidthRatio: 5
     });
     const result = createBarPatternSVG(makeBaseConfig({
       currentShader: 2,
+      exactBarWidth: 500,
+      barHeight: 36,
       values: {
         ...makeBaseConfig().values,
         tickerRepeats: 34,
@@ -251,6 +262,7 @@ describe('createBarPatternSVG', () => {
 
     expectTickerRectsInsideBar(rects);
     expect(Math.max(...rects.map((rect) => rect.x + rect.width))).toBeCloseTo(geometry.patternEndX);
+    expect(geometry.patternEndX).toBe(500);
   });
 
   test('keeps all allowed ticker parameter combinations inside the bar and repeat bounds', () => {
@@ -258,12 +270,12 @@ describe('createBarPatternSVG', () => {
 
     for (let repeats = 5; repeats <= 40; repeats++) {
       for (let ratio = 1; ratio <= 5; ratio++) {
-        for (let widthRatio = 1; widthRatio <= 5; widthRatio++) {
+        for (let widthRatio = 1; widthRatio <= getAllowedTickerWidthRatioMax(ratio); widthRatio++) {
           const staticGeometry = createTickerPatternGeometry({
             barStartX: 10,
             barY: 4,
-            exactBarWidth: 250,
-            barHeight: 18,
+            exactBarWidth: 500,
+            barHeight: 36,
             tickerRepeats: repeats,
             tickerRatio: ratio,
             tickerWidthRatio: widthRatio
@@ -272,10 +284,20 @@ describe('createBarPatternSVG', () => {
             staticGeometry.rects,
             10,
             4,
-            250,
-            18,
+            500,
+            36,
             `static repeats=${repeats} ratio=${ratio} widthRatio=${widthRatio}`
           ));
+          if (Math.min(...staticGeometry.rects.map((rect) => rect.x)) > 10 + 0.000001) {
+            violations.push(
+              `static repeats=${repeats} ratio=${ratio} widthRatio=${widthRatio} does not start at the left bar edge`
+            );
+          }
+          if (Math.max(...staticGeometry.rects.map((rect) => rect.x + rect.width)) < 510 - 0.000001) {
+            violations.push(
+              `static repeats=${repeats} ratio=${ratio} widthRatio=${widthRatio} does not reach the right bar edge`
+            );
+          }
           staticGeometry.rects
             .filter((rect) => rect.row === 'bottom')
             .forEach((rect, index) => {
@@ -298,8 +320,8 @@ describe('createBarPatternSVG', () => {
             const loopingGeometry = createTickerPatternGeometry({
               barStartX: 10,
               barY: 4,
-              exactBarWidth: 250,
-              barHeight: 18,
+              exactBarWidth: 500,
+              barHeight: 36,
               tickerRepeats: repeats,
               tickerRatio: ratio,
               tickerWidthRatio: widthRatio,
@@ -309,8 +331,8 @@ describe('createBarPatternSVG', () => {
               loopingGeometry.rects,
               10,
               4,
-              250,
-              18,
+              500,
+              36,
               `loop repeats=${repeats} ratio=${ratio} widthRatio=${widthRatio} offset=${loopOffsetX}`
             ));
             if (loopingGeometry.bottomTickWidth > loopingGeometry.repeatWidth + 0.000001) {
@@ -325,6 +347,7 @@ describe('createBarPatternSVG', () => {
 
     expect(violations).toEqual([]);
   });
+
 
   test('builds geometry for every truss option in the selector', () => {
     const families = [
@@ -506,6 +529,7 @@ describe('createBarPatternSVG', () => {
     const fibonacci = createBarPatternSVG(makeBaseConfig({ currentShader: 20 }));
     const union = createBarPatternSVG(makeBaseConfig({ currentShader: 21 }));
     const waveQuantum = createBarPatternSVG(makeBaseConfig({ currentShader: 22 }));
+    const lunar = createBarPatternSVG(makeBaseConfig({ currentShader: 24 }));
 
     expect(circlesGradient).toContain('<circle');
     expect(gradient).toContain('<rect');
@@ -515,6 +539,9 @@ describe('createBarPatternSVG', () => {
     expect(fibonacci).toContain('<rect');
     expect(union).toContain('<polygon');
     expect(waveQuantum).toContain('<path d="');
+    expect(lunar).toContain('<g fill="#000000"');
+    expect(lunar).toContain('<path');
+    expect(lunar).not.toContain('<image href=');
   });
 
   test('builds geometry for the remaining reference-style helpers', () => {

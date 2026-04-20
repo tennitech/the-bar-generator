@@ -8,7 +8,7 @@
   root.themeModeUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const DEFAULT_COLOR_MODE = 'black';
-  const AVAILABLE_COLOR_MODES = ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray'];
+  const AVAILABLE_COLOR_MODES = ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray', 'lunar'];
   const AVAILABLE_COLOR_MODE_SET = new Set(AVAILABLE_COLOR_MODES);
   const LEGACY_COLOR_MODE_ALIASES = {
     'black-on-white': 'black',

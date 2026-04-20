@@ -124,6 +124,84 @@ function drawSVGPathOnGraphics(pg, pathData) {
   pg.endShape(CLOSE);
 }
 
+const lunarBarImageCache = new Map();
+const lunarBarPendingColors = new Set();
+
+function normalizeLunarBarColor(value) {
+  if (typeof value === 'string' && value.trim()) {
+    return value.trim();
+  }
+
+  return '#000000';
+}
+
+function createColorizedLunarBarDataURI(fgColor) {
+  const source = typeof window !== 'undefined' ? window.LUNAR_BAR_SVG_SOURCE : '';
+  if (!source) {
+    return '';
+  }
+
+  const color = normalizeLunarBarColor(fgColor);
+  const colorizedSource = source.replace(
+    /<svg\b([^>]*)>/i,
+    `<svg$1 fill="${color}" color="${color}">`
+  );
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(colorizedSource)}`;
+}
+
+function getLunarBarImage(fgColor) {
+  const color = normalizeLunarBarColor(fgColor);
+
+  if (lunarBarImageCache.has(color)) {
+    return lunarBarImageCache.get(color);
+  }
+
+  if (lunarBarPendingColors.has(color) || typeof loadImage !== 'function') {
+    return null;
+  }
+
+  const dataURI = createColorizedLunarBarDataURI(color);
+  if (!dataURI) {
+    return null;
+  }
+
+  lunarBarPendingColors.add(color);
+  loadImage(
+    dataURI,
+    (imageAsset) => {
+      lunarBarPendingColors.delete(color);
+      lunarBarImageCache.set(color, imageAsset);
+      if (typeof requestUpdate === 'function') {
+        requestUpdate();
+      }
+    },
+    (error) => {
+      lunarBarPendingColors.delete(color);
+      console.warn('Unable to load Lunar bar SVG:', error);
+    }
+  );
+
+  return null;
+}
+
+function drawLunarBarPattern(target, barStartX, barY, exactBarWidth, barHeight, fgColor = '#000000') {
+  const surface = target || window;
+  const imageAsset = getLunarBarImage(fgColor);
+
+  if (!imageAsset || !imageAsset.width || typeof surface.image !== 'function') {
+    return;
+  }
+
+  if (typeof surface.push === 'function') surface.push();
+  if (typeof surface.imageMode === 'function') {
+    const cornerMode = surface.CORNER || (typeof CORNER !== 'undefined' ? CORNER : undefined);
+    if (cornerMode !== undefined) surface.imageMode(cornerMode);
+  }
+  surface.image(imageAsset, barStartX, barY, exactBarWidth, barHeight);
+  if (typeof surface.pop === 'function') surface.pop();
+}
+
 function drawMusicHeadOnGraphics(pg, shape, x, y, rx, ry, filled, fgColor) {
   const normalizedShape = normalizeMusicNoteShape(shape);
 
@@ -612,6 +690,9 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
   } else if (currentShader === 8) {
     // Runway pattern sourced from the Flying Club bar asset.
     drawRunwayBarPattern(pg, barStartX, barY, exactBarWidth, rectHeight, fgColor);
+  } else if (currentShader === 24) {
+    // Lunar pattern sourced from the Artemis bar asset.
+    drawLunarBarPattern(pg, barStartX, barY, exactBarWidth, rectHeight, fgColor);
   } else if (currentShader === 9) {
     // Truss / Geometric pattern
     const trussGeometry = createTrussPatternGeometry({
@@ -829,14 +910,7 @@ function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, si
     }
 
     const ctx = pg ? pg.drawingContext : (typeof drawingContext !== 'undefined' ? drawingContext : null);
-    const canClipWithCanvasContext = ctx &&
-      typeof ctx.save === 'function' &&
-      typeof ctx.beginPath === 'function' &&
-      typeof ctx.rect === 'function' &&
-      typeof ctx.clip === 'function' &&
-      typeof ctx.restore === 'function';
-
-    if (canClipWithCanvasContext) {
+    if (ctx) {
       ctx.save();
       ctx.beginPath();
       ctx.rect(barStartX, barY, barWidth, barHeight);
@@ -860,7 +934,7 @@ function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, si
         }
       }
     } finally {
-      if (canClipWithCanvasContext) {
+      if (ctx) {
         ctx.restore();
       }
     }
@@ -921,7 +995,7 @@ function createFullBleedCircleFallback(barWidth, barHeight, radius) {
   const circles = [];
   const safeRadius = Math.max(1.25, Math.min(barHeight * 0.36, radius));
   const cols = Math.max(8, Math.ceil(barWidth / Math.max(5, safeRadius * 2.8)));
-  const rows = 3;
+  const rows = barHeight > safeRadius * 3 ? 3 : 2;
 
   for (let row = 0; row < rows; row++) {
     const y = rows === 1 ? barHeight / 2 : (row / (rows - 1)) * barHeight;
