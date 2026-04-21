@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="description" content="Generate unique, brand-compliant RPI logos and lockups with dynamic bar patterns.">
   <title>RPI Logo Generator</title>
   <base href="../">
@@ -132,16 +132,18 @@
             <label id="style-select-label" for="style-select" class="control-label">BAR STYLE</label>
             <div class="select-wrapper">
               <select id="style-select" class="control-select">
-                <option value="solid">SOLID</option>
-                <option value="ruler">RULER</option>
-                <option value="ticker">TICKER</option>
-                <option value="binary">BINARY</option>
-                <option value="morse">MORSE CODE</option>
-                <option value="waveform">WAVEFORM</option>
-                <option value="circles">CIRCLES</option>
-                <option value="numeric">NUMERIC</option>
-                <option value="neural-network">NEURAL NETWORK</option>
+                <optgroup label="DYNAMIC">
+                  <option value="ruler">RULER</option>
+                  <option value="ticker">TICKER</option>
+                  <option value="binary">BINARY</option>
+                  <option value="morse">MORSE CODE</option>
+                  <option value="waveform">WAVEFORM</option>
+                  <option value="circles">CIRCLES</option>
+                  <option value="numeric">NUMERIC</option>
+                  <option value="neural-network">NEURAL NETWORK</option>
+                </optgroup>
                 <optgroup label="STATIC">
+                  <option value="solid">SOLID</option>
                   <option value="circles-gradient">CIRCLES GRADIENT</option>
                   <option value="gradient">GRADIENT</option>
                   <option value="lines">LINES</option>
@@ -709,28 +711,6 @@
         </div>
       </div>
 
-      <div id="easter-egg-hint" class="easter-egg-hint" aria-hidden="true">
-        <div class="easter-egg-hint-track"></div>
-        <div class="easter-egg-hint-copy">
-          <span class="easter-egg-hint-kicker">SECRET RINK</span>
-          <span id="easter-egg-hint-label" class="easter-egg-hint-label">HOLD TO ENTER</span>
-        </div>
-      </div>
-
-      <div id="easter-egg-overlay" class="easter-egg-overlay hidden" aria-hidden="true">
-        <div class="easter-egg-overlay-chrome">
-          <div class="easter-egg-pill">RPI AFTER HOURS</div>
-          <div id="easter-egg-live-status" class="easter-egg-pill secondary" aria-live="polite">BULLET TIME ON ICE</div>
-          <button id="easter-egg-close" class="easter-egg-close" aria-label="Close hidden game">Exit Rink</button>
-        </div>
-        <canvas id="easter-egg-canvas" class="easter-egg-canvas" aria-label="Hidden retro game"></canvas>
-        <div class="easter-egg-touch-controls" aria-label="Game Controls">
-          <button class="easter-egg-touch-btn" data-control="duck" aria-label="Duck">TUCK</button>
-          <button class="easter-egg-touch-btn focus" data-control="bullet" aria-label="Bullet time">FOCUS</button>
-          <button class="easter-egg-touch-btn jump" data-control="jump" aria-label="Jump">JUMP</button>
-        </div>
-      </div>
-
       <!-- Visual Workspace Actions -->
       <div class="workspace-controls">
         <button id="zoom-out-btn" class="workspace-btn" aria-label="Zoom Out" data-tooltip="Zoom out">
@@ -766,16 +746,6 @@
             <polyline points="9 19 12 22 15 19"></polyline>
             <line x1="2" y1="12" x2="22" y2="12"></line>
             <line x1="12" y1="2" x2="12" y2="22"></line>
-          </svg>
-        </button>
-        <button id="toybox-btn" class="workspace-btn" type="button" aria-label="Arcade">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="6" y1="12" x2="10" y2="12"></line>
-            <line x1="8" y1="10" x2="8" y2="14"></line>
-            <line x1="15" y1="13" x2="15.01" y2="13"></line>
-            <line x1="18" y1="11" x2="18.01" y2="11"></line>
-            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
           </svg>
         </button>
       </div>
@@ -847,7 +817,6 @@
   <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
   <script src="js/utils/previewControls.js?v=20260417-morse-randomize"></script>
   <script src="js/ui.js"></script>
-  <script src="js/easter-egg.js"></script>
   <script src="js/main.js?v=20260421-responsive-preview-scale"></script>
   <script src="js/drawing.js?v=20260420-lunar-color-ticker-ratio-limits"></script>
 </body>

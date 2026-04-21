@@ -475,36 +475,18 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     const time = typeof options.timeSeconds === 'number'
       ? options.timeSeconds
       : (typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0);
-
-    // Helper function for smooth waveform generation (restored from original working version)
-    function generateWaveValue(phase, type) {
-      const normalizedPhase = phase - Math.floor(phase);
-      const wrappedPhase = normalizedPhase < 0 ? normalizedPhase + 1 : normalizedPhase;
-
-      // Define all wave types such that they align at 0
-      const sine = (Math.sin(wrappedPhase * 2 * Math.PI - Math.PI / 2) + 1) * 0.5;
-      const saw = wrappedPhase;
-      const square = wrappedPhase > 0.5 ? 1.0 : 0.0;
-      const pulse = wrappedPhase > 0.8 ? 1.0 : 0.0;
-
-      if (type < 1.0) {
-        // Sine to sawtooth interpolation
-        return sine + (saw - sine) * type;
-      } else if (type < 2.0) {
-        // Sawtooth to square interpolation
-        const t = type - 1.0;
-        return saw + (square - saw) * t;
-      } else {
-        // Square to pulse interpolation
-        const t = type - 2.0;
-        return square + (pulse - square) * t;
-      }
-    }
-
-    // Calculate optimal number of points
-    const basePoints = Math.max(300, exactBarWidth * 3);
-    const frequencyMultiplier = Math.max(1, frequency / 10);
-    const points = Math.ceil(basePoints * frequencyMultiplier);
+    const points = typeof getWaveformRenderPointCount === 'function'
+      ? getWaveformRenderPointCount(exactBarWidth, frequency)
+      : Math.max(240, Math.min(1200, Math.max(Math.ceil(exactBarWidth * 2), frequency * 12)));
+    const envelopeSettings = typeof getWaveformEnvelopeSettings === 'function'
+      ? getWaveformEnvelopeSettings()
+      : {
+        applyEnvelope: !!(waveformEnvelopeToggle && waveformEnvelopeToggle.checked),
+        envType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
+        envWaves: waveformEnvelopeWavesSlider ? Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)) : 1,
+        envCenter: waveformEnvelopeCenterSlider ? parseFloat(waveformEnvelopeCenterSlider.value) : 0,
+        bipolar: !!(waveformEnvelopeBipolarToggle && waveformEnvelopeBipolarToggle.checked)
+      };
 
     pg.fill(fgColor);
     pg.noStroke();
@@ -526,29 +508,31 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       // Fix tiny floating point inaccuracies
       rawPhase = Math.round(rawPhase * 1000000) / 1000000;
 
-      let wave = generateWaveValue(rawPhase, waveType);
-      const applyEnvelope = waveformEnvelopeToggle && waveformEnvelopeToggle.checked;
-      const envType = waveformEnvelopeType ? waveformEnvelopeType.value : 'sine';
-      const envWaves = waveformEnvelopeWavesSlider
-        ? (typeof normalizeWaveformEnvelopeWaves === 'function'
-          ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
-          : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
-        : 1;
-      const envCenter = waveformEnvelopeCenterSlider ? parseFloat(waveformEnvelopeCenterSlider.value) : 0;
-      const bipolar = waveformEnvelopeBipolarToggle && waveformEnvelopeBipolarToggle.checked;
+      let wave = typeof generateWaveformValue === 'function'
+        ? generateWaveformValue(rawPhase, waveType)
+        : (() => {
+          const wrappedPhase = ((rawPhase % 1) + 1) % 1;
+          const sine = (Math.sin(wrappedPhase * 2 * Math.PI - Math.PI / 2) + 1) * 0.5;
+          const saw = wrappedPhase;
+          const square = wrappedPhase > 0.5 ? 1.0 : 0.0;
+          const pulse = wrappedPhase > 0.8 ? 1.0 : 0.0;
+          if (waveType < 1.0) return sine + (saw - sine) * waveType;
+          if (waveType < 2.0) return saw + (square - saw) * (waveType - 1.0);
+          return square + (pulse - square) * (waveType - 2.0);
+        })();
 
       if (typeof applyWaveformEnvelope === 'function') {
         wave = applyWaveformEnvelope(wave, {
-          applyEnvelope,
-          envType,
-          envWaves,
-          bipolar,
+          applyEnvelope: envelopeSettings.applyEnvelope,
+          envType: envelopeSettings.envType,
+          envWaves: envelopeSettings.envWaves,
+          bipolar: envelopeSettings.bipolar,
           xPortion
         });
       }
 
       const normalizedY = typeof mapWaveformToBarYFraction === 'function'
-        ? mapWaveformToBarYFraction(wave, envCenter)
+        ? mapWaveformToBarYFraction(wave, envelopeSettings.envCenter)
         : (1.0 - Math.max(0, Math.min(1, wave)));
       const y = barY + rectHeight * normalizedY;
 

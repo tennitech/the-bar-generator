@@ -271,6 +271,10 @@ body {
   justify-content: center;
 }
 
+.canvas-viewport.is-pan-active {
+  touch-action: none;
+}
+
 .logo-container {
   position: relative;
   width: 100%;
@@ -330,7 +334,6 @@ body {
   transition: color var(--duration-fast) ease, background var(--duration-fast) ease, box-shadow var(--duration-fast) ease, transform var(--duration-fast) ease;
 }
 
-.workspace-btn:hover,
 .workspace-btn:focus-visible {
   color: var(--text-primary);
   background: var(--neutral-100);
@@ -374,7 +377,6 @@ body {
   transition: opacity var(--duration-fast) ease, transform var(--duration-fast) ease;
 }
 
-.workspace-btn[data-tooltip]:hover::after,
 .workspace-btn[data-tooltip]:focus-visible::after {
   opacity: 1;
   transform: translate(-50%, 0);
@@ -2157,234 +2159,6 @@ body {
 /* A# */
 
 /* ────────────────────────────────────────
-   Easter Egg / Rink Rush
-   ──────────────────────────────────────── */
-
-.app-main {
-  isolation: isolate;
-}
-
-.easter-egg-hint {
-  --hold-progress: 0;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(260px, calc(100% - 48px));
-  padding: 14px 16px 14px 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background:
-    linear-gradient(135deg, rgba(11, 16, 24, 0.92), rgba(33, 7, 13, 0.9)),
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.12), transparent 55%);
-  box-shadow:
-    0 18px 45px rgba(0, 0, 0, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
-  pointer-events: none;
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.94);
-  transition: opacity 180ms ease, transform 220ms var(--ease-out-expo), box-shadow 220ms ease;
-  z-index: 14;
-}
-
-.easter-egg-hint.is-visible {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-
-.easter-egg-hint.is-arming {
-  box-shadow:
-    0 26px 55px rgba(214, 0, 28, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.easter-egg-hint-track {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  overflow: hidden;
-}
-
-.easter-egg-hint-track::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  width: calc(var(--hold-progress) * 100%);
-  background: linear-gradient(90deg, rgba(214, 0, 28, 0.16), rgba(159, 231, 255, 0.28));
-  transition: width 80ms linear;
-}
-
-.easter-egg-hint-copy {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.easter-egg-hint-kicker,
-.easter-egg-hint-label {
-  font-family: 'RPIGeistMono', monospace;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.easter-egg-hint-kicker {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.52);
-}
-
-.easter-egg-hint-label {
-  font-size: 12px;
-  color: #ffffff;
-}
-
-.easter-egg-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 22;
-  padding: 18px;
-  background:
-    radial-gradient(circle at top center, rgba(214, 0, 28, 0.18), transparent 34%),
-    linear-gradient(180deg, rgba(4, 7, 13, 0.96), rgba(8, 11, 18, 0.98));
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  overflow: hidden;
-}
-
-.easter-egg-overlay::before,
-.easter-egg-overlay::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.easter-egg-overlay::before {
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px) 0 0 / 24px 24px,
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px) 0 0 / 24px 24px;
-  opacity: 0.45;
-}
-
-.easter-egg-overlay::after {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 18%, transparent 82%, rgba(255, 255, 255, 0.03));
-}
-
-.easter-egg-overlay.hidden {
-  display: none !important;
-}
-
-.easter-egg-overlay-chrome {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.easter-egg-pill {
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(8, 11, 18, 0.64);
-  color: rgba(255, 255, 255, 0.78);
-  font-family: 'RPIGeistMono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  backdrop-filter: blur(14px);
-}
-
-.easter-egg-pill.secondary {
-  color: #d7fbff;
-  border-color: rgba(159, 231, 255, 0.24);
-}
-
-.easter-egg-close {
-  margin-left: auto;
-  padding: 9px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
-  background: rgba(8, 11, 18, 0.82);
-  color: rgba(255, 255, 255, 0.88);
-  font-family: 'RPIGeistMono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: transform var(--duration-fast) ease, border-color var(--duration-fast) ease, background var(--duration-fast) ease;
-}
-
-.easter-egg-close:hover,
-.easter-egg-close:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.32);
-  background: rgba(214, 0, 28, 0.22);
-  outline: none;
-}
-
-.easter-egg-canvas {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  flex: 1;
-  min-height: 0;
-  border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(7, 10, 16, 0.98), rgba(8, 11, 18, 0.98));
-  box-shadow:
-    0 28px 70px rgba(0, 0, 0, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-.easter-egg-touch-controls {
-  display: none;
-  position: relative;
-  z-index: 2;
-  gap: 10px;
-}
-
-.easter-egg-touch-btn {
-  flex: 1;
-  min-height: 52px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(20, 24, 32, 0.96), rgba(6, 9, 14, 0.98));
-  color: rgba(255, 255, 255, 0.92);
-  font-family: 'RPIGeistMono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
-.easter-egg-touch-btn.focus {
-  border-color: rgba(159, 231, 255, 0.32);
-  color: #d7fbff;
-}
-
-.easter-egg-touch-btn.jump {
-  border-color: rgba(255, 92, 120, 0.34);
-  color: #ff9cb0;
-}
-
-.easter-egg-touch-btn.is-active,
-.easter-egg-touch-btn:active {
-  transform: translateY(1px) scale(0.99);
-  background: linear-gradient(180deg, rgba(214, 0, 28, 0.34), rgba(10, 14, 20, 0.98));
-}
-
-body.easter-egg-active .workspace-controls {
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, 18px);
-}
-
-/* ────────────────────────────────────────
    Theme System Recovery And Refinement
    ──────────────────────────────────────── */
 
@@ -2858,9 +2632,8 @@ body.theme-lunar .zoom-level-input:focus {
   color: var(--toolbar-text);
 }
 
-.workspace-btn:hover,
 .workspace-btn:focus-visible,
-.zoom-level-input:hover {
+.zoom-level-input:focus-visible {
   color: var(--text-primary);
   background: var(--toolbar-surface-hover);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--toolbar-border) 90%, transparent), 0 4px 12px rgba(var(--shadow-rgb), 0.1);
@@ -2896,6 +2669,20 @@ body.theme-lunar .workspace-btn:focus-visible {
   box-shadow:
     inset 2px 0 0 var(--rpi-red),
     0 0 0 2px rgba(var(--lunar-blue-rgb), 0.28);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .workspace-btn:hover,
+  .zoom-level-input:hover {
+    color: var(--text-primary);
+    background: var(--toolbar-surface-hover);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--toolbar-border) 90%, transparent), 0 4px 12px rgba(var(--shadow-rgb), 0.1);
+  }
+
+  .workspace-btn[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 body.theme-lunar .workspace-controls::before {
@@ -3383,26 +3170,6 @@ input:checked + .slider:before {
     overscroll-behavior: contain;
   }
 
-  .easter-egg-overlay {
-    padding: 12px;
-    gap: 10px;
-  }
-
-  .easter-egg-overlay-chrome {
-    flex-wrap: wrap;
-  }
-
-  .easter-egg-pill {
-    font-size: 10px;
-  }
-
-  .easter-egg-close {
-    width: 100%;
-  }
-
-  .easter-egg-touch-controls {
-    display: flex;
-  }
 }
 
 @media (max-width: 480px) {
@@ -3423,8 +3190,4 @@ input:checked + .slider:before {
     padding: 0;
   }
 
-  .easter-egg-hint {
-    width: calc(100% - 24px);
-    padding: 12px 14px;
-  }
 }

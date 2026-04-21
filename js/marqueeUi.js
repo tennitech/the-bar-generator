@@ -4,6 +4,7 @@ const ROW_GAP = '1.45rem';
 const ROW_COUNT = 10;
 const ROW_START_PERCENT = -7.5;
 const ROW_STEP_PERCENT = 7.35;
+const ROW_REFERENCE_VIEWPORT_HEIGHT = 822;
 const ROW_LEFT = '-44vw';
 const ROW_WIDTH = '220vw';
 const MEASUREMENT_EPSILON = 0.5;
@@ -15,9 +16,28 @@ const BASE_SPEEDS = [62, 66, 64, 68, 65, 69, 63, 67, 64, 68];
 const HERO_CLUSTER_WIDTH = 960;
 const HERO_CLUSTER_HEIGHT = 330;
 const MOBILE_HERO_BREAKPOINT = 550;
-const MOBILE_HERO_BOTTOM_GAP = 58;
 const HERO_MIN_SCALE = 0.5;
 const HERO_COMPACT_CREDIT_SCALE = 0.76;
+const HERO_BASE_MAX_SCALE = 1;
+const LARGE_DESKTOP_BREAKPOINT = 1920;
+const LARGE_DESKTOP_HEIGHT_BREAKPOINT = 1080;
+const LARGE_DESKTOP_HERO_SCALE = 1.16;
+const LARGE_DESKTOP_BAR_ASSET_WIDTH = '32rem';
+const LARGE_DESKTOP_ROW_HEIGHT = '4.45rem';
+const LARGE_DESKTOP_ROW_GAP = '1.7rem';
+const NARROW_PORTRAIT_SCALE_HEIGHT_MIN = 760;
+const NARROW_PORTRAIT_SCALE_WIDTH_START = 700;
+const NARROW_PORTRAIT_SCALE_WIDTH_END = 520;
+const NARROW_PORTRAIT_SCALE_MIN = 0.84;
+const ROW_EDGE_CASE_MIN_HEIGHT = 700;
+const ROW_EDGE_CASE_ASPECT_START = 1.4;
+const ROW_EDGE_CASE_ASPECT_END = 1.05;
+const ROW_EDGE_CASE_MAX_LIFT = 96;
+const ROW_NARROW_CLEARANCE_HEIGHT_MIN = 760;
+const ROW_NARROW_CLEARANCE_WIDTH_START = 550;
+const ROW_NARROW_CLEARANCE_WIDTH_END = 430;
+const ROW_NARROW_CLEARANCE_BASE_LIFT = 18;
+const ROW_NARROW_CLEARANCE_MAX_LIFT = 56;
 
 const rowPatterns = [
   ['assets/bar references/Style=Triangle Grid 1.svg', 'assets/bar references/Style=Ruler CM.svg', 'assets/bar references/Style=Ticker Md.svg', 'assets/bar references/Style=Grid 1.svg'],
@@ -63,6 +83,100 @@ function syncViewportHeightVar() {
   }
 }
 
+function resolveCssLengthToPx(value) {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  if (typeof value !== 'string') {
+    return 0;
+  }
+
+  const trimmedValue = value.trim();
+  const numericValue = Number.parseFloat(trimmedValue);
+  if (!Number.isFinite(numericValue)) {
+    return 0;
+  }
+
+  if (trimmedValue.endsWith('rem')) {
+    const rootFontSize = typeof window !== 'undefined'
+      ? Number.parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16
+      : 16;
+    return numericValue * rootFontSize;
+  }
+
+  return numericValue;
+}
+
+function computeRowTopPositions({ rowCount, rowStart, rowStep }) {
+  return Array.from({ length: rowCount }, (_, index) => rowStart + (rowStep * index));
+}
+
+function getResponsiveMarqueeMetrics(viewportWidth, viewportHeight) {
+  const isLargeDesktop = viewportWidth >= LARGE_DESKTOP_BREAKPOINT && viewportHeight >= LARGE_DESKTOP_HEIGHT_BREAKPOINT;
+
+  return {
+    assetWidth: isLargeDesktop ? LARGE_DESKTOP_BAR_ASSET_WIDTH : BAR_ASSET_WIDTH,
+    rowHeight: isLargeDesktop ? LARGE_DESKTOP_ROW_HEIGHT : ROW_HEIGHT,
+    rowGap: isLargeDesktop ? LARGE_DESKTOP_ROW_GAP : ROW_GAP,
+    heroMaxScale: isLargeDesktop ? LARGE_DESKTOP_HERO_SCALE : HERO_BASE_MAX_SCALE
+  };
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function getEdgeCaseRowLiftPx(viewportWidth, viewportHeight) {
+  if (viewportHeight < ROW_EDGE_CASE_MIN_HEIGHT) {
+    return 0;
+  }
+
+  if (
+    viewportHeight >= ROW_NARROW_CLEARANCE_HEIGHT_MIN
+    && viewportWidth < ROW_NARROW_CLEARANCE_WIDTH_START
+    && viewportWidth >= ROW_NARROW_CLEARANCE_WIDTH_END
+  ) {
+    const rawFactor = (ROW_NARROW_CLEARANCE_WIDTH_START - viewportWidth)
+      / (ROW_NARROW_CLEARANCE_WIDTH_START - ROW_NARROW_CLEARANCE_WIDTH_END);
+    const factor = clamp(rawFactor, 0, 1);
+    const easedFactor = factor * factor;
+
+    return ROW_NARROW_CLEARANCE_BASE_LIFT
+      + ((ROW_NARROW_CLEARANCE_MAX_LIFT - ROW_NARROW_CLEARANCE_BASE_LIFT) * easedFactor);
+  }
+
+  if (viewportWidth < MOBILE_HERO_BREAKPOINT) {
+    return 0;
+  }
+
+  const aspectRatio = viewportWidth / viewportHeight;
+  const rawFactor = (ROW_EDGE_CASE_ASPECT_START - aspectRatio) / (ROW_EDGE_CASE_ASPECT_START - ROW_EDGE_CASE_ASPECT_END);
+  const factor = clamp(rawFactor, 0, 1);
+  const easedFactor = factor * factor;
+
+  return easedFactor * ROW_EDGE_CASE_MAX_LIFT;
+}
+
+function getNarrowPortraitHeroScaleCap(viewportWidth, viewportHeight) {
+  if (viewportHeight < NARROW_PORTRAIT_SCALE_HEIGHT_MIN || viewportWidth > NARROW_PORTRAIT_SCALE_WIDTH_START) {
+    return 1;
+  }
+
+  const rawFactor = (NARROW_PORTRAIT_SCALE_WIDTH_START - viewportWidth)
+    / (NARROW_PORTRAIT_SCALE_WIDTH_START - NARROW_PORTRAIT_SCALE_WIDTH_END);
+  const factor = clamp(rawFactor, 0, 1);
+  const easedFactor = factor * factor;
+
+  return 1 - ((1 - NARROW_PORTRAIT_SCALE_MIN) * easedFactor);
+}
+
+function getRowStepPx(stageHeight) {
+  const referenceRowStep = (ROW_STEP_PERCENT / 100) * ROW_REFERENCE_VIEWPORT_HEIGHT;
+  const responsiveRowStep = (ROW_STEP_PERCENT / 100) * stageHeight;
+  return Math.max(referenceRowStep, responsiveRowStep);
+}
+
 function wrap(value, length) {
   return ((value % length) + length) % length;
 }
@@ -70,7 +184,7 @@ function wrap(value, length) {
 function createAssetElement(path) {
   const asset = document.createElement('a');
   asset.className = 'bar_asset_wrap';
-  asset.style.setProperty('--asset-width', BAR_ASSET_WIDTH);
+  asset.style.setProperty('--asset-width', 'var(--marquee-asset-width)');
   asset.href = getGeneratorHref();
   asset.setAttribute('aria-label', 'Open the generator');
 
@@ -179,8 +293,8 @@ function bindAssetInteractions(asset, state) {
 function createTrackItem(state, path, isMeasure = false) {
   const item = document.createElement('div');
   item.className = `marquee_item${isMeasure ? ' is-measure' : ''}`;
-  item.style.setProperty('--asset-width', BAR_ASSET_WIDTH);
-  item.style.setProperty('--row-gap', ROW_GAP);
+  item.style.setProperty('--asset-width', 'var(--marquee-asset-width)');
+  item.style.setProperty('--row-gap', 'var(--marquee-row-gap)');
 
   const asset = createAssetElement(path);
   if (!isMeasure) {
@@ -194,11 +308,10 @@ function createTrackItem(state, path, isMeasure = false) {
 function createRow(index) {
   const row = document.createElement('div');
   row.className = `marquee_row ${index % 2 === 0 ? 'is-backward' : 'is-forward'}`;
-  row.style.top = `${ROW_START_PERCENT + (ROW_STEP_PERCENT * index)}%`;
   row.style.left = ROW_LEFT;
   row.style.width = ROW_WIDTH;
-  row.style.setProperty('--row-height', ROW_HEIGHT);
-  row.style.setProperty('--row-gap', ROW_GAP);
+  row.style.setProperty('--row-height', 'var(--marquee-row-height)');
+  row.style.setProperty('--row-gap', 'var(--marquee-row-gap)');
 
   const track = document.createElement('div');
   track.className = 'marquee_track';
@@ -217,6 +330,7 @@ function createRow(index) {
     hoveredAsset: null,
     pressedAsset: null,
     rowWidth: 0,
+    rowHeight: 0,
     slotWidth: 0,
     patternSpan: 0,
     travel: index * 73,
@@ -284,21 +398,24 @@ function syncRowMeasurements(rowStates, force = false) {
     }
 
     const nextRowWidth = state.element.getBoundingClientRect().width;
+    const nextRowHeight = state.element.getBoundingClientRect().height;
     const nextSlotWidth = state.measureItem.getBoundingClientRect().width;
 
-    if (!nextRowWidth || !nextSlotWidth) {
+    if (!nextRowWidth || !nextRowHeight || !nextSlotWidth) {
       return;
     }
 
     const rowChanged = Math.abs(nextRowWidth - state.rowWidth) >= MEASUREMENT_EPSILON;
+    const rowHeightChanged = Math.abs(nextRowHeight - state.rowHeight) >= MEASUREMENT_EPSILON;
     const slotChanged = Math.abs(nextSlotWidth - state.slotWidth) >= MEASUREMENT_EPSILON;
 
-    if (!force && !rowChanged && !slotChanged) {
+    if (!force && !rowChanged && !rowHeightChanged && !slotChanged) {
       return;
     }
 
     const previousSlotWidth = state.slotWidth;
     state.rowWidth = nextRowWidth;
+    state.rowHeight = nextRowHeight;
     state.slotWidth = nextSlotWidth;
     state.patternSpan = state.slotWidth * state.pattern.length;
     state.travel = previousSlotWidth > 0
@@ -310,34 +427,67 @@ function syncRowMeasurements(rowStates, force = false) {
   });
 }
 
-function syncHeroScale(root) {
+function syncRowVerticalLayout(rowStates, stage) {
+  if (!stage || !rowStates.length) {
+    return;
+  }
+
+  const stageHeight = stage.getBoundingClientRect().height;
   const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
+  const rowLift = getEdgeCaseRowLiftPx(viewportWidth, viewportHeight);
+  const rowStart = ((ROW_START_PERCENT / 100) * stageHeight) - rowLift;
+  const rowStep = getRowStepPx(stageHeight);
+  const rowPositions = computeRowTopPositions({
+    rowCount: rowStates.length,
+    rowStart,
+    rowStep
+  });
+
+  rowStates.forEach((state, index) => {
+    state.element.style.top = `${rowPositions[index]}px`;
+  });
+}
+
+function syncMarqueeSizing(root) {
+  const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
+  const metrics = getResponsiveMarqueeMetrics(viewportWidth, viewportHeight);
+
+  root.style.setProperty('--marquee-asset-width', metrics.assetWidth);
+  root.style.setProperty('--marquee-row-height', metrics.rowHeight);
+  root.style.setProperty('--marquee-row-gap', metrics.rowGap);
+
+  return metrics;
+}
+
+function syncHeroScale(root, metrics = null) {
+  const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
+  const responsiveMetrics = metrics || getResponsiveMarqueeMetrics(viewportWidth, viewportHeight);
+  const narrowPortraitScaleCap = getNarrowPortraitHeroScaleCap(viewportWidth, viewportHeight);
   const rootStyles = getComputedStyle(root);
-  const padding = parseFloat(rootStyles.getPropertyValue('--page-padding')) || 24;
-  const isMobileHeroLayout = viewportWidth < MOBILE_HERO_BREAKPOINT;
+  const heroLayout = document.querySelector('.hero_layout');
   const heroCopy = document.querySelector('.hero_copy');
-  const mobileHeroWidth = heroCopy
+  const heroLayoutStyles = heroLayout ? getComputedStyle(heroLayout) : null;
+  const horizontalPadding = parseFloat(rootStyles.getPropertyValue('--page-padding')) || 24;
+  const verticalPaddingTop = heroLayoutStyles ? parseFloat(heroLayoutStyles.paddingTop) || 24 : 24;
+  const verticalPaddingBottom = heroLayoutStyles ? parseFloat(heroLayoutStyles.paddingBottom) || 32 : 32;
+  const isCreditHiddenLayout = viewportWidth < MOBILE_HERO_BREAKPOINT;
+  const heroWidth = isCreditHiddenLayout && heroCopy
     ? Math.ceil(heroCopy.scrollWidth || heroCopy.getBoundingClientRect().width || HERO_CLUSTER_WIDTH)
     : HERO_CLUSTER_WIDTH;
-  const mobileHeroContentHeight = heroCopy
+  const heroHeight = isCreditHiddenLayout && heroCopy
     ? Math.ceil(heroCopy.scrollHeight || heroCopy.getBoundingClientRect().height || HERO_CLUSTER_HEIGHT)
     : HERO_CLUSTER_HEIGHT;
-  const mobileHeroHeight = mobileHeroContentHeight + MOBILE_HERO_BOTTOM_GAP;
-  const heroWidth = isMobileHeroLayout ? mobileHeroWidth : HERO_CLUSTER_WIDTH;
-  const heroHeight = isMobileHeroLayout ? mobileHeroHeight : HERO_CLUSTER_HEIGHT;
-  const availableWidth = Math.max(0, viewportWidth - (padding * 2));
-  const availableHeight = Math.max(0, viewportHeight - padding - 24);
+  const availableWidth = Math.max(0, viewportWidth - (horizontalPadding * 2));
+  const availableHeight = Math.max(0, viewportHeight - verticalPaddingTop - verticalPaddingBottom);
   const scale = Math.min(
-    1,
+    responsiveMetrics.heroMaxScale,
+    narrowPortraitScaleCap,
     availableWidth / heroWidth,
     availableHeight / heroHeight
   );
 
   const clampedScale = Math.max(HERO_MIN_SCALE, scale);
   root.style.setProperty('--hero-scale', String(clampedScale));
-  root.style.setProperty('--mobile-hero-width', `${mobileHeroWidth}px`);
-  root.style.setProperty('--mobile-hero-height', `${mobileHeroHeight}px`);
-  root.dataset.heroLayout = isMobileHeroLayout ? 'mobile' : 'default';
   root.dataset.heroCreditLayout = clampedScale <= HERO_COMPACT_CREDIT_SCALE ? 'compact' : 'default';
 }
 
@@ -383,8 +533,10 @@ function initMarqueeScene() {
 
   preloadAssets().finally(() => {
     syncViewportHeightVar();
-    syncHeroScale(root);
+    const metrics = syncMarqueeSizing(root);
+    syncHeroScale(root, metrics);
     syncRowMeasurements(rowStates, true);
+    syncRowVerticalLayout(rowStates, stage);
   });
 
   let resizeFrame = 0;
@@ -396,8 +548,10 @@ function initMarqueeScene() {
     resizeFrame = window.requestAnimationFrame(() => {
       resizeFrame = 0;
       syncViewportHeightVar();
-      syncHeroScale(root);
+      const metrics = syncMarqueeSizing(root);
+      syncHeroScale(root, metrics);
       syncRowMeasurements(rowStates);
+      syncRowVerticalLayout(rowStates, stage);
     });
   }
 
@@ -429,5 +583,18 @@ function initMarqueeScene() {
   window.requestAnimationFrame(animateRows);
 }
 
-syncViewportHeightVar();
-initMarqueeScene();
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    computeRowTopPositions,
+    getEdgeCaseRowLiftPx,
+    getNarrowPortraitHeroScaleCap,
+    getResponsiveMarqueeMetrics,
+    getRowStepPx,
+    resolveCssLengthToPx
+  };
+}
+
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  syncViewportHeightVar();
+  initMarqueeScene();
+}

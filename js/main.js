@@ -209,29 +209,6 @@ let bugReportStepsInput;
 let bugReportEmailInput;
 let appMain;
 let canvasViewport;
-let easterEggHint;
-let easterEggHintLabel;
-let easterEggOverlay;
-let easterEggCanvas;
-let easterEggLiveStatus;
-let easterEggCloseButton;
-let easterEggTouchButtons = [];
-let easterEggGame = null;
-let easterEggHotspotBounds = null;
-let easterEggHoldRaf = 0;
-let easterEggHoldState = {
-  pointerId: null,
-  startedAt: 0,
-  progress: 0,
-  active: false
-};
-let easterEggKeyBuffer = '';
-let easterEggKeyBufferTimer = null;
-let easterEggPreviousPlaybackState = true;
-let easterEggResumeAudio = false;
-let easterEggLastFocusedElement = null;
-let easterEggProfile = null;
-let easterEggRunState = null;
 const ARTEMIS_II_SPLASHDOWN_AT = Date.parse('2026-04-10T20:07:00-04:00');
 const ARTEMIS_CREDIT_LINKS = {
   reidWiseman: 'https://news.rpi.edu/2026/04/13/engineers-who-reached-moon-how-rpi-became-launchpad-stars',
@@ -312,6 +289,7 @@ window.animationTime = 0;
 let audioContext;
 let gainNode;
 let isAudioPlaying = false;
+let activeAudioPreviewType = null;
 let hasShownAudioHintToast = false;
 
 // Crossfader audio system - multiple simultaneous oscillators
@@ -627,15 +605,29 @@ let panOffset = { x: 0, y: 0 };
 let panTargetOffset = { x: 0, y: 0 };
 let panVelocity = { x: 0, y: 0 };
 let panAnimationFrame = 0;
+let panPointerId = null;
+let panPointerPosition = null;
+let panGestureHandlersBound = false;
+let pinchGestureHandlersBound = false;
+let browserZoomGuardsBound = false;
+let pinchTouchState = null;
+let safariGestureStartZoomLevel = null;
 let responsiveWorkspaceResizeObserver = null;
 let responsiveWorkspaceSyncFrame = 0;
 let workspaceResizeTransitionFrame = 0;
+let workspaceResizeTransitionTimeout = 0;
+let isWorkspaceResizeTransitionActive = false;
 let lastCanvasSize = { width: 0, height: 0 };
 let isPanDragging = false;
 let isPanningMode = false;
+let isCanvasPinching = false;
 let isAnimated = false;
 let lastHeaderPreviewMarkup = '';
 let lastHeaderPreviewUpdateTime = 0;
+const WAVEFORM_RENDER_MIN_POINTS = 240;
+const WAVEFORM_RENDER_MAX_POINTS = 1200;
+const WAVEFORM_RENDER_POINTS_PER_BAR_PIXEL = 2;
+const WAVEFORM_RENDER_POINTS_PER_CYCLE = 12;
 
 const PAN_DRAG_RESISTANCE = 0.42;
 const PAN_FOLLOW_EASE = 0.26;
@@ -643,6 +635,7 @@ const PAN_INERTIA_DECAY = 0.88;
 const PAN_INERTIA_STOP_THRESHOLD = 0.025;
 const PAN_SETTLE_THRESHOLD = 0.04;
 const PAN_EDGE_PADDING = 12;
+const TRACKPAD_PINCH_ZOOM_SENSITIVITY = 0.0025;
 
 const CIRCLES_GRID_ROWS = 2;
 const CIRCLES_GRID_LAYOUT = 'straight';
@@ -849,6 +842,58 @@ function getCurrentAudioPreviewType() {
   }
 }
 
+function getActiveAudioPreviewType() {
+  return isAudioPlaying ? activeAudioPreviewType : null;
+}
+
+function getWaveformRenderPointCount(barWidth, frequency) {
+  const safeBarWidth = Math.max(1, Number(barWidth) || REFERENCE_WIDTH);
+  const safeFrequency = Math.max(1, Math.round(Number(frequency) || 1));
+  const widthDrivenPoints = Math.ceil(safeBarWidth * WAVEFORM_RENDER_POINTS_PER_BAR_PIXEL);
+  const frequencyDrivenPoints = safeFrequency * WAVEFORM_RENDER_POINTS_PER_CYCLE;
+
+  return Math.max(
+    WAVEFORM_RENDER_MIN_POINTS,
+    Math.min(WAVEFORM_RENDER_MAX_POINTS, Math.max(widthDrivenPoints, frequencyDrivenPoints))
+  );
+}
+
+function generateWaveformValue(phase, type) {
+  const normalizedPhase = phase - Math.floor(phase);
+  const wrappedPhase = normalizedPhase < 0 ? normalizedPhase + 1 : normalizedPhase;
+
+  const sine = (Math.sin(wrappedPhase * 2 * Math.PI - Math.PI / 2) + 1) * 0.5;
+  const saw = wrappedPhase;
+  const square = wrappedPhase > 0.5 ? 1.0 : 0.0;
+  const pulse = wrappedPhase > 0.8 ? 1.0 : 0.0;
+
+  if (type < 1.0) {
+    return sine + (saw - sine) * type;
+  }
+
+  if (type < 2.0) {
+    const mix = type - 1.0;
+    return saw + (square - saw) * mix;
+  }
+
+  const mix = type - 2.0;
+  return square + (pulse - square) * mix;
+}
+
+function getWaveformEnvelopeSettings() {
+  return {
+    applyEnvelope: !!(waveformEnvelopeToggle && waveformEnvelopeToggle.checked),
+    envType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
+    envWaves: waveformEnvelopeWavesSlider
+      ? (typeof normalizeWaveformEnvelopeWaves === 'function'
+        ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
+        : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
+      : 1,
+    envCenter: waveformEnvelopeCenterSlider ? parseFloat(waveformEnvelopeCenterSlider.value) : 0,
+    bipolar: !!(waveformEnvelopeBipolarToggle && waveformEnvelopeBipolarToggle.checked)
+  };
+}
+
 function getAudioButtonConfig() {
   return [
     { type: 'binary', button: binaryAudioBtn, currentShader: 3 },
@@ -885,6 +930,7 @@ function resetAudioSequencePosition(type) {
 function togglePreviewAudio(type) {
   const currentType = getCurrentAudioPreviewType();
   if (!currentType || currentType !== type) return;
+  const activeType = getActiveAudioPreviewType();
 
   if (type === 'staff' && (!currentStaffNotes || currentStaffNotes.length === 0)) {
     showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
@@ -893,7 +939,9 @@ function togglePreviewAudio(type) {
 
   if (isAudioPlaying) {
     stopAudio();
-    return;
+    if (activeType === type) {
+      return;
+    }
   }
 
   if (type !== 'waveform') {
@@ -1696,6 +1744,10 @@ function syncResponsiveWorkspaceSizing() {
       nextHeight > 0 &&
       (lastCanvasSize.width !== nextWidth || lastCanvasSize.height !== nextHeight)
     ) {
+      if (isWorkspaceResizeTransitionActive) {
+        return;
+      }
+
       resizeCanvas(nextWidth, nextHeight);
       lastCanvasSize = { width: nextWidth, height: nextHeight };
       clampPanOffset();
@@ -1703,8 +1755,6 @@ function syncResponsiveWorkspaceSizing() {
     }
   }
 
-  updateEasterEggHotspotBounds();
-  resizeEasterEggCanvas();
 }
 
 function requestResponsiveWorkspaceSizing() {
@@ -1712,23 +1762,41 @@ function requestResponsiveWorkspaceSizing() {
   responsiveWorkspaceSyncFrame = requestAnimationFrame(syncResponsiveWorkspaceSizing);
 }
 
-function startWorkspaceResizeTransitionSync(duration = 450) {
+function finishWorkspaceResizeTransitionSync(options = {}) {
+  const shouldRequestSizing = options.requestSizing !== false;
+
   if (workspaceResizeTransitionFrame) {
     cancelAnimationFrame(workspaceResizeTransitionFrame);
+    workspaceResizeTransitionFrame = 0;
   }
 
-  const startedAt = performance.now();
-  const step = (now) => {
-    requestResponsiveWorkspaceSizing();
-    if (now - startedAt < duration) {
-      workspaceResizeTransitionFrame = requestAnimationFrame(step);
-      return;
-    }
-    workspaceResizeTransitionFrame = 0;
-    requestResponsiveWorkspaceSizing();
-  };
+  if (workspaceResizeTransitionTimeout) {
+    window.clearTimeout(workspaceResizeTransitionTimeout);
+    workspaceResizeTransitionTimeout = 0;
+  }
 
-  workspaceResizeTransitionFrame = requestAnimationFrame(step);
+  if (!isWorkspaceResizeTransitionActive) return;
+
+  isWorkspaceResizeTransitionActive = false;
+  if (shouldRequestSizing) {
+    requestResponsiveWorkspaceSizing();
+  }
+}
+
+function startWorkspaceResizeTransitionSync(duration = 450) {
+  finishWorkspaceResizeTransitionSync({ requestSizing: false });
+  isWorkspaceResizeTransitionActive = true;
+
+  workspaceResizeTransitionFrame = requestAnimationFrame(() => {
+    workspaceResizeTransitionFrame = 0;
+    syncViewportHeightVar();
+    syncSidebarToggleState();
+    syncMissionControlGrid();
+  });
+
+  workspaceResizeTransitionTimeout = window.setTimeout(() => {
+    finishWorkspaceResizeTransitionSync();
+  }, duration);
 }
 
 function setupResponsiveWorkspaceSizing() {
@@ -1899,7 +1967,7 @@ async function setup() {
   }
   if (zoomResetBtn) {
     zoomResetBtn.addEventListener('click', () => {
-      zoomLevel = DEFAULT_ZOOM_LEVEL;
+      setZoomLevel(DEFAULT_ZOOM_LEVEL);
       setPanOffset({ x: 0, y: 0 }, { immediate: true });
       if (zoomLevelDisplay) {
         zoomLevelDisplay.value = '100%';
@@ -1914,9 +1982,7 @@ async function setup() {
       let val = zoomLevelDisplay.value.replace('%', '');
       let num = parseFloat(val);
       if (!isNaN(num)) {
-        zoomLevel = displayPercentToZoomLevel(num);
-        clampPanOffset();
-        if (!isPlaying) redraw();
+        setZoomLevel(displayPercentToZoomLevel(num));
       }
       zoomLevelDisplay.value = zoomLevelToDisplayPercent(zoomLevel) + '%';
     };
@@ -2007,6 +2073,10 @@ async function setup() {
   graphScaleDisplay = document.getElementById('graph-scale-display');
   appMain = document.querySelector('.app-main');
   canvasViewport = document.querySelector('.canvas-viewport');
+  bindPanGestureHandlers();
+  bindCanvasPinchHandlers();
+  bindBrowserZoomGuards();
+  updatePanTouchAction();
   appSidebar = document.getElementById('app-sidebar');
   sidebarScroll = document.getElementById('sidebar-scroll');
   headerLogoPreview = document.getElementById('header-logo-preview');
@@ -2024,14 +2094,6 @@ async function setup() {
   bugReportDetailsInput = document.getElementById('bug-report-details');
   bugReportStepsInput = document.getElementById('bug-report-steps');
   bugReportEmailInput = document.getElementById('bug-report-email');
-  easterEggHint = document.getElementById('easter-egg-hint');
-  easterEggHintLabel = document.getElementById('easter-egg-hint-label');
-  easterEggOverlay = document.getElementById('easter-egg-overlay');
-  easterEggCanvas = document.getElementById('easter-egg-canvas');
-  easterEggLiveStatus = document.getElementById('easter-egg-live-status');
-  easterEggCloseButton = document.getElementById('easter-egg-close');
-  easterEggTouchButtons = Array.from(document.querySelectorAll('.easter-egg-touch-btn'));
-
   // Get save control references (globals declared at top so toggleSaveMenu can access them)
   saveButton = document.getElementById('save-button');
   saveButtonLabel = document.getElementById('save-button-label');
@@ -2048,6 +2110,9 @@ async function setup() {
   updateSidebarScrollFadeState();
   if (sidebarScroll) {
     sidebarScroll.addEventListener('scroll', updateSidebarScrollFadeState, { passive: true });
+  }
+  if (appSidebar) {
+    appSidebar.addEventListener('transitionend', handleSidebarTransitionEnd);
   }
 
   // Setup ruler sliders with display updates
@@ -2694,22 +2759,11 @@ async function setup() {
 
   setupLunarSplashdownCounter();
 
-  // Initialize the hidden retro rink experience.
-  setupEasterEggExperience();
-
   // Add global keyboard event listener for more reliable shift detection
   document.addEventListener('keydown', function (event) {
-    if (handleEasterEggGameKeydown(event)) {
-      return;
-    }
-
     // Only handle keyboard events on non-mobile devices
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
       return; // Skip keyboard shortcuts on mobile
-    }
-
-    if (handleEasterEggShortcut(event)) {
-      return;
     }
 
     const targetTag = event.target && event.target.tagName ? event.target.tagName : '';
@@ -2796,27 +2850,21 @@ async function setup() {
     }
   });
 
-  document.addEventListener('keyup', function (event) {
-    handleEasterEggGameKeyup(event);
-  });
+  const handleDocumentAudioDeactivation = function () {
+    if (!audioContext) return;
+    pauseAllAudioPlayback({ suspendContext: true });
+  };
 
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden && isAudioPlaying) {
-      stopAudio();
-    }
-
     if (document.hidden) {
-      releaseEasterEggControls();
+      handleDocumentAudioDeactivation();
     }
   });
 
-  window.addEventListener('blur', function () {
-    if (isAudioPlaying) {
-      stopAudio();
-    }
-
-    releaseEasterEggControls();
-  });
+  window.addEventListener('blur', handleDocumentAudioDeactivation);
+  window.addEventListener('pagehide', handleDocumentAudioDeactivation);
+  window.addEventListener('beforeunload', handleDocumentAudioDeactivation);
+  document.addEventListener('freeze', handleDocumentAudioDeactivation);
 }
 
 function handleBinaryInput() {
@@ -3033,7 +3081,6 @@ function toggleMobileMenu() {
   } else {
     // Desktop behavior (collapsible)
     appSidebar.classList.toggle('sidebar-collapsed');
-    requestResponsiveWorkspaceSizing();
     startWorkspaceResizeTransitionSync(460);
   }
 
@@ -3043,8 +3090,6 @@ function toggleMobileMenu() {
 function handleClickOutside(event) {
   // Only apply on mobile where sidebar overlays content
   if (window.innerWidth > 768) return;
-  if (isEasterEggActive()) return;
-
   // Don't close if clicking on the toggle button or inside the sidebar
   if (mobileMenuToggle && mobileMenuToggle.contains(event.target) ||
     appSidebar && appSidebar.contains(event.target)) {
@@ -3265,6 +3310,16 @@ function syncSidebarToggleState() {
 
   mobileMenuToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
   mobileMenuToggle.setAttribute('aria-label', isExpanded ? 'Close design controls' : 'Open design controls');
+}
+
+function handleSidebarTransitionEnd(event) {
+  if (!isWorkspaceResizeTransitionActive || !appSidebar) return;
+  if (event.target !== appSidebar) return;
+
+  const propertyName = event.propertyName || '';
+  if (!propertyName || propertyName === 'transform' || propertyName.startsWith('margin-')) {
+    finishWorkspaceResizeTransitionSync();
+  }
 }
 
 function handleStyleChange() {
@@ -3619,994 +3674,6 @@ function requestUpdate() {
   }
 }
 
-function getEasterEggHelpers() {
-  return window.RPIRinkRush || {};
-}
-
-function formatEasterEggScore(value, digits = 3) {
-  const helpers = getEasterEggHelpers();
-  if (typeof helpers.formatArcadeScore === 'function') {
-    return helpers.formatArcadeScore(value, digits);
-  }
-  return String(Math.max(0, Math.round(value || 0))).padStart(digits, '0');
-}
-
-function getEasterEggDifficulty(score) {
-  const helpers = getEasterEggHelpers();
-  if (typeof helpers.computeDifficulty === 'function') {
-    return helpers.computeDifficulty(score);
-  }
-  return { speed: 560, spawnEvery: 1.1, spawnJitter: 0.35, pickupEvery: 2.2, bulletDrain: 24 };
-}
-
-function getEasterEggRank(score, combo) {
-  const helpers = getEasterEggHelpers();
-  if (typeof helpers.scoreToRank === 'function') {
-    return helpers.scoreToRank(score, combo);
-  }
-  return combo >= 10 ? 'PUCKMAN LEGEND' : 'FRESH ICE';
-}
-
-function getEasterEggScoreboardExtension(score) {
-  const helpers = getEasterEggHelpers();
-  if (typeof helpers.getScoreboardExtension === 'function') {
-    return helpers.getScoreboardExtension(score);
-  }
-  return score > 999 ? 1 : 0;
-}
-
-function loadEasterEggProfile() {
-  const helpers = getEasterEggHelpers();
-  const defaults = helpers.DEFAULT_PROFILE || {
-    highScore: 0,
-    bestCombo: 0,
-    runs: 0,
-    totalPickups: 0
-  };
-  const key = helpers.STORAGE_KEY || 'rpi-rink-rush-profile';
-
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return { ...defaults };
-    const parsed = JSON.parse(raw);
-    return {
-      highScore: Math.max(0, parseInt(parsed.highScore, 10) || 0),
-      bestCombo: Math.max(0, parseInt(parsed.bestCombo, 10) || 0),
-      runs: Math.max(0, parseInt(parsed.runs, 10) || 0),
-      totalPickups: Math.max(0, parseInt(parsed.totalPickups, 10) || 0)
-    };
-  } catch (error) {
-    return { ...defaults };
-  }
-}
-
-function saveEasterEggProfile() {
-  const helpers = getEasterEggHelpers();
-  const key = helpers.STORAGE_KEY || 'rpi-rink-rush-profile';
-
-  try {
-    window.localStorage.setItem(key, JSON.stringify(easterEggProfile));
-  } catch (error) {
-    // Ignore local storage failures.
-  }
-}
-
-function createEasterEggRunState() {
-  return {
-    active: false,
-    phase: 'idle',
-    lastTime: 0,
-    score: 0,
-    displayScore: 0,
-    combo: 0,
-    bestCombo: 0,
-    meter: 66,
-    slowBlend: 0,
-    message: '',
-    spawnTimer: 0.8,
-    pickupTimer: 1.3,
-    worldTime: 0,
-    player: {
-      lift: 0,
-      velocity: 0,
-      jumpBuffer: 0,
-      duckBlend: 0
-    },
-    controls: {
-      duck: false,
-      bullet: false
-    },
-    obstacles: [],
-    pickups: [],
-    particles: []
-  };
-}
-
-function resetEasterEggRun() {
-  easterEggRunState = createEasterEggRunState();
-  easterEggRunState.active = true;
-  easterEggRunState.phase = 'boot';
-  easterEggRunState.message = 'READY';
-}
-
-function getEasterEggPlayerBox() {
-  const floorY = 15.5;
-  const standHeight = 11;
-  const duckHeight = 7;
-  const width = 10;
-  const x = 22;
-  const height = standHeight + (duckHeight - standHeight) * easterEggRunState.player.duckBlend;
-  return {
-    x,
-    y: floorY - easterEggRunState.player.lift - height,
-    width,
-    height
-  };
-}
-
-function spawnEasterEggObstacle() {
-  const roll = Math.random();
-  let type = 'puck';
-
-  if (roll > 0.82) {
-    type = 'beam';
-  } else if (roll > 0.56) {
-    type = 'post';
-  }
-
-  if (easterEggRunState.score > 420 && roll > 0.9) {
-    type = 'double';
-  }
-
-  let obstacle;
-  if (type === 'beam') {
-    obstacle = { type, x: 256, y: 2, width: 14, height: 3, speed: 0, closest: 999, passed: false };
-  } else if (type === 'post') {
-    obstacle = { type, x: 256, y: 4, width: 6, height: 11, speed: 0, closest: 999, passed: false };
-  } else if (type === 'double') {
-    obstacle = { type, x: 256, y: 0, width: 11, height: 15, speed: 0, closest: 999, passed: false, boxes: [{ x: 0, y: 0, width: 11, height: 4 }, { x: 0, y: 10, width: 11, height: 5 }] };
-  } else {
-    obstacle = { type, x: 256, y: 11, width: 7, height: 4, speed: 0, closest: 999, passed: false };
-  }
-
-  easterEggRunState.obstacles.push(obstacle);
-}
-
-function spawnEasterEggPickup() {
-  easterEggRunState.pickups.push({
-    x: 256,
-    y: Math.random() > 0.55 ? 5 : 9,
-    width: 4,
-    height: 4,
-    drift: Math.random() * Math.PI * 2
-  });
-}
-
-function addEasterEggParticles(x, y, color, count = 6) {
-  for (let index = 0; index < count; index += 1) {
-    easterEggRunState.particles.push({
-      x,
-      y,
-      vx: (Math.random() - 0.5) * 28,
-      vy: -Math.random() * 28,
-      life: 0.2 + Math.random() * 0.25,
-      size: 1 + Math.random() * 1.8,
-      color
-    });
-  }
-}
-
-function boxesOverlap(boxA, boxB) {
-  return boxA.x < boxB.x + boxB.width &&
-    boxA.x + boxA.width > boxB.x &&
-    boxA.y < boxB.y + boxB.height &&
-    boxA.y + boxA.height > boxB.y;
-}
-
-function updateEasterEggRun() {
-  if (!easterEggRunState || !easterEggRunState.active) return;
-
-  const now = millis() / 1000;
-  if (!easterEggRunState.lastTime) {
-    easterEggRunState.lastTime = now;
-    return;
-  }
-
-  const delta = Math.min(0.033, Math.max(0.001, now - easterEggRunState.lastTime));
-  easterEggRunState.lastTime = now;
-
-  if (easterEggRunState.phase === 'boot') {
-    easterEggRunState.worldTime += delta;
-    if (easterEggRunState.worldTime > 0.9) {
-      easterEggRunState.phase = 'running';
-      easterEggRunState.worldTime = 0;
-      easterEggRunState.message = 'GO';
-    }
-    return;
-  }
-
-  if (easterEggRunState.phase === 'gameover') {
-    easterEggRunState.displayScore += (easterEggRunState.score - easterEggRunState.displayScore) * 0.15;
-    easterEggRunState.slowBlend += (0 - easterEggRunState.slowBlend) * 0.15;
-    easterEggRunState.particles = easterEggRunState.particles.filter((particle) => {
-      particle.life -= delta;
-      particle.x += particle.vx * delta * 0.4;
-      particle.y += particle.vy * delta * 0.4;
-      particle.vy += 24 * delta;
-      return particle.life > 0;
-    });
-    return;
-  }
-
-  const difficulty = getEasterEggDifficulty(easterEggRunState.score);
-  const wantsBullet = easterEggRunState.controls.bullet && easterEggRunState.meter > 0;
-  const worldFactor = wantsBullet ? 0.42 : 1;
-  const playerFactor = wantsBullet ? 0.82 : 1;
-  const speed = difficulty.speed / 10.5;
-
-  easterEggRunState.slowBlend += ((wantsBullet ? 1 : 0) - easterEggRunState.slowBlend) * 0.14;
-  easterEggRunState.score += delta * 18 * (1 + easterEggRunState.combo * 0.05);
-  easterEggRunState.displayScore += (easterEggRunState.score - easterEggRunState.displayScore) * 0.22;
-  easterEggRunState.player.jumpBuffer = Math.max(0, easterEggRunState.player.jumpBuffer - delta);
-  easterEggRunState.player.duckBlend += ((easterEggRunState.controls.duck ? 1 : 0) - easterEggRunState.player.duckBlend) * 0.25;
-
-  if (wantsBullet) {
-    easterEggRunState.meter = Math.max(0, easterEggRunState.meter - difficulty.bulletDrain * delta);
-  }
-
-  if (easterEggRunState.player.lift <= 0.001 && easterEggRunState.player.jumpBuffer > 0) {
-    easterEggRunState.player.velocity = 48;
-    easterEggRunState.player.jumpBuffer = 0;
-    addEasterEggParticles(24, 15.5, '#ffffff', 5);
-  }
-
-  easterEggRunState.player.velocity -= 120 * delta * playerFactor;
-  easterEggRunState.player.lift += easterEggRunState.player.velocity * delta * playerFactor;
-  if (easterEggRunState.player.lift <= 0) {
-    easterEggRunState.player.lift = 0;
-    easterEggRunState.player.velocity = 0;
-  }
-
-  easterEggRunState.spawnTimer -= delta * worldFactor;
-  easterEggRunState.pickupTimer -= delta * (wantsBullet ? 0.72 : 1);
-
-  if (easterEggRunState.spawnTimer <= 0) {
-    spawnEasterEggObstacle();
-    easterEggRunState.spawnTimer = difficulty.spawnEvery + Math.random() * difficulty.spawnJitter;
-  }
-
-  if (easterEggRunState.pickupTimer <= 0) {
-    spawnEasterEggPickup();
-    easterEggRunState.pickupTimer = difficulty.pickupEvery * 0.55;
-  }
-
-  const playerBox = getEasterEggPlayerBox();
-
-  easterEggRunState.obstacles = easterEggRunState.obstacles.filter((obstacle) => {
-    obstacle.x -= speed * delta * worldFactor;
-    const boxes = obstacle.boxes
-      ? obstacle.boxes.map((box) => ({ x: obstacle.x + box.x, y: obstacle.y + box.y, width: box.width, height: box.height }))
-      : [{ x: obstacle.x, y: obstacle.y, width: obstacle.width, height: obstacle.height }];
-
-    boxes.forEach((box) => {
-      const dx = Math.abs((box.x + box.width * 0.5) - (playerBox.x + playerBox.width * 0.5));
-      const dy = Math.abs((box.y + box.height * 0.5) - (playerBox.y + playerBox.height * 0.5));
-      obstacle.closest = Math.min(obstacle.closest, dx + dy);
-    });
-
-    if (boxes.some((box) => boxesOverlap(playerBox, box))) {
-      easterEggRunState.phase = 'gameover';
-      easterEggRunState.message = 'RESET';
-      easterEggProfile.highScore = Math.max(easterEggProfile.highScore, Math.floor(easterEggRunState.score));
-      easterEggProfile.bestCombo = Math.max(easterEggProfile.bestCombo, easterEggRunState.bestCombo);
-      easterEggProfile.runs += 1;
-      saveEasterEggProfile();
-      addEasterEggParticles(playerBox.x + 5, playerBox.y + 5, '#ff4264', 10);
-      return false;
-    }
-
-    if (!obstacle.passed && obstacle.x + obstacle.width < playerBox.x) {
-      obstacle.passed = true;
-      if (obstacle.closest < 7) {
-        easterEggRunState.combo += 1;
-        easterEggRunState.bestCombo = Math.max(easterEggRunState.bestCombo, easterEggRunState.combo);
-        easterEggRunState.meter = Math.min(100, easterEggRunState.meter + 8);
-        easterEggRunState.score += 18;
-      } else {
-        easterEggRunState.combo = 0;
-      }
-    }
-
-    return obstacle.x + obstacle.width > -16;
-  });
-
-  easterEggRunState.pickups = easterEggRunState.pickups.filter((pickup) => {
-    pickup.x -= speed * delta * worldFactor;
-    pickup.y += Math.sin(now * 8 + pickup.drift) * delta * 2.8;
-    const pickupBox = { x: pickup.x, y: pickup.y, width: pickup.width, height: pickup.height };
-    if (boxesOverlap(playerBox, pickupBox)) {
-      easterEggRunState.score += 24;
-      easterEggRunState.combo += 1;
-      easterEggRunState.bestCombo = Math.max(easterEggRunState.bestCombo, easterEggRunState.combo);
-      easterEggRunState.meter = Math.min(100, easterEggRunState.meter + 14);
-      easterEggProfile.totalPickups += 1;
-      addEasterEggParticles(pickup.x + 2, pickup.y + 2, '#9fe7ff', 7);
-      return false;
-    }
-    return pickup.x + pickup.width > -12;
-  });
-
-  easterEggRunState.particles = easterEggRunState.particles.filter((particle) => {
-    particle.life -= delta;
-    particle.x += particle.vx * delta * (wantsBullet ? 0.55 : 1);
-    particle.y += particle.vy * delta * (wantsBullet ? 0.55 : 1);
-    particle.vy += 42 * delta;
-    return particle.life > 0;
-  });
-}
-
-function drawEasterEggPixelSprite(rows, x, y, pixelSize, ink, accent = null, eye = null) {
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
-    const row = rows[rowIndex];
-    for (let columnIndex = 0; columnIndex < row.length; columnIndex += 1) {
-      const cell = row[columnIndex];
-      if (cell === '0') continue;
-
-      if (cell === '2' && accent !== null) {
-        fill(accent);
-      } else if (cell === '3' && eye !== null) {
-        fill(eye);
-      } else {
-        fill(ink);
-      }
-
-      rect(x + columnIndex * pixelSize, y + rowIndex * pixelSize, pixelSize, pixelSize);
-    }
-  }
-}
-
-function drawEasterEggCloud(x, y, ink, alpha = 70) {
-  noFill();
-  stroke(ink, alpha);
-  strokeWeight(0.65);
-  beginShape();
-  vertex(x, y + 2);
-  bezierVertex(x + 1, y - 0.5, x + 4, y - 0.5, x + 5, y + 2);
-  bezierVertex(x + 5.6, y + 0.5, x + 8, y + 0.2, x + 8.6, y + 2);
-  vertex(x + 11, y + 2);
-  endShape();
-  noStroke();
-}
-
-function drawEasterEggRunInBar(barWidth, barHeight) {
-  if (!easterEggGame || !easterEggGame.active) return false;
-
-  const game = easterEggGame;
-  const stadiumHeight = barHeight * 0.84;
-  const stadiumTop = -stadiumHeight;
-  const boardY = -2.2;
-  const boardHeight = 3.1;
-  const scoreboardWidth = barWidth * 0.16;
-  const scoreboardHeight = stadiumHeight * 0.9;
-  const scoreboardX = barWidth * 0.5 - scoreboardWidth * 0.5;
-  const scoreText = formatEasterEggScore(game.displayScore || game.score || 0, 4);
-  const bestText = formatEasterEggScore((game.profile && game.profile.highScore) || 0, 4);
-  const worldScale = barWidth / (game.width * 1.68);
-  const worldShift = 0;
-  const runnerGroundY = barHeight - 3.1;
-  const jumpLift = game.player ? game.player.lift * 0.25 : 0;
-  const ducking = !!(game.player && game.player.duckBlend > 0.45);
-  const jumping = !!(game.player && game.player.lift > 2);
-  const runFrame = floor((game.worldTime || game.elapsed || 0) * 10) % 2;
-
-  noStroke();
-
-  fill('#56626e');
-  rect(0, stadiumTop, barWidth, stadiumHeight);
-  fill('#72808d');
-  rect(0, stadiumTop + 1.1, barWidth, 1.4);
-  fill('#3f4750');
-  rect(0, stadiumTop + 2.5, barWidth, 1.2);
-
-  fill('#8ea0ad');
-  rect(0, stadiumTop + 3.7, scoreboardX - 1.8, 7.9);
-  rect(scoreboardX + scoreboardWidth + 1.8, stadiumTop + 3.7, barWidth - (scoreboardX + scoreboardWidth + 1.8), 7.9);
-
-  const crowdBands = [
-    { y: stadiumTop + 4.2, h: 6.9, seed: 0.9 },
-    { y: stadiumTop + 4.6, h: 6.3, seed: 1.7 }
-  ];
-
-  crowdBands.forEach((band) => {
-    for (let x = 2; x < barWidth - 2; x += 1.6) {
-      if (x > scoreboardX - 2 && x < scoreboardX + scoreboardWidth + 2) continue;
-      const sway = sin((x * 0.18) + (game.distance || 0) * 0.03 + band.seed);
-      const bodyTop = band.y + ((floor(x) % 3) * 0.4);
-      fill(sway > 0.45 ? '#d24a48' : (sway < -0.35 ? '#384858' : '#5a6977'));
-      rect(x, bodyTop + 1.2, 1.1, band.h - 1.4);
-      fill('#d2b48c');
-      rect(x + 0.1, bodyTop, 0.9, 1.3);
-    }
-  });
-
-  stroke('#d9e1e7');
-  strokeWeight(0.6);
-  line(0, boardY, scoreboardX - 1.2, boardY);
-  line(scoreboardX + scoreboardWidth + 1.2, boardY, barWidth, boardY);
-  noStroke();
-
-  fill('#1d2227');
-  rect(scoreboardX, stadiumTop + 0.6, scoreboardWidth, scoreboardHeight);
-  fill('#2f363d');
-  rect(scoreboardX, stadiumTop + 1.2, scoreboardWidth, 1.1);
-  fill('#f5f5f5');
-  textFont('RPIGeistMono');
-  textAlign(CENTER, TOP);
-  textSize(4.2);
-  text('PUCK RUNNER', scoreboardX + scoreboardWidth * 0.5, stadiumTop + 1.8);
-  textSize(2.4);
-  textAlign(LEFT, TOP);
-  text('SCORE', scoreboardX + 2.4, stadiumTop + 6.5);
-  text('HIGH', scoreboardX + scoreboardWidth * 0.58, stadiumTop + 6.5);
-  textSize(4.7);
-  text(scoreText, scoreboardX + 2.4, stadiumTop + 9.2);
-  text(bestText, scoreboardX + scoreboardWidth * 0.58, stadiumTop + 9.2);
-
-  fill('#f7fbff');
-  rect(0, 0, barWidth, barHeight);
-  fill('#e5f2fa');
-  rect(0, 1.2, barWidth, barHeight - 1.2);
-  fill('#d7ebf7');
-  rect(0, 6.5, barWidth, 4.2);
-  fill('#c8e0f1');
-  rect(0, 12.8, barWidth, barHeight - 12.8);
-
-  fill('#c3322c');
-  rect(0, boardY + 0.2, barWidth, 0.45);
-  fill('#e7c64a');
-  rect(0, boardY + boardHeight - 0.55, barWidth, 0.55);
-  fill('#d6001c');
-  rect(barWidth * 0.499, 0, 0.9, barHeight);
-
-  stroke('#5aa0c8');
-  strokeWeight(0.5);
-  noFill();
-  ellipse(barWidth * 0.2, barHeight * 0.56, 22, 12);
-  ellipse(barWidth * 0.8, barHeight * 0.56, 22, 12);
-  noStroke();
-
-  const runnerX = game.playerX * worldScale + worldShift;
-  const runnerY = runnerGroundY - jumpLift - (ducking ? 6.5 : 8.4);
-  const jumpSprite = [
-    '00022222000',
-    '00211111200',
-    '02111111120',
-    '21113131112',
-    '21111111112',
-    '02111111120',
-    '00211111200',
-    '00001100000',
-    '00010001000'
-  ];
-  const duckSprite = [
-    '00022220000',
-    '00211112000',
-    '02111111200',
-    '21113111120',
-    '21111111120',
-    '02111111200',
-    '00011110000'
-  ];
-  const runSpriteA = [
-    '00022222000',
-    '00211111200',
-    '02111111120',
-    '21113131112',
-    '21111111112',
-    '02111111120',
-    '00211111200',
-    '00011001000',
-    '00100000100'
-  ];
-  const runSpriteB = [
-    '00022222000',
-    '00211111200',
-    '02111111120',
-    '21113131112',
-    '21111111112',
-    '02111111120',
-    '00211111200',
-    '00001110000',
-    '00010000100'
-  ];
-  drawEasterEggPixelSprite(
-    ducking ? duckSprite : (jumping ? jumpSprite : (runFrame === 0 ? runSpriteA : runSpriteB)),
-    round(runnerX),
-    round(runnerY),
-    1,
-    color('#111111'),
-    color('#d8241f'),
-    color('#ffffff')
-  );
-
-  if (!jumping) {
-    fill('#111111');
-    rect(runnerX + 9, runnerGroundY - 1.4, 11.5, 0.95);
-    fill('#6d5329');
-    rect(runnerX + 19.6, runnerGroundY - 1.55, 3.6, 1.1);
-  }
-
-  const obstacleBaseY = barHeight - 2.1;
-  const obstacleScaleY = 0.25;
-  (game.obstacles || []).forEach((obstacle) => {
-    const x = obstacle.x * worldScale + worldShift;
-    if (x > barWidth + 30 || x < -30) return;
-
-    if (obstacle.type === 'puck') {
-      fill('#6c4e26');
-      rect(x, obstacleBaseY - 1.2, 12.5, 0.95);
-      fill('#1b1b1b');
-      rect(x + 10.6, obstacleBaseY - 1.65, 2.4, 1.85);
-      fill('#c82722');
-      rect(x + 5.8, obstacleBaseY - 1.15, 2.4, 0.4);
-    } else if (obstacle.type === 'check') {
-      fill('#e7d6ab');
-      rect(x + 0.5, obstacleBaseY - 5.2, 6.4, 4.8);
-      fill('#111111');
-      rect(x + 4.6, obstacleBaseY - 4.6, 3.6, 3.6);
-      fill('#d8241f');
-      rect(x + 1.6, obstacleBaseY - 4.8, 1.4, 4);
-    } else if (obstacle.type === 'stick') {
-      fill('#111111');
-      rect(x, obstacleBaseY - 9.5, 14.5, 1.2);
-      fill('#6c4e26');
-      rect(x + 13.2, obstacleBaseY - 12.8, 1.3, 4.5);
-      fill('#d8241f');
-      rect(x + 9.5, obstacleBaseY - 9.35, 2.4, 0.35);
-    } else if (obstacle.type === 'split') {
-      fill('#d9dde2');
-      rect(x + 1, obstacleBaseY - 8.2, 8.4, 0.9);
-      rect(x + 1, obstacleBaseY - 8.2, 0.9, 7.2);
-      rect(x + 8.5, obstacleBaseY - 8.2, 0.9, 7.2);
-      stroke('#c81f1f');
-      strokeWeight(0.7);
-      line(x + 9.1, obstacleBaseY - 8.2, x + 12.1, obstacleBaseY - 12.2);
-      line(x + 12.1, obstacleBaseY - 12.2, x + 12.1, obstacleBaseY - 1.2);
-      noStroke();
-    }
-  });
-
-  (game.pickups || []).forEach((pickup) => {
-    const x = pickup.x * worldScale + worldShift;
-    const y = obstacleBaseY - (pickup.y * obstacleScaleY) + 2;
-    fill('#d8241f');
-    rect(x + 1, y, 1, 4);
-    rect(x, y + 1, 4, 1);
-    fill('#ffffff');
-    rect(x + 1, y + 1, 1, 1);
-  });
-
-  (game.particles || []).forEach((particle) => {
-    const x = runnerX + (particle.x - game.playerX) * 0.06;
-    const y = obstacleBaseY - (particle.y - (game.playerFloorY || 0)) * 0.1;
-    fill(color(particle.color || '#d8241f'));
-    rect(x, y, 0.8, 0.8);
-  });
-
-  fill('#a31d1b');
-  textAlign(CENTER, TOP);
-  textSize(5.1);
-  text('R P I  E N G I N E E R S', barWidth * 0.5, -0.35);
-
-  if (game.phase === 'boot' || game.phase === 'gameover') {
-    fill('#ffffff');
-    textSize(3.2);
-    text(game.phase === 'boot' ? 'GET READY' : 'SPACE TO RETRY', barWidth * 0.5, stadiumTop + 13.6);
-  }
-
-  return true;
-}
-
-function isTextFieldElement(element) {
-  if (!element) return false;
-  const tagName = element.tagName ? element.tagName.toUpperCase() : '';
-  return tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT' || element.isContentEditable;
-}
-
-function isEasterEggActive() {
-  return !!(easterEggGame && easterEggGame.active);
-}
-
-function setEasterEggHintProgress(progress) {
-  if (!easterEggHint) return;
-  const clampedProgress = Math.max(0, Math.min(1, progress || 0));
-  easterEggHint.style.setProperty('--hold-progress', clampedProgress.toFixed(3));
-}
-
-function setEasterEggHintState(visible, arming = false, label = 'HOLD TO ENTER') {
-  if (!easterEggHint) return;
-
-  if (!visible) {
-    easterEggHint.classList.remove('is-visible', 'is-arming');
-    setEasterEggHintProgress(0);
-    if (easterEggHintLabel) {
-      easterEggHintLabel.textContent = label;
-    }
-    return;
-  }
-
-  if (isEasterEggActive() || isPanningMode) return;
-
-  easterEggHint.classList.toggle('is-visible', !!visible);
-  easterEggHint.classList.toggle('is-arming', !!arming);
-
-  if (easterEggHintLabel) {
-    easterEggHintLabel.textContent = label;
-  }
-}
-
-function getEasterEggBarBounds() {
-  if (!appMain) return null;
-
-  const appWidth = appMain.clientWidth || 0;
-  const appHeight = appMain.clientHeight || 0;
-  if (!appWidth || !appHeight) return null;
-
-  const responsiveLogoScale = getResponsiveLogoScale(appWidth, appHeight);
-  const actualWidth = REFERENCE_WIDTH * responsiveLogoScale * zoomLevel;
-  const actualHeight = REFERENCE_BAR_HEIGHT * responsiveLogoScale * zoomLevel;
-  const actualLeft =
-    appWidth / 2 + responsiveLogoScale * (panOffset.x + zoomLevel * (-REFERENCE_WIDTH / 2));
-  const actualTop =
-    appHeight / 2 + responsiveLogoScale * (panOffset.y + zoomLevel * (LOGO_VERTICAL_OFFSET + REFERENCE_BAR_Y));
-  const paddingX = Math.max(18, actualHeight * 1.4);
-  const paddingY = Math.max(14, actualHeight * 1.7);
-
-  return {
-    left: actualLeft - paddingX,
-    top: actualTop - paddingY,
-    width: actualWidth + paddingX * 2,
-    height: actualHeight + paddingY * 2,
-    actualLeft,
-    actualTop,
-    actualWidth,
-    actualHeight,
-    hintX: actualLeft + actualWidth / 2,
-    hintY: actualTop - Math.max(30, actualHeight * 2.1)
-  };
-}
-
-function updateEasterEggHotspotBounds() {
-  easterEggHotspotBounds = getEasterEggBarBounds();
-  if (!easterEggHotspotBounds || !easterEggHint) return;
-
-  easterEggHint.style.left = `${easterEggHotspotBounds.hintX}px`;
-  easterEggHint.style.top = `${easterEggHotspotBounds.hintY}px`;
-}
-
-function isPointInEasterEggHotspot(clientX, clientY) {
-  if (!easterEggHotspotBounds || !appMain) return false;
-  const appRect = appMain.getBoundingClientRect();
-  const localX = clientX - appRect.left;
-  const localY = clientY - appRect.top;
-
-  return localX >= easterEggHotspotBounds.left &&
-    localX <= easterEggHotspotBounds.left + easterEggHotspotBounds.width &&
-    localY >= easterEggHotspotBounds.top &&
-    localY <= easterEggHotspotBounds.top + easterEggHotspotBounds.height;
-}
-
-function cancelEasterEggHold(keepVisible = false) {
-  if (easterEggHoldRaf) {
-    cancelAnimationFrame(easterEggHoldRaf);
-    easterEggHoldRaf = 0;
-  }
-
-  easterEggHoldState.pointerId = null;
-  easterEggHoldState.startedAt = 0;
-  easterEggHoldState.progress = 0;
-  easterEggHoldState.active = false;
-
-  if (keepVisible) {
-    setEasterEggHintState(true, false, 'HOLD TO ENTER');
-  } else if (easterEggHint) {
-    easterEggHint.classList.remove('is-arming');
-    setEasterEggHintProgress(0);
-  }
-}
-
-function runEasterEggHoldFrame(timestamp) {
-  if (!easterEggHoldState.active) return;
-
-  const progress = Math.max(0, Math.min(1, (timestamp - easterEggHoldState.startedAt) / 900));
-  easterEggHoldState.progress = progress;
-  setEasterEggHintProgress(progress);
-
-  if (easterEggHintLabel) {
-    easterEggHintLabel.textContent = `THAWING ${Math.round(progress * 100)}%`;
-  }
-
-  if (progress >= 1) {
-    cancelEasterEggHold(false);
-    openEasterEggExperience('hold');
-    return;
-  }
-
-  easterEggHoldRaf = requestAnimationFrame(runEasterEggHoldFrame);
-}
-
-function beginEasterEggHold(pointerId) {
-  if (isEasterEggActive() || isPanningMode) return;
-
-  cancelEasterEggHold(true);
-  easterEggHoldState.pointerId = pointerId;
-  easterEggHoldState.startedAt = performance.now();
-  easterEggHoldState.progress = 0;
-  easterEggHoldState.active = true;
-  setEasterEggHintState(true, true, 'THAWING 0%');
-  easterEggHoldRaf = requestAnimationFrame(runEasterEggHoldFrame);
-}
-
-function handleEasterEggPointerMove(event) {
-  if (!appMain || isEasterEggActive() || isPanningMode) {
-    setEasterEggHintState(false);
-    return;
-  }
-
-  updateEasterEggHotspotBounds();
-  const inside = isPointInEasterEggHotspot(event.clientX, event.clientY);
-
-  if (inside && !easterEggHoldState.active) {
-    setEasterEggHintState(true, false, 'HOLD TO ENTER');
-  } else if (!inside && !easterEggHoldState.active) {
-    setEasterEggHintState(false);
-  } else if (!inside && easterEggHoldState.active && easterEggHoldState.pointerId === event.pointerId) {
-    cancelEasterEggHold(false);
-    setEasterEggHintState(false);
-  }
-}
-
-function handleEasterEggPointerDown(event) {
-  if (isEasterEggActive() || isPanningMode) return;
-
-  updateEasterEggHotspotBounds();
-  if (!isPointInEasterEggHotspot(event.clientX, event.clientY)) return;
-
-  event.preventDefault();
-  beginEasterEggHold(event.pointerId);
-}
-
-function handleEasterEggPointerUp(event) {
-  if (!easterEggHoldState.active) return;
-  if (easterEggHoldState.pointerId !== null && event.pointerId !== easterEggHoldState.pointerId) return;
-
-  const shouldStayVisible = isPointInEasterEggHotspot(event.clientX, event.clientY);
-  cancelEasterEggHold(shouldStayVisible);
-  if (!shouldStayVisible) {
-    setEasterEggHintState(false);
-  }
-}
-
-function handleEasterEggPointerLeave() {
-  if (easterEggHoldState.active) {
-    cancelEasterEggHold(false);
-  }
-  setEasterEggHintState(false);
-}
-
-function resizeEasterEggCanvas() {
-  return;
-}
-
-function setEasterEggScoreboardVisibility(active) {
-  if (workspaceDefaultControls) {
-    workspaceDefaultControls.hidden = !!active;
-  }
-  if (easterEggScoreboard) {
-    easterEggScoreboard.hidden = !active;
-  }
-}
-
-function handleEasterEggGameStateChange(state) {
-  const safeState = state || {};
-  const score = formatEasterEggScore(safeState.displayScore || safeState.score || 0, 4);
-  const best = formatEasterEggScore(safeState.highScore || 0, 4);
-  const combo = formatEasterEggScore(safeState.combo || 0, 2);
-  const status = !safeState.active
-    ? 'Ready'
-    : (safeState.phase === 'boot'
-      ? (safeState.message || 'Rink warming up')
-      : (safeState.gameOver ? 'Press space to retry' : (safeState.rank || 'Skating')));
-  const meter = Math.max(0, Math.min(100, Math.round(safeState.meter || 0)));
-
-  if (easterEggScoreValue) easterEggScoreValue.textContent = score;
-  if (easterEggBestValue) easterEggBestValue.textContent = best;
-  if (easterEggComboValue) easterEggComboValue.textContent = combo;
-  if (easterEggStatusValue) easterEggStatusValue.textContent = status;
-  if (easterEggMeterFill) easterEggMeterFill.style.width = `${meter}%`;
-  if (easterEggLiveStatus) easterEggLiveStatus.textContent = status;
-  if (easterEggLaunchButton) {
-    easterEggLaunchButton.textContent = safeState.active ? 'Exit Rink Rush' : 'Activate Rink Rush';
-  }
-
-  return safeState;
-}
-
-function releaseEasterEggControls() {
-  if (!easterEggGame) return;
-  easterEggGame.setControl('duck', false);
-  easterEggGame.setControl('bullet', false);
-}
-
-function openEasterEggExperience(source = 'secret') {
-  if (isEasterEggActive() || !easterEggGame) return;
-
-  easterEggLastFocusedElement = document.activeElement;
-  easterEggPreviousPlaybackState = isPlaying;
-  easterEggResumeAudio = isAudioPlaying;
-
-  stopAudio();
-  document.body.classList.add('easter-egg-active');
-  setEasterEggScoreboardVisibility(true);
-  easterEggGame.open(source);
-  loop();
-}
-
-function closeEasterEggExperience() {
-  if (!isEasterEggActive() || !easterEggGame) return;
-
-  releaseEasterEggControls();
-  easterEggGame.close();
-  document.body.classList.remove('easter-egg-active');
-  setEasterEggScoreboardVisibility(false);
-  handleEasterEggGameStateChange({
-    active: false,
-    phase: 'idle',
-    displayScore: 0,
-    score: 0,
-    combo: 0,
-    meter: 0,
-    highScore: easterEggGame.profile ? easterEggGame.profile.highScore : 0
-  });
-
-  if (easterEggPreviousPlaybackState) {
-    loop();
-  } else {
-    noLoop();
-    redraw();
-  }
-
-  if (easterEggResumeAudio && styleSupportsAudio(styleSelect ? styleSelect.value : 'solid')) {
-    startAudio();
-  }
-  easterEggResumeAudio = false;
-  if (easterEggLastFocusedElement && document.body.contains(easterEggLastFocusedElement)) {
-    easterEggLastFocusedElement.focus();
-  }
-}
-
-function setupEasterEggTouchControls() {
-  return;
-}
-
-function setupEasterEggExperience() {
-  if (!appMain) return;
-
-  easterEggProfile = loadEasterEggProfile();
-  if (typeof window.RPIRinkRush === 'undefined' || typeof window.RPIRinkRush.RinkRushGame !== 'function') {
-    return;
-  }
-
-  easterEggGame = new window.RPIRinkRush.RinkRushGame(null, {
-    audio: true,
-    onStateChange: handleEasterEggGameStateChange
-  });
-  setEasterEggScoreboardVisibility(false);
-  handleEasterEggGameStateChange({
-    active: false,
-    phase: 'idle',
-    displayScore: 0,
-    score: 0,
-    combo: 0,
-    meter: 0,
-    highScore: easterEggGame.profile ? easterEggGame.profile.highScore : 0
-  });
-
-  if (easterEggLaunchButton) {
-    easterEggLaunchButton.addEventListener('click', function () {
-      if (isEasterEggActive()) {
-        closeEasterEggExperience();
-      } else {
-        openEasterEggExperience('sidebar');
-      }
-    });
-  }
-}
-
-function handleEasterEggShortcut(event) {
-  if (isEasterEggActive() || event.ctrlKey || event.metaKey || event.altKey) return false;
-  if (isTextFieldElement(document.activeElement)) return false;
-  if (!event.key || event.key.length !== 1) return false;
-
-  const character = event.key.toUpperCase().replace(/[^A-Z]/g, '');
-  if (!character) return false;
-
-  easterEggKeyBuffer = (easterEggKeyBuffer + character).slice(-8);
-  if (easterEggKeyBufferTimer) {
-    clearTimeout(easterEggKeyBufferTimer);
-  }
-  easterEggKeyBufferTimer = setTimeout(() => {
-    easterEggKeyBuffer = '';
-  }, 1200);
-
-  if (!easterEggKeyBuffer.endsWith('PUCK')) {
-    return false;
-  }
-
-  event.preventDefault();
-  easterEggKeyBuffer = '';
-  if (typeof Toast !== 'undefined' && Toast && typeof Toast.show === 'function') {
-    Toast.show('Secret rink unlocked.', 'success');
-  }
-  openEasterEggExperience('sequence');
-  return true;
-}
-
-function handleEasterEggGameKeydown(event) {
-  if (!isEasterEggActive() || !easterEggGame) return false;
-
-  switch (event.code) {
-    case 'Escape':
-      event.preventDefault();
-      closeEasterEggExperience();
-      return true;
-    case 'ArrowUp':
-    case 'KeyW':
-    case 'Space':
-      event.preventDefault();
-      if (!event.repeat) {
-        easterEggGame.setControl('jump', true);
-      }
-      return true;
-    case 'ArrowDown':
-    case 'KeyS':
-      event.preventDefault();
-      easterEggGame.setControl('duck', true);
-      return true;
-    case 'ShiftLeft':
-    case 'ShiftRight':
-      event.preventDefault();
-      easterEggGame.setControl('bullet', true);
-      return true;
-    case 'Enter':
-    case 'KeyR':
-      event.preventDefault();
-      if (easterEggGame.isGameOver()) {
-        easterEggGame.restart();
-      }
-      return true;
-    default:
-      return false;
-  }
-}
-
-function handleEasterEggGameKeyup(event) {
-  if (!isEasterEggActive() || !easterEggGame) return false;
-
-  switch (event.code) {
-    case 'ArrowDown':
-    case 'KeyS':
-      easterEggGame.setControl('duck', false);
-      return true;
-    case 'ShiftLeft':
-    case 'ShiftRight':
-      easterEggGame.setControl('bullet', false);
-      return true;
-    default:
-      return false;
-  }
-}
-
 function styleSupportsAudio(style) {
   return style === 'binary' || style === 'ticker' || style === 'waveform' || style === 'morse' || style === 'music';
 }
@@ -4618,7 +3685,7 @@ function showAudioToast(message, type = 'info') {
 }
 
 function updateAudioControlsUI() {
-  const activeType = getCurrentAudioPreviewType();
+  const activeType = getActiveAudioPreviewType();
   const staffPreviewDisabled = !currentStaffNotes || currentStaffNotes.length === 0;
 
   getAudioButtonConfig().forEach(({ type, button, currentShader: shaderId }) => {
@@ -5244,6 +4311,12 @@ async function startAudio() {
   }
 
   try {
+    const requestedType = getCurrentAudioPreviewType();
+    if (!requestedType) {
+      updateAudioControlsUI();
+      return;
+    }
+
     // Resume audio context if suspended (required by browsers)
     if (audioContext.state === 'suspended') {
       await audioContext.resume();
@@ -5255,21 +4328,24 @@ async function startAudio() {
       return;
     }
 
-    if (currentShader === 4) {
+    if (requestedType === 'waveform') {
       startWaveformAudio();
-    } else if (currentShader === 3) {
+    } else if (requestedType === 'binary') {
       startSequenceAudio('binary');
-    } else if (currentShader === 7) {
+    } else if (requestedType === 'morse') {
       startSequenceAudio('morse');
-    } else if (currentShader === 2) {
+    } else if (requestedType === 'ticker') {
       startSequenceAudio('ticker');
-    } else if (currentShader === 10) {
+    } else if (requestedType === 'staff') {
       if (!currentStaffNotes || currentStaffNotes.length === 0) {
         showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
         updateAudioControlsUI();
         return;
       }
       startSequenceAudio('staff');
+    }
+    if (isAudioPlaying) {
+      activeAudioPreviewType = requestedType;
     }
     if (isAudioPlaying && !hasShownAudioHintToast) {
       showAudioToast('Audio started. If you do not hear sound, check your device volume.', 'info');
@@ -5372,16 +4448,30 @@ async function startWaveformAudio() {
   console.log('Audio started - Frequency:', mappedFrequency, 'Type: morphing oscillators with pulse wave');
 }
 
-function stopAudio() {
-  if (!isAudioPlaying) return;
+function pauseAllAudioPlayback(options = {}) {
+  if (isAudioPlaying || sequenceContext.active || activeAudioPreviewType) {
+    stopAudio();
+  }
 
-  if (currentShader === 4) {
+  if (options.suspendContext && audioContext && audioContext.state === 'running') {
+    audioContext.suspend().catch((error) => {
+      console.warn('Unable to suspend audio context:', error);
+    });
+  }
+}
+
+function stopAudio() {
+  const activeType = getActiveAudioPreviewType() || sequenceContext.type;
+  if (!activeType && !isAudioPlaying && !sequenceContext.active) return;
+
+  if (activeType === 'waveform') {
     stopWaveformAudio();
   } else {
     stopSequenceAudio();
   }
 
   isAudioPlaying = false;
+  activeAudioPreviewType = null;
   console.log('Audio stopped');
   updateAudioControlsUI();
 }
@@ -5413,6 +4503,7 @@ function stopWaveformAudio() {
     });
 
     isAudioPlaying = false;
+    activeAudioPreviewType = null;
 
     console.log('Audio stopped');
 
@@ -5532,6 +4623,7 @@ function stopSequenceAudio() {
       disconnectNode(sequenceContext[key]);
       sequenceContext[key] = null;
     });
+    sequenceContext.type = null;
   }, 100);
 }
 
@@ -6642,11 +5734,6 @@ function drawBottomBar(currentWidth) {
   const colorScheme = colors[currentColorMode];
   const fgColor = colorScheme ? color(colorScheme.fg) : color(0);
 
-  if (drawEasterEggRunInBar(exactBarWidth, rectHeight)) {
-    pop();
-    return;
-  }
-
   // Always draw the bar - solid, ruler, binary, or ticker
   if (currentShader === 0) {
     // Solid mode - draw with current foreground color and corner details
@@ -6796,38 +5883,14 @@ function drawBottomBar(currentWidth) {
     const waveType = parseFloat(waveformTypeSlider.value);
     const speed = parseFloat(waveformSpeedSlider.value);
     const time = typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0;
-
-    // Calculate optimal number of points based on frequency and width for ultra-smooth rendering
-    // Use much higher point density for high frequencies to prevent aliasing
-    const basePoints = Math.max(300, exactBarWidth * 3);
-    const frequencyMultiplier = Math.max(1, frequency / 10);
-    const points = Math.ceil(basePoints * frequencyMultiplier);
-
-    // Helper function for smooth waveform generation (restored from original working version)
-    function generateWaveValue(phase, type) {
-      // Normalize phase to [0, 1] range more carefully
-      const normalizedPhase = phase - Math.floor(phase);
-      const wrappedPhase = normalizedPhase < 0 ? normalizedPhase + 1 : normalizedPhase;
-
-      // Define all wave types such that they align at 0
-      const sine = (Math.sin(wrappedPhase * 2 * Math.PI - Math.PI / 2) + 1) * 0.5;
-      const saw = wrappedPhase;
-      const square = wrappedPhase > 0.5 ? 1.0 : 0.0;
-      const pulse = wrappedPhase > 0.8 ? 1.0 : 0.0;
-
-      if (type < 1.0) {
-        // Sine to sawtooth interpolation
-        return sine + (saw - sine) * type;
-      } else if (type < 2.0) {
-        // Sawtooth to square interpolation
-        const t = type - 1.0;
-        return saw + (square - saw) * t;
-      } else {
-        // Square to pulse interpolation
-        const t = type - 2.0;
-        return square + (pulse - square) * t;
-      }
-    }
+    const points = getWaveformRenderPointCount(exactBarWidth, frequency);
+    const {
+      applyEnvelope,
+      envType,
+      envWaves,
+      envCenter,
+      bipolar
+    } = getWaveformEnvelopeSettings();
 
     // Use fill instead of stroke for smoother rendering at high frequencies
     fill(fgColor);
@@ -6851,17 +5914,7 @@ function drawBottomBar(currentWidth) {
       rawPhase = Math.round(rawPhase * 1000000) / 1000000;
 
       // Generate smooth waveform value
-      let wave = generateWaveValue(rawPhase, waveType);
-
-      const applyEnvelope = waveformEnvelopeToggle && waveformEnvelopeToggle.checked;
-      const envType = waveformEnvelopeType ? waveformEnvelopeType.value : 'sine';
-      const envWaves = waveformEnvelopeWavesSlider
-        ? (typeof normalizeWaveformEnvelopeWaves === 'function'
-          ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
-          : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
-        : 1;
-      const envCenter = waveformEnvelopeCenterSlider ? parseFloat(waveformEnvelopeCenterSlider.value) : 0;
-      const bipolar = waveformEnvelopeBipolarToggle && waveformEnvelopeBipolarToggle.checked;
+      let wave = generateWaveformValue(rawPhase, waveType);
       if (typeof applyWaveformEnvelope === 'function') {
         wave = applyWaveformEnvelope(wave, {
           applyEnvelope,
@@ -7473,7 +6526,6 @@ function stopPanAnimation() {
 }
 
 function renderPanOffsetChange() {
-  updateEasterEggHotspotBounds();
   if (!isPlaying) redraw();
 }
 
@@ -7539,17 +6591,203 @@ function animatePanOffset() {
 }
 
 function zoomCanvas(amount) {
-  zoomLevel += amount;
-  zoomLevel = constrain(zoomLevel, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL);
+  setZoomLevel(zoomLevel + amount);
+}
+
+function setZoomLevel(nextZoomLevel) {
+  const clampedZoomLevel = constrain(nextZoomLevel, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL);
+  const zoomChanged = Math.abs(clampedZoomLevel - zoomLevel) > 0.0001;
+
+  zoomLevel = clampedZoomLevel;
 
   clampPanOffset();
-  updateEasterEggHotspotBounds();
 
   if (zoomLevelDisplay && document.activeElement !== zoomLevelDisplay) {
     zoomLevelDisplay.value = zoomLevelToDisplayPercent(zoomLevel) + '%';
   }
 
-  if (!isPlaying) redraw();
+  if (zoomChanged && !isPlaying) redraw();
+}
+
+function getTouchDistance(touches) {
+  if (!touches || touches.length < 2) return 0;
+
+  const firstTouch = touches[0];
+  const secondTouch = touches[1];
+  return Math.hypot(secondTouch.clientX - firstTouch.clientX, secondTouch.clientY - firstTouch.clientY);
+}
+
+function stopCanvasPinchGesture() {
+  isCanvasPinching = false;
+  pinchTouchState = null;
+  safariGestureStartZoomLevel = null;
+}
+
+function updatePanTouchAction() {
+  if (!canvasViewport) return;
+  canvasViewport.classList.toggle('is-pan-active', isPanningMode);
+}
+
+function clearPanPointerState() {
+  if (canvasViewport && panPointerId != null && canvasViewport.hasPointerCapture && canvasViewport.hasPointerCapture(panPointerId)) {
+    try {
+      canvasViewport.releasePointerCapture(panPointerId);
+    } catch (error) {
+      // Ignore release failures when the pointer is already inactive.
+    }
+  }
+
+  panPointerId = null;
+  panPointerPosition = null;
+}
+
+function applyPanDragDelta(deltaX, deltaY) {
+  if (!isPanningMode) return;
+
+  isPanDragging = true;
+  const resistedX = deltaX * PAN_DRAG_RESISTANCE;
+  const resistedY = deltaY * PAN_DRAG_RESISTANCE;
+  panTargetOffset.x += resistedX;
+  panTargetOffset.y += resistedY;
+  panVelocity.x = resistedX;
+  panVelocity.y = resistedY;
+  clampPanPoint(panTargetOffset);
+  startPanAnimation();
+}
+
+function bindPanGestureHandlers() {
+  if (panGestureHandlersBound || !canvasViewport) return;
+  panGestureHandlersBound = true;
+
+  canvasViewport.addEventListener('pointerdown', (event) => {
+    if (!isPanningMode) return;
+    if (event.pointerType === 'mouse') return;
+
+    panPointerId = event.pointerId;
+    panPointerPosition = { x: event.clientX, y: event.clientY };
+
+    if (canvasViewport.setPointerCapture) {
+      canvasViewport.setPointerCapture(event.pointerId);
+    }
+
+    event.preventDefault();
+  });
+
+  canvasViewport.addEventListener('pointermove', (event) => {
+    if (!isPanningMode || panPointerId !== event.pointerId || !panPointerPosition) return;
+
+    const deltaX = event.clientX - panPointerPosition.x;
+    const deltaY = event.clientY - panPointerPosition.y;
+    panPointerPosition = { x: event.clientX, y: event.clientY };
+
+    if (deltaX === 0 && deltaY === 0) return;
+
+    event.preventDefault();
+    applyPanDragDelta(deltaX, deltaY);
+  });
+
+  const finishPointerPan = (event) => {
+    if (panPointerId !== event.pointerId) return;
+    clearPanPointerState();
+    endPanDrag();
+  };
+
+  canvasViewport.addEventListener('pointerup', finishPointerPan);
+  canvasViewport.addEventListener('pointercancel', finishPointerPan);
+}
+
+function bindCanvasPinchHandlers() {
+  if (pinchGestureHandlersBound || !canvasViewport) return;
+  pinchGestureHandlersBound = true;
+
+  canvasViewport.addEventListener('touchstart', (event) => {
+    if (event.touches.length < 2) return;
+
+    const distance = getTouchDistance(event.touches);
+    if (!distance) return;
+
+    clearPanPointerState();
+    endPanDrag();
+    isCanvasPinching = true;
+    pinchTouchState = {
+      distance,
+      zoomLevel
+    };
+    event.preventDefault();
+  }, { passive: false });
+
+  canvasViewport.addEventListener('touchmove', (event) => {
+    if (!pinchTouchState || event.touches.length < 2) return;
+
+    const nextDistance = getTouchDistance(event.touches);
+    if (!nextDistance || !pinchTouchState.distance) return;
+
+    isCanvasPinching = true;
+    event.preventDefault();
+    setZoomLevel(pinchTouchState.zoomLevel * (nextDistance / pinchTouchState.distance));
+  }, { passive: false });
+
+  const finishCanvasTouchGesture = (event) => {
+    if (event.touches.length >= 2) {
+      const distance = getTouchDistance(event.touches);
+      if (!distance) return;
+
+      pinchTouchState = {
+        distance,
+        zoomLevel
+      };
+      isCanvasPinching = true;
+      return;
+    }
+
+    stopCanvasPinchGesture();
+  };
+
+  canvasViewport.addEventListener('touchend', finishCanvasTouchGesture, { passive: true });
+  canvasViewport.addEventListener('touchcancel', finishCanvasTouchGesture, { passive: true });
+}
+
+function bindBrowserZoomGuards() {
+  if (browserZoomGuardsBound) return;
+  browserZoomGuardsBound = true;
+
+  window.addEventListener('wheel', (event) => {
+    if (!event.ctrlKey) return;
+
+    const eventTarget = event.target;
+    const isCanvasGesture = !!(canvasViewport && eventTarget instanceof Node && canvasViewport.contains(eventTarget));
+    event.preventDefault();
+
+    if (!isCanvasGesture) return;
+
+    const zoomMultiplier = Math.exp(-event.deltaY * TRACKPAD_PINCH_ZOOM_SENSITIVITY);
+    setZoomLevel(zoomLevel * zoomMultiplier);
+  }, { passive: false });
+
+  const supportsTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  if (supportsTouch) return;
+
+  document.addEventListener('gesturestart', (event) => {
+    const eventTarget = event.target;
+    const isCanvasGesture = !!(canvasViewport && eventTarget instanceof Node && canvasViewport.contains(eventTarget));
+    safariGestureStartZoomLevel = isCanvasGesture ? zoomLevel : null;
+    event.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('gesturechange', (event) => {
+    const eventTarget = event.target;
+    const isCanvasGesture = !!(canvasViewport && eventTarget instanceof Node && canvasViewport.contains(eventTarget));
+    event.preventDefault();
+
+    if (!isCanvasGesture || safariGestureStartZoomLevel == null || typeof event.scale !== 'number') return;
+
+    setZoomLevel(safariGestureStartZoomLevel * event.scale);
+  }, { passive: false });
+
+  document.addEventListener('gestureend', (event) => {
+    safariGestureStartZoomLevel = null;
+    event.preventDefault();
+  }, { passive: false });
 }
 
 function setPanMode(nextActive) {
@@ -7559,18 +6797,13 @@ function setPanMode(nextActive) {
     stopPanAnimation();
     panTargetOffset = { ...panOffset };
     panVelocity = { x: 0, y: 0 };
+    clearPanPointerState();
   }
   if (panBtn) {
     panBtn.classList.toggle('is-active', isPanningMode);
     document.body.style.cursor = isPanningMode ? 'move' : 'default';
   }
-
-  if (isPanningMode) {
-    cancelEasterEggHold(false);
-    setEasterEggHintState(false);
-  } else {
-    updateEasterEggHotspotBounds();
-  }
+  updatePanTouchAction();
 }
 
 function togglePanMode() {
@@ -7586,17 +6819,15 @@ function handlePanModeOutsidePointerDown(event) {
 }
 
 function mouseDragged() {
-  if (isPanningMode) {
-    isPanDragging = true;
-    const resistedX = movedX * PAN_DRAG_RESISTANCE;
-    const resistedY = movedY * PAN_DRAG_RESISTANCE;
-    panTargetOffset.x += resistedX;
-    panTargetOffset.y += resistedY;
-    panVelocity.x = resistedX;
-    panVelocity.y = resistedY;
-    clampPanPoint(panTargetOffset);
-    startPanAnimation();
+  if (isPanningMode && panPointerId == null) {
+    applyPanDragDelta(movedX, movedY);
     return false; // Prevent default browser drag
+  }
+}
+
+function touchMoved() {
+  if (isPanningMode || isCanvasPinching) {
+    return false;
   }
 }
 

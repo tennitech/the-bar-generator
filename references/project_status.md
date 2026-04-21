@@ -48,6 +48,33 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   [ ] **AI Exploration:** (Future) Event-specific background generation.
 
 ## 5. Recent Updates
+- **[2026-04-21] Waveform Preview Input Lag And Mobile Audio Teardown Fixed**:
+    - Reduced live waveform preview cost by capping point density to an adaptive width-and-frequency-based sample budget and by moving envelope-state reads out of the per-vertex loop, which removes the worst slider and motion-toggle lag when waveform settings are pushed to their maximum values.
+    - Fixed preview audio ownership so stopping audio now follows the actively playing preview type instead of the currently selected bar style; this resolves the waveform case where switching to another style could leave the old sound running.
+    - Added stronger document background teardown hooks (`visibilitychange`, `blur`, `pagehide`, `beforeunload`, and `freeze`) and suspend the audio context when the page is backgrounded, closing the Android case where preview sound could continue after leaving the browser or switching apps.
+- **[2026-04-21] Browser Pinch Zoom Disabled And Canvas Pinch Routed Into Preview Zoom**:
+    - Disabled native browser pinch-to-zoom across the marquee and generator page shells so the app no longer scales the page itself when users pinch on touchscreens or trackpads.
+    - Added a dedicated canvas pinch path in `js/main.js` that converts in-canvas pinch gestures into the existing preview zoom state, keeping the zoom buttons, zoom percentage field, and gesture-driven zoom behavior on the same viewport logic.
+    - Intercepted desktop pinch-as-browser-zoom gestures as well so ctrl-wheel and Safari gesture zoom now either adjust the generator canvas preview or get blocked outside the canvas instead of magnifying the page.
+- **[2026-04-21] Desktop Sidebar Toggle No Longer Blanks The Logo Canvas**:
+    - Stopped the generator from resizing the WebGL backing canvas on every frame of the desktop sidebar collapse and expand transition, which had resurfaced as a white logo flicker while the control rail animated.
+    - Added a transition-end and timeout-backed final resize pass so the workspace still snaps to the correct final dimensions after the sidebar finishes moving, without losing the current logo frame mid-animation.
+- **[2026-04-21] Marquee Row Spacing Locked Against Viewport Height Compression**:
+    - Reworked `marquee-ui.html`'s diagonal row placement so the marquee lanes now keep a fixed vertical pitch instead of recalculating row spacing from the live viewport height, which previously caused the rows to collapse into each other on shorter screens.
+    - Let excess rows clip naturally at the top and bottom of the stage again while enforcing that minimum pitch, restoring the fuller wide-screen marquee composition without reintroducing row crowding on short viewports.
+    - Kept the hero title and credit clearance wrappers in place for layout control, but removed their visible fill so those protective surfaces are now fully transparent instead of reading as black boxes over the marquee.
+    - Tightened the title lockup's bottom clearance padding so the protected area under `The Bar Generator` no longer carves out unnecessary empty space at mid-sized desktop resolutions.
+    - Added a large-desktop marquee tier for `1920x1080` and above so the diagonal bars, row height, gap rhythm, and hero lockup can all scale beyond the baseline desktop size instead of plateauing.
+    - Added a smooth upward-lift band for near-square, taller viewport ratios so the diagonal rows rise earlier around tablet and edge-case desktop sizes instead of waiting for a hard breakpoint where they can still cross underneath the title before snapping clear.
+    - Strengthened the narrow-portrait hero scale cap and reduced the measured mobile lockup bottom gap so widths around the `547px` class now shrink the RPI mark and title cluster sooner while preserving the same proportional padding model used by the larger layouts.
+    - Removed the separate narrow-screen hero centering path so portrait widths now keep the same left, right, and bottom inset model as the larger layouts while still dropping the RCOS credit at the smallest breakpoint.
+    - Updated the credit-hidden narrow-screen scale calculation so once `Made in RCOS` drops away, the hero can size itself against the actual title block instead of the larger desktop lockup width, letting `The Bar Generator` grow into the reclaimed horizontal space.
+    - Added a dedicated narrow-portrait row-clearance lift band between roughly `430px` and `550px` wide so the diagonal bars rise away from the RPI mark in tall phone-sized edge cases without changing the lockup mode switch or the RCOS credit cutoff behavior, and then tuned that band upward in small follow-up passes after visual review to open a bit more space above the logo.
+    - Added regression coverage for the row-position helper so future marquee changes keep the fixed-gap behavior when the viewport height shrinks.
+- **[2026-04-21] Easter Egg Game References Removed From Generator Runtime**:
+    - Removed the inactive Rink Rush easter-egg integration from the live generator shell, including its startup hooks, hidden overlay markup, workspace launcher button, and bar-render interception path in `main.js`.
+    - Stopped loading the standalone easter-egg script and removed its Jest coverage file so the current app no longer carries dormant arcade-only runtime paths while that feature is on hold.
+    - Stripped stale `gif.js` and `gif.worker.js` source-map annotations from the vendored exporter assets so browsers stop logging 404 requests for missing local `.map` files.
 - **[2026-04-21] Mission Control Mobile Credits Panel Clamped To Viewport**:
     - Fixed the Mission Control `Learn About RPI x Artemis` panel on phones so the credits popup no longer renders past the left viewport edge when opened from the compact icon-only header action.
     - Kept the desktop dropdown behavior unchanged while switching the mobile panel to a viewport-aware position pass that anchors to the trigger and clamps within the visible screen width.
@@ -60,6 +87,8 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Removed the generator's global mobile `touchend` cancellation path and switched sidebar outside-close handling onto `pointerdown`, restoring normal tap-to-click behavior for mobile buttons, menus, and custom dropdown controls.
     - Tightened the generator's phone header, action cluster, floating workspace controls, and mobile drawer width so the interface fits the handset frame more intentionally without introducing page-level scrolling.
     - Removed the marquee page's narrow-screen `overflow-y: auto` fallback so the home experience now stays non-scrollable and scales the hero cluster inside the visible phone screen instead of extending below it.
+    - Reworked mobile pan-mode input to use explicit pointer-drag tracking on the canvas viewport with touch gestures disabled only while pan mode is active, preventing the logo from dropping out during phone drags and preserving the existing desktop mouse path.
+    - Limited bottom-toolbar hover affordances to hover-capable fine-pointer devices so mobile taps no longer leave the workspace pill controls stuck in a pseudo-hover state after the first press.
 - **[2026-04-20] GitHub Pages Source Switched Back To `main`**:
     - Confirmed the existing default Pages URL remains `https://tennitech.github.io/rpi-logo-generator/` and reused it instead of creating a new site path.
     - Switched the repository's GitHub Pages publishing source from a stale GitHub Actions deployment back to `Deploy from a branch` on `main` at `/ (root)` so the live site tracks the repository's primary branch again.

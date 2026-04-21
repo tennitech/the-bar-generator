@@ -33,6 +33,14 @@
   --marquee-tilt: 17deg;
   --hero-scale: 1;
   --viewport-height: 100vh;
+  --marquee-asset-width: 28rem;
+  --marquee-row-height: 3.9rem;
+  --marquee-row-gap: 1.45rem;
+  --hero-copy-pad-x: clamp(1.1rem, 2vw, 1.75rem);
+  --hero-copy-pad-top: clamp(0.85rem, 1.6vw, 1.35rem);
+  --hero-copy-pad-bottom: clamp(0.7rem, 1.5vw, 1.2rem);
+  --hero-credit-pad-x: clamp(0.8rem, 1.4vw, 1.1rem);
+  --hero-credit-pad-y: clamp(0.55rem, 1vw, 0.9rem);
 }
 
 *,
@@ -334,15 +342,32 @@ img {
   height: 330px;
   transform-origin: left bottom;
   transform: scale(var(--hero-scale));
+  overflow: visible;
 }
 
 .hero_copy {
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
   width: 520px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 28px;
   padding-bottom: 0;
+}
+
+.hero_copy::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--hero-copy-pad-top));
+  right: calc(-1 * var(--hero-copy-pad-x));
+  bottom: calc(-1 * var(--hero-copy-pad-bottom));
+  left: calc(-1 * var(--hero-copy-pad-x));
+  z-index: -1;
+  pointer-events: none;
+  background: transparent;
+  border-radius: 1.4rem 1.4rem 1.75rem 0;
 }
 
 .hero_brand {
@@ -384,6 +409,8 @@ img {
   position: absolute;
   left: 650px;
   bottom: 58px;
+  isolation: isolate;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -392,6 +419,16 @@ img {
   font-size: 16px;
   line-height: 1.35;
   white-space: nowrap;
+}
+
+.hero_credit::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--hero-credit-pad-y)) calc(-1 * var(--hero-credit-pad-x));
+  z-index: -1;
+  pointer-events: none;
+  background: transparent;
+  border-radius: 0.8rem;
 }
 
 [data-hero-credit-layout='compact'] .hero_credit {
@@ -485,25 +522,5 @@ img {
 @media (max-width: 549px) {
   .hero_credit {
     display: none;
-  }
-
-  .hero_cluster {
-    left: 50%;
-    bottom: 0;
-    width: var(--mobile-hero-width, 720px);
-    height: var(--mobile-hero-height, 270px);
-    transform-origin: center bottom;
-    transform: translateX(-50%) scale(var(--hero-scale));
-  }
-
-  .hero_copy {
-    width: max-content;
-    align-items: flex-start;
-    gap: 28px;
-  }
-
-  .hero_title {
-    align-items: flex-start;
-    gap: 10px;
   }
 }
