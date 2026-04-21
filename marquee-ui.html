@@ -7,20 +7,30 @@
   <meta name="description" content="Experimental next-gen marquee interface for the RPI Bar Generator.">
   <title>RPI Bar Generator Marquee Experiment</title>
   <link href="css/marquee-ui.css" rel="stylesheet" type="text/css">
+  <script src="js/utils/generatorRoutes.js"></script>
+  <script>
+    const legacyGeneratorUrl = window.GeneratorRoutes
+      ? window.GeneratorRoutes.getLegacyGeneratorRedirectUrl(window.location.pathname, window.location.search)
+      : null;
+
+    if (legacyGeneratorUrl) {
+      window.location.replace(legacyGeneratorUrl);
+    }
+  </script>
 </head>
 
 <body>
   <div class="page-wrapper marquee_page">
     <main class="main-wrapper">
       <section class="section_marquee_hero">
-        <div class="marquee_scene" aria-hidden="true">
+        <div class="marquee_scene">
           <div class="marquee_stage" id="marquee-stage" data-marquee-stage></div>
         </div>
 
         <div id="startup-style-prompt" class="startup_prompt" aria-hidden="true" role="status" aria-live="polite"
           aria-atomic="true">
           <div class="startup_prompt_inner">
-            <p class="startup_prompt_text">Select a bar design below to get started</p>
+            <p class="startup_prompt_text">Select a bar design below to open the generator</p>
           </div>
         </div>
 
@@ -49,7 +59,7 @@
     </main>
   </div>
 
-  <script type="module" src="js/marqueeUi.js"></script>
+  <script src="js/marqueeUi.js"></script>
 </body>
 
 </html>

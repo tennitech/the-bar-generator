@@ -48,6 +48,12 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   [ ] **AI Exploration:** (Future) Event-specific background generation.
 
 ## 5. Recent Updates
+- **[2026-04-20] Marquee UI Promoted To Home And Generator Moved To Style Routes**:
+    - Switched the default site entry point from the generator workspace to the marquee experience, making `/` the primary home page while preserving `marquee-ui.html` as an alias.
+    - Moved the generator onto style-specific paths under `/generator/[style]/` and updated generator URL synchronization so the active bar style now lives in the pathname instead of the query string.
+    - Added a static route bootstrap layer so style-specific generator paths work on plain static hosting without framework rewrites, and kept legacy query-based generator links compatible by redirecting them into the new `/generator/[style]/` paths.
+    - Made marquee bar assets real links into the generator, and then simplified that interaction so every marquee click now opens the default generator view instead of style-specific destinations.
+    - Fixed a routed-generator startup regression where the shell HTML loaded but the canvas stayed blank because `p5.js` initialized before the injected generator scripts defined `window.setup`; the bootstrap now explicitly starts one p5 instance after those scripts finish loading.
 - **[2026-04-20] Mission Control Theme And Splashdown Counter**:
     - Reworked the former visible `LUNAR` color option into `MISSION CONTROL` while keeping the underlying `lunar` value for URL and legacy state compatibility.
     - Refined the mission-control chrome back toward the design system by removing the decorative header divider, sidebar plaque, workspace-control label/dot treatment, and oversized workspace counter treatment while preserving restrained RPI Red command accents and RPI Blue/Silver signal details.

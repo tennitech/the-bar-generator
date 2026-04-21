@@ -2662,13 +2662,7 @@ async function setup() {
 
   // Apply URL parameters if present, otherwise use defaults
   applyUrlParameters();
-
-  // If no URL parameters were present, set defaults
-  if (!window.location.search) {
-    styleSelect.value = "solid";
-    currentShader = 0;
-    applyColorMode(DEFAULT_COLOR_MODE);
-  }
+  updateUrlParameters();
 
   // Initialize Web Audio API
   initializeAudio();
@@ -5779,7 +5773,12 @@ function scheduleStaffNote() {
 // URL parameter management
 function getUrlParameters() {
   const params = new URLSearchParams(window.location.search);
-  const style = normalizeStyleValue(params.get('style') || 'solid');
+  const routeStyle = window.__RPI_GENERATOR_ROUTE_STYLE__
+    ? normalizeStyleValue(window.__RPI_GENERATOR_ROUTE_STYLE__)
+    : (window.GeneratorRoutes && typeof window.GeneratorRoutes.getGeneratorRouteStyleFromPathname === 'function'
+      ? window.GeneratorRoutes.getGeneratorRouteStyleFromPathname(window.location.pathname)
+      : null);
+  const style = normalizeStyleValue(routeStyle || params.get('style') || 'solid');
   const requestedColorMode = normalizeColorModeValue(params.get('colorMode') || DEFAULT_COLOR_MODE);
   const colorMode = style === 'lunar' || requestedColorMode !== 'lunar'
     ? requestedColorMode
@@ -5870,11 +5869,7 @@ function getUrlParameters() {
 
 function updateUrlParameters() {
   const params = new URLSearchParams();
-
-  // Only add parameters that differ from defaults to keep URLs clean
-  if (styleSelect && styleSelect.value !== 'solid') {
-    params.set('style', styleSelect.value);
-  }
+  const selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
 
   if (colorModeSelect && colorModeSelect.value !== DEFAULT_COLOR_MODE) {
     params.set('colorMode', colorModeSelect.value);
@@ -6084,7 +6079,9 @@ function updateUrlParameters() {
   }
 
   // Update URL without reloading the page
-  const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+  const newUrl = window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorUrl === 'function'
+    ? window.GeneratorRoutes.buildGeneratorUrl(selectedStyle, params, window.location.pathname)
+    : (params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname);
   window.history.replaceState({}, '', newUrl);
 }
 

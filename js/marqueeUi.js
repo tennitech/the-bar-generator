@@ -36,14 +36,24 @@ function toAssetUrl(path) {
   return encodeURI(path);
 }
 
+function getGeneratorHref() {
+  if (window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorPath === 'function') {
+    return window.GeneratorRoutes.buildGeneratorPath('solid', window.location.pathname);
+  }
+
+  return 'generator/solid/';
+}
+
 function wrap(value, length) {
   return ((value % length) + length) % length;
 }
 
 function createAssetElement(path) {
-  const asset = document.createElement('div');
+  const asset = document.createElement('a');
   asset.className = 'bar_asset_wrap';
   asset.style.setProperty('--asset-width', BAR_ASSET_WIDTH);
+  asset.href = getGeneratorHref();
+  asset.setAttribute('aria-label', 'Open the generator');
 
   const image = document.createElement('img');
   image.className = 'bar_asset';
