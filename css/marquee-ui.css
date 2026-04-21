@@ -32,6 +32,7 @@
   --page-padding: clamp(1.5rem, 2.8vw, 3rem);
   --marquee-tilt: 17deg;
   --hero-scale: 1;
+  --viewport-height: 100vh;
 }
 
 *,
@@ -43,14 +44,19 @@
 html,
 body {
   margin: 0;
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
   background: var(--rpi-black);
   color: var(--rpi-white);
   font-family: 'RPIGeist', -apple-system, BlinkMacSystemFont, sans-serif;
+  height: var(--viewport-height);
+  min-height: 100dvh;
   overflow: hidden;
+  touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
@@ -66,7 +72,8 @@ img {
 .page-wrapper,
 .main-wrapper,
 .section_marquee_hero {
-  min-height: 100vh;
+  height: var(--viewport-height);
+  min-height: var(--viewport-height);
 }
 
 .padding-global {
@@ -314,7 +321,8 @@ img {
 
 .hero_layout {
   position: relative;
-  min-height: 100vh;
+  height: var(--viewport-height);
+  min-height: var(--viewport-height);
   padding-block: clamp(1.5rem, 2vw, 2.25rem) clamp(2rem, 3vw, 3rem);
 }
 
@@ -425,10 +433,6 @@ img {
 }
 
 @media (max-width: 900px) {
-  body {
-    overflow-y: auto;
-  }
-
   .startup_prompt {
     top: 16px;
     width: auto;
@@ -448,7 +452,8 @@ img {
   .section_marquee_hero,
   .page-wrapper,
   .main-wrapper {
-    min-height: 100svh;
+    height: var(--viewport-height);
+    min-height: var(--viewport-height);
   }
 
   .marquee_scene {

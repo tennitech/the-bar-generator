@@ -33,7 +33,13 @@ const paths = {
 
 // Layout constants
 const REFERENCE_WIDTH = 250;
-const LOGO_SCALE = 1.5;
+const MAX_LOGO_SCALE = 1.5;
+const REFERENCE_LOGO_HEIGHT = 111.76;
+const REFERENCE_BAR_Y = 132.911;
+const REFERENCE_BAR_HEIGHT = 18;
+const REFERENCE_TOTAL_HEIGHT = REFERENCE_BAR_Y + REFERENCE_BAR_HEIGHT;
+const RESPONSIVE_LOGO_WIDTH_RATIO = 0.72;
+const RESPONSIVE_LOGO_HEIGHT_RATIO = 0.48;
 const LOGO_VERTICAL_OFFSET = -72; // Vertical offset for centering
 
 // Global variables
@@ -646,6 +652,17 @@ const MISSION_CONTROL_GRID_MIN_COLUMNS = 10;
 const MISSION_CONTROL_GRID_MAX_COLUMNS = 40;
 const MISSION_CONTROL_GRID_MIN_ROWS = 10;
 const MISSION_CONTROL_GRID_MAX_ROWS = 30;
+
+function getResponsiveLogoScale(viewportWidth = width, viewportHeight = height) {
+  const safeWidth = Math.max(1, Math.round(viewportWidth || 0));
+  const safeHeight = Math.max(1, Math.round(viewportHeight || 0));
+  const widthLimitedScale =
+    (safeWidth * RESPONSIVE_LOGO_WIDTH_RATIO) / (REFERENCE_WIDTH * DEFAULT_ZOOM_LEVEL);
+  const heightLimitedScale =
+    (safeHeight * RESPONSIVE_LOGO_HEIGHT_RATIO) / (REFERENCE_TOTAL_HEIGHT * DEFAULT_ZOOM_LEVEL);
+
+  return Math.min(MAX_LOGO_SCALE, widthLimitedScale, heightLimitedScale);
+}
 
 // Zoom/Pan/Playback UI references
 let zoomInBtn, zoomOutBtn, zoomResetBtn, panBtn, zoomLevelDisplay;
@@ -1665,6 +1682,7 @@ function syncMissionControlGrid() {
 
 function syncResponsiveWorkspaceSizing() {
   responsiveWorkspaceSyncFrame = 0;
+  syncViewportHeightVar();
   syncSidebarToggleState();
   syncMissionControlGrid();
 
@@ -1752,6 +1770,8 @@ let shaders = {
 
 
 async function setup() {
+  setupViewportHeightSync();
+
   // Create canvas that fills the container
   const container = document.getElementById('p5-container');
   const width = container ? container.offsetWidth : windowWidth;
@@ -2268,9 +2288,8 @@ async function setup() {
     });
   }
 
-  // Add click/touch outside to close functionality with improved mobile handling
-  document.addEventListener('click', handleClickOutside);
-  document.addEventListener('touchend', handleClickOutside);
+  // Use pointerdown so taps still produce normal click events for the controls themselves.
+  document.addEventListener('pointerdown', handleClickOutside, true);
 
   // Focus trap and Escape key support for sidebar
   appSidebar.addEventListener('keydown', function (e) {
@@ -3026,11 +3045,6 @@ function handleClickOutside(event) {
   if (window.innerWidth > 768) return;
   if (isEasterEggActive()) return;
 
-  // Prevent duplicate events on mobile
-  if (event.type === 'touchend' && event.cancelable) {
-    event.preventDefault();
-  }
-
   // Don't close if clicking on the toggle button or inside the sidebar
   if (mobileMenuToggle && mobileMenuToggle.contains(event.target) ||
     appSidebar && appSidebar.contains(event.target)) {
@@ -3048,8 +3062,53 @@ function isMissionControlCreditsMenuActive() {
 }
 
 function hideSaveMenu() {
-  if (saveMenu) saveMenu.classList.add('hidden');
+  if (saveMenu) {
+    saveMenu.classList.add('hidden');
+    saveMenu.style.position = '';
+    saveMenu.style.top = '';
+    saveMenu.style.left = '';
+    saveMenu.style.right = '';
+    saveMenu.style.maxWidth = '';
+  }
   if (saveButton) saveButton.setAttribute('aria-expanded', 'false');
+}
+
+function positionSaveMenu() {
+  if (!saveMenu || !saveButton || saveMenu.classList.contains('hidden')) return;
+
+  saveMenu.style.position = '';
+  saveMenu.style.top = '';
+  saveMenu.style.left = '';
+  saveMenu.style.right = '';
+  saveMenu.style.maxWidth = '';
+
+  if (window.innerWidth > 768) return;
+
+  const visualViewport = window.visualViewport || null;
+  const viewportWidth = visualViewport && Number.isFinite(visualViewport.width)
+    ? visualViewport.width
+    : (window.innerWidth || document.documentElement.clientWidth || 0);
+  const viewportOffsetLeft = visualViewport && Number.isFinite(visualViewport.offsetLeft)
+    ? visualViewport.offsetLeft
+    : 0;
+  const viewportOffsetTop = visualViewport && Number.isFinite(visualViewport.offsetTop)
+    ? visualViewport.offsetTop
+    : 0;
+  const edgePadding = 8;
+  const buttonRect = saveButton.getBoundingClientRect();
+
+  saveMenu.style.position = 'fixed';
+  saveMenu.style.top = `${Math.round(viewportOffsetTop + buttonRect.bottom + 6)}px`;
+  saveMenu.style.right = 'auto';
+  saveMenu.style.maxWidth = `${Math.max(0, Math.floor(viewportWidth - edgePadding * 2))}px`;
+
+  const menuWidth = saveMenu.offsetWidth;
+  const minLeft = viewportOffsetLeft + edgePadding;
+  const maxLeft = Math.max(minLeft, viewportOffsetLeft + viewportWidth - menuWidth - edgePadding);
+  const preferredLeft = buttonRect.right + viewportOffsetLeft - menuWidth;
+  const clampedLeft = Math.min(Math.max(preferredLeft, minLeft), maxLeft);
+
+  saveMenu.style.left = `${Math.round(clampedLeft)}px`;
 }
 
 function openMissionControlCreditLink(url) {
@@ -3170,6 +3229,11 @@ function toggleSaveMenu(e) {
     saveMenu.classList.toggle('hidden');
     const isExpanded = !saveMenu.classList.contains('hidden');
     if (saveButton) saveButton.setAttribute('aria-expanded', isExpanded);
+    if (isExpanded) {
+      requestAnimationFrame(positionSaveMenu);
+    } else {
+      hideSaveMenu();
+    }
   }
 }
 
@@ -4188,10 +4252,13 @@ function getEasterEggBarBounds() {
   const appHeight = appMain.clientHeight || 0;
   if (!appWidth || !appHeight) return null;
 
-  const actualWidth = REFERENCE_WIDTH * LOGO_SCALE * zoomLevel;
-  const actualHeight = 18 * LOGO_SCALE * zoomLevel;
-  const actualLeft = appWidth / 2 + LOGO_SCALE * (panOffset.x + zoomLevel * (-REFERENCE_WIDTH / 2));
-  const actualTop = appHeight / 2 + LOGO_SCALE * (panOffset.y + zoomLevel * (LOGO_VERTICAL_OFFSET + 132.911));
+  const responsiveLogoScale = getResponsiveLogoScale(appWidth, appHeight);
+  const actualWidth = REFERENCE_WIDTH * responsiveLogoScale * zoomLevel;
+  const actualHeight = REFERENCE_BAR_HEIGHT * responsiveLogoScale * zoomLevel;
+  const actualLeft =
+    appWidth / 2 + responsiveLogoScale * (panOffset.x + zoomLevel * (-REFERENCE_WIDTH / 2));
+  const actualTop =
+    appHeight / 2 + responsiveLogoScale * (panOffset.y + zoomLevel * (LOGO_VERTICAL_OFFSET + REFERENCE_BAR_Y));
   const paddingX = Math.max(18, actualHeight * 1.4);
   const paddingY = Math.max(14, actualHeight * 1.7);
 
@@ -6425,6 +6492,7 @@ let resizeTimeout;
 function windowResized() {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
+    syncViewportHeightVar();
     requestResponsiveWorkspaceSizing();
   }, 16);
 }
@@ -6433,6 +6501,46 @@ function windowResized() {
 let lastFrameTime = 0;
 const TARGET_FPS = 60;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
+let hasBoundViewportHeightSync = false;
+
+function getViewportHeight() {
+  const visualViewportHeight = window.visualViewport && Number.isFinite(window.visualViewport.height)
+    ? window.visualViewport.height
+    : 0;
+
+  if (visualViewportHeight > 0) {
+    return visualViewportHeight;
+  }
+
+  return window.innerHeight || document.documentElement.clientHeight || 0;
+}
+
+function syncViewportHeightVar() {
+  const nextHeight = Math.round(getViewportHeight());
+  if (nextHeight > 0) {
+    document.documentElement.style.setProperty('--viewport-height', `${nextHeight}px`);
+  }
+}
+
+function handleViewportHeightChange() {
+  syncViewportHeightVar();
+  positionSaveMenu();
+  requestResponsiveWorkspaceSizing();
+}
+
+function setupViewportHeightSync() {
+  syncViewportHeightVar();
+
+  if (hasBoundViewportHeightSync) return;
+  hasBoundViewportHeightSync = true;
+
+  window.addEventListener('resize', handleViewportHeightChange, { passive: true });
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', handleViewportHeightChange, { passive: true });
+    window.visualViewport.addEventListener('scroll', handleViewportHeightChange, { passive: true });
+  }
+}
 
 function draw() {
   // Limit frame rate to prevent excessive computation
@@ -6452,13 +6560,14 @@ function draw() {
 
   // Get current color scheme
   const colorScheme = colors[currentColorMode];
+  const responsiveLogoScale = getResponsiveLogoScale();
 
   // Keep the canvas transparent so the mark sits directly on the themed workspace.
   clear();
 
   // Use exact 250px reference dimensions
   const currentWidth = REFERENCE_WIDTH;
-  const logoHeight = 111.76; // Exact height from 250px reference
+  const logoHeight = REFERENCE_LOGO_HEIGHT; // Exact height from 250px reference
 
   // Reset shader for regular drawing
   resetShader();
@@ -6470,8 +6579,8 @@ function draw() {
   translate(-width / 2, -height / 2); // Convert to screen coordinates for WEBGL
   translate(width / 2, height / 2);
 
-  // Scale the logo appropriately
-  scale(LOGO_SCALE);
+  // Keep 100% zoom proportional to the visible workspace instead of fixed CSS pixels.
+  scale(responsiveLogoScale);
 
   // Viewport View Transformation (Zoom & Pan)
   translate(panOffset.x, panOffset.y);
@@ -6504,13 +6613,15 @@ function draw() {
 }
 
 function drawBottomBar(currentWidth) {
+  const responsiveLogoScale = getResponsiveLogoScale();
+
   // Use the exact same coordinate system and positioning as the logo
   push();
   translate(-width / 2, -height / 2); // Convert to screen coordinates for WEBGL
   translate(width / 2, height / 2);
 
   // Scale the same as logo
-  scale(LOGO_SCALE);
+  scale(responsiveLogoScale);
 
   // Viewport View Transformation
   translate(panOffset.x, panOffset.y);
@@ -6520,11 +6631,11 @@ function drawBottomBar(currentWidth) {
   translate(-currentWidth / 2, LOGO_VERTICAL_OFFSET);
 
   // Position the bar to match 250px reference exactly
-  translate(0, 132.911); // Match exact bar Y position from 250px reference
+  translate(0, REFERENCE_BAR_Y); // Match exact bar Y position from 250px reference
 
   // Calculate bar dimensions to match 250px reference exactly
   const exactBarWidth = REFERENCE_WIDTH; // Exact width from 250px reference
-  const rectHeight = 18; // Exact height from 250px reference
+  const rectHeight = REFERENCE_BAR_HEIGHT; // Exact height from 250px reference
   const barStartX = 0; // Exact X position from 250px reference
 
   // Get current foreground color
@@ -7313,7 +7424,7 @@ function applyPanEdgeInset(min, max) {
     return { min: max, max: min };
   }
 
-  const edgeInset = PAN_EDGE_PADDING / LOGO_SCALE;
+  const edgeInset = PAN_EDGE_PADDING / getResponsiveLogoScale();
   if (max - min <= edgeInset * 2) {
     const midpoint = (min + max) / 2;
     return { min: midpoint, max: midpoint };
@@ -7323,9 +7434,10 @@ function applyPanEdgeInset(min, max) {
 }
 
 function getPanBounds() {
+  const responsiveLogoScale = getResponsiveLogoScale();
   const horizontalBounds = applyPanEdgeInset(
-    125 * zoomLevel - width / (2 * LOGO_SCALE),
-    width / (2 * LOGO_SCALE) - 125 * zoomLevel
+    125 * zoomLevel - width / (2 * responsiveLogoScale),
+    width / (2 * responsiveLogoScale) - 125 * zoomLevel
   );
   let minX = horizontalBounds.min;
   let maxX = horizontalBounds.max;
@@ -7334,8 +7446,8 @@ function getPanBounds() {
   }
 
   const verticalBounds = applyPanEdgeInset(
-    72 * zoomLevel - height / (2 * LOGO_SCALE),
-    height / (2 * LOGO_SCALE) - 79 * zoomLevel
+    72 * zoomLevel - height / (2 * responsiveLogoScale),
+    height / (2 * responsiveLogoScale) - 79 * zoomLevel
   );
   let minY = verticalBounds.min;
   let maxY = verticalBounds.max;

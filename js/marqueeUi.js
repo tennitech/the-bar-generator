@@ -44,6 +44,25 @@ function getGeneratorHref() {
   return 'generator/solid/';
 }
 
+function getViewportMetrics() {
+  const visualViewport = window.visualViewport;
+  const width = visualViewport && Number.isFinite(visualViewport.width) && visualViewport.width > 0
+    ? visualViewport.width
+    : window.innerWidth;
+  const height = visualViewport && Number.isFinite(visualViewport.height) && visualViewport.height > 0
+    ? visualViewport.height
+    : window.innerHeight;
+
+  return { width, height };
+}
+
+function syncViewportHeightVar() {
+  const { height } = getViewportMetrics();
+  if (height > 0) {
+    document.documentElement.style.setProperty('--viewport-height', `${Math.round(height)}px`);
+  }
+}
+
 function wrap(value, length) {
   return ((value % length) + length) % length;
 }
@@ -292,9 +311,10 @@ function syncRowMeasurements(rowStates, force = false) {
 }
 
 function syncHeroScale(root) {
+  const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
   const rootStyles = getComputedStyle(root);
   const padding = parseFloat(rootStyles.getPropertyValue('--page-padding')) || 24;
-  const isMobileHeroLayout = window.innerWidth < MOBILE_HERO_BREAKPOINT;
+  const isMobileHeroLayout = viewportWidth < MOBILE_HERO_BREAKPOINT;
   const heroCopy = document.querySelector('.hero_copy');
   const mobileHeroWidth = heroCopy
     ? Math.ceil(heroCopy.scrollWidth || heroCopy.getBoundingClientRect().width || HERO_CLUSTER_WIDTH)
@@ -305,8 +325,8 @@ function syncHeroScale(root) {
   const mobileHeroHeight = mobileHeroContentHeight + MOBILE_HERO_BOTTOM_GAP;
   const heroWidth = isMobileHeroLayout ? mobileHeroWidth : HERO_CLUSTER_WIDTH;
   const heroHeight = isMobileHeroLayout ? mobileHeroHeight : HERO_CLUSTER_HEIGHT;
-  const availableWidth = Math.max(0, window.innerWidth - (padding * 2));
-  const availableHeight = Math.max(0, window.innerHeight - padding - 24);
+  const availableWidth = Math.max(0, viewportWidth - (padding * 2));
+  const availableHeight = Math.max(0, viewportHeight - padding - 24);
   const scale = Math.min(
     1,
     availableWidth / heroWidth,
@@ -362,6 +382,7 @@ function initMarqueeScene() {
   }
 
   preloadAssets().finally(() => {
+    syncViewportHeightVar();
     syncHeroScale(root);
     syncRowMeasurements(rowStates, true);
   });
@@ -374,12 +395,17 @@ function initMarqueeScene() {
 
     resizeFrame = window.requestAnimationFrame(() => {
       resizeFrame = 0;
+      syncViewportHeightVar();
       syncHeroScale(root);
       syncRowMeasurements(rowStates);
     });
   }
 
   window.addEventListener('resize', handleResize);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', handleResize, { passive: true });
+    window.visualViewport.addEventListener('scroll', handleResize, { passive: true });
+  }
 
   let lastTime = performance.now();
   function animateRows(now) {
@@ -403,4 +429,5 @@ function initMarqueeScene() {
   window.requestAnimationFrame(animateRows);
 }
 
+syncViewportHeightVar();
 initMarqueeScene();

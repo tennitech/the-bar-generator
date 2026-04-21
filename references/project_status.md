@@ -1,6 +1,6 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-21
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## 1. Project Overview
@@ -48,6 +48,18 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   [ ] **AI Exploration:** (Future) Event-specific background generation.
 
 ## 5. Recent Updates
+- **[2026-04-21] Mission Control Mobile Credits Panel Clamped To Viewport**:
+    - Fixed the Mission Control `Learn About RPI x Artemis` panel on phones so the credits popup no longer renders past the left viewport edge when opened from the compact icon-only header action.
+    - Kept the desktop dropdown behavior unchanged while switching the mobile panel to a viewport-aware position pass that anchors to the trigger and clamps within the visible screen width.
+- **[2026-04-21] Live Preview Scale Made Viewport-Responsive**:
+    - Reworked the on-canvas RPI mark sizing so the default `100%` preview now resolves relative to the visible workspace instead of a fixed draw scale, which keeps the logo proportionate across phones, tablets, and desktop canvases.
+    - Kept export geometry unchanged; the responsive logic only affects live preview sizing, pan bounds, and interactive hotspot alignment inside the generator viewport.
+    - Capped the responsive baseline at the previous desktop scale so larger workspaces keep the established presentation while smaller screens automatically reduce the default preview size to avoid clipping.
+- **[2026-04-21] Mobile Viewport Locking And Touch Input Recovery**:
+    - Locked both the generator workspace and `marquee-ui.html` to the visible mobile viewport using a shared viewport-height CSS variable synced from `visualViewport` when available, replacing the earlier `100vh`-based sizing that could size against browser chrome and make the pages feel like desktop layouts on phones.
+    - Removed the generator's global mobile `touchend` cancellation path and switched sidebar outside-close handling onto `pointerdown`, restoring normal tap-to-click behavior for mobile buttons, menus, and custom dropdown controls.
+    - Tightened the generator's phone header, action cluster, floating workspace controls, and mobile drawer width so the interface fits the handset frame more intentionally without introducing page-level scrolling.
+    - Removed the marquee page's narrow-screen `overflow-y: auto` fallback so the home experience now stays non-scrollable and scales the hero cluster inside the visible phone screen instead of extending below it.
 - **[2026-04-20] GitHub Pages Source Switched Back To `main`**:
     - Confirmed the existing default Pages URL remains `https://tennitech.github.io/rpi-logo-generator/` and reused it instead of creating a new site path.
     - Switched the repository's GitHub Pages publishing source from a stale GitHub Actions deployment back to `Deploy from a branch` on `main` at `/ (root)` so the live site tracks the repository's primary branch again.
