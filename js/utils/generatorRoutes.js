@@ -75,6 +75,12 @@
     return normalized.startsWith('/') ? normalized : `/${normalized}`;
   }
 
+  function getComparablePathname(pathname) {
+    const value = typeof pathname === 'string' && pathname ? pathname : '/';
+    const normalized = value.replace(/\/{2,}/g, '/');
+    return normalized.startsWith('/') ? normalized : `/${normalized}`;
+  }
+
   function toSearchParams(search) {
     if (search instanceof URLSearchParams) {
       return new URLSearchParams(search.toString());
@@ -101,6 +107,33 @@
 
   function buildPathFromSegments(segments) {
     return segments.length ? `/${segments.join('/')}/` : '/';
+  }
+
+  function buildUrlFromPathAndSearch(pathname, search) {
+    const params = toSearchParams(search);
+    const queryString = params.toString();
+    return queryString ? `${pathname}?${queryString}` : pathname;
+  }
+
+  function getGeneratorPathDetails(pathname) {
+    const normalizedPath = normalizePathname(pathname);
+    const parts = normalizedPath.split('/').filter(Boolean);
+    const generatorIndex = parts.indexOf('generator');
+
+    if (generatorIndex === -1) {
+      return {
+        generatorIndex,
+        rawStyle: '',
+        hasExplicitStyleSegment: false
+      };
+    }
+
+    const rawStyle = parts[generatorIndex + 1] || '';
+    return {
+      generatorIndex,
+      rawStyle,
+      hasExplicitStyleSegment: Boolean(rawStyle)
+    };
   }
 
   function getGeneratorRouteStyleFromPathname(pathname) {
@@ -134,17 +167,23 @@
   }
 
   function getLegacyGeneratorRedirectUrl(pathname, search) {
-    if (getGeneratorRouteStyleFromPathname(pathname) !== null) {
-      return null;
-    }
-
-    if (!hasGeneratorQueryState(search)) {
-      return null;
-    }
-
     const params = toSearchParams(search);
+    const { generatorIndex, rawStyle, hasExplicitStyleSegment } = getGeneratorPathDetails(pathname);
+    const currentUrl = buildUrlFromPathAndSearch(getComparablePathname(pathname), params);
+
+    if (generatorIndex !== -1) {
+      const style = normalizeStyleValue(hasExplicitStyleSegment ? rawStyle : (params.get('style') || 'solid'));
+      const canonicalUrl = buildGeneratorUrl(style, params, pathname);
+      return canonicalUrl !== currentUrl ? canonicalUrl : null;
+    }
+
+    if (!hasGeneratorQueryState(params)) {
+      return null;
+    }
+
     const style = normalizeStyleValue(params.get('style') || 'solid');
-    return buildGeneratorUrl(style, params, pathname);
+    const canonicalUrl = buildGeneratorUrl(style, params, pathname);
+    return canonicalUrl !== currentUrl ? canonicalUrl : null;
   }
 
   const api = {
