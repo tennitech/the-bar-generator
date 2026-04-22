@@ -41,4 +41,12 @@ describe('generator route utils', () => {
     expect(getLegacyGeneratorRedirectUrl('/repo/marquee-ui.html', '?colorMode=red')).toBe('/repo/generator/solid/?colorMode=red');
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/ticker/', '?colorMode=red')).toBeNull();
   });
+
+  test('canonicalizes legacy generator entry paths onto style routes', () => {
+    expect(getLegacyGeneratorRedirectUrl('/repo/generator/', '')).toBe('/repo/generator/solid/');
+    expect(getLegacyGeneratorRedirectUrl('/repo/generator/index.html', '?style=staff')).toBe('/repo/generator/music/');
+    expect(getLegacyGeneratorRedirectUrl('/repo/generator/index.html', '?style=unknown&colorMode=white')).toBe('/repo/generator/solid/?colorMode=white');
+    expect(getLegacyGeneratorRedirectUrl('/repo/generator/ticker/index.html', '?style=waveform&colorMode=red')).toBe('/repo/generator/ticker/?colorMode=red');
+    expect(getLegacyGeneratorRedirectUrl('/repo/generator/music/', '?style=staff')).toBe('/repo/generator/music/');
+  });
 });

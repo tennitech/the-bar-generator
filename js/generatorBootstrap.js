@@ -12,7 +12,26 @@
     });
   }
 
+  async function ensureGeneratorRoutes() {
+    if (window.GeneratorRoutes) {
+      return window.GeneratorRoutes;
+    }
+
+    await loadScript('js/utils/generatorRoutes.js');
+    return window.GeneratorRoutes || null;
+  }
+
   try {
+    const generatorRoutes = await ensureGeneratorRoutes();
+    const legacyGeneratorUrl = generatorRoutes
+      ? generatorRoutes.getLegacyGeneratorRedirectUrl(window.location.pathname, window.location.search)
+      : null;
+
+    if (legacyGeneratorUrl) {
+      window.location.replace(legacyGeneratorUrl);
+      return;
+    }
+
     const response = await fetch(sourcePath, { cache: 'no-cache' });
     if (!response.ok) {
       throw new Error(`Failed to load generator shell: ${response.status}`);

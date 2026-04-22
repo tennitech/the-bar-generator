@@ -48,6 +48,14 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   [ ] **AI Exploration:** (Future) Event-specific background generation.
 
 ## 5. Recent Updates
+- **[2026-04-21] GitHub Pages 404 Fallback Added For Legacy And Bad Deep Links**:
+    - Audited the live GitHub Pages deployment at `https://tennitech.github.io/rpi-logo-generator/` and confirmed the intended primary routes still work directly under the real repo base path: `/`, `/generator/`, and valid `/generator/[style]/` pages all serve the expected shells and shared assets.
+    - Added a custom root `404.html` plus a dedicated Pages fallback utility so unsupported or legacy deep links such as `/generator/staff/`, `/generator/matrix/`, and unknown `/generator/[bar-style]/` paths now recover automatically into valid generator routes instead of stopping at GitHub's default 404 page.
+    - Preserved the marquee homepage as the default non-generator destination: unknown non-generator paths now redirect back to `/`, while bad legacy links that still carry generator query state continue to normalize into valid `/generator/[style]/` URLs under the same GitHub Pages base path.
+- **[2026-04-21] Legacy Generator Entry URLs Canonicalized To Style Routes**:
+    - Extended routing compatibility so old generator-first entry links like `/generator/` and `/generator/index.html` now redirect into the new `/generator/[style]/` structure instead of lingering on the pre-restructure base path.
+    - Preserved legacy `style` query handling on those generator entry links, mapping known aliases such as `staff` onto the current style slugs and falling back safely to `solid` when the requested style is missing or unknown.
+    - Moved the redirect check into the shared generator bootstrap as well so static wrapper pages normalize `index.html` variants and strip stale `style` query params before the generator shell loads.
 - **[2026-04-21] Waveform Preview Input Lag And Mobile Audio Teardown Fixed**:
     - Reduced live waveform preview cost by capping point density to an adaptive width-and-frequency-based sample budget and by moving envelope-state reads out of the per-vertex loop, which removes the worst slider and motion-toggle lag when waveform settings are pushed to their maximum values.
     - Fixed preview audio ownership so stopping audio now follows the actively playing preview type instead of the currently selected bar style; this resolves the waveform case where switching to another style could leave the old sound running.

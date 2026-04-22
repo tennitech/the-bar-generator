@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Redirecting | RPI Bar Generator</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --color-bg: #090b10;
+      --color-panel: rgba(16, 20, 29, 0.88);
+      --color-border: rgba(255, 255, 255, 0.12);
+      --color-text: #f2f4f8;
+      --color-muted: rgba(242, 244, 248, 0.72);
+      --color-accent: #d6001c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      background:
+        radial-gradient(circle at top, rgba(214, 0, 28, 0.18), transparent 38%),
+        linear-gradient(180deg, #101520 0%, var(--color-bg) 68%);
+      color: var(--color-text);
+      font-family: "RPIGeist", system-ui, sans-serif;
+    }
+
+    .fallback_shell {
+      width: min(100%, 32rem);
+      padding: 1.5rem;
+      border: 1px solid var(--color-border);
+      border-radius: 1rem;
+      background: var(--color-panel);
+      backdrop-filter: blur(14px);
+    }
+
+    .fallback_kicker {
+      margin: 0 0 0.5rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+
+    h1 {
+      margin: 0 0 0.75rem;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      line-height: 1;
+    }
+
+    p {
+      margin: 0;
+      color: var(--color-muted);
+      line-height: 1.55;
+    }
+
+    a {
+      color: var(--color-text);
+    }
+  </style>
+  <script>
+    (function loadPagesFallbackScript() {
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      const firstPart = pathParts[0];
+      const rootSegments = new Set([
+        'generator',
+        'css',
+        'js',
+        'assets',
+        'references',
+        'third_party',
+        'frontify-block',
+        'attached_assets',
+        'index.html',
+        'marquee-ui.html',
+        'favicon.ico',
+        '404.html',
+        '.nojekyll'
+      ]);
+      const basePath = window.location.hostname.endsWith('.github.io') && firstPart && !rootSegments.has(firstPart)
+        ? `/${firstPart}/`
+        : '/';
+      window.__RPI_PAGES_BASE_PATH__ = basePath;
+      const script = document.createElement('script');
+      script.src = `${basePath}js/utils/pagesFallback.js`;
+      script.onload = function () {
+        const redirectUrl = window.PagesFallback && typeof window.PagesFallback.getPagesFallbackRedirectUrl === 'function'
+          ? window.PagesFallback.getPagesFallbackRedirectUrl(window.location.pathname, window.location.search, {
+            hostname: window.location.hostname
+          })
+          : basePath;
+
+        if (redirectUrl && redirectUrl !== window.location.pathname + window.location.search) {
+          window.location.replace(redirectUrl);
+        }
+      };
+      document.head.append(script);
+    })();
+  </script>
+</head>
+
+<body>
+  <main class="fallback_shell">
+    <p class="fallback_kicker">GitHub Pages Fallback</p>
+    <h1>Redirecting...</h1>
+    <p>
+      If this route does not recover automatically, return to
+      <a id="fallback-home-link" href="/">the homepage</a>.
+    </p>
+  </main>
+  <script>
+    const fallbackHomeLink = document.getElementById('fallback-home-link');
+    if (fallbackHomeLink && window.__RPI_PAGES_BASE_PATH__) {
+      fallbackHomeLink.setAttribute('href', window.__RPI_PAGES_BASE_PATH__);
+    }
+  </script>
+</body>
+
+</html>
