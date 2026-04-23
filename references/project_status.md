@@ -52,6 +52,10 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   [ ] **AI Exploration:** (Future) Event-specific background generation.
 
 ## 5. Recent Updates
+- **[2026-04-23] Browser Resize Now Defers WebGL Canvas Resizing To Prevent Logo Flashing**:
+    - Changed the generator workspace resize flow so the existing canvas frame stays onscreen while the browser window or viewport is actively resizing, instead of repeatedly resizing the WebGL drawing buffer mid-drag.
+    - Added a short settle delay before committing `resizeCanvas(...)`, which removes the visible flash on the large logo during browser resizing while still applying the final responsive canvas size once layout changes stop.
+    - Kept sidebar-transition resizing on its explicit sync path so the canvas still snaps cleanly to its finished workspace dimensions after those in-app layout transitions complete.
 - **[2026-04-23] Ticker Reverse Direction Mapping Was Corrected**:
     - Flipped the ticker style’s effective reverse-direction mapping inside the shared loop runtime so its unchecked state now runs in the opposite direction from before, and enabling `REVERSE` now sends it the other way as expected.
     - Applied that correction at the shared motion-helper layer so live preview, sharable URL playback, and looping GIF export all keep the same ticker direction behavior.

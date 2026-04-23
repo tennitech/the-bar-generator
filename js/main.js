@@ -640,12 +640,14 @@ let workspaceResizeTransitionFrame = 0;
 let workspaceResizeTransitionTimeout = 0;
 let isWorkspaceResizeTransitionActive = false;
 let lastCanvasSize = { width: 0, height: 0 };
+let responsiveCanvasResizeTimeout = 0;
 let isPanDragging = false;
 let isPanningMode = false;
 let isCanvasPinching = false;
 let isAnimated = false;
 let lastHeaderPreviewMarkup = '';
 let lastHeaderPreviewUpdateTime = 0;
+const RESPONSIVE_CANVAS_RESIZE_SETTLE_MS = 120;
 const WAVEFORM_RENDER_MIN_POINTS = 240;
 const WAVEFORM_RENDER_MAX_POINTS = 1200;
 const WAVEFORM_RENDER_POINTS_PER_BAR_PIXEL = 2;
@@ -2161,6 +2163,24 @@ function syncMissionControlGrid() {
   logoContainer.style.setProperty('--lunar-grid-major-y', `${cellY * 5}px`);
 }
 
+function hasPendingResponsiveCanvasResize() {
+  return responsiveCanvasResizeTimeout !== 0;
+}
+
+function flushResponsiveCanvasResize() {
+  if (!responsiveCanvasResizeTimeout) return;
+  window.clearTimeout(responsiveCanvasResizeTimeout);
+  responsiveCanvasResizeTimeout = 0;
+}
+
+function scheduleResponsiveCanvasResize(delay = RESPONSIVE_CANVAS_RESIZE_SETTLE_MS) {
+  flushResponsiveCanvasResize();
+  responsiveCanvasResizeTimeout = window.setTimeout(() => {
+    responsiveCanvasResizeTimeout = 0;
+    requestResponsiveWorkspaceSizing();
+  }, delay);
+}
+
 function syncResponsiveWorkspaceSizing() {
   responsiveWorkspaceSyncFrame = 0;
   syncViewportHeightVar();
@@ -2177,7 +2197,7 @@ function syncResponsiveWorkspaceSizing() {
       nextHeight > 0 &&
       (lastCanvasSize.width !== nextWidth || lastCanvasSize.height !== nextHeight)
     ) {
-      if (isWorkspaceResizeTransitionActive) {
+      if (isWorkspaceResizeTransitionActive || hasPendingResponsiveCanvasResize()) {
         return;
       }
 
@@ -2212,6 +2232,7 @@ function finishWorkspaceResizeTransitionSync(options = {}) {
 
   isWorkspaceResizeTransitionActive = false;
   if (shouldRequestSizing) {
+    flushResponsiveCanvasResize();
     requestResponsiveWorkspaceSizing();
   }
 }
@@ -2243,6 +2264,9 @@ function setupResponsiveWorkspaceSizing() {
   if (!resizeTarget || typeof ResizeObserver === 'undefined') return;
 
   responsiveWorkspaceResizeObserver = new ResizeObserver(() => {
+    if (!isWorkspaceResizeTransitionActive) {
+      scheduleResponsiveCanvasResize();
+    }
     requestResponsiveWorkspaceSizing();
   });
   responsiveWorkspaceResizeObserver.observe(resizeTarget);
@@ -4230,7 +4254,7 @@ function buildHeaderPreviewSVG() {
       : (typeof millis === 'function' ? millis() / 1000.0 : 0));
 
   let svgContent = `
-<svg viewBox="0 0 ${currentWidth} ${logoHeight}" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true">
+<svg viewBox="0 0 ${currentWidth} ${logoHeight}" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="overflow: visible;">
   <path d="${paths.r}" fill="${fgColor}"/>
   <path d="${paths.p}" fill="${fgColor}"/>
   <path d="${paths.i}" fill="${fgColor}"/>`;
@@ -6357,13 +6381,10 @@ function updateAudioParameters() {
   }
 }
 
-let resizeTimeout;
 function windowResized() {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    syncViewportHeightVar();
-    requestResponsiveWorkspaceSizing();
-  }, 16);
+  syncViewportHeightVar();
+  scheduleResponsiveCanvasResize();
+  requestResponsiveWorkspaceSizing();
 }
 
 // Frame rate limiting for performance
@@ -6386,14 +6407,19 @@ function getViewportHeight() {
 
 function syncViewportHeightVar() {
   const nextHeight = Math.round(getViewportHeight());
+  const currentHeight = parseInt(document.documentElement.style.getPropertyValue('--viewport-height'), 10);
   if (nextHeight > 0) {
     document.documentElement.style.setProperty('--viewport-height', `${nextHeight}px`);
   }
+  return nextHeight > 0 && currentHeight !== nextHeight;
 }
 
 function handleViewportHeightChange() {
-  syncViewportHeightVar();
+  const viewportHeightChanged = syncViewportHeightVar();
   positionSaveMenu();
+  if (viewportHeightChanged) {
+    scheduleResponsiveCanvasResize();
+  }
   requestResponsiveWorkspaceSizing();
 }
 

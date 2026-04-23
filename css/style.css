@@ -1446,18 +1446,22 @@ body {
 }
 
 .brand-mark {
-  width: 56px;
   height: 28px;
+  aspect-ratio: 250 / 150.911;
+  width: auto;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   color: currentColor;
+  overflow: visible;
 }
 
 .brand-mark svg {
-  width: 100%;
-  height: auto;
+  width: auto;
+  height: 100%;
   display: block;
+  overflow: visible;
 }
 
 .brand-title {
@@ -1490,6 +1494,7 @@ body {
 .mobile-menu-toggle {
   width: 38px;
   height: 38px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1497,6 +1502,9 @@ body {
   background: color-mix(in srgb, var(--surface-panel) 96%, transparent);
   border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
   border-radius: 2px;
+  appearance: none;
+  -webkit-appearance: none;
+  line-height: 0;
   text-decoration: none;
   cursor: pointer;
   transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
@@ -1516,6 +1524,8 @@ body {
 .menu-toggle_icon {
   display: block;
   flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
 }
 
 .menu-toggle_icon-close {
@@ -3288,7 +3298,6 @@ input:checked + .slider:before {
   }
 
   .brand-mark {
-    width: 46px;
     height: 23px;
   }
 
