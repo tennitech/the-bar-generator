@@ -3280,31 +3280,13 @@ input:checked + .slider:before {
    Responsive / Mobile
    ──────────────────────────────────────── */
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   :root {
     --sidebar-width: min(18rem, calc(100vw - 0.75rem));
   }
 
   .mobile-menu-toggle {
     display: inline-flex;
-  }
-
-  .app-header {
-    padding: 0 10px;
-    gap: 8px;
-  }
-
-  .header-brand {
-    gap: 8px;
-    min-width: 0;
-  }
-
-  .brand-mark {
-    height: 23px;
-  }
-
-  .header-actions {
-    gap: 8px;
   }
 
   .app-sidebar {
@@ -3322,6 +3304,26 @@ input:checked + .slider:before {
   .app-sidebar.active {
     transform: translateX(0);
     box-shadow: -16px 0 48px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .header-brand {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    height: 23px;
+  }
+
+  .header-actions {
+    gap: 8px;
   }
 
   .primary-button {

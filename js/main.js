@@ -619,6 +619,7 @@ const MOTION_ENABLED_BY_STYLE = {
 const DEFAULT_ZOOM_LEVEL = 1.2;
 const MIN_DISPLAY_ZOOM_PERCENT = 50;
 const MAX_DISPLAY_ZOOM_PERCENT = 250;
+const COMPACT_LAYOUT_MAX_WIDTH = 900;
 const MIN_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MIN_DISPLAY_ZOOM_PERCENT / 100);
 const MAX_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MAX_DISPLAY_ZOOM_PERCENT / 100);
 
@@ -641,6 +642,8 @@ let workspaceResizeTransitionTimeout = 0;
 let isWorkspaceResizeTransitionActive = false;
 let lastCanvasSize = { width: 0, height: 0 };
 let responsiveCanvasResizeTimeout = 0;
+let lastCompactLayoutState = null;
+let desktopSidebarWasCollapsed = false;
 let isPanDragging = false;
 let isPanningMode = false;
 let isCanvasPinching = false;
@@ -683,6 +686,10 @@ function getResponsiveLogoScale(viewportWidth = width, viewportHeight = height) 
 
 // Zoom/Pan/Playback UI references
 let zoomInBtn, zoomOutBtn, zoomResetBtn, zoomLevelDisplay;
+
+function isCompactLayoutViewport(viewportWidth = window.innerWidth) {
+  return Math.max(0, Math.round(viewportWidth || 0)) <= COMPACT_LAYOUT_MAX_WIDTH;
+}
 
 const AVAILABLE_STYLE_VALUES = new Set([
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
@@ -2163,6 +2170,27 @@ function syncMissionControlGrid() {
   logoContainer.style.setProperty('--lunar-grid-major-y', `${cellY * 5}px`);
 }
 
+function syncResponsiveLayoutMode() {
+  if (!appSidebar) return false;
+
+  const isCompactLayout = isCompactLayoutViewport();
+  if (lastCompactLayoutState === isCompactLayout) {
+    return false;
+  }
+
+  if (isCompactLayout) {
+    desktopSidebarWasCollapsed = appSidebar.classList.contains('sidebar-collapsed');
+    appSidebar.classList.remove('sidebar-collapsed');
+    appSidebar.classList.remove('active');
+  } else {
+    appSidebar.classList.remove('active');
+    appSidebar.classList.toggle('sidebar-collapsed', desktopSidebarWasCollapsed);
+  }
+
+  lastCompactLayoutState = isCompactLayout;
+  return true;
+}
+
 function hasPendingResponsiveCanvasResize() {
   return responsiveCanvasResizeTimeout !== 0;
 }
@@ -2184,6 +2212,7 @@ function scheduleResponsiveCanvasResize(delay = RESPONSIVE_CANVAS_RESIZE_SETTLE_
 function syncResponsiveWorkspaceSizing() {
   responsiveWorkspaceSyncFrame = 0;
   syncViewportHeightVar();
+  syncResponsiveLayoutMode();
   syncSidebarToggleState();
   syncMissionControlGrid();
 
@@ -2559,6 +2588,7 @@ async function setup() {
   savePngButton = document.getElementById('save-png');
   saveSvgButton = document.getElementById('save-svg');
   saveLoopGifButton = document.getElementById('save-loop-gif');
+  syncResponsiveLayoutMode();
   syncMissionControlInterfaceCopy();
   syncMissionControlSaveMenu();
 
@@ -2831,11 +2861,11 @@ async function setup() {
 
   // Focus trap and Escape key support for sidebar
   appSidebar.addEventListener('keydown', function (e) {
-    // Only trap focus on mobile when sidebar is active
-    if (window.innerWidth <= 768 && !appSidebar.classList.contains('active')) return;
+    // Only trap focus in compact layout when the sidebar is active.
+    if (isCompactLayoutViewport() && !appSidebar.classList.contains('active')) return;
 
-    // Handle Escape to close (mobile only)
-    if (e.key === 'Escape' && window.innerWidth <= 768) {
+    // Handle Escape to close in compact layout only.
+    if (e.key === 'Escape' && isCompactLayoutViewport()) {
       e.stopPropagation();
       toggleMobileMenu();
       return;
@@ -3757,12 +3787,12 @@ function resetCirclePatternCache() {
 }
 
 function toggleMobileMenu() {
-  const isMobile = window.innerWidth <= 768;
+  const isCompactLayout = isCompactLayoutViewport();
 
-  if (isMobile) {
+  if (isCompactLayout) {
     const isActive = appSidebar.classList.contains('active');
     if (!isActive) {
-      // Opening sidebar on mobile
+      // Opening sidebar in compact overlay layout
       lastFocusedElement = document.activeElement;
       appSidebar.classList.add('active');
       if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
@@ -3772,7 +3802,7 @@ function toggleMobileMenu() {
         if (firstFocusable) firstFocusable.focus();
       }, 100);
     } else {
-      // Closing sidebar on mobile
+      // Closing sidebar in compact overlay layout
       appSidebar.classList.remove('active');
 
       if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
@@ -3784,6 +3814,7 @@ function toggleMobileMenu() {
   } else {
     // Desktop behavior (collapsible)
     appSidebar.classList.toggle('sidebar-collapsed');
+    desktopSidebarWasCollapsed = appSidebar.classList.contains('sidebar-collapsed');
     startWorkspaceResizeTransitionSync(460);
   }
 
@@ -3791,8 +3822,8 @@ function toggleMobileMenu() {
 }
 
 function handleClickOutside(event) {
-  // Only apply on mobile where sidebar overlays content
-  if (window.innerWidth > 768) return;
+  // Only apply in compact overlay layout where the sidebar covers the workspace.
+  if (!isCompactLayoutViewport()) return;
   // Don't close if clicking on the toggle button or inside the sidebar
   if (mobileMenuToggle && mobileMenuToggle.contains(event.target) ||
     appSidebar && appSidebar.contains(event.target)) {
@@ -3830,7 +3861,7 @@ function positionSaveMenu() {
   saveMenu.style.right = '';
   saveMenu.style.maxWidth = '';
 
-  if (window.innerWidth > 768) return;
+  if (!isCompactLayoutViewport()) return;
 
   const visualViewport = window.visualViewport || null;
   const viewportWidth = visualViewport && Number.isFinite(visualViewport.width)
@@ -3982,8 +4013,8 @@ function updateLoopingGifSaveOption() {
 function syncSidebarToggleState() {
   if (!mobileMenuToggle || !appSidebar) return;
 
-  const isMobile = window.innerWidth <= 768;
-  const isExpanded = isMobile
+  const isCompactLayout = isCompactLayoutViewport();
+  const isExpanded = isCompactLayout
     ? appSidebar.classList.contains('active')
     : !appSidebar.classList.contains('sidebar-collapsed');
 
@@ -6416,8 +6447,9 @@ function syncViewportHeightVar() {
 
 function handleViewportHeightChange() {
   const viewportHeightChanged = syncViewportHeightVar();
+  const layoutModeChanged = syncResponsiveLayoutMode();
   positionSaveMenu();
-  if (viewportHeightChanged) {
+  if (viewportHeightChanged || layoutModeChanged) {
     scheduleResponsiveCanvasResize();
   }
   requestResponsiveWorkspaceSizing();

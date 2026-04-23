@@ -52,6 +52,10 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   [ ] **AI Exploration:** (Future) Event-specific background generation.
 
 ## 5. Recent Updates
+- **[2026-04-23] Compact Sidebar Overlay Now Starts Earlier To Stabilize Narrow-Width Logo Fit**:
+    - Moved the generator’s fixed-sidebar-to-overlay transition up from the old phone-only breakpoint to a shared compact-layout breakpoint at `900px`, so tablet and narrow desktop widths no longer keep squeezing the canvas before suddenly flipping into overlay behavior.
+    - Synchronized the JavaScript sidebar logic with that same compact breakpoint, including click-outside handling, focus trapping, save-menu positioning, and sidebar state resets when entering or leaving compact layout, so resize behavior stays consistent instead of fighting between CSS and runtime state.
+    - Corrected the compact menu button’s initial `aria-expanded` state to `false`, which prevents narrow-width loads from briefly advertising an open control drawer when the overlay sidebar is actually closed.
 - **[2026-04-23] Browser Resize Now Defers WebGL Canvas Resizing To Prevent Logo Flashing**:
     - Changed the generator workspace resize flow so the existing canvas frame stays onscreen while the browser window or viewport is actively resizing, instead of repeatedly resizing the WebGL drawing buffer mid-drag.
     - Added a short settle delay before committing `resizeCanvas(...)`, which removes the visible flash on the large logo during browser resizing while still applying the final responsive canvas size once layout changes stop.
