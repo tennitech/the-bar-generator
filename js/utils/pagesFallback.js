@@ -7,6 +7,16 @@
     'runway', 'lunar', 'truss', 'music', 'graph'
   ]);
 
+  const UNAVAILABLE_STYLE_VALUES = new Set([
+    'music',
+    'graph',
+    'truss'
+  ]);
+
+  const ROUTABLE_STYLE_VALUES = new Set(
+    Array.from(AVAILABLE_STYLE_VALUES).filter(style => !UNAVAILABLE_STYLE_VALUES.has(style))
+  );
+
   const GENERATOR_QUERY_KEYS = new Set([
     'style',
     'colorMode',
@@ -35,11 +45,9 @@
     'waveformEnvelopeWaves',
     'waveformEnvelopeCenter',
     'waveformEnvelopeBipolar',
-    'circlesMode',
     'circlesFill',
     'circlesDensity',
     'circlesSizeVariation',
-    'circlesOverlap',
     'trussFamily',
     'trussSegments',
     'trussThickness',
@@ -77,9 +85,9 @@
   ]);
 
   function normalizeStyleValue(style) {
-    if (style === 'staff') return 'music';
+    if (style === 'staff') return 'solid';
     if (style === 'matrix') return 'solid';
-    return AVAILABLE_STYLE_VALUES.has(style) ? style : 'solid';
+    return ROUTABLE_STYLE_VALUES.has(style) ? style : 'solid';
   }
 
   function normalizePathname(pathname) {

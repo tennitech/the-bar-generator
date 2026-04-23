@@ -1,4 +1,5 @@
 const {
+  getLoopingAnimationState,
   isLoopingGifEligibleStyle,
   getLoopingGifFramePlan
 } = require('../js/utils/loopingGif');
@@ -14,13 +15,14 @@ describe('loopingGif utils', () => {
   test('builds a ruler loop plan from repeat settings', () => {
     const plan = getLoopingGifFramePlan('ruler', {
       rulerRepeats: 10,
-      rulerUnits: 4
+      rulerUnits: 4,
+      rulerSpeed: 2
     }, {
       barWidth: 250
     });
 
     expect(plan.style).toBe('ruler');
-    expect(plan.frameCount).toBe(24);
+    expect(plan.periodSeconds).toBeCloseTo(0.5);
     expect(plan.frameDelayMs).toBeGreaterThan(0);
     expect(plan.repeatWidth).toBeCloseTo((250 / (2 * (10 * 4 + 1) - 1)) * 8);
     expect(plan.getLoopOffsetX(0.5)).toBeCloseTo(plan.repeatWidth / 2);
@@ -28,13 +30,27 @@ describe('loopingGif utils', () => {
 
   test('builds a ticker loop plan from the bottom repeat count', () => {
     const plan = getLoopingGifFramePlan('ticker', {
-      tickerRepeats: 25
+      tickerRepeats: 25,
+      tickerSpeed: 0.5
     }, {
       barWidth: 250
     });
 
     expect(plan.style).toBe('ticker');
+    expect(plan.periodSeconds).toBeCloseTo(2);
     expect(plan.repeatWidth).toBeCloseTo(10);
+    expect(plan.getLoopOffsetX(0.25)).toBeCloseTo(-2.5);
+  });
+
+  test('flips ticker loop offsets when reverse is enabled', () => {
+    const plan = getLoopingGifFramePlan('ticker', {
+      tickerRepeats: 25,
+      tickerSpeed: 1,
+      tickerReverse: true
+    }, {
+      barWidth: 250
+    });
+
     expect(plan.getLoopOffsetX(0.25)).toBeCloseTo(2.5);
   });
 
@@ -47,5 +63,41 @@ describe('loopingGif utils', () => {
     expect(plan.periodSeconds).toBeCloseTo(0.5);
     expect(plan.frameCount).toBe(24);
     expect(plan.getTimeSeconds(0.5)).toBeCloseTo(0.25);
+  });
+
+  test('reverses waveform time progression when reverse is enabled', () => {
+    const plan = getLoopingGifFramePlan('waveform', {
+      waveformSpeed: 2,
+      waveformReverse: true
+    });
+
+    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(-0.25);
+  });
+
+  test('caps very fast loop exports to viewer-safe frame delays', () => {
+    const plan = getLoopingGifFramePlan('ticker', {
+      tickerRepeats: 20,
+      tickerSpeed: 5
+    }, {
+      barWidth: 200
+    });
+
+    expect(plan.periodSeconds).toBeCloseTo(0.2);
+    expect(plan.frameCount).toBe(10);
+    expect(plan.frameDelayMs).toBe(20);
+  });
+
+  test('derives live loop state from elapsed time and style speed', () => {
+    const state = getLoopingAnimationState('ticker', {
+      tickerRepeats: 20,
+      tickerSpeed: 2
+    }, {
+      barWidth: 200,
+      elapsedSeconds: 0.125
+    });
+
+    expect(state.periodSeconds).toBeCloseTo(0.5);
+    expect(state.progress).toBeCloseTo(0.25);
+    expect(state.loopOffsetX).toBeCloseTo(-2.5);
   });
 });

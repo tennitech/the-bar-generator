@@ -7,7 +7,7 @@
   <meta name="description" content="Generate unique, brand-compliant RPI logos and lockups with dynamic bar patterns.">
   <title>RPI Logo Generator</title>
   <base href="../">
-  <link href="css/style.css?v=20260420-mission-control-polish" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20260423-motion-runtime-sync" rel="stylesheet" type="text/css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 </head>
 
@@ -69,29 +69,25 @@
           <svg class="icon-right icon-book" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
             stroke-linejoin="round" aria-hidden="true">
-            <path d="M3.5 5.5A2.5 2.5 0 0 1 6 3h4.5C11.88 3 13 4.12 13 5.5V19a2.5 2.5 0 0 0-2.5-2.5H6A2.5 2.5 0 0 0 3.5 19z"></path>
-            <path d="M20.5 5.5A2.5 2.5 0 0 0 18 3h-4.5C12.12 3 11 4.12 11 5.5V19a2.5 2.5 0 0 1 2.5-2.5H18a2.5 2.5 0 0 1 2.5 2.5z"></path>
-            <path d="M7 7.5h3"></path>
-            <path d="M14 7.5h3"></path>
+            <path d="M4.5 5.5A2.5 2.5 0 0 1 7 3h4a2 2 0 0 1 2 2v14a3.5 3.5 0 0 0-3.5-3.5H7A2.5 2.5 0 0 0 4.5 18z"></path>
+            <path d="M19.5 5.5A2.5 2.5 0 0 0 17 3h-4a2 2 0 0 0-2 2v14a3.5 3.5 0 0 1 3.5-3.5H17a2.5 2.5 0 0 1 2.5 2.5z"></path>
+            <path d="M12 5v14"></path>
+            <path d="M7.5 7.5H10"></path>
+            <path d="M14 7.5h2.5"></path>
           </svg>
         </button>
         <div id="save-menu" class="save-menu hidden" role="menu">
           <button id="save-png" class="save-option" role="menuitem">
-            <span class="option-label">PNG IMAGE</span>
-            <span class="option-desc">High resolution raster</span>
+            <span class="option-label">PNG</span>
+            <span class="option-desc">Best for slides, docs, and sharing</span>
           </button>
           <button id="save-svg" class="save-option" role="menuitem">
-            <span class="option-label">SVG VECTOR</span>
-            <span class="option-desc">Scalable format</span>
+            <span class="option-label">SVG</span>
+            <span class="option-desc">Best for resizing without losing quality</span>
           </button>
           <button id="save-loop-gif" class="save-option" role="menuitem" hidden>
-            <span class="option-label">LOOPING GIF</span>
-            <span class="option-desc">Seamless animation for repeat styles</span>
-          </button>
-          <div class="save-divider"></div>
-          <button id="copy-embed" class="save-option" role="menuitem">
-            <span class="option-label">COPY EMBED CODE</span>
-            <span class="option-desc">For Frontify / Web</span>
+            <span class="option-label">GIF</span>
+            <span class="option-desc">Best for animated slides and screens</span>
           </button>
         </div>
       </div>
@@ -103,7 +99,7 @@
             d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.41 7.86 10.94.58.11.79-.25.79-.56 0-.28-.01-1.2-.02-2.18-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.76 2.68 1.25 3.33.96.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.47.11-3.06 0 0 .97-.31 3.18 1.17.92-.26 1.91-.39 2.9-.4.98 0 1.97.14 2.9.4 2.21-1.49 3.18-1.17 3.18-1.17.63 1.59.24 2.77.12 3.06.74.8 1.18 1.82 1.18 3.07 0 4.41-2.7 5.38-5.27 5.66.41.35.78 1.04.78 2.1 0 1.52-.01 2.74-.01 3.11 0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
         </svg>
       </a>
-      <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open design controls" aria-expanded="true"
+      <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open design controls" aria-expanded="false"
         aria-controls="app-sidebar">
         <svg class="menu-toggle_icon menu-toggle_icon-menu" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round"
@@ -162,9 +158,9 @@
                   <option value="lunar">ARTEMIS II</option>
                 </optgroup>
                 <optgroup label="UNDER CONSTRUCTION">
-                  <option value="music">MUSIC</option>
-                  <option value="graph">DATA GRAPH</option>
-                  <option value="truss">TRUSS</option>
+                  <option value="music" disabled>MUSIC</option>
+                  <option value="graph" disabled>DATA GRAPH</option>
+                  <option value="truss" disabled>TRUSS</option>
                 </optgroup>
               </select>
             </div>
@@ -189,14 +185,18 @@
 
         <div class="sidebar-divider"></div>
 
-        <aside class="lunar_source-note" aria-label="Mission Control lunar surface credit">
-          <span class="lunar_source-kicker">BOROMIR - Lunar surface source</span>
-          <p>
-            Thesis imagery by Maeve Marshall.
-            <a href="https://github.com/the-astronot/boromir/blob/main/README.md" target="_blank"
-              rel="noopener noreferrer">View repository</a>
-          </p>
-        </aside>
+        <div id="lunar-group" class="control-group" style="display: none;">
+          <div class="runtime_section audio_section">
+            <div class="control-header">COMMS</div>
+            <div class="control_row control_row-preview">
+              <div class="control-label control_row-label">LIFTOFF</div>
+              <div class="preview-controls">
+                <button id="lunar-audio-btn" class="preview-control-btn" data-preview-kind="audio"
+                  aria-label="Play audio preview"></button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Dynamic Control Groups -->
         <div id="ruler-group" class="control-group" style="display: none;">
@@ -212,6 +212,28 @@
             <input type="range" id="ruler-units-slider" min="2" max="10" step="2" value="4" class="control-slider"
               aria-label="Ruler Units">
           </div>
+          <div class="runtime_section motion_section">
+            <div class="control-header">MOTION</div>
+            <div class="control control_row control_row-toggle">
+              <label for="ruler-motion-toggle" class="control-label control_row-label">LOOP</label>
+              <label class="switch">
+                <input type="checkbox" id="ruler-motion-toggle" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="control control_row control_row-toggle">
+              <label for="ruler-reverse-toggle" class="control-label control_row-label">REVERSE</label>
+              <label class="switch">
+                <input type="checkbox" id="ruler-reverse-toggle">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="control slider-control runtime_speed-control">
+              <label for="ruler-speed-slider" class="control-label">SPEED <span id="ruler-speed-display">1.0</span></label>
+              <input type="range" id="ruler-speed-slider" min="0.2" max="5" step="0.1" value="1" class="control-slider"
+                aria-label="Ruler Motion Speed">
+            </div>
+          </div>
         </div>
 
         <div id="binary-group" class="control-group" style="display: none;">
@@ -222,8 +244,8 @@
               aria-label="Binary Text Input">
             <div class="control-hint">Type to translate to binary code</div>
           </div>
-          <div class="control preview_section">
-            <div class="control_subheader">PREVIEW</div>
+          <div class="runtime_section audio_section">
+            <div class="control-header">PREVIEW</div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
               <div class="preview-controls">
@@ -242,8 +264,8 @@
               aria-label="Morse Text Input">
             <div class="control-hint">Type to translate to morse code</div>
           </div>
-          <div class="control preview_section">
-            <div class="control_subheader">PREVIEW</div>
+          <div class="runtime_section audio_section">
+            <div class="control-header">PREVIEW</div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
               <div class="preview-controls">
@@ -275,15 +297,30 @@
             <input type="range" id="ticker-width-ratio-slider" min="1" max="3" value="2" class="control-slider"
               aria-label="Ticker Width Ratio">
           </div>
-          <div class="control preview_section">
-            <div class="control_subheader">PREVIEW</div>
-            <div class="control_row control_row-preview">
-              <div class="control-label control_row-label">MOTION</div>
-              <div class="preview-controls">
-                <button id="ticker-motion-btn" class="preview-control-btn" data-preview-kind="motion"
-                  aria-label="Pause motion preview"></button>
-              </div>
+          <div class="runtime_section motion_section">
+            <div class="control-header">MOTION</div>
+            <div class="control control_row control_row-toggle">
+              <label for="ticker-motion-toggle" class="control-label control_row-label">LOOP</label>
+              <label class="switch">
+                <input type="checkbox" id="ticker-motion-toggle" checked>
+                <span class="slider round"></span>
+              </label>
             </div>
+            <div class="control control_row control_row-toggle">
+              <label for="ticker-reverse-toggle" class="control-label control_row-label">REVERSE</label>
+              <label class="switch">
+                <input type="checkbox" id="ticker-reverse-toggle">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="control slider-control runtime_speed-control">
+              <label for="ticker-speed-slider" class="control-label">SPEED <span id="ticker-speed-display">1.0</span></label>
+              <input type="range" id="ticker-speed-slider" min="0.2" max="5" step="0.1" value="1" class="control-slider"
+                aria-label="Ticker Motion Speed">
+            </div>
+          </div>
+          <div class="runtime_section audio_section">
+            <div class="control-header">PREVIEW</div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
               <div class="preview-controls">
@@ -308,13 +345,6 @@
                 id="waveform-frequency-display">24</span></label>
             <input type="range" id="waveform-frequency-slider" min="10" max="100" value="24" class="control-slider"
               aria-label="Waveform Frequency">
-          </div>
-
-          <div class="control slider-control">
-            <label for="waveform-speed-slider" class="control-label">SPEED <span
-                id="waveform-speed-display">0.7</span></label>
-            <input type="range" id="waveform-speed-slider" min="0" max="5" step="0.1" value="0.7" class="control-slider"
-              aria-label="Waveform Speed">
           </div>
 
           <div class="control control_row control_row-toggle">
@@ -358,15 +388,31 @@
             </div>
           </div>
 
-          <div class="control preview_section">
-            <div class="control_subheader">PREVIEW</div>
-            <div class="control_row control_row-preview">
-              <div class="control-label control_row-label">MOTION</div>
-              <div class="preview-controls">
-                <button id="waveform-motion-btn" class="preview-control-btn" data-preview-kind="motion"
-                  aria-label="Pause motion preview"></button>
-              </div>
+          <div class="runtime_section motion_section">
+            <div class="control-header">MOTION</div>
+            <div class="control control_row control_row-toggle">
+              <label for="waveform-motion-toggle" class="control-label control_row-label">LOOP</label>
+              <label class="switch">
+                <input type="checkbox" id="waveform-motion-toggle" checked>
+                <span class="slider round"></span>
+              </label>
             </div>
+            <div class="control control_row control_row-toggle">
+              <label for="waveform-reverse-toggle" class="control-label control_row-label">REVERSE</label>
+              <label class="switch">
+                <input type="checkbox" id="waveform-reverse-toggle">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="control slider-control runtime_speed-control">
+              <label for="waveform-speed-slider" class="control-label">SPEED <span
+                  id="waveform-speed-display">0.7</span></label>
+              <input type="range" id="waveform-speed-slider" min="0.2" max="5" step="0.1" value="0.7" class="control-slider"
+                aria-label="Waveform Motion Speed">
+            </div>
+          </div>
+          <div class="runtime_section audio_section">
+            <div class="control-header">PREVIEW</div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
               <div class="preview-controls">
@@ -379,16 +425,6 @@
 
         <div id="circles-group" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
-          <div class="control">
-            <label for="circles-mode-select" class="control-label">MODE</label>
-            <div class="select-wrapper">
-              <select id="circles-mode-select" class="control-select">
-                <option value="packing">PACKING</option>
-                <option value="grid">GRID</option>
-              </select>
-            </div>
-          </div>
-
           <div class="control slider-control">
             <label for="circles-density-slider" class="control-label">DENSITY <span
                 id="circles-density-display">50</span>%</label>
@@ -401,13 +437,6 @@
                 id="circles-size-variation-display">0</span>%</label>
             <input type="range" id="circles-size-variation-slider" min="0" max="100" value="0" class="control-slider"
               aria-label="Size Variation">
-          </div>
-
-          <div class="control slider-control">
-            <label for="circles-overlap-slider" class="control-label">OVERLAP <span
-                id="circles-overlap-display">0</span>%</label>
-            <input type="range" id="circles-overlap-slider" min="0" max="100" value="0" class="control-slider"
-              aria-label="Overlap Amount">
           </div>
 
           <div class="control">
@@ -554,8 +583,8 @@
             </div>
             <div class="control-hint" style="margin-top: 8px;">Click keys to add notes (max 4 measures)</div>
           </div>
-          <div class="control preview_section">
-            <div class="control_subheader">PREVIEW</div>
+          <div class="runtime_section audio_section">
+            <div class="control-header">PREVIEW</div>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
               <div class="preview-controls">
@@ -695,8 +724,16 @@
 
         </div>
         <div class="sidebar-footer">
-          <button id="report-problem-btn" class="sidebar-feedback-btn" type="button" aria-haspopup="dialog"
-            aria-controls="bug-report-dialog">
+          <aside class="lunar_source-note" aria-label="Mission Control lunar surface credit">
+            <span class="lunar_source-kicker">BOROMIR - Lunar surface source</span>
+            <p>Thesis imagery by Maeve Marshall.</p>
+            <p class="lunar_source-link">
+              <a href="https://github.com/the-astronot/boromir/blob/main/README.md" target="_blank"
+                rel="noopener noreferrer">View source code</a>
+            </p>
+          </aside>
+          <div class="sidebar-divider lunar_source-divider" aria-hidden="true"></div>
+          <button id="report-problem-btn" class="sidebar-feedback-btn" type="button">
             <span id="report-problem-label">Report a Problem</span>
           </button>
         </div>
@@ -734,18 +771,6 @@
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
             <path d="M3 3v5h5"></path>
-          </svg>
-        </button>
-        <button id="pan-btn" class="workspace-btn" type="button" aria-label="Pan Tool" data-tooltip="Pan mode" hidden
-          aria-hidden="true" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="5 9 2 12 5 15"></polyline>
-            <polyline points="9 5 12 2 15 5"></polyline>
-            <polyline points="19 9 22 12 19 15"></polyline>
-            <polyline points="9 19 12 22 15 19"></polyline>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <line x1="12" y1="2" x2="12" y2="22"></line>
           </svg>
         </button>
       </div>
@@ -812,13 +837,13 @@
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/musicStyle.js"></script>
   <script src="js/utils/lunarBarAsset.js?v=20260419-lunar-color"></script>
-  <script src="js/utils/barPattern.js?v=20260420-lunar-color-ticker-ratio-limits"></script>
-  <script src="js/utils/loopingGif.js"></script>
+  <script src="js/utils/barPattern.js?v=20260423-circles-packing-only"></script>
+  <script src="js/utils/loopingGif.js?v=20260423-motion-runtime-sync"></script>
   <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
   <script src="js/utils/previewControls.js?v=20260417-morse-randomize"></script>
   <script src="js/ui.js"></script>
-  <script src="js/main.js?v=20260421-responsive-preview-scale"></script>
-  <script src="js/drawing.js?v=20260420-lunar-color-ticker-ratio-limits"></script>
+  <script src="js/main.js?v=20260423-circles-packing-only"></script>
+  <script src="js/drawing.js?v=20260423-circles-packing-only"></script>
 </body>
 
 </html>

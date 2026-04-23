@@ -1,6 +1,6 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-04-23
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## 1. Project Overview
@@ -22,6 +22,10 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   `references/` - Documentation and guidelines.
 
 ## 3. Completed Milestones
+
+- **[2026-04-23] Workspace Controls Simplified To Zoom And Reset Only**:
+    - Removed the dedicated pan button from the generator workspace controls so the preview toolbar stays aligned with the app’s primary job: adjusting and exporting a single fitted RPI logo bar rather than navigating a freeform canvas.
+    - Cleaned up the unused pan-button event wiring in `js/main.js` while keeping existing zoom, reset, pinch, and internal viewport offset behavior intact.
 
 ### Phase 0: Analysis & Setup
 *   [x] Analyzed Project Proposal and Brand Guidelines.
@@ -48,6 +52,89 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   [ ] **AI Exploration:** (Future) Event-specific background generation.
 
 ## 5. Recent Updates
+- **[2026-04-23] Compact Sidebar Overlay Now Starts Earlier To Stabilize Narrow-Width Logo Fit**:
+    - Moved the generator’s fixed-sidebar-to-overlay transition up from the old phone-only breakpoint to a shared compact-layout breakpoint at `900px`, so tablet and narrow desktop widths no longer keep squeezing the canvas before suddenly flipping into overlay behavior.
+    - Synchronized the JavaScript sidebar logic with that same compact breakpoint, including click-outside handling, focus trapping, save-menu positioning, and sidebar state resets when entering or leaving compact layout, so resize behavior stays consistent instead of fighting between CSS and runtime state.
+    - Corrected the compact menu button’s initial `aria-expanded` state to `false`, which prevents narrow-width loads from briefly advertising an open control drawer when the overlay sidebar is actually closed.
+- **[2026-04-23] Browser Resize Now Defers WebGL Canvas Resizing To Prevent Logo Flashing**:
+    - Changed the generator workspace resize flow so the existing canvas frame stays onscreen while the browser window or viewport is actively resizing, instead of repeatedly resizing the WebGL drawing buffer mid-drag.
+    - Added a short settle delay before committing `resizeCanvas(...)`, which removes the visible flash on the large logo during browser resizing while still applying the final responsive canvas size once layout changes stop.
+    - Kept sidebar-transition resizing on its explicit sync path so the canvas still snaps cleanly to its finished workspace dimensions after those in-app layout transitions complete.
+- **[2026-04-23] Ticker Reverse Direction Mapping Was Corrected**:
+    - Flipped the ticker style’s effective reverse-direction mapping inside the shared loop runtime so its unchecked state now runs in the opposite direction from before, and enabling `REVERSE` now sends it the other way as expected.
+    - Applied that correction at the shared motion-helper layer so live preview, sharable URL playback, and looping GIF export all keep the same ticker direction behavior.
+- **[2026-04-23] Report Action Now Opens A Prefilled GitHub New-Issue Page**:
+    - Replaced the old in-app report dialog trigger with a direct GitHub `issues/new` action so the sidebar report button now opens issue creation for this repository instead of the internal form.
+    - Prefilled the new GitHub issue with the current style, theme, viewport, sharable URL, user agent, and timestamp so the reporting flow still carries the key runtime context without requiring the local dialog.
+- **[2026-04-23] Mission Control Removed The Top Sidebar Divider Under The Selectors**:
+    - Hid the divider line directly beneath the style and color dropdowns when the `MISSION CONTROL` theme is active so the top of the lunar sidebar reads as a single uninterrupted control cluster.
+    - Corrected the lunar-theme selector afterward so the hide rule targets the real `.sidebar-content` container instead of the outer scroll wrapper, which had left the divider visible.
+    - Restored the removed divider block’s vertical footprint as spacing above `COMMS`, so the first Mission Control section now sits at the same distance from the dropdowns as the first section in the standard sidebar layouts.
+- **[2026-04-23] Mission Control Source Credit Moved Into The Footer Rail**:
+    - Moved the Boromir lunar-surface credit block from the top of the sidebar into the sticky footer area so it now sits directly above `Report Anomaly` in Mission Control instead of interrupting the main control stack.
+    - Updated the link copy from `View repository` to `View source code` and placed that link on its own line beneath the attribution sentence for a cleaner footer reading order.
+    - Added a dedicated footer divider between that source-credit card and `Report Anomaly` so the lower action rail keeps a visible separation even after the top Mission Control divider was removed.
+- **[2026-04-23] Mission Control Fun Panel Now Stays Theme-Gated And Visually Quiet**:
+    - Limited the special `ARTEMIS II` `FUN` panel so it only appears when the current bar style is `ARTEMIS II` and the active color theme is `MISSION CONTROL`, instead of appearing for the style under other themes.
+    - Removed the lunar header’s red status marker from that special panel and kept its `FUN` header aligned flush left so the section reads like the rest of the sidebar rather than like a flagged alert.
+- **[2026-04-23] Audio Preview Coverage Expanded And Artemis II Mission Audio Added**:
+    - Fixed the shared preview-audio transport so the bar styles that are supposed to expose sound previews continue to work consistently through the current unified runtime, including `WAVEFORM`, `TICKER`, and `MORSE CODE`.
+    - Added a dedicated `ARTEMIS II` audio preview using the provided liftoff clip, but gated it to the `MISSION CONTROL` color theme only so the special mission audio does not leak into the standard exported-mark theme set.
+    - Stopped that mission audio automatically when users leave the Mission Control theme or switch away from the Artemis II style, keeping transport state and accessibility copy in sync with the visible controls.
+- **[2026-04-23] Slider Value Editing No Longer Clips Digits Or Reflows Labels**:
+    - Reworked the click-to-edit slider value treatment so the inline input now overlays the existing value footprint instead of replacing it in normal layout flow, which stops adjacent label content from shifting when editing begins.
+    - Fixed the edit field sizing and alignment so values no longer lose a digit while editing, especially on compact numeric readouts with suffixes such as `%` or ratio formatting.
+- **[2026-04-23] Slider Tick Markers Removed From Sidebar Controls**:
+    - Removed the recently added discrete-step tick markers beneath sidebar range inputs so the sliders return to the cleaner uninterrupted track treatment.
+    - Kept the click-to-edit numeric value labels and all existing slider bounds, snapping, and parameter behavior intact; this change only removes the visual tick decoration and its helper DOM/CSS.
+- **[2026-04-23] Audio Preview Section Clarified In The Sidebar**:
+    - Renamed the runtime section header for preview-audio controls from `AUDIO` to `PREVIEW` across the generator sidebar so the grouping reads as an on-canvas preview feature rather than an exported asset feature.
+    - Restored the row label beside the preview icon itself to `AUDIO`, keeping the control purpose explicit while avoiding the misleading impression that exported downloads include sound.
+- **[2026-04-23] Looping GIF Timing Now Respects Viewer-Safe Frame Delays**:
+    - Updated the shared looping GIF planner to reduce frame count for very fast loops instead of always forcing at least 24 frames, which caused some downloaded GIFs to play slower than the live preview once viewers clamped tiny frame delays.
+    - Preserved the same loop-period math between preview and export, but now keep the exported frame delay at a safer floor so the downloaded GIF’s real playback speed tracks the on-canvas motion much more closely.
+- **[2026-04-23] Looping Styles Gained A Reverse Direction Toggle**:
+    - Added `REVERSE` motion toggles for `RULER`, `TICKER`, and `WAVEFORM` so loop previews can run in either direction without changing the underlying pattern geometry or brand-safe defaults.
+    - Wired reverse state through the shared loop runtime helper, sharable URL parameters, reset/randomize flows, and looping GIF export so live preview and exported motion stay aligned.
+    - Kept the default direction unchanged, preserving existing links and the prior motion behavior unless the reverse option is explicitly enabled.
+- **[2026-04-23] Numeric Slider Labels Became Editable And Discrete Stops Gained Tick Dots**:
+    - Added click-to-edit behavior to the numeric slider readouts in the generator sidebar so users can type exact values directly from the label, matching the existing zoom percentage control pattern instead of relying only on dragging.
+    - Added subtle vertical notch rows for low-count discrete sliders such as units, variants, envelope controls, and ratio selectors so the fixed snap positions are visible before interaction, then aligned those notches to the slider thumb travel instead of the full input width.
+    - Refined the inline edit state so typing temporarily replaces the entire displayed value treatment, including affixes like `%`, rather than leaving adjacent static fragments visible beside the active field.
+    - Tightened that edit state again so the active field now fully replaces the sidebar readout container while editing, preventing any duplicate number from remaining visible beside the temporary input and matching the focused zoom-field behavior more closely.
+    - Kept the existing per-style normalization rules intact, including ticker width-ratio bounds, graph scale clamping, loop speed rounding, and waveform envelope snapping when values are typed manually.
+- **[2026-04-23] GitHub Pages 404 Fallback Restyled Into A Branded Recovery Screen**:
+    - Replaced the old bare redirect card in root `404.html` with a homepage-aligned marquee fallback that keeps the existing all-black shell, animated bar background, and hero lockup language while swapping in 404-specific recovery copy.
+    - Preserved the existing GitHub Pages auto-reroute logic while adding a short visible countdown, the missing route label, and direct links back to the homepage or a clean `solid` generator entry.
+- **[2026-04-23] Under-Construction Bar Styles Disabled In The Picker And Routing**:
+    - Marked `MUSIC`, `DATA GRAPH`, and `TRUSS` as unavailable options in the bar-style dropdown so they remain visible for roadmap context but cannot be selected from the custom picker.
+    - Updated generator route normalization and GitHub Pages fallback handling so direct `/generator/music/`, `/generator/graph/`, `/generator/truss/`, and legacy `staff` links now canonicalize back to `/generator/solid/` instead of loading unfinished styles.
+- **[2026-04-23] Circles Now Reject Interlocking Ring Layouts**:
+    - Removed the old circles-overlap feature from the circles UI, sharable URL state, and generator core so randomize and deep links can no longer land on any legacy interlocking-circle behavior.
+    - Included circle fill style in the live geometry cache key and versioned the updated pattern scripts so switching between `FILL` and `STROKE` reliably regenerates the correct safe layout instead of reusing stale geometry.
+    - Replaced the old row-based circle fallback and edge-coverage repair pass with deterministic scatter generation so under-filled or repaired circles bars still resolve as irregular random dots rather than aligned horizontal bands.
+- **[2026-04-23] Motion Controls Split From Audio And Synced To Export Timing**:
+    - Reworked the sidebar runtime areas so animated styles now use a dedicated `MOTION` section with loop on-off toggles and style-local speed sliders, while `AUDIO` stays isolated as a separate non-essential preview feature.
+    - Added motion speed controls for `RULER` and `TICKER`, moved `WAVEFORM` speed out of the main parameter block into `MOTION`, and routed live canvas motion, header preview timing, PNG/SVG snapshots, and looping GIF export through the same shared loop-duration math.
+    - Replaced the old play-pause preview behavior with deterministic loop toggles that reset animated styles to the loop start instead of freezing on an arbitrary mid-animation frame.
+- **[2026-04-23] GIF Export Description Tightened To Match The Other Download Labels**:
+    - Shortened the standard GIF menu description to the same `Best for...` style as the PNG and SVG options while still making the animated use case explicit.
+- **[2026-04-23] Export Menu Copy Simplified For Broader Campus Use**:
+    - Renamed the standard download options to plain `PNG`, `SVG`, and `GIF` so the picker reads more directly instead of using file-type jargon in the labels.
+    - Rewrote the supporting descriptions in simpler terms aimed at general student and faculty use cases, including slides, documents, sharing, resizing, and motion previews.
+- **[2026-04-23] Download Picker Simplified To Export-Only Actions**:
+    - Removed the `Copy Embed Code` entry from the download picker so the menu now contains only direct asset-export actions.
+    - Cleaned up the associated save-menu copy tables and event wiring so the picker no longer carries an unused fourth action in standard or mission-control states.
+- **[2026-04-23] PNG Download Resolution Increased For Sharper Logo Exports**:
+    - Raised the PNG export render scale from `1.5x` to `4x`, which substantially increases the downloaded raster dimensions without changing the live preview or SVG output.
+    - Kept the existing transparent-background export path and padding behavior intact; this change only affects the pixel density of the downloaded PNG.
+- **[2026-04-23] Runtime Sidebar Section Restyled To Match Parameters Header**:
+    - Replaced the old `PREVIEW` subheader treatment in the dynamic sidebar groups with a full `RUNTIME` section header so motion and audio controls now read as a separate runtime block instead of another parameter row.
+    - Moved the divider to the bottom edge of that section title by reusing the shared `control-header` styling, which makes the runtime section visually match `PARAMETERS` and removes the stray line above the label.
+- **[2026-04-23] SVG Bar Export Height Corrected To Preserve Full Bottom Edge**:
+    - Fixed the SVG export frame so the saved wordmark now uses the full reference logo height derived from the bar's actual `y + height` bounds instead of the previously shorter hardcoded value that clipped the bottom edge.
+    - Applied the same reference-height correction to the header preview SVG builder so the in-app vector preview and the downloaded SVG now use the same overall logo box.
+    - Kept PNG and GIF export behavior unchanged; the regression was isolated to SVG markup sizing rather than the bar pattern geometry itself.
 - **[2026-04-21] GitHub Pages 404 Fallback Added For Legacy And Bad Deep Links**:
     - Audited the live GitHub Pages deployment at `https://tennitech.github.io/rpi-logo-generator/` and confirmed the intended primary routes still work directly under the real repo base path: `/`, `/generator/`, and valid `/generator/[style]/` pages all serve the expected shells and shared assets.
     - Added a custom root `404.html` plus a dedicated Pages fallback utility so unsupported or legacy deep links such as `/generator/staff/`, `/generator/matrix/`, and unknown `/generator/[bar-style]/` paths now recover automatically into valid generator routes instead of stopping at GitHub's default 404 page.
@@ -152,7 +239,7 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Softened logo panning with resisted drag deltas, eased offset following, and short decaying inertia so the pan tool feels less twitchy while preserving the existing pan bounds.
     - Added a small shared pan-edge inset so the logo can get close to the viewport edges on desktop and mobile without clamping flush against them.
     - Kept the header height consistent across desktop and mobile by removing the mobile-only shorter header override.
-    - Simplified the `CIRCLES` parameter panel so it only exposes `MODE` (`PACKING`/`GRID`), `STYLE` (`STROKE`/`FILL`), and the shared density, variation, and overlap sliders; grid mode now uses those same controls with fixed internal grid defaults.
+    - Simplified the `CIRCLES` parameter panel so it only exposes `MODE` (`PACKING`/`GRID`), `STYLE` (`STROKE`/`FILL`), and the shared density and variation sliders; grid mode now uses those same controls with fixed internal grid defaults.
     - Tightened `CIRCLES` rendering so generated grid and packing circles keep usable multi-circle coverage across the full bar bounds and are clipped to the official bar rectangle, keeping live canvas, header preview, and SVG export visually full-bleed without leaking outside the mark geometry.
 - **[2026-04-15] Runtime Control Redesign Rolled Back After Stylesheet Corruption**:
     - Restored `css/style.css` after it was accidentally overwritten, then reapplied the current right-sidebar shell, scroll-fade, sticky report rail, report dialog, and parameter-header utility styling as an override layer.

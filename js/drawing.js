@@ -244,9 +244,15 @@ const EXPORT_REFERENCE_HEIGHT = 151;
 const EXPORT_BAR_Y = 134;
 const EXPORT_BAR_HEIGHT = 18;
 const EXPORT_PADDING = 20;
-const PNG_EXPORT_SCALE = 1.5;
+const PNG_EXPORT_SCALE = 4;
 const LOOP_GIF_EXPORT_SCALE = 1.25;
 const LOOP_GIF_WORKER_PATH = 'third_party/gif.js/gif.worker.js';
+const SVG_EXPORT_WIDTH = typeof REFERENCE_WIDTH === 'number' ? REFERENCE_WIDTH : 250;
+const SVG_EXPORT_BAR_Y = typeof REFERENCE_BAR_Y === 'number' ? REFERENCE_BAR_Y : 132.911;
+const SVG_EXPORT_BAR_HEIGHT = typeof REFERENCE_BAR_HEIGHT === 'number' ? REFERENCE_BAR_HEIGHT : 18;
+const SVG_EXPORT_TOTAL_HEIGHT = typeof REFERENCE_TOTAL_HEIGHT === 'number'
+  ? REFERENCE_TOTAL_HEIGHT
+  : SVG_EXPORT_BAR_Y + SVG_EXPORT_BAR_HEIGHT;
 
 function createExportGraphicsBuffer(scale) {
   const graphics = createGraphics(
@@ -262,42 +268,19 @@ function createExportGraphicsBuffer(scale) {
 }
 
 function drawLoopingRulerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX) {
-  const rulerRepeats = parseInt(rulerRepeatsSlider.value, 10);
-  const rulerUnits = parseInt(rulerUnitsSlider.value, 10);
-  const totalTicks = rulerRepeats * rulerUnits + 1;
-  const tickWidth = exactBarWidth / (2 * totalTicks - 1);
-  const tickSpacing = tickWidth * 2;
-  const repeatWidth = rulerUnits * tickSpacing;
-  const wrappedOffset = ((loopOffsetX % repeatWidth) + repeatWidth) % repeatWidth;
-  const drawStartX = barStartX - wrappedOffset;
-  const drawEndX = barStartX + exactBarWidth;
+  const rulerGeometry = createRulerPatternGeometry({
+    barStartX,
+    barY,
+    exactBarWidth,
+    barHeight: rectHeight,
+    rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
+    rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+    loopOffsetX
+  });
 
-  for (let repeatX = drawStartX - repeatWidth; repeatX <= drawEndX + repeatWidth; repeatX += repeatWidth) {
-    for (let tickIndex = 0; tickIndex <= rulerUnits; tickIndex++) {
-      const tickX = repeatX + tickIndex * tickSpacing;
-      if (tickX + tickWidth <= barStartX || tickX >= drawEndX) {
-        continue;
-      }
-
-      let tickHeight = rectHeight;
-      if (tickIndex > 0 && tickIndex < rulerUnits) {
-        if (rulerUnits === 10) {
-          if (tickIndex === 5) {
-            tickHeight = rectHeight * 0.75;
-          } else if (tickIndex % 2 === 0) {
-            tickHeight = rectHeight * 0.5;
-          } else {
-            tickHeight = rectHeight * 0.25;
-          }
-        } else if (tickIndex === Math.floor(rulerUnits / 2)) {
-          tickHeight = rectHeight * 0.75;
-        } else {
-          tickHeight = rectHeight * 0.5;
-        }
-      }
-
-      pg.rect(tickX, barY + rectHeight - tickHeight, tickWidth, tickHeight);
-    }
+  for (let i = 0; i < rulerGeometry.rects.length; i++) {
+    const rect = rulerGeometry.rects[i];
+    pg.rect(rect.x, rect.y, rect.width, rect.height);
   }
 }
 
@@ -371,7 +354,16 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
   // Get current foreground color
   const colorScheme = colors[currentColorMode];
   const fgColor = colorScheme ? colorScheme.fg : '#000000';
-  const loopOffsetX = typeof options.loopOffsetX === 'number' ? options.loopOffsetX : null;
+  const currentMotionStyle = typeof getCurrentMotionStyle === 'function' ? getCurrentMotionStyle() : null;
+  const fallbackLoopState = typeof getLoopAnimationStateForStyle === 'function'
+    ? getLoopAnimationStateForStyle(currentMotionStyle, exactBarWidth)
+    : null;
+  const loopOffsetX = typeof options.loopOffsetX === 'number'
+    ? options.loopOffsetX
+    : ((currentShader === 1 || currentShader === 2) && fallbackLoopState ? fallbackLoopState.loopOffsetX : null);
+  const timeSeconds = typeof options.timeSeconds === 'number'
+    ? options.timeSeconds
+    : (currentShader === 4 && fallbackLoopState ? fallbackLoopState.timeSeconds : null);
 
   pg.fill(fgColor);
   pg.noStroke();
@@ -381,54 +373,21 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     // Solid bar
     pg.rect(barStartX, barY, exactBarWidth, rectHeight);
   } else if (currentShader === 1) {
-    if (loopOffsetX !== null) {
-      drawLoopingRulerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX);
-      return;
-    }
+    const rulerGeometry = createRulerPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight: rectHeight,
+      rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
+      rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+      loopOffsetX
+    });
 
-    // Ruler pattern
-    const rulerRepeats = parseInt(rulerRepeatsSlider.value);
-    const rulerUnits = parseInt(rulerUnitsSlider.value);
-    const rulerTotalTicks = rulerRepeats * rulerUnits + 1;
-    const rulerTickWidth = exactBarWidth / (2 * rulerTotalTicks - 1);
-    const rulerTickSpacing = rulerTickWidth * 2;
-
-    for (let i = 0; i < rulerTotalTicks; i++) {
-      const tickX = barStartX + i * rulerTickSpacing;
-      let tickHeight;
-
-      if (i === 0 || i === rulerTotalTicks - 1) {
-        tickHeight = rectHeight;
-      } else if (i % rulerUnits === 0) {
-        tickHeight = rectHeight;
-      } else {
-        const positionInUnit = i % rulerUnits;
-        if (rulerUnits === 10) {
-          if (positionInUnit === 5) {
-            tickHeight = rectHeight * 0.75;
-          } else if (positionInUnit % 2 === 0) {
-            tickHeight = rectHeight * 0.5;
-          } else {
-            tickHeight = rectHeight * 0.25;
-          }
-        } else {
-          if (positionInUnit === Math.floor(rulerUnits / 2)) {
-            tickHeight = rectHeight * 0.75;
-          } else {
-            tickHeight = rectHeight * 0.5;
-          }
-        }
-      }
-
-      const tickY = barY + rectHeight - tickHeight;
-      pg.rect(tickX, tickY, rulerTickWidth, tickHeight);
+    for (let i = 0; i < rulerGeometry.rects.length; i++) {
+      const rect = rulerGeometry.rects[i];
+      pg.rect(rect.x, rect.y, rect.width, rect.height);
     }
   } else if (currentShader === 2) {
-    if (loopOffsetX !== null) {
-      drawLoopingTickerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX);
-      return;
-    }
-
     const tickerGeometry = createTickerPatternGeometry({
       barStartX,
       barY,
@@ -436,7 +395,8 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       barHeight: rectHeight,
       tickerRepeats: tickerSlider ? tickerSlider.value : 34,
       tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
-      tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2
+      tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
+      loopOffsetX
     });
 
     for (let i = 0; i < tickerGeometry.rects.length; i++) {
@@ -472,8 +432,8 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     const frequency = parseInt(waveformFrequencySlider.value);
     const waveType = parseFloat(waveformTypeSlider.value);
     const speed = parseFloat(waveformSpeedSlider.value);
-    const time = typeof options.timeSeconds === 'number'
-      ? options.timeSeconds
+    const time = timeSeconds !== null
+      ? timeSeconds
       : (typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0);
     const points = typeof getWaveformRenderPointCount === 'function'
       ? getWaveformRenderPointCount(exactBarWidth, frequency)
@@ -547,14 +507,13 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     // Circles pattern
     const density = parseInt(circlesDensitySlider.value);
     const sizeVariation = parseInt(circlesSizeVariationSlider.value);
-    const overlapAmount = parseInt(circlesOverlapSlider.value);
     const fillStyle = circlesFillSelect.value;
 
     pg.fill(fillStyle === 'fill' ? fgColor : 'transparent');
     pg.stroke(fillStyle === 'stroke' ? fgColor : 'transparent');
     pg.strokeWeight(1);
 
-    drawCirclePattern(pg, barStartX, barY, exactBarWidth, rectHeight, density, sizeVariation, overlapAmount);
+    drawCirclePattern(pg, barStartX, barY, exactBarWidth, rectHeight, density, sizeVariation);
   } else if (currentShader === 6) {
     // Numeric pattern - get visualization mode
     const numericString = numericInput.value || "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679";
@@ -848,43 +807,20 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
   }
 }
 
-function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, sizeVariation, overlapAmount) {
+function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, sizeVariation) {
   try {
-    const selectedMode = circlesModeSelect ? circlesModeSelect.value : 'packing';
+    const circlesFill = circlesFillSelect ? circlesFillSelect.value : 'stroke';
 
-    if (selectedMode === 'grid') {
-      const rows = typeof CIRCLES_GRID_ROWS === 'number' ? CIRCLES_GRID_ROWS : 2;
-      const layout = typeof CIRCLES_GRID_LAYOUT === 'string' ? CIRCLES_GRID_LAYOUT : 'straight';
-      const gridDensity = density;
-      const sizeVariationY = sizeVariation;
-      const sizeVariationX = 0;
-      const gridOverlap = overlapAmount;
+    const params = `packing-${circlesFill}-${density}-${sizeVariation}-${barWidth}-${barHeight}`;
 
-      // Create parameter string for caching
-      const params = `grid-${rows}-${gridDensity}-${sizeVariationY}-${sizeVariationX}-${gridOverlap}-${layout}-${barWidth}-${barHeight}`;
-
-      // Only regenerate if parameters changed
-      if (!staticCircleData || lastCircleParams !== params) {
-        staticCircleData = ensureStaticCirclePatternCoverage(
-          generateGridCircles(barWidth, barHeight, rows, gridDensity, sizeVariationY, sizeVariationX, gridOverlap, layout),
-          barWidth,
-          barHeight
-        );
-        lastCircleParams = params;
-      }
-    } else {
-      // Packing mode (existing functionality)
-      const params = `packing-${density}-${sizeVariation}-${overlapAmount}-${barWidth}-${barHeight}`;
-
-      // Only regenerate if parameters changed
-      if (!staticCircleData || lastCircleParams !== params) {
-        staticCircleData = ensureStaticCirclePatternCoverage(
-          generateStaticPackedCircles(barWidth, barHeight, density, sizeVariation, overlapAmount),
-          barWidth,
-          barHeight
-        );
-        lastCircleParams = params;
-      }
+    // Only regenerate if parameters changed
+    if (!staticCircleData || lastCircleParams !== params) {
+      staticCircleData = ensureStaticCirclePatternCoverage(
+        generateStaticPackedCircles(barWidth, barHeight, density, sizeVariation),
+        barWidth,
+        barHeight
+      );
+      lastCircleParams = params;
     }
 
     // Safety check for data validity
@@ -894,7 +830,16 @@ function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, si
     }
 
     const ctx = pg ? pg.drawingContext : (typeof drawingContext !== 'undefined' ? drawingContext : null);
-    if (ctx) {
+    const canUseNativeClip = Boolean(
+      ctx &&
+      typeof ctx.save === 'function' &&
+      typeof ctx.beginPath === 'function' &&
+      typeof ctx.rect === 'function' &&
+      typeof ctx.clip === 'function' &&
+      typeof ctx.restore === 'function'
+    );
+
+    if (canUseNativeClip) {
       ctx.save();
       ctx.beginPath();
       ctx.rect(barStartX, barY, barWidth, barHeight);
@@ -911,14 +856,31 @@ function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, si
           continue;
         }
 
+        const drawableCircle = canUseNativeClip
+          ? circle
+          : fitCircleWithinBar(circle, barWidth, barHeight);
+        if (!drawableCircle) {
+          continue;
+        }
+
         if (pg) {
-          pg.ellipse(barStartX + circle.x, barY + circle.y, circle.r * 2, circle.r * 2);
+          pg.ellipse(
+            barStartX + drawableCircle.x,
+            barY + drawableCircle.y,
+            drawableCircle.r * 2,
+            drawableCircle.r * 2
+          );
         } else {
-          ellipse(barStartX + circle.x, barY + circle.y, circle.r * 2, circle.r * 2);
+          ellipse(
+            barStartX + drawableCircle.x,
+            barY + drawableCircle.y,
+            drawableCircle.r * 2,
+            drawableCircle.r * 2
+          );
         }
       }
     } finally {
-      if (ctx) {
+      if (canUseNativeClip) {
         ctx.restore();
       }
     }
@@ -931,6 +893,27 @@ function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, si
       ellipse(barStartX + barWidth / 2, barY + barHeight / 2, Math.min(barWidth, barHeight) * 0.8, Math.min(barWidth, barHeight) * 0.8);
     }
   }
+}
+
+function fitCircleWithinBar(circle, barWidth, barHeight) {
+  if (!circle || !Number.isFinite(circle.x) || !Number.isFinite(circle.y) || !Number.isFinite(circle.r)) {
+    return null;
+  }
+
+  const initialRadius = Math.max(0.5, circle.r);
+  const safeX = Math.max(initialRadius, Math.min(barWidth - initialRadius, circle.x));
+  const safeY = Math.max(initialRadius, Math.min(barHeight - initialRadius, circle.y));
+  const safeRadius = Math.min(initialRadius, safeX, barWidth - safeX, safeY, barHeight - safeY);
+
+  if (!Number.isFinite(safeRadius) || safeRadius < 0.5) {
+    return null;
+  }
+
+  return {
+    x: safeX,
+    y: safeY,
+    r: safeRadius
+  };
 }
 
 function ensureStaticCirclePatternCoverage(circles, barWidth, barHeight) {
@@ -975,19 +958,62 @@ function getRepresentativeCircleRadius(circles, barHeight) {
   return Math.max(1.25, Math.min(barHeight * 0.36, medianRadius));
 }
 
+function getDeterministicCircleNoise(index, seed) {
+  const value = Math.sin((index + 1) * 12.9898 + seed * 78.233) * 43758.5453123;
+  return value - Math.floor(value);
+}
+
+function clampCircleValue(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function fitCircleToBounds(x, y, r, barWidth, barHeight) {
+  const maxRadius = Math.max(0.6, Math.min(barWidth, barHeight) * 0.5);
+  const safeRadius = clampCircleValue(r, 0.6, maxRadius);
+  const safeX = clampCircleValue(x, safeRadius, Math.max(safeRadius, barWidth - safeRadius));
+  const safeY = clampCircleValue(y, safeRadius, Math.max(safeRadius, barHeight - safeRadius));
+  const fittedRadius = Math.min(safeRadius, safeX, barWidth - safeX, safeY, barHeight - safeY);
+
+  if (!Number.isFinite(fittedRadius) || fittedRadius < 0.5) {
+    return null;
+  }
+
+  return {
+    x: safeX,
+    y: safeY,
+    r: fittedRadius
+  };
+}
+
 function createFullBleedCircleFallback(barWidth, barHeight, radius) {
   const circles = [];
-  const safeRadius = Math.max(1.25, Math.min(barHeight * 0.36, radius));
-  const cols = Math.max(8, Math.ceil(barWidth / Math.max(5, safeRadius * 2.8)));
-  const rows = barHeight > safeRadius * 3 ? 3 : 2;
+  const safeRadius = Math.max(1.15, Math.min(barHeight * 0.32, radius));
+  const count = Math.max(28, Math.ceil(barWidth / Math.max(3, safeRadius * 1.35)) * 2);
 
-  for (let row = 0; row < rows; row++) {
-    const y = rows === 1 ? barHeight / 2 : (row / (rows - 1)) * barHeight;
-    const offset = row % 2 === 0 ? 0 : 0.5;
-    for (let col = 0; col < cols; col++) {
-      const progress = cols === 1 ? 0.5 : col / (cols - 1);
-      const x = Math.max(0, Math.min(barWidth, (progress + offset / (cols - 1)) * barWidth));
-      circles.push({ x, y, r: safeRadius });
+  for (let i = 0; i < count; i++) {
+    const progress = (i + 0.5) / count;
+    const sizeNoise = getDeterministicCircleNoise(i, 1);
+    const accentNoise = getDeterministicCircleNoise(i, 2);
+    const jitterNoise = getDeterministicCircleNoise(i, 3);
+    const yNoise = getDeterministicCircleNoise(i, 4);
+    let circleRadius = safeRadius * (0.2 + sizeNoise * 0.95);
+
+    if (accentNoise > 0.82) {
+      circleRadius *= 1.35;
+    }
+
+    circleRadius = clampCircleValue(circleRadius, 0.6, barHeight * 0.34);
+    const jitterX = (jitterNoise - 0.5) * (barWidth / count) * 1.8;
+    const circle = fitCircleToBounds(
+      progress * barWidth + jitterX,
+      circleRadius + yNoise * Math.max(0, barHeight - circleRadius * 2),
+      circleRadius,
+      barWidth,
+      barHeight
+    );
+
+    if (circle) {
+      circles.push(circle);
     }
   }
 
@@ -1008,47 +1034,72 @@ function addMissingCircleEdgeCoverage(circles, barWidth, barHeight, radius) {
   });
 
   const edgeGap = Math.max(0.5, radius * 0.35);
-  const addHorizontalEdge = (y) => {
-    const count = Math.max(4, Math.ceil(barWidth / Math.max(8, radius * 4)));
+  const addHorizontalEdgeScatter = (isTopEdge) => {
+    const count = Math.max(6, Math.ceil(barWidth / Math.max(8, radius * 2.7)));
     for (let i = 0; i < count; i++) {
-      const x = count === 1 ? barWidth / 2 : (i / (count - 1)) * barWidth;
-      circles.push({ x, y, r: radius });
+      const xNoise = getDeterministicCircleNoise(i, isTopEdge ? 11 : 17);
+      const yNoise = getDeterministicCircleNoise(i, isTopEdge ? 12 : 18);
+      const rNoise = getDeterministicCircleNoise(i, isTopEdge ? 13 : 19);
+      const circleRadius = clampCircleValue(radius * (0.45 + rNoise * 0.65), 0.6, barHeight * 0.32);
+      const circle = fitCircleToBounds(
+        ((i + xNoise) / count) * barWidth,
+        isTopEdge
+          ? circleRadius + yNoise * radius * 0.85
+          : barHeight - circleRadius - yNoise * radius * 0.85,
+        circleRadius,
+        barWidth,
+        barHeight
+      );
+
+      if (circle) {
+        circles.push(circle);
+      }
     }
   };
-  const addVerticalEdge = (x) => {
+  const addVerticalEdgeScatter = (isLeftEdge) => {
     const count = Math.max(2, Math.ceil(barHeight / Math.max(4, radius * 3)));
     for (let i = 0; i < count; i++) {
-      const y = count === 1 ? barHeight / 2 : (i / (count - 1)) * barHeight;
-      circles.push({ x, y, r: radius });
+      const xNoise = getDeterministicCircleNoise(i, isLeftEdge ? 23 : 29);
+      const yNoise = getDeterministicCircleNoise(i, isLeftEdge ? 24 : 30);
+      const rNoise = getDeterministicCircleNoise(i, isLeftEdge ? 25 : 31);
+      const circleRadius = clampCircleValue(radius * (0.45 + rNoise * 0.6), 0.6, barHeight * 0.32);
+      const circle = fitCircleToBounds(
+        isLeftEdge
+          ? circleRadius + xNoise * radius * 0.8
+          : barWidth - circleRadius - xNoise * radius * 0.8,
+        ((i + yNoise) / count) * barHeight,
+        circleRadius,
+        barWidth,
+        barHeight
+      );
+
+      if (circle) {
+        circles.push(circle);
+      }
     }
   };
 
   if (bounds.left > edgeGap) {
-    addVerticalEdge(0);
+    addVerticalEdgeScatter(true);
   }
   if (bounds.right < barWidth - edgeGap) {
-    addVerticalEdge(barWidth);
-  }
-  if (bounds.left > edgeGap || bounds.right < barWidth - edgeGap) {
-    addHorizontalEdge(barHeight / 2);
+    addVerticalEdgeScatter(false);
   }
   if (bounds.top > edgeGap) {
-    addHorizontalEdge(0);
+    addHorizontalEdgeScatter(true);
   }
   if (bounds.bottom < barHeight - edgeGap) {
-    addHorizontalEdge(barHeight);
+    addHorizontalEdgeScatter(false);
   }
 }
 
-function generateStaticPackedCircles(barWidth, barHeight, density, sizeVariation, overlapAmount) {
+function generateStaticPackedCircles(barWidth, barHeight, density, sizeVariation) {
   // Safety guards
   if (barWidth <= 0 || barHeight <= 0) return [];
   if (density < 10) density = 10;
   if (density > 100) density = 100;
   if (sizeVariation < 0) sizeVariation = 0;
   if (sizeVariation > 100) sizeVariation = 100;
-  if (overlapAmount < 0) overlapAmount = 0;
-  if (overlapAmount > 100) overlapAmount = 100;
 
   const area = barWidth * barHeight;
   let circles = [];
@@ -1059,7 +1110,7 @@ function generateStaticPackedCircles(barWidth, barHeight, density, sizeVariation
   for (let phaseIndex = 0; phaseIndex < phases.length; phaseIndex++) {
     const phase = phases[phaseIndex];
     const phaseCircles = executePackingPhase(
-      barWidth, barHeight, circles, phase, overlapAmount
+      barWidth, barHeight, circles, phase
     );
     circles = circles.concat(phaseCircles);
 
@@ -1072,7 +1123,7 @@ function generateStaticPackedCircles(barWidth, barHeight, density, sizeVariation
 
   // Gap-filling phase using spatial analysis
   const gapFillingCircles = executeGapFillingPhase(
-    barWidth, barHeight, circles, density, sizeVariation, overlapAmount
+    barWidth, barHeight, circles, density, sizeVariation
   );
   circles = circles.concat(gapFillingCircles);
 
@@ -1147,8 +1198,13 @@ function saveLoopingGIF() {
     const framePlan = window.loopingGifUtils.getLoopingGifFramePlan(selectedStyle, {
       rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
       rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+      rulerSpeed: rulerSpeedSlider ? rulerSpeedSlider.value : 1,
+      rulerReverse: rulerReverseToggle ? rulerReverseToggle.checked : false,
       tickerRepeats: tickerSlider ? tickerSlider.value : 34,
-      waveformSpeed: waveformSpeedSlider ? waveformSpeedSlider.value : 0.7
+      tickerSpeed: tickerSpeedSlider ? tickerSpeedSlider.value : 1,
+      tickerReverse: tickerReverseToggle ? tickerReverseToggle.checked : false,
+      waveformSpeed: waveformSpeedSlider ? waveformSpeedSlider.value : 0.7,
+      waveformReverse: waveformReverseToggle ? waveformReverseToggle.checked : false
     }, {
       barWidth: EXPORT_REFERENCE_WIDTH
     });
@@ -1243,8 +1299,8 @@ function saveSVG() {
   try {
     Toast.show('Generating SVG...', 'info', 2000);
 
-    const currentWidth = 250; // Exact width from 250px reference
-    const logoHeight = 149.411; // Exact height including bar from 250px reference
+    const currentWidth = SVG_EXPORT_WIDTH;
+    const logoHeight = SVG_EXPORT_TOTAL_HEIGHT;
 
     // Get current colors
     const colorScheme = colors[currentColorMode];
@@ -1257,10 +1313,14 @@ function saveSVG() {
   <path d="${paths.i}" fill="${fgColor}"/>`;
 
     // Add the bar using exact 250px reference calculations
-    const barY = 132.911; // Exact Y position from 250px reference
-    const barHeight = 18; // Exact height from specification
-    const exactBarWidth = 250; // Exact width from 250px reference
+    const barY = SVG_EXPORT_BAR_Y;
+    const barHeight = SVG_EXPORT_BAR_HEIGHT;
+    const exactBarWidth = SVG_EXPORT_WIDTH;
     const barStartX = 0; // Exact X position from 250px reference
+    const currentMotionStyle = typeof getCurrentMotionStyle === 'function' ? getCurrentMotionStyle() : null;
+    const loopAnimationState = typeof getLoopAnimationStateForStyle === 'function'
+      ? getLoopAnimationStateForStyle(currentMotionStyle, exactBarWidth)
+      : null;
 
     if (currentShader === 0) {
       // Solid bar with corner details on all four corners
@@ -1278,14 +1338,16 @@ function saveSVG() {
         textToBinary,
         textToMorse,
         parseNumericString,
-        generateGridCircles,
         generateStaticPackedCircles,
         values: {
           rulerRepeats: rulerRepeatsSlider.value,
           rulerUnits: rulerUnitsSlider.value,
+          rulerSpeed: rulerSpeedSlider ? rulerSpeedSlider.value : 1,
           tickerRepeats: tickerSlider.value,
           tickerRatio: tickerRatioSlider.value,
           tickerWidthRatio: tickerWidthRatioSlider.value,
+          tickerSpeed: tickerSpeedSlider ? tickerSpeedSlider.value : 1,
+          loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
           binaryText: binaryInput.value || 'RPI',
           waveformType: waveformTypeSlider.value,
           waveformFrequency: waveformFrequencySlider.value,
@@ -1299,18 +1361,12 @@ function saveSVG() {
             : 1,
           waveformEnvelopeCenter: waveformEnvelopeCenterSlider ? waveformEnvelopeCenterSlider.value : 0,
           waveformEnvelopeBipolar: waveformEnvelopeBipolarToggle ? waveformEnvelopeBipolarToggle.checked : false,
-          timeSeconds: typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0,
-          circlesMode: circlesModeSelect ? circlesModeSelect.value : 'packing',
+          timeSeconds: loopAnimationState
+            ? loopAnimationState.timeSeconds
+            : (typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0),
           circlesFill: circlesFillSelect ? circlesFillSelect.value : 'stroke',
           circlesDensity: circlesDensitySlider.value,
           circlesSizeVariation: circlesSizeVariationSlider.value,
-          circlesOverlap: circlesOverlapSlider.value,
-          circlesRows: typeof CIRCLES_GRID_ROWS === 'number' ? CIRCLES_GRID_ROWS : 2,
-          circlesGridDensity: circlesDensitySlider.value,
-          circlesSizeVariationY: circlesSizeVariationSlider.value,
-          circlesSizeVariationX: 0,
-          circlesGridOverlap: circlesOverlapSlider.value,
-          circlesLayout: typeof CIRCLES_GRID_LAYOUT === 'string' ? CIRCLES_GRID_LAYOUT : 'straight',
           numericValue: numericInput ? numericInput.value : '',
           numericMode: numericModeSelect ? numericModeSelect.value : 'dotmatrix',
           neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1,

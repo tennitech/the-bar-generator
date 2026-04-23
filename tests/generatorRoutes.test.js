@@ -9,7 +9,10 @@ const {
 
 describe('generator route utils', () => {
   test('normalizes legacy and unknown style values safely', () => {
-    expect(normalizeStyleValue('staff')).toBe('music');
+    expect(normalizeStyleValue('staff')).toBe('solid');
+    expect(normalizeStyleValue('music')).toBe('solid');
+    expect(normalizeStyleValue('graph')).toBe('solid');
+    expect(normalizeStyleValue('truss')).toBe('solid');
     expect(normalizeStyleValue('matrix')).toBe('solid');
     expect(normalizeStyleValue('not-a-style')).toBe('solid');
   });
@@ -23,7 +26,7 @@ describe('generator route utils', () => {
 
   test('builds style routes while preserving a site base path', () => {
     expect(buildGeneratorPath('ticker', '/repo/index.html')).toBe('/repo/generator/ticker/');
-    expect(buildGeneratorPath('staff', '/repo/generator/music/')).toBe('/repo/generator/music/');
+    expect(buildGeneratorPath('staff', '/repo/generator/music/')).toBe('/repo/generator/solid/');
     expect(buildGeneratorPath('solid', '/')).toBe('/generator/solid/');
   });
 
@@ -44,9 +47,10 @@ describe('generator route utils', () => {
 
   test('canonicalizes legacy generator entry paths onto style routes', () => {
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/', '')).toBe('/repo/generator/solid/');
-    expect(getLegacyGeneratorRedirectUrl('/repo/generator/index.html', '?style=staff')).toBe('/repo/generator/music/');
+    expect(getLegacyGeneratorRedirectUrl('/repo/generator/index.html', '?style=staff')).toBe('/repo/generator/solid/');
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/index.html', '?style=unknown&colorMode=white')).toBe('/repo/generator/solid/?colorMode=white');
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/ticker/index.html', '?style=waveform&colorMode=red')).toBe('/repo/generator/ticker/?colorMode=red');
-    expect(getLegacyGeneratorRedirectUrl('/repo/generator/music/', '?style=staff')).toBe('/repo/generator/music/');
+    expect(getLegacyGeneratorRedirectUrl('/repo/generator/music/', '?style=staff')).toBe('/repo/generator/solid/');
+    expect(getLegacyGeneratorRedirectUrl('/repo/generator/graph/', '?graphText=RPI')).toBe('/repo/generator/solid/?graphText=RPI');
   });
 });

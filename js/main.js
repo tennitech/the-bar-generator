@@ -52,12 +52,18 @@ let binaryAudioBtn;
 let morseInput;
 let morseGroup;
 let morseAudioBtn;
+let lunarGroup;
+let lunarAudioBtn;
 let staffAudioBtn;
 let rulerGroup;
 let rulerRepeatsSlider;
 let rulerRepeatsDisplay;
 let rulerUnitsSlider;
 let rulerUnitsDisplay;
+let rulerMotionToggle;
+let rulerReverseToggle;
+let rulerSpeedSlider;
+let rulerSpeedDisplay;
 let tickerSlider;
 let tickerDisplay;
 let tickerGroup;
@@ -65,8 +71,11 @@ let tickerRatioSlider;
 let tickerRatioDisplay;
 let tickerWidthRatioSlider;
 let tickerWidthRatioDisplay;
+let tickerMotionToggle;
+let tickerReverseToggle;
+let tickerSpeedSlider;
+let tickerSpeedDisplay;
 let tickerAudioBtn;
-let tickerMotionBtn;
 let waveformGroup;
 let waveformTypeSlider;
 let waveformTypeDisplay;
@@ -74,6 +83,8 @@ let waveformFrequencySlider;
 let waveformFrequencyDisplay;
 let waveformSpeedSlider;
 let waveformSpeedDisplay;
+let waveformMotionToggle;
+let waveformReverseToggle;
 let waveformAudioBtn;
 let waveformEnvelopeToggle;
 let envelopeSettingsGroup;
@@ -83,16 +94,12 @@ let waveformEnvelopeWavesDisplay;
 let waveformEnvelopeCenterSlider;
 let waveformEnvelopeCenterDisplay;
 let waveformEnvelopeBipolarToggle;
-let waveformMotionBtn;
 let circlesGroup;
 let circlesDensitySlider;
 let circlesDensityDisplay;
 let circlesSizeVariationSlider;
 let circlesSizeVariationDisplay;
-let circlesOverlapSlider;
-let circlesOverlapDisplay;
 let circlesFillSelect;
-let circlesModeSelect;
 let numericGroup;
 let numericInput;
 let numericModeSelect;
@@ -150,6 +157,7 @@ let graphMultiToggle;
 let graphMultiInputs;
 let graphScaleSlider;
 let graphScaleDisplay;
+const sliderValueEditorConfigs = [];
 
 const TRUSS_FAMILY_OPTIONS = [
   'flat',
@@ -193,7 +201,6 @@ let saveMenu;
 let savePngButton;
 let saveSvgButton;
 let saveLoopGifButton;
-let copyEmbedButton;
 let styleSelectLabel;
 let colorModeSelectLabel;
 let reportProblemLabel;
@@ -210,28 +217,24 @@ let bugReportEmailInput;
 let appMain;
 let canvasViewport;
 const ARTEMIS_II_SPLASHDOWN_AT = Date.parse('2026-04-10T20:07:00-04:00');
+const ARTEMIS_II_AUDIO_SOURCE = 'assets/audio/artemis-ii-liftoff.mp3';
 const ARTEMIS_CREDIT_LINKS = {
   reidWiseman: 'https://news.rpi.edu/2026/04/13/engineers-who-reached-moon-how-rpi-became-launchpad-stars',
-  rpiEngineers: 'https://news.rpi.edu/2026/03/31/meet-rpi-engineers-guiding-artemis-ii-moon-and-back',
-  lunarImageCredit: 'https://github.com/the-astronot/boromir/blob/main/README.md'
+  rpiEngineers: 'https://news.rpi.edu/2026/03/31/meet-rpi-engineers-guiding-artemis-ii-moon-and-back'
 };
 const DEFAULT_SAVE_MENU_COPY = {
   button: 'Download Asset',
   png: {
-    label: 'PNG IMAGE',
-    description: 'High resolution raster'
+    label: 'PNG',
+    description: 'Best for slides, docs, and sharing'
   },
   svg: {
-    label: 'SVG VECTOR',
-    description: 'Scalable format'
+    label: 'SVG',
+    description: 'Best for resizing without losing quality'
   },
   gif: {
-    label: 'LOOPING GIF',
-    description: 'Seamless animation for repeat styles'
-  },
-  copy: {
-    label: 'COPY EMBED CODE',
-    description: 'For Frontify / Web'
+    label: 'GIF',
+    description: 'Best for animated slides and screens'
   }
 };
 const MISSION_CONTROL_SAVE_MENU_COPY = {
@@ -247,10 +250,6 @@ const MISSION_CONTROL_SAVE_MENU_COPY = {
   gif: {
     label: "Paul McKee '17, MS '18, Ph.D. '23",
     description: 'Orion Optical Navigation Engineer'
-  },
-  copy: {
-    label: 'Moon Surface Credit',
-    description: "Maeve Marshall's thesis image source"
   }
 };
 const DEFAULT_INTERFACE_COPY = {
@@ -291,6 +290,7 @@ let gainNode;
 let isAudioPlaying = false;
 let activeAudioPreviewType = null;
 let hasShownAudioHintToast = false;
+let artemisMissionAudio = null;
 
 // Crossfader audio system - multiple simultaneous oscillators
 let oscillators = {
@@ -361,6 +361,23 @@ const getPreviewButtonState = previewControlUtils && typeof previewControlUtils.
       animated: active,
       disabled: !!options.disabled
     };
+  };
+const loopingGifUtils = typeof window !== 'undefined' ? window.loopingGifUtils || null : null;
+const getLoopingGifFramePlan = loopingGifUtils && typeof loopingGifUtils.getLoopingGifFramePlan === 'function'
+  ? loopingGifUtils.getLoopingGifFramePlan
+  : null;
+const getLoopingAnimationState = loopingGifUtils && typeof loopingGifUtils.getLoopingAnimationState === 'function'
+  ? loopingGifUtils.getLoopingAnimationState
+  : null;
+const normalizeLoopSpeed = loopingGifUtils && typeof loopingGifUtils.normalizeLoopSpeed === 'function'
+  ? loopingGifUtils.normalizeLoopSpeed
+  : function fallbackNormalizeLoopSpeed(style, value) {
+    const defaultSpeed = style === 'waveform' ? 0.7 : 1;
+    const numericValue = parseFloat(value);
+    if (!Number.isFinite(numericValue)) {
+      return defaultSpeed;
+    }
+    return Math.max(0.2, Math.min(5, numericValue));
   };
 
 let currentColorMode = DEFAULT_COLOR_MODE;
@@ -475,6 +492,7 @@ const themeClassByColorMode = {
 
 // Set this to a deployed Google Apps Script web app URL to send reports directly into a Google Sheet.
 const BUG_REPORT_APPS_SCRIPT_URL = '';
+const GITHUB_NEW_ISSUE_URL = 'https://github.com/tennitech/rpi-logo-generator/issues/new';
 const SURPRISE_TEXT_OPTIONS = [
   'RPI',
   'BUILD',
@@ -593,10 +611,15 @@ function textToMorse(text) {
 
 
 // Viewport & Playback State
-let isPlaying = true;
+const MOTION_ENABLED_BY_STYLE = {
+  ruler: true,
+  ticker: true,
+  waveform: true
+};
 const DEFAULT_ZOOM_LEVEL = 1.2;
 const MIN_DISPLAY_ZOOM_PERCENT = 50;
 const MAX_DISPLAY_ZOOM_PERCENT = 250;
+const COMPACT_LAYOUT_MAX_WIDTH = 900;
 const MIN_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MIN_DISPLAY_ZOOM_PERCENT / 100);
 const MAX_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MAX_DISPLAY_ZOOM_PERCENT / 100);
 
@@ -618,12 +641,16 @@ let workspaceResizeTransitionFrame = 0;
 let workspaceResizeTransitionTimeout = 0;
 let isWorkspaceResizeTransitionActive = false;
 let lastCanvasSize = { width: 0, height: 0 };
+let responsiveCanvasResizeTimeout = 0;
+let lastCompactLayoutState = null;
+let desktopSidebarWasCollapsed = false;
 let isPanDragging = false;
 let isPanningMode = false;
 let isCanvasPinching = false;
 let isAnimated = false;
 let lastHeaderPreviewMarkup = '';
 let lastHeaderPreviewUpdateTime = 0;
+const RESPONSIVE_CANVAS_RESIZE_SETTLE_MS = 120;
 const WAVEFORM_RENDER_MIN_POINTS = 240;
 const WAVEFORM_RENDER_MAX_POINTS = 1200;
 const WAVEFORM_RENDER_POINTS_PER_BAR_PIXEL = 2;
@@ -658,7 +685,11 @@ function getResponsiveLogoScale(viewportWidth = width, viewportHeight = height) 
 }
 
 // Zoom/Pan/Playback UI references
-let zoomInBtn, zoomOutBtn, zoomResetBtn, panBtn, zoomLevelDisplay;
+let zoomInBtn, zoomOutBtn, zoomResetBtn, zoomLevelDisplay;
+
+function isCompactLayoutViewport(viewportWidth = window.innerWidth) {
+  return Math.max(0, Math.round(viewportWidth || 0)) <= COMPACT_LAYOUT_MAX_WIDTH;
+}
 
 const AVAILABLE_STYLE_VALUES = new Set([
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
@@ -668,10 +699,20 @@ const AVAILABLE_STYLE_VALUES = new Set([
   'runway', 'lunar', 'truss', 'music', 'graph'
 ]);
 
+const UNAVAILABLE_STYLE_VALUES = new Set([
+  'music',
+  'graph',
+  'truss'
+]);
+
+const ROUTABLE_STYLE_VALUES = new Set(
+  Array.from(AVAILABLE_STYLE_VALUES).filter(style => !UNAVAILABLE_STYLE_VALUES.has(style))
+);
+
 function normalizeStyleValue(style) {
-  if (style === 'staff') return 'music';
+  if (style === 'staff') return 'solid';
   if (style === 'matrix') return 'solid';
-  return AVAILABLE_STYLE_VALUES.has(style) ? style : 'solid';
+  return ROUTABLE_STYLE_VALUES.has(style) ? style : 'solid';
 }
 
 const RESETTABLE_GROUP_STYLE_MAP = {
@@ -739,29 +780,11 @@ function initializePreviewButtons() {
   [
     [binaryAudioBtn, 'audio'],
     [morseAudioBtn, 'audio'],
-    [tickerMotionBtn, 'motion'],
+    [lunarAudioBtn, 'audio'],
     [tickerAudioBtn, 'audio'],
-    [waveformMotionBtn, 'motion'],
     [waveformAudioBtn, 'audio'],
     [staffAudioBtn, 'audio']
   ].forEach(([button, kind]) => ensurePreviewButtonMarkup(button, kind));
-}
-
-function syncMotionToggleState() {
-  renderPreviewButton(tickerMotionBtn, 'motion', {
-    active: currentShader === 2 && isPlaying
-  });
-  renderPreviewButton(waveformMotionBtn, 'motion', {
-    active: currentShader === 4 && isPlaying
-  });
-}
-
-function setPlaybackState(shouldPlay) {
-  if (shouldPlay !== isPlaying) {
-    togglePlayback();
-  } else {
-    syncMotionToggleState();
-  }
 }
 
 function updateSidebarScrollFadeState() {
@@ -788,6 +811,244 @@ function randomChance(probability) {
 function getStepPrecision(step) {
   const stepString = String(step);
   return stepString.includes('.') ? stepString.split('.')[1].length : 0;
+}
+
+function parseSliderNumericInput(rawValue, options = {}) {
+  const tokens = String(rawValue ?? '')
+    .trim()
+    .replace(/,/g, '')
+    .match(/-?\d*\.?\d+/g);
+
+  if (!tokens || tokens.length === 0) {
+    return null;
+  }
+
+  const token = options.token === 'last' ? tokens[tokens.length - 1] : tokens[0];
+  const numericValue = parseFloat(token);
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
+
+function normalizeSliderValue(slider, rawValue) {
+  if (!slider) return null;
+
+  const numericValue = Number(rawValue);
+  if (!Number.isFinite(numericValue)) {
+    return null;
+  }
+
+  const min = parseFloat(slider.min);
+  const max = parseFloat(slider.max);
+  const step = slider.step === 'any' || slider.step === '' ? 1 : parseFloat(slider.step || '1');
+  const precision = getStepPrecision(step);
+
+  let clampedValue = numericValue;
+  if (Number.isFinite(min)) {
+    clampedValue = Math.max(min, clampedValue);
+  }
+  if (Number.isFinite(max)) {
+    clampedValue = Math.min(max, clampedValue);
+  }
+
+  if (Number.isFinite(step) && step > 0 && Number.isFinite(min)) {
+    clampedValue = min + Math.round((clampedValue - min) / step) * step;
+  }
+
+  if (Number.isFinite(min)) {
+    clampedValue = Math.max(min, clampedValue);
+  }
+  if (Number.isFinite(max)) {
+    clampedValue = Math.min(max, clampedValue);
+  }
+
+  if (precision > 0) {
+    return clampedValue.toFixed(precision);
+  }
+
+  return String(Math.round(clampedValue));
+}
+
+function resizeSliderValueEditorInput(input) {
+  if (!input) return;
+  const nextWidth = Math.max(2, String(input.value || '').length + 0.75);
+  input.style.width = `${nextWidth}ch`;
+}
+
+function cancelSliderValueEditor(config) {
+  if (!config || !config.editorInput || !config.display) return;
+
+  const valueGroup = config.display.parentElement;
+  config.editorInput.remove();
+  config.editorInput = null;
+  config.display.removeAttribute('aria-hidden');
+  if (valueGroup) {
+    valueGroup.classList.remove('is-editing');
+  }
+
+  if (typeof config.refreshDisplay === 'function') {
+    config.refreshDisplay();
+  }
+}
+
+function commitSliderValueEditor(config) {
+  if (!config || !config.editorInput || !config.display) return;
+
+  const valueGroup = config.display.parentElement;
+  const rawValue = config.editorInput.value;
+  config.editorInput.remove();
+  config.editorInput = null;
+  config.display.removeAttribute('aria-hidden');
+  if (valueGroup) {
+    valueGroup.classList.remove('is-editing');
+  }
+
+  const parser = typeof config.parseValue === 'function'
+    ? config.parseValue
+    : (value) => {
+      const numericValue = parseSliderNumericInput(value);
+      return numericValue === null ? null : normalizeSliderValue(config.slider, numericValue);
+    };
+  const parsedValue = parser(rawValue);
+
+  if (parsedValue !== null && config.slider) {
+    config.slider.value = parsedValue;
+    if (typeof config.commit === 'function') {
+      config.commit();
+    } else if (typeof config.refreshDisplay === 'function') {
+      config.refreshDisplay();
+    }
+    return;
+  }
+
+  if (typeof config.refreshDisplay === 'function') {
+    config.refreshDisplay();
+  }
+}
+
+function activateSliderValueEditor(config) {
+  if (!config || !config.display || !config.slider || config.editorInput) return;
+
+  const valueGroup = config.display.parentElement;
+  if (!valueGroup) return;
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'slider_value-input';
+  input.autocomplete = 'off';
+  input.spellcheck = false;
+  input.inputMode = config.inputMode || 'decimal';
+  input.value = typeof config.getEditorValue === 'function'
+    ? config.getEditorValue()
+    : config.display.textContent.trim();
+  input.setAttribute('aria-label', config.ariaLabel || 'Set slider value');
+
+  config.editorInput = input;
+  if (valueGroup) {
+    valueGroup.classList.add('is-editing');
+  }
+  config.display.setAttribute('aria-hidden', 'true');
+  valueGroup.appendChild(input);
+  resizeSliderValueEditorInput(input);
+
+  input.addEventListener('input', function () {
+    resizeSliderValueEditorInput(input);
+  });
+  input.addEventListener('blur', function () {
+    commitSliderValueEditor(config);
+  });
+  input.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      input.blur();
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      cancelSliderValueEditor(config);
+    }
+  });
+
+  requestAnimationFrame(() => {
+    input.focus();
+    input.select();
+  });
+}
+
+function prepareSliderValueLabelLayout(display) {
+  if (!display) return;
+
+  const label = display.closest('label.control-label');
+  if (!label || label.dataset.sliderValueLayout === 'ready') {
+    return;
+  }
+
+  const nodes = Array.from(label.childNodes);
+  const displayIndex = nodes.indexOf(display);
+  if (displayIndex === -1) {
+    return;
+  }
+
+  const labelText = document.createElement('span');
+  labelText.className = 'slider_label-text';
+
+  const valueGroup = document.createElement('span');
+  valueGroup.className = 'slider_value-group';
+
+  nodes.forEach((node, index) => {
+    if (index < displayIndex) {
+      labelText.appendChild(node);
+      return;
+    }
+
+    if (node.nodeType === 3) {
+      if (node.textContent.trim().length === 0) {
+        return;
+      }
+
+      const affix = document.createElement('span');
+      affix.className = 'slider_value-affix';
+      affix.textContent = node.textContent;
+      valueGroup.appendChild(affix);
+      return;
+    }
+
+    valueGroup.appendChild(node);
+  });
+
+  label.replaceChildren(labelText, valueGroup);
+  label.classList.add('slider_label-row');
+  label.dataset.sliderValueLayout = 'ready';
+}
+
+function registerSliderValueEditor(config) {
+  if (!config || !config.display || !config.slider) return;
+
+  prepareSliderValueLabelLayout(config.display);
+  config.display.classList.add('slider_value-display');
+  config.display.tabIndex = 0;
+  config.display.setAttribute('role', 'button');
+  config.display.setAttribute('title', 'Click to enter a value');
+  if (config.ariaLabel) {
+    config.display.setAttribute('aria-label', config.ariaLabel);
+  }
+
+  const activate = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    activateSliderValueEditor(config);
+  };
+
+  config.display.addEventListener('mousedown', function (event) {
+    event.preventDefault();
+  });
+  config.display.addEventListener('click', activate);
+  config.display.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      activate(event);
+    }
+  });
+
+  sliderValueEditorConfigs.push(config);
 }
 
 function randomStepValue(min, max, step = 1) {
@@ -820,6 +1081,150 @@ function getStyleDisplayName(style) {
   return option ? option.textContent.trim() : normalizedStyle.toUpperCase();
 }
 
+function styleSupportsMotion(style) {
+  const normalizedStyle = normalizeStyleValue(style);
+  return normalizedStyle === 'ruler' || normalizedStyle === 'ticker' || normalizedStyle === 'waveform';
+}
+
+function getCurrentMotionStyle() {
+  switch (currentShader) {
+    case 1:
+      return 'ruler';
+    case 2:
+      return 'ticker';
+    case 4:
+      return 'waveform';
+    default:
+      return null;
+  }
+}
+
+function getMotionControlConfig(style) {
+  const normalizedStyle = normalizeStyleValue(style);
+  if (normalizedStyle === 'ruler') {
+    return {
+      toggle: rulerMotionToggle,
+      speedSlider: rulerSpeedSlider,
+      speedDisplay: rulerSpeedDisplay
+    };
+  }
+
+  if (normalizedStyle === 'ticker') {
+    return {
+      toggle: tickerMotionToggle,
+      speedSlider: tickerSpeedSlider,
+      speedDisplay: tickerSpeedDisplay
+    };
+  }
+
+  if (normalizedStyle === 'waveform') {
+    return {
+      toggle: waveformMotionToggle,
+      speedSlider: waveformSpeedSlider,
+      speedDisplay: waveformSpeedDisplay
+    };
+  }
+
+  return {
+    toggle: null,
+    speedSlider: null,
+    speedDisplay: null
+  };
+}
+
+function getLoopRuntimeValues() {
+  return {
+    rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
+    rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+    rulerSpeed: rulerSpeedSlider ? rulerSpeedSlider.value : 1,
+    rulerReverse: rulerReverseToggle ? rulerReverseToggle.checked : false,
+    tickerRepeats: tickerSlider ? tickerSlider.value : 34,
+    tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
+    tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
+    tickerSpeed: tickerSpeedSlider ? tickerSpeedSlider.value : 1,
+    tickerReverse: tickerReverseToggle ? tickerReverseToggle.checked : false,
+    waveformSpeed: waveformSpeedSlider ? waveformSpeedSlider.value : 0.7,
+    waveformReverse: waveformReverseToggle ? waveformReverseToggle.checked : false
+  };
+}
+
+function isMotionEnabledForStyle(style) {
+  const normalizedStyle = normalizeStyleValue(style);
+  if (!styleSupportsMotion(normalizedStyle)) {
+    return false;
+  }
+
+  return MOTION_ENABLED_BY_STYLE[normalizedStyle] !== false;
+}
+
+function getLoopAnimationStateForStyle(style, barWidth = REFERENCE_WIDTH, elapsedSecondsOverride = null) {
+  const normalizedStyle = normalizeStyleValue(style);
+  if (!styleSupportsMotion(normalizedStyle)) {
+    return null;
+  }
+
+  const elapsedSeconds = Number.isFinite(elapsedSecondsOverride)
+    ? elapsedSecondsOverride
+    : (isMotionEnabledForStyle(normalizedStyle)
+      ? (typeof window.animationTime !== 'undefined' ? window.animationTime : 0)
+      : 0);
+
+  if (getLoopingAnimationState) {
+    return getLoopingAnimationState(normalizedStyle, getLoopRuntimeValues(), {
+      barWidth,
+      elapsedSeconds
+    });
+  }
+
+  if (!getLoopingGifFramePlan) {
+    return null;
+  }
+
+  const framePlan = getLoopingGifFramePlan(normalizedStyle, getLoopRuntimeValues(), { barWidth });
+  if (!framePlan) {
+    return null;
+  }
+
+  const periodSeconds = Math.max(0.0001, Number(framePlan.periodSeconds) || 1);
+  const progress = ((elapsedSeconds / periodSeconds) % 1 + 1) % 1;
+  return {
+    ...framePlan,
+    progress,
+    loopOffsetX: typeof framePlan.getLoopOffsetX === 'function' ? framePlan.getLoopOffsetX(progress) : 0,
+    timeSeconds: typeof framePlan.getTimeSeconds === 'function'
+      ? framePlan.getTimeSeconds(progress)
+      : periodSeconds * progress
+  };
+}
+
+function getCurrentLoopAnimationState(barWidth = REFERENCE_WIDTH) {
+  return getLoopAnimationStateForStyle(getCurrentMotionStyle(), barWidth);
+}
+
+function syncMotionToggleState() {
+  ['ruler', 'ticker', 'waveform'].forEach((style) => {
+    const { toggle } = getMotionControlConfig(style);
+    if (toggle) {
+      toggle.checked = isMotionEnabledForStyle(style);
+    }
+  });
+}
+
+function setMotionEnabledForStyle(style, enabled, options = {}) {
+  const normalizedStyle = normalizeStyleValue(style);
+  if (!styleSupportsMotion(normalizedStyle)) {
+    return;
+  }
+
+  MOTION_ENABLED_BY_STYLE[normalizedStyle] = !!enabled;
+  if (options.resetPhase !== false) {
+    window.animationTime = 0;
+  }
+
+  syncMotionToggleState();
+  requestUpdate();
+}
+
 function generateRandomStaffPattern() {
   const basePattern = pickRandom(STAFF_SURPRISE_PATTERNS);
   return basePattern.map(note => ({ ...note }));
@@ -837,6 +1242,8 @@ function getCurrentAudioPreviewType() {
       return 'morse';
     case 10:
       return 'staff';
+    case 24:
+      return isMissionControlThemeActive() ? 'lunar' : null;
     default:
       return null;
   }
@@ -900,6 +1307,7 @@ function getAudioButtonConfig() {
     { type: 'morse', button: morseAudioBtn, currentShader: 7 },
     { type: 'ticker', button: tickerAudioBtn, currentShader: 2 },
     { type: 'waveform', button: waveformAudioBtn, currentShader: 4 },
+    { type: 'lunar', button: lunarAudioBtn, currentShader: 24 },
     { type: 'staff', button: staffAudioBtn, currentShader: 10 }
   ];
 }
@@ -913,7 +1321,7 @@ function resetAudioSequencePosition(type) {
     sequenceContext.nextNoteTime = audioContext.currentTime + 0.1;
   }
 
-  if (currentType === 'waveform') {
+  if (currentType === 'waveform' || currentType === 'lunar') {
     return;
   }
 
@@ -944,7 +1352,7 @@ function togglePreviewAudio(type) {
     }
   }
 
-  if (type !== 'waveform') {
+  if (type !== 'waveform' && type !== 'lunar') {
     resetAudioSequencePosition(type);
   }
   startAudio();
@@ -957,8 +1365,12 @@ function resetStyleParameters(style) {
     case 'ruler':
       if (rulerRepeatsSlider) rulerRepeatsSlider.value = 10;
       if (rulerUnitsSlider) rulerUnitsSlider.value = 4;
+      if (rulerSpeedSlider) rulerSpeedSlider.value = 1;
+      if (rulerReverseToggle) rulerReverseToggle.checked = false;
       updateRulerRepeatsDisplay();
       updateRulerUnitsDisplay();
+      updateRulerSpeedDisplay();
+      setMotionEnabledForStyle('ruler', true);
       break;
     case 'binary':
       if (binaryInput) binaryInput.value = 'RPI';
@@ -975,15 +1387,19 @@ function resetStyleParameters(style) {
       if (tickerSlider) tickerSlider.value = 34;
       if (tickerRatioSlider) tickerRatioSlider.value = 2;
       if (tickerWidthRatioSlider) tickerWidthRatioSlider.value = 2;
+      if (tickerSpeedSlider) tickerSpeedSlider.value = 1;
+      if (tickerReverseToggle) tickerReverseToggle.checked = false;
       updateTickerDisplay();
       updateTickerRatioDisplay();
       updateTickerWidthRatioDisplay();
-      setPlaybackState(true);
+      updateTickerSpeedDisplay();
+      setMotionEnabledForStyle('ticker', true);
       break;
     case 'waveform':
       if (waveformTypeSlider) waveformTypeSlider.value = 0;
       if (waveformFrequencySlider) waveformFrequencySlider.value = 24;
       if (waveformSpeedSlider) waveformSpeedSlider.value = 0.7;
+      if (waveformReverseToggle) waveformReverseToggle.checked = false;
       if (waveformEnvelopeToggle) waveformEnvelopeToggle.checked = false;
       if (waveformEnvelopeType) waveformEnvelopeType.value = 'sine';
       if (waveformEnvelopeWavesSlider) waveformEnvelopeWavesSlider.value = 1;
@@ -993,21 +1409,18 @@ function resetStyleParameters(style) {
       updateWaveformTypeDisplay();
       updateWaveformFrequencyDisplay();
       updateWaveformSpeedDisplay();
-      if (waveformEnvelopeWavesDisplay) waveformEnvelopeWavesDisplay.textContent = '1';
-      if (waveformEnvelopeCenterDisplay) waveformEnvelopeCenterDisplay.textContent = '0';
+      updateWaveformEnvelopeWavesDisplay();
+      updateWaveformEnvelopeCenterDisplay();
       updateAudioParameters();
-      setPlaybackState(true);
+      setMotionEnabledForStyle('waveform', true);
       break;
     case 'circles':
-      if (circlesModeSelect) circlesModeSelect.value = 'packing';
       if (circlesFillSelect) circlesFillSelect.value = 'stroke';
       if (circlesDensitySlider) circlesDensitySlider.value = 50;
       if (circlesSizeVariationSlider) circlesSizeVariationSlider.value = 0;
-      if (circlesOverlapSlider) circlesOverlapSlider.value = 0;
-      handleCirclesModeChange();
+      resetCirclePatternCache();
       updateCirclesDensityDisplay();
       updateCirclesSizeVariationDisplay();
-      updateCirclesOverlapDisplay();
       break;
     case 'numeric':
       if (numericInput) numericInput.value = '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679';
@@ -1030,8 +1443,8 @@ function resetStyleParameters(style) {
       if (trussFamilySelect) trussFamilySelect.value = 'flat';
       if (trussSegmentsSlider) trussSegmentsSlider.value = 15;
       if (trussThicknessSlider) trussThicknessSlider.value = 2;
-      if (trussSegmentsDisplay) trussSegmentsDisplay.textContent = '15';
-      if (trussThicknessDisplay) trussThicknessDisplay.textContent = '2';
+      updateTrussSegmentsDisplay();
+      updateTrussThicknessDisplay();
       break;
     case 'music':
       if (staffInstrumentSelect) staffInstrumentSelect.value = 'piano';
@@ -1039,7 +1452,7 @@ function resetStyleParameters(style) {
       if (staffReverbToggle) staffReverbToggle.checked = false;
       if (staffTremoloToggle) staffTremoloToggle.checked = false;
       if (staffTempoSlider) staffTempoSlider.value = 120;
-      if (staffTempoDisplay) staffTempoDisplay.textContent = '120';
+      updateStaffTempoDisplay();
       currentNoteDuration = 1;
       currentStaffNotes = [];
       document.querySelectorAll('#staff-duration-selector .duration-btn').forEach(btn => {
@@ -1055,7 +1468,7 @@ function resetStyleParameters(style) {
       if (graphMultiToggle) graphMultiToggle.checked = false;
       if (graphMultiInputs) graphMultiInputs.style.display = 'none';
       if (graphScaleSlider) graphScaleSlider.value = GRAPH_SCALE_DEFAULT;
-      if (graphScaleDisplay) graphScaleDisplay.textContent = String(GRAPH_SCALE_DEFAULT);
+      updateGraphScaleDisplay();
       break;
     case 'lines':
       if (linesVariantSlider) linesVariantSlider.value = 2;
@@ -1135,8 +1548,11 @@ function randomizeStyleParameters(style) {
     case 'ruler':
       if (rulerRepeatsSlider) rulerRepeatsSlider.value = randomStepValue(4, 20, 1);
       if (rulerUnitsSlider) rulerUnitsSlider.value = pickRandom(['2', '4', '6', '8', '10']);
+      if (rulerSpeedSlider) rulerSpeedSlider.value = randomStepValue(0.4, 3.5, 0.1);
+      if (rulerReverseToggle) rulerReverseToggle.checked = randomChance(0.5);
       updateRulerRepeatsDisplay();
       updateRulerUnitsDisplay();
+      updateRulerSpeedDisplay();
       break;
     case 'binary':
       if (binaryInput) {
@@ -1158,14 +1574,18 @@ function randomizeStyleParameters(style) {
         applyTickerWidthRatioBounds(tickerRatioSlider, tickerWidthRatioSlider);
         tickerWidthRatioSlider.value = randomStepValue(1, parseInt(tickerWidthRatioSlider.max, 10), 1);
       }
+      if (tickerSpeedSlider) tickerSpeedSlider.value = randomStepValue(0.4, 3.5, 0.1);
+      if (tickerReverseToggle) tickerReverseToggle.checked = randomChance(0.5);
       updateTickerDisplay();
       updateTickerRatioDisplay();
       updateTickerWidthRatioDisplay();
+      updateTickerSpeedDisplay();
       break;
     case 'waveform':
       if (waveformTypeSlider) waveformTypeSlider.value = pickRandom(['0', '1', '2', '3']);
       if (waveformFrequencySlider) waveformFrequencySlider.value = randomStepValue(12, 88, 1);
       if (waveformSpeedSlider) waveformSpeedSlider.value = randomStepValue(0.3, 3.6, 0.1);
+      if (waveformReverseToggle) waveformReverseToggle.checked = randomChance(0.5);
       if (waveformEnvelopeToggle) waveformEnvelopeToggle.checked = randomChance(0.65);
       if (waveformEnvelopeType) waveformEnvelopeType.value = pickRandom(['sine', 'cosine', 'linear', 'inverse']);
       if (waveformEnvelopeWavesSlider) waveformEnvelopeWavesSlider.value = randomStepValue(1, 10, 1);
@@ -1177,24 +1597,17 @@ function randomizeStyleParameters(style) {
       updateWaveformTypeDisplay();
       updateWaveformFrequencyDisplay();
       updateWaveformSpeedDisplay();
-      if (waveformEnvelopeWavesDisplay && waveformEnvelopeWavesSlider) {
-        waveformEnvelopeWavesDisplay.textContent = String(Math.round(parseFloat(waveformEnvelopeWavesSlider.value)));
-      }
-      if (waveformEnvelopeCenterDisplay && waveformEnvelopeCenterSlider) {
-        waveformEnvelopeCenterDisplay.textContent = String(parseFloat(waveformEnvelopeCenterSlider.value));
-      }
+      updateWaveformEnvelopeWavesDisplay();
+      updateWaveformEnvelopeCenterDisplay();
       updateAudioParameters();
       break;
     case 'circles':
-      if (circlesModeSelect) circlesModeSelect.value = pickRandom(['packing', 'grid']);
       if (circlesFillSelect) circlesFillSelect.value = pickRandom(['stroke', 'fill']);
-      handleCirclesModeChange();
+      resetCirclePatternCache();
       if (circlesDensitySlider) circlesDensitySlider.value = randomStepValue(20, 95, 1);
       if (circlesSizeVariationSlider) circlesSizeVariationSlider.value = randomStepValue(0, 85, 1);
-      if (circlesOverlapSlider) circlesOverlapSlider.value = randomStepValue(0, 70, 1);
       updateCirclesDensityDisplay();
       updateCirclesSizeVariationDisplay();
-      updateCirclesOverlapDisplay();
       break;
     case 'numeric':
       if (numericInput) numericInput.value = pickRandom(SURPRISE_NUMERIC_OPTIONS);
@@ -1217,8 +1630,8 @@ function randomizeStyleParameters(style) {
       if (trussFamilySelect) trussFamilySelect.value = pickRandom(TRUSS_FAMILY_OPTIONS);
       if (trussSegmentsSlider) trussSegmentsSlider.value = randomStepValue(8, 32, 1);
       if (trussThicknessSlider) trussThicknessSlider.value = randomStepValue(1, 4.5, 0.5);
-      if (trussSegmentsDisplay && trussSegmentsSlider) trussSegmentsDisplay.textContent = trussSegmentsSlider.value;
-      if (trussThicknessDisplay && trussThicknessSlider) trussThicknessDisplay.textContent = trussThicknessSlider.value;
+      updateTrussSegmentsDisplay();
+      updateTrussThicknessDisplay();
       break;
     case 'music':
       if (staffInstrumentSelect) staffInstrumentSelect.value = pickRandom(['piano', 'synth', 'marimba']);
@@ -1226,7 +1639,7 @@ function randomizeStyleParameters(style) {
       if (staffReverbToggle) staffReverbToggle.checked = randomChance(0.45);
       if (staffTremoloToggle) staffTremoloToggle.checked = randomChance(0.35);
       if (staffTempoSlider) staffTempoSlider.value = randomStepValue(76, 176, 1);
-      if (staffTempoDisplay && staffTempoSlider) staffTempoDisplay.textContent = staffTempoSlider.value;
+      updateStaffTempoDisplay();
       currentStaffNotes = generateRandomStaffPattern();
       setStaffDurationSelection(pickRandom([0.5, 1, 2]));
       updateStaffEffects();
@@ -1243,7 +1656,7 @@ function randomizeStyleParameters(style) {
       if (graphInput5) graphInput5.value = multiStreamEnabled && parseInt(streamCount, 10) > 4 ? streamSet[4] || '' : '';
       if (graphMultiInputs) graphMultiInputs.style.display = multiStreamEnabled ? 'block' : 'none';
       if (graphScaleSlider) graphScaleSlider.value = randomStepValue(6, 14, 1);
-      if (graphScaleDisplay && graphScaleSlider) graphScaleDisplay.textContent = graphScaleSlider.value;
+      updateGraphScaleDisplay();
       break;
     }
     case 'lines':
@@ -1319,6 +1732,35 @@ function openBugReportDialog() {
   window.requestAnimationFrame(() => {
     if (bugReportSubjectInput) bugReportSubjectInput.focus();
   });
+}
+
+function buildGitHubIssueUrl() {
+  const payload = buildBugReportPayload();
+  const colorThemeLabel = String(payload.colorMode || DEFAULT_COLOR_MODE).replace(/-/g, ' ').toUpperCase();
+  const issueTitle = `${payload.styleLabel} issue`;
+  const issueBody = [
+    '### Summary',
+    'Describe the issue here.',
+    '',
+    '### Context',
+    `- Style: ${payload.styleLabel}`,
+    `- Color theme: ${colorThemeLabel}`,
+    `- Viewport: ${payload.viewport}`,
+    `- URL: ${payload.stateUrl}`,
+    `- User agent: ${payload.userAgent}`,
+    `- Timestamp: ${payload.timestamp}`
+  ].join('\n');
+  const params = new URLSearchParams({
+    title: issueTitle,
+    body: issueBody
+  });
+
+  return `${GITHUB_NEW_ISSUE_URL}?${params.toString()}`;
+}
+
+function openGitHubIssue() {
+  const issueWindow = window.open(buildGitHubIssueUrl(), '_blank', 'noopener,noreferrer');
+  if (issueWindow) issueWindow.opener = null;
 }
 
 function closeBugReportDialog(shouldReset = false) {
@@ -1728,9 +2170,49 @@ function syncMissionControlGrid() {
   logoContainer.style.setProperty('--lunar-grid-major-y', `${cellY * 5}px`);
 }
 
+function syncResponsiveLayoutMode() {
+  if (!appSidebar) return false;
+
+  const isCompactLayout = isCompactLayoutViewport();
+  if (lastCompactLayoutState === isCompactLayout) {
+    return false;
+  }
+
+  if (isCompactLayout) {
+    desktopSidebarWasCollapsed = appSidebar.classList.contains('sidebar-collapsed');
+    appSidebar.classList.remove('sidebar-collapsed');
+    appSidebar.classList.remove('active');
+  } else {
+    appSidebar.classList.remove('active');
+    appSidebar.classList.toggle('sidebar-collapsed', desktopSidebarWasCollapsed);
+  }
+
+  lastCompactLayoutState = isCompactLayout;
+  return true;
+}
+
+function hasPendingResponsiveCanvasResize() {
+  return responsiveCanvasResizeTimeout !== 0;
+}
+
+function flushResponsiveCanvasResize() {
+  if (!responsiveCanvasResizeTimeout) return;
+  window.clearTimeout(responsiveCanvasResizeTimeout);
+  responsiveCanvasResizeTimeout = 0;
+}
+
+function scheduleResponsiveCanvasResize(delay = RESPONSIVE_CANVAS_RESIZE_SETTLE_MS) {
+  flushResponsiveCanvasResize();
+  responsiveCanvasResizeTimeout = window.setTimeout(() => {
+    responsiveCanvasResizeTimeout = 0;
+    requestResponsiveWorkspaceSizing();
+  }, delay);
+}
+
 function syncResponsiveWorkspaceSizing() {
   responsiveWorkspaceSyncFrame = 0;
   syncViewportHeightVar();
+  syncResponsiveLayoutMode();
   syncSidebarToggleState();
   syncMissionControlGrid();
 
@@ -1744,7 +2226,7 @@ function syncResponsiveWorkspaceSizing() {
       nextHeight > 0 &&
       (lastCanvasSize.width !== nextWidth || lastCanvasSize.height !== nextHeight)
     ) {
-      if (isWorkspaceResizeTransitionActive) {
+      if (isWorkspaceResizeTransitionActive || hasPendingResponsiveCanvasResize()) {
         return;
       }
 
@@ -1779,6 +2261,7 @@ function finishWorkspaceResizeTransitionSync(options = {}) {
 
   isWorkspaceResizeTransitionActive = false;
   if (shouldRequestSizing) {
+    flushResponsiveCanvasResize();
     requestResponsiveWorkspaceSizing();
   }
 }
@@ -1810,6 +2293,9 @@ function setupResponsiveWorkspaceSizing() {
   if (!resizeTarget || typeof ResizeObserver === 'undefined') return;
 
   responsiveWorkspaceResizeObserver = new ResizeObserver(() => {
+    if (!isWorkspaceResizeTransitionActive) {
+      scheduleResponsiveCanvasResize();
+    }
     requestResponsiveWorkspaceSizing();
   });
   responsiveWorkspaceResizeObserver.observe(resizeTarget);
@@ -1895,11 +2381,17 @@ async function setup() {
   morseInput = document.getElementById('morse-input');
   morseGroup = document.getElementById('morse-group');
   morseAudioBtn = document.getElementById('morse-audio-btn');
+  lunarGroup = document.getElementById('lunar-group');
+  lunarAudioBtn = document.getElementById('lunar-audio-btn');
   rulerGroup = document.getElementById('ruler-group');
   rulerRepeatsSlider = document.getElementById('ruler-repeats-slider');
   rulerRepeatsDisplay = document.getElementById('ruler-repeats-display');
   rulerUnitsSlider = document.getElementById('ruler-units-slider');
   rulerUnitsDisplay = document.getElementById('ruler-units-display');
+  rulerMotionToggle = document.getElementById('ruler-motion-toggle');
+  rulerReverseToggle = document.getElementById('ruler-reverse-toggle');
+  rulerSpeedSlider = document.getElementById('ruler-speed-slider');
+  rulerSpeedDisplay = document.getElementById('ruler-speed-display');
   tickerSlider = document.getElementById('ticker-slider');
   tickerDisplay = document.getElementById('ticker-display');
   tickerGroup = document.getElementById('ticker-group');
@@ -1907,8 +2399,11 @@ async function setup() {
   tickerRatioDisplay = document.getElementById('ticker-ratio-display');
   tickerWidthRatioSlider = document.getElementById('ticker-width-ratio-slider');
   tickerWidthRatioDisplay = document.getElementById('ticker-width-ratio-display');
+  tickerMotionToggle = document.getElementById('ticker-motion-toggle');
+  tickerReverseToggle = document.getElementById('ticker-reverse-toggle');
+  tickerSpeedSlider = document.getElementById('ticker-speed-slider');
+  tickerSpeedDisplay = document.getElementById('ticker-speed-display');
   tickerAudioBtn = document.getElementById('ticker-audio-btn');
-  tickerMotionBtn = document.getElementById('ticker-motion-btn');
   waveformGroup = document.getElementById('waveform-group');
   waveformTypeSlider = document.getElementById('waveform-type-slider');
   waveformTypeDisplay = document.getElementById('waveform-type-display');
@@ -1916,6 +2411,8 @@ async function setup() {
   waveformFrequencyDisplay = document.getElementById('waveform-frequency-display');
   waveformSpeedSlider = document.getElementById('waveform-speed-slider');
   waveformSpeedDisplay = document.getElementById('waveform-speed-display');
+  waveformMotionToggle = document.getElementById('waveform-motion-toggle');
+  waveformReverseToggle = document.getElementById('waveform-reverse-toggle');
   waveformAudioBtn = document.getElementById('waveform-audio-btn');
   waveformEnvelopeToggle = document.getElementById('waveform-envelope-toggle');
   envelopeSettingsGroup = document.getElementById('envelope-settings-group');
@@ -1925,7 +2422,6 @@ async function setup() {
   waveformEnvelopeCenterSlider = document.getElementById('waveform-envelope-center-slider');
   waveformEnvelopeCenterDisplay = document.getElementById('waveform-envelope-center-display');
   waveformEnvelopeBipolarToggle = document.getElementById('waveform-envelope-bipolar-toggle');
-  waveformMotionBtn = document.getElementById('waveform-motion-btn');
   circlesGroup = document.getElementById('circles-group');
   circlesDensitySlider = document.getElementById('circles-density-slider');
   circlesDensityDisplay = document.getElementById('circles-density-display');
@@ -1933,7 +2429,6 @@ async function setup() {
   zoomInBtn = document.getElementById('zoom-in-btn');
   zoomOutBtn = document.getElementById('zoom-out-btn');
   zoomResetBtn = document.getElementById('zoom-reset-btn');
-  panBtn = document.getElementById('pan-btn');
   zoomLevelDisplay = document.getElementById('zoom-level');
 
   // Setup Zoom Listeners and Input
@@ -1972,7 +2467,7 @@ async function setup() {
       if (zoomLevelDisplay) {
         zoomLevelDisplay.value = '100%';
       }
-      if (!isPlaying) redraw();
+      if (!isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
     });
   }
 
@@ -2004,17 +2499,9 @@ async function setup() {
     });
   }
 
-  // Setup Pan Listener
-  if (panBtn) {
-    panBtn.addEventListener('click', togglePanMode);
-  }
-  document.addEventListener('pointerdown', handlePanModeOutsidePointerDown, true);
   circlesSizeVariationSlider = document.getElementById('circles-size-variation-slider');
   circlesSizeVariationDisplay = document.getElementById('circles-size-variation-display');
-  circlesOverlapSlider = document.getElementById('circles-overlap-slider');
-  circlesOverlapDisplay = document.getElementById('circles-overlap-display');
   circlesFillSelect = document.getElementById('circles-fill-select');
-  circlesModeSelect = document.getElementById('circles-mode-select');
   numericGroup = document.getElementById('numeric-group');
   numericInput = document.getElementById('numeric-input');
   numericModeSelect = document.getElementById('numeric-mode-select');
@@ -2101,7 +2588,7 @@ async function setup() {
   savePngButton = document.getElementById('save-png');
   saveSvgButton = document.getElementById('save-svg');
   saveLoopGifButton = document.getElementById('save-loop-gif');
-  copyEmbedButton = document.getElementById('copy-embed');
+  syncResponsiveLayoutMode();
   syncMissionControlInterfaceCopy();
   syncMissionControlSaveMenu();
 
@@ -2126,8 +2613,28 @@ async function setup() {
     updateUrlParameters();
     requestUpdate();
   });
+  if (rulerSpeedSlider) {
+    rulerSpeedSlider.addEventListener('input', function () {
+      updateRulerSpeedDisplay();
+      updateUrlParameters();
+      requestUpdate();
+    });
+  }
+  if (rulerMotionToggle) {
+    rulerMotionToggle.addEventListener('change', function () {
+      setMotionEnabledForStyle('ruler', this.checked);
+    });
+  }
+  if (rulerReverseToggle) {
+    rulerReverseToggle.addEventListener('change', function () {
+      window.animationTime = 0;
+      updateUrlParameters();
+      requestUpdate();
+    });
+  }
   updateRulerRepeatsDisplay(); // Set initial value
   updateRulerUnitsDisplay(); // Set initial value
+  updateRulerSpeedDisplay();
 
   // Setup ticker slider with display update
   tickerSlider.addEventListener('input', function () {
@@ -2152,6 +2659,26 @@ async function setup() {
     requestUpdate();
   });
   updateTickerWidthRatioDisplay(); // Set initial value
+  if (tickerSpeedSlider) {
+    tickerSpeedSlider.addEventListener('input', function () {
+      updateTickerSpeedDisplay();
+      updateUrlParameters();
+      requestUpdate();
+    });
+  }
+  if (tickerMotionToggle) {
+    tickerMotionToggle.addEventListener('change', function () {
+      setMotionEnabledForStyle('ticker', this.checked);
+    });
+  }
+  if (tickerReverseToggle) {
+    tickerReverseToggle.addEventListener('change', function () {
+      window.animationTime = 0;
+      updateUrlParameters();
+      requestUpdate();
+    });
+  }
+  updateTickerSpeedDisplay();
 
   // Setup waveform sliders with display updates and audio parameter updates
   waveformTypeSlider.addEventListener('input', function () {
@@ -2171,6 +2698,18 @@ async function setup() {
     updateUrlParameters();
     requestUpdate();
   });
+  if (waveformMotionToggle) {
+    waveformMotionToggle.addEventListener('change', function () {
+      setMotionEnabledForStyle('waveform', this.checked);
+    });
+  }
+  if (waveformReverseToggle) {
+    waveformReverseToggle.addEventListener('change', function () {
+      window.animationTime = 0;
+      updateUrlParameters();
+      requestUpdate();
+    });
+  }
 
   if (waveformEnvelopeToggle) {
     waveformEnvelopeToggle.addEventListener('change', function () {
@@ -2187,22 +2726,14 @@ async function setup() {
   }
   if (waveformEnvelopeWavesSlider) {
     waveformEnvelopeWavesSlider.addEventListener('input', function () {
-      const normalizedValue = typeof normalizeWaveformEnvelopeWaves === 'function'
-        ? normalizeWaveformEnvelopeWaves(this.value)
-        : Math.max(1, Math.min(10, Math.round(parseFloat(this.value)) || 1));
-      this.value = normalizedValue;
-      if (waveformEnvelopeWavesDisplay) waveformEnvelopeWavesDisplay.textContent = normalizedValue;
+      updateWaveformEnvelopeWavesDisplay();
       updateUrlParameters();
       requestUpdate();
     });
   }
   if (waveformEnvelopeCenterSlider) {
     waveformEnvelopeCenterSlider.addEventListener('input', function () {
-      const normalizedValue = typeof normalizeWaveformEnvelopeCenter === 'function'
-        ? normalizeWaveformEnvelopeCenter(this.value)
-        : Math.max(-0.5, Math.min(0.5, parseFloat(this.value) || 0));
-      this.value = normalizedValue;
-      if (waveformEnvelopeCenterDisplay) waveformEnvelopeCenterDisplay.textContent = normalizedValue;
+      updateWaveformEnvelopeCenterDisplay();
       updateUrlParameters();
       requestUpdate();
     });
@@ -2218,24 +2749,6 @@ async function setup() {
     waveformAudioBtn.addEventListener('click', function (e) {
       e.preventDefault();
       togglePreviewAudio('waveform');
-    });
-  }
-
-  if (waveformMotionBtn) {
-    waveformMotionBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (currentShader === 4) {
-        togglePlayback();
-      }
-    });
-  }
-
-  if (tickerMotionBtn) {
-    tickerMotionBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (currentShader === 2) {
-        togglePlayback();
-      }
     });
   }
 
@@ -2256,6 +2769,7 @@ async function setup() {
   updateWaveformTypeDisplay(); // Set initial value
   updateWaveformFrequencyDisplay(); // Set initial value
   updateWaveformSpeedDisplay(); // Set initial value
+  syncMotionToggleState();
 
   // Setup circles sliders with display updates and debouncing
   let circleUpdateTimeout;
@@ -2277,20 +2791,9 @@ async function setup() {
     updateCirclesSizeVariationDisplay();
     debouncedCircleUpdate();
   });
-  circlesOverlapSlider.addEventListener('input', () => {
-    updateCirclesOverlapDisplay();
-    debouncedCircleUpdate();
-  });
 
   updateCirclesDensityDisplay(); // Set initial value
   updateCirclesSizeVariationDisplay(); // Set initial value
-  updateCirclesOverlapDisplay(); // Set initial value
-
-  // Setup circles mode selector
-  circlesModeSelect.addEventListener('change', function () {
-    handleCirclesModeChange();
-    updateUrlParameters();
-  });
 
   // Setup circles fill selector
   circlesFillSelect.addEventListener('change', function () {
@@ -2311,7 +2814,7 @@ async function setup() {
   if (reportProblemBtn) {
     reportProblemBtn.addEventListener('click', function (e) {
       e.preventDefault();
-      openBugReportDialog();
+      openGitHubIssue();
     });
   }
 
@@ -2358,11 +2861,11 @@ async function setup() {
 
   // Focus trap and Escape key support for sidebar
   appSidebar.addEventListener('keydown', function (e) {
-    // Only trap focus on mobile when sidebar is active
-    if (window.innerWidth <= 768 && !appSidebar.classList.contains('active')) return;
+    // Only trap focus in compact layout when the sidebar is active.
+    if (isCompactLayoutViewport() && !appSidebar.classList.contains('active')) return;
 
-    // Handle Escape to close (mobile only)
-    if (e.key === 'Escape' && window.innerWidth <= 768) {
+    // Handle Escape to close in compact layout only.
+    if (e.key === 'Escape' && isCompactLayoutViewport()) {
       e.stopPropagation();
       toggleMobileMenu();
       return;
@@ -2407,10 +2910,6 @@ async function setup() {
   }
   if (saveLoopGifButton) {
     saveLoopGifButton.addEventListener('click', handleSaveLoopGifClick);
-  }
-
-  if (copyEmbedButton) {
-    copyEmbedButton.addEventListener('click', handleCopyEmbedClick);
   }
 
   // Close save menu when clicking outside
@@ -2476,6 +2975,13 @@ async function setup() {
     morseAudioBtn.addEventListener('click', function (e) {
       e.preventDefault();
       togglePreviewAudio('morse');
+    });
+  }
+
+  if (lunarAudioBtn) {
+    lunarAudioBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      togglePreviewAudio('lunar');
     });
   }
 
@@ -2606,26 +3112,26 @@ async function setup() {
   }
   if (trussSegmentsSlider) {
     trussSegmentsSlider.addEventListener('input', function () {
-      if (trussSegmentsDisplay) trussSegmentsDisplay.textContent = this.value;
+      updateTrussSegmentsDisplay();
       updateUrlParameters(); requestUpdate();
     });
-    if (trussSegmentsDisplay && trussSegmentsSlider) trussSegmentsDisplay.textContent = trussSegmentsSlider.value;
+    updateTrussSegmentsDisplay();
   }
   if (trussThicknessSlider) {
     trussThicknessSlider.addEventListener('input', function () {
-      if (trussThicknessDisplay) trussThicknessDisplay.textContent = this.value;
+      updateTrussThicknessDisplay();
       updateUrlParameters(); requestUpdate();
     });
-    if (trussThicknessDisplay && trussThicknessSlider) trussThicknessDisplay.textContent = trussThicknessSlider.value;
+    updateTrussThicknessDisplay();
   }
 
   // Setup staff controls
   if (staffTempoSlider) {
     staffTempoSlider.addEventListener('input', function () {
-      if (staffTempoDisplay) staffTempoDisplay.textContent = this.value;
+      updateStaffTempoDisplay();
       updateUrlParameters(); requestUpdate();
     });
-    if (staffTempoDisplay && staffTempoSlider) staffTempoDisplay.textContent = staffTempoSlider.value;
+    updateStaffTempoDisplay();
   }
 
   if (staffInstrumentSelect) {
@@ -2735,14 +3241,195 @@ async function setup() {
     graphScaleSlider.addEventListener('input', function () {
       const value = Math.max(GRAPH_SCALE_MIN, parseInt(this.value, 10) || GRAPH_SCALE_DEFAULT);
       this.value = value;
-      if (graphScaleDisplay) graphScaleDisplay.textContent = value;
+      updateGraphScaleDisplay();
       updateUrlParameters(); requestUpdate();
     });
     if (graphScaleSlider) {
       graphScaleSlider.value = Math.max(GRAPH_SCALE_MIN, parseInt(graphScaleSlider.value, 10) || GRAPH_SCALE_DEFAULT);
     }
-    if (graphScaleDisplay && graphScaleSlider) graphScaleDisplay.textContent = graphScaleSlider.value;
+    updateGraphScaleDisplay();
   }
+
+  [
+    {
+      slider: rulerRepeatsSlider,
+      display: rulerRepeatsDisplay,
+      refreshDisplay: updateRulerRepeatsDisplay,
+      commit: () => { updateRulerRepeatsDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set ruler repeats'
+    },
+    {
+      slider: rulerUnitsSlider,
+      display: rulerUnitsDisplay,
+      refreshDisplay: updateRulerUnitsDisplay,
+      commit: () => { updateRulerUnitsDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set ruler units'
+    },
+    {
+      slider: rulerSpeedSlider,
+      display: rulerSpeedDisplay,
+      refreshDisplay: updateRulerSpeedDisplay,
+      commit: () => { updateRulerSpeedDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set ruler motion speed'
+    },
+    {
+      slider: tickerSlider,
+      display: tickerDisplay,
+      refreshDisplay: updateTickerDisplay,
+      commit: () => { updateTickerDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set ticker repeats'
+    },
+    {
+      slider: tickerRatioSlider,
+      display: tickerRatioDisplay,
+      refreshDisplay: updateTickerRatioDisplay,
+      commit: () => { updateTickerRatioDisplay(); updateUrlParameters(); requestUpdate(); },
+      parseValue: (value) => {
+        const numericValue = parseSliderNumericInput(value, { token: 'first' });
+        return numericValue === null ? null : normalizeSliderValue(tickerRatioSlider, numericValue);
+      },
+      ariaLabel: 'Set ticker count ratio',
+      getEditorValue: () => tickerRatioDisplay ? tickerRatioDisplay.textContent.trim() : ''
+    },
+    {
+      slider: tickerWidthRatioSlider,
+      display: tickerWidthRatioDisplay,
+      refreshDisplay: updateTickerWidthRatioDisplay,
+      commit: () => { updateTickerWidthRatioDisplay(); updateUrlParameters(); requestUpdate(); },
+      parseValue: (value) => {
+        const numericValue = parseSliderNumericInput(value, { token: 'last' });
+        return numericValue === null ? null : normalizeSliderValue(tickerWidthRatioSlider, numericValue);
+      },
+      ariaLabel: 'Set ticker width ratio',
+      getEditorValue: () => tickerWidthRatioDisplay ? tickerWidthRatioDisplay.textContent.trim() : ''
+    },
+    {
+      slider: tickerSpeedSlider,
+      display: tickerSpeedDisplay,
+      refreshDisplay: updateTickerSpeedDisplay,
+      commit: () => { updateTickerSpeedDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set ticker motion speed'
+    },
+    {
+      slider: waveformFrequencySlider,
+      display: waveformFrequencyDisplay,
+      refreshDisplay: updateWaveformFrequencyDisplay,
+      commit: () => { updateWaveformFrequencyDisplay(); updateAudioParameters(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set waveform frequency'
+    },
+    {
+      slider: waveformSpeedSlider,
+      display: waveformSpeedDisplay,
+      refreshDisplay: updateWaveformSpeedDisplay,
+      commit: () => { updateWaveformSpeedDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set waveform motion speed'
+    },
+    {
+      slider: waveformEnvelopeWavesSlider,
+      display: waveformEnvelopeWavesDisplay,
+      refreshDisplay: updateWaveformEnvelopeWavesDisplay,
+      commit: () => { updateWaveformEnvelopeWavesDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set waveform envelope waves'
+    },
+    {
+      slider: waveformEnvelopeCenterSlider,
+      display: waveformEnvelopeCenterDisplay,
+      refreshDisplay: updateWaveformEnvelopeCenterDisplay,
+      commit: () => { updateWaveformEnvelopeCenterDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set waveform envelope center offset'
+    },
+    {
+      slider: circlesDensitySlider,
+      display: circlesDensityDisplay,
+      refreshDisplay: updateCirclesDensityDisplay,
+      commit: () => { updateCirclesDensityDisplay(); redraw(); updateUrlParameters(); },
+      ariaLabel: 'Set circles density'
+    },
+    {
+      slider: circlesSizeVariationSlider,
+      display: circlesSizeVariationDisplay,
+      refreshDisplay: updateCirclesSizeVariationDisplay,
+      commit: () => { updateCirclesSizeVariationDisplay(); redraw(); updateUrlParameters(); },
+      ariaLabel: 'Set circles size variation'
+    },
+    {
+      slider: trussSegmentsSlider,
+      display: trussSegmentsDisplay,
+      refreshDisplay: updateTrussSegmentsDisplay,
+      commit: () => { updateTrussSegmentsDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set truss segments'
+    },
+    {
+      slider: trussThicknessSlider,
+      display: trussThicknessDisplay,
+      refreshDisplay: updateTrussThicknessDisplay,
+      commit: () => { updateTrussThicknessDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set truss thickness'
+    },
+    {
+      slider: staffTempoSlider,
+      display: staffTempoDisplay,
+      refreshDisplay: updateStaffTempoDisplay,
+      commit: () => { updateStaffTempoDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set music tempo'
+    },
+    {
+      slider: graphScaleSlider,
+      display: graphScaleDisplay,
+      refreshDisplay: updateGraphScaleDisplay,
+      commit: () => { updateGraphScaleDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set graph scale max'
+    },
+    {
+      slider: circlesGradientVariantSlider,
+      display: circlesGradientVariantDisplay,
+      refreshDisplay: updateCirclesGradientVariantDisplay,
+      commit: () => { updateCirclesGradientVariantDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set circles gradient variant'
+    },
+    {
+      slider: gradientVariantSlider,
+      display: gradientVariantDisplay,
+      refreshDisplay: updateGradientVariantDisplay,
+      commit: () => { updateGradientVariantDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set gradient variant'
+    },
+    {
+      slider: gridVariantSlider,
+      display: gridVariantDisplay,
+      refreshDisplay: updateGridVariantDisplay,
+      commit: () => { updateGridVariantDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set grid variant'
+    },
+    {
+      slider: pointConnectVariantSlider,
+      display: pointConnectVariantDisplay,
+      refreshDisplay: updatePointConnectVariantDisplay,
+      commit: () => { updatePointConnectVariantDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set point connect variant'
+    },
+    {
+      slider: neuralNetworkHiddenLayersSlider,
+      display: neuralNetworkHiddenLayersDisplay,
+      refreshDisplay: updateNeuralNetworkHiddenLayersDisplay,
+      commit: () => { updateNeuralNetworkHiddenLayersDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set neural network hidden layers'
+    },
+    {
+      slider: triangleGridVariantSlider,
+      display: triangleGridVariantDisplay,
+      refreshDisplay: updateTriangleGridVariantDisplay,
+      commit: () => { updateTriangleGridVariantDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set triangle grid variant'
+    },
+    {
+      slider: trianglesVariantSlider,
+      display: trianglesVariantDisplay,
+      refreshDisplay: updateTrianglesVariantDisplay,
+      commit: () => { updateTrianglesVariantDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set triangles variant'
+    }
+  ].forEach(registerSliderValueEditor);
 
   // Apply URL parameters if present, otherwise use defaults
   applyUrlParameters();
@@ -2784,8 +3471,8 @@ async function setup() {
 
     // Handle spacebar for motion and audio preview shortcuts.
     if (event.code === 'Space' && !event.shiftKey) {
-      // Morse and music use spacebar for audio transport.
-      if (currentShader === 7 || currentShader === 10) {
+      // Morse, Artemis II mission audio, and music use spacebar for audio transport.
+      if (currentShader === 7 || currentShader === 10 || (currentShader === 24 && isMissionControlThemeActive())) {
         event.preventDefault();
         if (isAudioPlaying) {
           stopAudio();
@@ -2795,7 +3482,7 @@ async function setup() {
         return;
       }
 
-      // Ticker and waveform use spacebar to pause or resume motion.
+      // Motion-enabled styles use spacebar to toggle loop preview on and off.
       if (isAnimated) {
         event.preventDefault();
         togglePlayback();
@@ -2941,6 +3628,12 @@ function updateRulerUnitsDisplay() {
   rulerUnitsDisplay.textContent = sliderValue;
 }
 
+function updateRulerSpeedDisplay() {
+  if (!rulerSpeedSlider || !rulerSpeedDisplay) return;
+  rulerSpeedSlider.value = String(normalizeLoopSpeed('ruler', rulerSpeedSlider.value));
+  rulerSpeedDisplay.textContent = parseFloat(rulerSpeedSlider.value).toFixed(1);
+}
+
 function updateTickerDisplay() {
   // Display the current ticker slider value
   const sliderValue = parseInt(tickerSlider.value);
@@ -2958,6 +3651,12 @@ function updateTickerRatioDisplay() {
 function updateTickerWidthRatioDisplay() {
   applyTickerWidthRatioBounds(tickerRatioSlider, tickerWidthRatioSlider);
   setTickerWidthRatioDisplayValue(tickerWidthRatioSlider, tickerWidthRatioDisplay);
+}
+
+function updateTickerSpeedDisplay() {
+  if (!tickerSpeedSlider || !tickerSpeedDisplay) return;
+  tickerSpeedSlider.value = String(normalizeLoopSpeed('ticker', tickerSpeedSlider.value));
+  tickerSpeedDisplay.textContent = parseFloat(tickerSpeedSlider.value).toFixed(1);
 }
 
 function updateCirclesGradientVariantDisplay() {
@@ -3023,8 +3722,28 @@ function updateWaveformFrequencyDisplay() {
 }
 
 function updateWaveformSpeedDisplay() {
+  if (!waveformSpeedSlider || !waveformSpeedDisplay) return;
+  waveformSpeedSlider.value = String(normalizeLoopSpeed('waveform', waveformSpeedSlider.value));
   const sliderValue = parseFloat(waveformSpeedSlider.value);
   waveformSpeedDisplay.textContent = sliderValue.toFixed(1);
+}
+
+function updateWaveformEnvelopeWavesDisplay() {
+  if (!waveformEnvelopeWavesSlider || !waveformEnvelopeWavesDisplay) return;
+  const normalizedValue = typeof normalizeWaveformEnvelopeWaves === 'function'
+    ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
+    : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1));
+  waveformEnvelopeWavesSlider.value = normalizedValue;
+  waveformEnvelopeWavesDisplay.textContent = String(normalizedValue);
+}
+
+function updateWaveformEnvelopeCenterDisplay() {
+  if (!waveformEnvelopeCenterSlider || !waveformEnvelopeCenterDisplay) return;
+  const normalizedValue = typeof normalizeWaveformEnvelopeCenter === 'function'
+    ? normalizeWaveformEnvelopeCenter(waveformEnvelopeCenterSlider.value)
+    : Math.max(-0.5, Math.min(0.5, parseFloat(waveformEnvelopeCenterSlider.value) || 0));
+  waveformEnvelopeCenterSlider.value = normalizedValue;
+  waveformEnvelopeCenterDisplay.textContent = String(normalizedValue);
 }
 
 function updateCirclesDensityDisplay() {
@@ -3041,25 +3760,39 @@ function updateCirclesSizeVariationDisplay() {
   staticCircleData = null;
 }
 
-function updateCirclesOverlapDisplay() {
-  const sliderValue = parseInt(circlesOverlapSlider.value);
-  circlesOverlapDisplay.textContent = sliderValue;
-  // Invalidate cache when overlap changes
-  staticCircleData = null;
+function updateTrussSegmentsDisplay() {
+  if (!trussSegmentsSlider || !trussSegmentsDisplay) return;
+  trussSegmentsDisplay.textContent = trussSegmentsSlider.value;
 }
 
-function handleCirclesModeChange() {
+function updateTrussThicknessDisplay() {
+  if (!trussThicknessSlider || !trussThicknessDisplay) return;
+  trussThicknessDisplay.textContent = trussThicknessSlider.value;
+}
+
+function updateStaffTempoDisplay() {
+  if (!staffTempoSlider || !staffTempoDisplay) return;
+  staffTempoDisplay.textContent = staffTempoSlider.value;
+}
+
+function updateGraphScaleDisplay() {
+  if (!graphScaleSlider || !graphScaleDisplay) return;
+  graphScaleSlider.value = Math.max(GRAPH_SCALE_MIN, parseInt(graphScaleSlider.value, 10) || GRAPH_SCALE_DEFAULT);
+  graphScaleDisplay.textContent = graphScaleSlider.value;
+}
+
+function resetCirclePatternCache() {
   staticCircleData = null;
   redraw();
 }
 
 function toggleMobileMenu() {
-  const isMobile = window.innerWidth <= 768;
+  const isCompactLayout = isCompactLayoutViewport();
 
-  if (isMobile) {
+  if (isCompactLayout) {
     const isActive = appSidebar.classList.contains('active');
     if (!isActive) {
-      // Opening sidebar on mobile
+      // Opening sidebar in compact overlay layout
       lastFocusedElement = document.activeElement;
       appSidebar.classList.add('active');
       if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
@@ -3069,7 +3802,7 @@ function toggleMobileMenu() {
         if (firstFocusable) firstFocusable.focus();
       }, 100);
     } else {
-      // Closing sidebar on mobile
+      // Closing sidebar in compact overlay layout
       appSidebar.classList.remove('active');
 
       if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
@@ -3081,6 +3814,7 @@ function toggleMobileMenu() {
   } else {
     // Desktop behavior (collapsible)
     appSidebar.classList.toggle('sidebar-collapsed');
+    desktopSidebarWasCollapsed = appSidebar.classList.contains('sidebar-collapsed');
     startWorkspaceResizeTransitionSync(460);
   }
 
@@ -3088,8 +3822,8 @@ function toggleMobileMenu() {
 }
 
 function handleClickOutside(event) {
-  // Only apply on mobile where sidebar overlays content
-  if (window.innerWidth > 768) return;
+  // Only apply in compact overlay layout where the sidebar covers the workspace.
+  if (!isCompactLayoutViewport()) return;
   // Don't close if clicking on the toggle button or inside the sidebar
   if (mobileMenuToggle && mobileMenuToggle.contains(event.target) ||
     appSidebar && appSidebar.contains(event.target)) {
@@ -3127,7 +3861,7 @@ function positionSaveMenu() {
   saveMenu.style.right = '';
   saveMenu.style.maxWidth = '';
 
-  if (window.innerWidth > 768) return;
+  if (!isCompactLayoutViewport()) return;
 
   const visualViewport = window.visualViewport || null;
   const viewportWidth = visualViewport && Number.isFinite(visualViewport.width)
@@ -3181,7 +3915,7 @@ function syncMissionControlInterfaceCopy() {
   if (colorModeSelectLabel) colorModeSelectLabel.textContent = interfaceCopy.colorLabel;
   if (reportProblemLabel) reportProblemLabel.textContent = interfaceCopy.reportProblem;
   if (reportProblemBtn) {
-    reportProblemBtn.setAttribute('aria-label', interfaceCopy.reportProblem);
+    reportProblemBtn.setAttribute('aria-label', `${interfaceCopy.reportProblem} on GitHub`);
   }
   if (!missionControlActive) closeLunarCounterDetail();
 }
@@ -3201,7 +3935,6 @@ function syncMissionControlSaveMenu() {
   setSaveOptionCopy(savePngButton, menuCopy.png);
   setSaveOptionCopy(saveSvgButton, menuCopy.svg);
   setSaveOptionCopy(saveLoopGifButton, menuCopy.gif);
-  setSaveOptionCopy(copyEmbedButton, menuCopy.copy);
 
   if (saveLoopGifButton && missionControlActive) {
     saveLoopGifButton.hidden = false;
@@ -3243,29 +3976,6 @@ function handleSaveLoopGifClick(event) {
   saveLoopingGIF();
 }
 
-function handleCopyEmbedClick(event) {
-  event.stopPropagation();
-
-  if (isMissionControlCreditsMenuActive()) {
-    event.preventDefault();
-    openMissionControlCreditLink(ARTEMIS_CREDIT_LINKS.lunarImageCredit);
-    return;
-  }
-
-  // Get current URL which includes all active parameters
-  const embedUrl = window.location.href;
-  const embedCode = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0" allowfullscreen style="border: none; overflow: hidden; background: transparent;"></iframe>`;
-
-  navigator.clipboard.writeText(embedCode).then(() => {
-    Toast.show('Embed code copied to clipboard!', 'success');
-  }).catch(err => {
-    console.error('Failed to copy:', err);
-    Toast.show('Failed to copy embed code: ' + err.message, 'error');
-  });
-
-  hideSaveMenu();
-}
-
 function toggleSaveMenu(e) {
   if (e) e.stopPropagation();
 
@@ -3303,8 +4013,8 @@ function updateLoopingGifSaveOption() {
 function syncSidebarToggleState() {
   if (!mobileMenuToggle || !appSidebar) return;
 
-  const isMobile = window.innerWidth <= 768;
-  const isExpanded = isMobile
+  const isCompactLayout = isCompactLayoutViewport();
+  const isExpanded = isCompactLayout
     ? appSidebar.classList.contains('active')
     : !appSidebar.classList.contains('sidebar-collapsed');
 
@@ -3423,6 +4133,7 @@ function handleStyleChange() {
     circlesGroup.style.display = 'none';
     numericGroup.style.display = 'none';
     morseGroup.style.display = 'none';
+    if (lunarGroup) lunarGroup.style.display = 'none';
     if (circlesGradientGroup) circlesGradientGroup.style.display = 'none';
     if (gradientGroup) gradientGroup.style.display = 'none';
     if (gridGroup) gridGroup.style.display = 'none';
@@ -3443,6 +4154,7 @@ function handleStyleChange() {
     switch (selectedStyle) {
       case 'ruler':
         rulerGroup.style.display = 'block';
+        isAnimated = true;
         break;
       case 'ticker':
         tickerGroup.style.display = 'block';
@@ -3463,6 +4175,9 @@ function handleStyleChange() {
         break;
       case 'morse':
         morseGroup.style.display = 'block';
+        break;
+      case 'lunar':
+        syncLunarPreviewVisibility(selectedStyle);
         break;
       case 'circles-gradient':
         if (circlesGradientGroup) circlesGradientGroup.style.display = 'block';
@@ -3499,17 +4214,12 @@ function handleStyleChange() {
         break;
     }
 
-    // Motion pause/resume is only exposed on ticker and waveform.
-    // Other styles should keep the render loop active so their previews remain responsive.
-    if (!isAnimated && !isPlaying) {
-      togglePlayback();
-    } else {
-      syncMotionToggleState();
-    }
+    syncMotionToggleState();
 
     stopAudio();
   }
 
+  syncLunarPreviewVisibility(selectedStyle);
   console.log('Style changed to:', selectedStyle, 'currentShader:', currentShader);
   syncMissionControlSaveMenu();
   updateSidebarScrollFadeState();
@@ -3550,24 +4260,32 @@ function applyColorMode(colorMode) {
 
   syncMissionControlInterfaceCopy();
   syncMissionControlSaveMenu();
+  syncLunarPreviewVisibility();
+  updateAudioControlsUI();
+  if (activeAudioPreviewType === 'lunar' && !isMissionControlThemeActive(currentColorMode)) {
+    stopAudio();
+  }
   console.log('Color mode applied:', currentColorMode);
   requestUpdate();
 }
 
 function buildHeaderPreviewSVG() {
-  const currentWidth = 250;
-  const logoHeight = 149.411;
+  const currentWidth = REFERENCE_WIDTH;
+  const logoHeight = REFERENCE_TOTAL_HEIGHT;
   const fgColor = 'currentColor';
-  const barY = 132.911;
-  const barHeight = 18;
-  const exactBarWidth = 250;
+  const barY = REFERENCE_BAR_Y;
+  const barHeight = REFERENCE_BAR_HEIGHT;
+  const exactBarWidth = REFERENCE_WIDTH;
   const barStartX = 0;
-  const timeSeconds = typeof window.animationTime !== 'undefined'
-    ? window.animationTime
-    : (typeof millis === 'function' ? millis() / 1000.0 : 0);
+  const loopAnimationState = getCurrentLoopAnimationState(exactBarWidth);
+  const timeSeconds = loopAnimationState
+    ? loopAnimationState.timeSeconds
+    : (typeof window.animationTime !== 'undefined'
+      ? window.animationTime
+      : (typeof millis === 'function' ? millis() / 1000.0 : 0));
 
   let svgContent = `
-<svg viewBox="0 0 ${currentWidth} ${logoHeight}" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true">
+<svg viewBox="0 0 ${currentWidth} ${logoHeight}" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="overflow: visible;">
   <path d="${paths.r}" fill="${fgColor}"/>
   <path d="${paths.p}" fill="${fgColor}"/>
   <path d="${paths.i}" fill="${fgColor}"/>`;
@@ -3595,6 +4313,7 @@ function buildHeaderPreviewSVG() {
         tickerRepeats: tickerSlider ? tickerSlider.value : 34,
         tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
         tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
+        loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
         binaryText: binaryInput ? (binaryInput.value || 'RPI') : 'RPI',
         waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
         waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
@@ -3609,17 +4328,9 @@ function buildHeaderPreviewSVG() {
         waveformEnvelopeCenter: waveformEnvelopeCenterSlider ? waveformEnvelopeCenterSlider.value : 0,
         waveformEnvelopeBipolar: waveformEnvelopeBipolarToggle ? waveformEnvelopeBipolarToggle.checked : false,
         timeSeconds,
-        circlesMode: circlesModeSelect ? circlesModeSelect.value : 'packing',
         circlesFill: circlesFillSelect ? circlesFillSelect.value : 'stroke',
         circlesDensity: circlesDensitySlider ? circlesDensitySlider.value : 50,
         circlesSizeVariation: circlesSizeVariationSlider ? circlesSizeVariationSlider.value : 0,
-        circlesOverlap: circlesOverlapSlider ? circlesOverlapSlider.value : 0,
-        circlesRows: CIRCLES_GRID_ROWS,
-        circlesGridDensity: circlesDensitySlider ? circlesDensitySlider.value : 50,
-        circlesSizeVariationY: circlesSizeVariationSlider ? circlesSizeVariationSlider.value : 0,
-        circlesSizeVariationX: 0,
-        circlesGridOverlap: circlesOverlapSlider ? circlesOverlapSlider.value : 0,
-        circlesLayout: CIRCLES_GRID_LAYOUT,
         numericValue: numericInput ? numericInput.value : '',
         numericMode: numericModeSelect ? numericModeSelect.value : 'dotmatrix',
         circlesGradientVariant: circlesGradientVariantSlider ? circlesGradientVariantSlider.value : 1,
@@ -3669,13 +4380,18 @@ function updateHeaderBrandPreview(force = false) {
 function requestUpdate() {
   updateHeaderBrandPreview();
 
-  if (!isPlaying) {
+  if (!isMotionEnabledForStyle(getCurrentMotionStyle())) {
     redraw();
   }
 }
 
 function styleSupportsAudio(style) {
-  return style === 'binary' || style === 'ticker' || style === 'waveform' || style === 'morse' || style === 'music';
+  return style === 'binary'
+    || style === 'ticker'
+    || style === 'waveform'
+    || style === 'morse'
+    || style === 'music'
+    || style === 'lunar';
 }
 
 function showAudioToast(message, type = 'info') {
@@ -3687,15 +4403,20 @@ function showAudioToast(message, type = 'info') {
 function updateAudioControlsUI() {
   const activeType = getActiveAudioPreviewType();
   const staffPreviewDisabled = !currentStaffNotes || currentStaffNotes.length === 0;
+  const lunarPreviewDisabled = !isMissionControlThemeActive();
 
   getAudioButtonConfig().forEach(({ type, button, currentShader: shaderId }) => {
     const isStaffControl = type === 'staff' && shaderId === 10;
-    const disabled = isStaffControl && staffPreviewDisabled;
+    const isLunarControl = type === 'lunar' && shaderId === 24;
+    const disabled = (isStaffControl && staffPreviewDisabled) || (isLunarControl && lunarPreviewDisabled);
+    const disabledReason = isStaffControl
+      ? 'Add notes first'
+      : (isLunarControl ? 'Use Mission Control theme' : 'Unavailable');
 
     renderPreviewButton(button, 'audio', {
       active: activeType === type && isAudioPlaying,
       disabled,
-      disabledReason: 'Add notes first'
+      disabledReason
     });
   });
 }
@@ -3779,9 +4500,9 @@ function calculatePhaseParameters(density, sizeVariation, area, barHeight) {
 }
 
 // Execute a single packing phase
-function executePackingPhase(barWidth, barHeight, existingCircles, phase, overlapAmount) {
+function executePackingPhase(barWidth, barHeight, existingCircles, phase) {
   const newCircles = [];
-  const minDistanceMultiplier = overlapAmount === 0 ? 2.0 : (2.0 - (overlapAmount / 100 * 1.8));
+  const minDistanceMultiplier = 2.0;
 
   // Create spatial grid for faster collision detection
   const spatialGrid = createSpatialGrid(barWidth, barHeight, existingCircles, phase.maxRadius);
@@ -3817,9 +4538,9 @@ function executePackingPhase(barWidth, barHeight, existingCircles, phase, overla
 }
 
 // Execute gap-filling phase using spatial analysis
-function executeGapFillingPhase(barWidth, barHeight, existingCircles, density, sizeVariation, overlapAmount) {
+function executeGapFillingPhase(barWidth, barHeight, existingCircles, density, sizeVariation) {
   const gapFillingCircles = [];
-  const minDistanceMultiplier = overlapAmount === 0 ? 2.0 : (2.0 - (overlapAmount / 100 * 1.8));
+  const minDistanceMultiplier = 2.0;
 
   // Analyze gaps in the current packing
   const gaps = identifyGaps(barWidth, barHeight, existingCircles);
@@ -4064,13 +4785,12 @@ function calculateCoverage(circles, totalArea) {
 }
 
 // Generate grid-based circles
-function generateGridCircles(barWidth, barHeight, rows, gridDensity, sizeVariationY, sizeVariationX, gridOverlap, layout) {
+function generateGridCircles(barWidth, barHeight, rows, gridDensity, sizeVariationY, sizeVariationX, layout) {
   const circles = [];
 
   // Safety guards
   if (barWidth <= 0 || barHeight <= 0 || rows < 1) return [];
   const safeDensity = Math.max(10, Math.min(100, parseFloat(gridDensity) || 50));
-  const safeOverlap = Math.max(0, Math.min(100, parseFloat(gridOverlap) || 0));
   const safeVariationY = Math.max(0, Math.min(100, parseFloat(sizeVariationY) || 0));
   const safeVariationX = Math.max(0, Math.min(100, parseFloat(sizeVariationX) || 0));
 
@@ -4081,10 +4801,7 @@ function generateGridCircles(barWidth, barHeight, rows, gridDensity, sizeVariati
   // Calculate how many circles fit horizontally based on circle diameter
   const circleDiameter = baseRadius * 2;
   const baseColsPerRow = Math.max(2, Math.ceil(barWidth / circleDiameter) + 1);
-
-  // Add extra circles based on overlap
-  const overlapFactor = 1 + (safeOverlap / 100);
-  const colsPerRow = Math.max(2, Math.floor(baseColsPerRow * overlapFactor));
+  const colsPerRow = baseColsPerRow;
 
   for (let row = 0; row < rows; row++) {
     const rowProgress = rows > 1 ? row / (rows - 1) : 0.5; // 0 to 1 from top to bottom
@@ -4235,6 +4952,45 @@ function disconnectNode(node) {
   }
 }
 
+function isMissionControlThemeActive(colorMode = currentColorMode) {
+  return normalizeColorModeValue(colorMode) === 'lunar';
+}
+
+function syncLunarPreviewVisibility(selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid')) {
+  if (!lunarGroup) return;
+
+  lunarGroup.style.display = selectedStyle === 'lunar' && isMissionControlThemeActive()
+    ? 'block'
+    : 'none';
+}
+
+function handleArtemisMissionAudioEnded() {
+  if (activeAudioPreviewType !== 'lunar') {
+    return;
+  }
+
+  isAudioPlaying = false;
+  activeAudioPreviewType = null;
+  updateAudioControlsUI();
+}
+
+function ensureArtemisMissionAudio() {
+  if (artemisMissionAudio) {
+    return artemisMissionAudio;
+  }
+
+  if (typeof Audio !== 'function') {
+    return null;
+  }
+
+  artemisMissionAudio = new Audio(ARTEMIS_II_AUDIO_SOURCE);
+  artemisMissionAudio.preload = 'auto';
+  artemisMissionAudio.playsInline = true;
+  artemisMissionAudio.addEventListener('ended', handleArtemisMissionAudioEnded);
+
+  return artemisMissionAudio;
+}
+
 async function initializeAudio() {
   try {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -4304,12 +5060,6 @@ function setupStaffEffectsChain() {
 }
 
 async function startAudio() {
-  // Only play audio if audioContext exists
-  if (!audioContext || isAudioPlaying) {
-    updateAudioControlsUI();
-    return;
-  }
-
   try {
     const requestedType = getCurrentAudioPreviewType();
     if (!requestedType) {
@@ -4317,32 +5067,46 @@ async function startAudio() {
       return;
     }
 
-    // Resume audio context if suspended (required by browsers)
-    if (audioContext.state === 'suspended') {
-      await audioContext.resume();
-    }
-
-    if (audioContext.state !== 'running') {
-      showAudioToast('Audio is blocked by the browser. Click the page and try again.', 'warning');
+    if (isAudioPlaying) {
       updateAudioControlsUI();
       return;
     }
 
-    if (requestedType === 'waveform') {
-      startWaveformAudio();
-    } else if (requestedType === 'binary') {
-      startSequenceAudio('binary');
-    } else if (requestedType === 'morse') {
-      startSequenceAudio('morse');
-    } else if (requestedType === 'ticker') {
-      startSequenceAudio('ticker');
-    } else if (requestedType === 'staff') {
-      if (!currentStaffNotes || currentStaffNotes.length === 0) {
-        showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
+    if (requestedType === 'lunar') {
+      await startArtemisMissionAudio();
+    } else {
+      if (!audioContext) {
         updateAudioControlsUI();
         return;
       }
-      startSequenceAudio('staff');
+
+      // Resume audio context if suspended (required by browsers)
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+
+      if (audioContext.state !== 'running') {
+        showAudioToast('Audio is blocked by the browser. Click the page and try again.', 'warning');
+        updateAudioControlsUI();
+        return;
+      }
+
+      if (requestedType === 'waveform') {
+        startWaveformAudio();
+      } else if (requestedType === 'binary') {
+        startSequenceAudio('binary');
+      } else if (requestedType === 'morse') {
+        startSequenceAudio('morse');
+      } else if (requestedType === 'ticker') {
+        startSequenceAudio('ticker');
+      } else if (requestedType === 'staff') {
+        if (!currentStaffNotes || currentStaffNotes.length === 0) {
+          showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
+          updateAudioControlsUI();
+          return;
+        }
+        startSequenceAudio('staff');
+      }
     }
     if (isAudioPlaying) {
       activeAudioPreviewType = requestedType;
@@ -4357,6 +5121,29 @@ async function startAudio() {
     showAudioToast('Could not start audio. Check browser audio permissions.', 'error');
     updateAudioControlsUI();
   }
+}
+
+async function startArtemisMissionAudio() {
+  if (!isMissionControlThemeActive()) {
+    showAudioToast('Artemis II audio is only available in the Mission Control theme.', 'info');
+    return;
+  }
+
+  const audioElement = ensureArtemisMissionAudio();
+  if (!audioElement) {
+    throw new Error('Unable to initialize Artemis II audio element');
+  }
+
+  audioElement.pause();
+  audioElement.currentTime = 0;
+
+  const playResult = audioElement.play();
+  if (playResult && typeof playResult.then === 'function') {
+    await playResult;
+  }
+
+  isAudioPlaying = true;
+  console.log('Artemis II audio started');
 }
 
 async function startWaveformAudio() {
@@ -4466,6 +5253,8 @@ function stopAudio() {
 
   if (activeType === 'waveform') {
     stopWaveformAudio();
+  } else if (activeType === 'lunar') {
+    stopArtemisMissionAudio();
   } else {
     stopSequenceAudio();
   }
@@ -4474,6 +5263,19 @@ function stopAudio() {
   activeAudioPreviewType = null;
   console.log('Audio stopped');
   updateAudioControlsUI();
+}
+
+function stopArtemisMissionAudio() {
+  if (!artemisMissionAudio) {
+    return;
+  }
+
+  artemisMissionAudio.pause();
+  try {
+    artemisMissionAudio.currentTime = 0;
+  } catch (error) {
+    console.warn('Unable to reset Artemis II audio position:', error);
+  }
 }
 
 function stopWaveformAudio() {
@@ -4967,16 +5769,21 @@ function getUrlParameters() {
     // Ruler parameters
     rulerRepeats: parseInt(params.get('rulerRepeats')) || 10,
     rulerUnits: parseInt(params.get('rulerUnits')) || 4,
+    rulerSpeed: normalizeLoopSpeed('ruler', params.get('rulerSpeed')),
+    rulerReverse: params.get('rulerReverse') === 'true',
 
     // Ticker parameters
     tickerRepeats: parseInt(params.get('tickerRepeats')) || 34,
     tickerRatio: parseInt(params.get('tickerRatio')) || 2,
     tickerWidthRatio: parseInt(params.get('tickerWidthRatio')) || 2,
+    tickerSpeed: normalizeLoopSpeed('ticker', params.get('tickerSpeed')),
+    tickerReverse: params.get('tickerReverse') === 'true',
 
     // Waveform parameters
     waveformType: parseFloat(params.get('waveformType')) || 0,
     waveformFrequency: parseInt(params.get('waveformFrequency')) || 24,
-    waveformSpeed: parseFloat(params.get('waveformSpeed')) || 0.7,
+    waveformSpeed: normalizeLoopSpeed('waveform', params.get('waveformSpeed')),
+    waveformReverse: params.get('waveformReverse') === 'true',
 
     waveformEnvelope: params.get('waveformEnvelope') || 'false',
     waveformEnvelopeType: params.get('waveformEnvelopeType') || 'sine',
@@ -4989,11 +5796,9 @@ function getUrlParameters() {
     waveformEnvelopeBipolar: params.get('waveformEnvelopeBipolar') || 'false',
 
     // Circles parameters
-    circlesMode: params.get('circlesMode') || 'packing',
     circlesFill: params.get('circlesFill') || 'stroke',
     circlesDensity: parseInt(params.get('circlesDensity')) || 50,
     circlesSizeVariation: parseInt(params.get('circlesSizeVariation')) || 0,
-    circlesOverlap: parseInt(params.get('circlesOverlap')) || 0,
 
     // Truss parameters
     trussFamily: normalizeTrussFamilyValue(params.get('trussFamily') || 'flat'),
@@ -5166,6 +5971,12 @@ function updateUrlParameters() {
     if (rulerUnitsSlider && parseInt(rulerUnitsSlider.value) !== 4) {
       params.set('rulerUnits', rulerUnitsSlider.value);
     }
+    if (rulerSpeedSlider && parseFloat(rulerSpeedSlider.value) !== 1) {
+      params.set('rulerSpeed', rulerSpeedSlider.value);
+    }
+    if (rulerReverseToggle && rulerReverseToggle.checked) {
+      params.set('rulerReverse', 'true');
+    }
   }
 
   if (styleSelect && styleSelect.value === 'ticker') {
@@ -5178,6 +5989,12 @@ function updateUrlParameters() {
     if (tickerWidthRatioSlider && parseInt(tickerWidthRatioSlider.value) !== 2) {
       params.set('tickerWidthRatio', tickerWidthRatioSlider.value);
     }
+    if (tickerSpeedSlider && parseFloat(tickerSpeedSlider.value) !== 1) {
+      params.set('tickerSpeed', tickerSpeedSlider.value);
+    }
+    if (tickerReverseToggle && tickerReverseToggle.checked) {
+      params.set('tickerReverse', 'true');
+    }
   }
 
   if (styleSelect && styleSelect.value === 'waveform') {
@@ -5189,6 +6006,9 @@ function updateUrlParameters() {
     }
     if (waveformSpeedSlider && parseFloat(waveformSpeedSlider.value) !== 0.7) {
       params.set('waveformSpeed', waveformSpeedSlider.value);
+    }
+    if (waveformReverseToggle && waveformReverseToggle.checked) {
+      params.set('waveformReverse', 'true');
     }
 
     if (waveformEnvelopeToggle && waveformEnvelopeToggle.checked) {
@@ -5219,9 +6039,6 @@ function updateUrlParameters() {
   }
 
   if (styleSelect && styleSelect.value === 'circles') {
-    if (circlesModeSelect && circlesModeSelect.value !== 'packing') {
-      params.set('circlesMode', circlesModeSelect.value);
-    }
     if (circlesFillSelect && circlesFillSelect.value !== 'stroke') {
       params.set('circlesFill', circlesFillSelect.value);
     }
@@ -5231,9 +6048,6 @@ function updateUrlParameters() {
     }
     if (circlesSizeVariationSlider && parseInt(circlesSizeVariationSlider.value) !== 0) {
       params.set('circlesSizeVariation', circlesSizeVariationSlider.value);
-    }
-    if (circlesOverlapSlider && parseInt(circlesOverlapSlider.value) !== 0) {
-      params.set('circlesOverlap', circlesOverlapSlider.value);
     }
   }
 
@@ -5323,6 +6137,8 @@ function applyUrlParameters() {
   if (trussThicknessSlider) {
     trussThicknessSlider.value = params.trussThickness;
   }
+  updateTrussSegmentsDisplay();
+  updateTrussThicknessDisplay();
 
   // Apply staff parameters
   /*
@@ -5337,8 +6153,8 @@ function applyUrlParameters() {
   */
   if (staffTempoSlider) {
     staffTempoSlider.value = params.staffTempo;
-    if (staffTempoDisplay) staffTempoDisplay.textContent = params.staffTempo;
   }
+  updateStaffTempoDisplay();
   if (staffInstrumentSelect) {
     staffInstrumentSelect.value = params.staffInstrument;
   }
@@ -5385,9 +6201,7 @@ function applyUrlParameters() {
   if (graphScaleSlider) {
     graphScaleSlider.value = Math.max(GRAPH_SCALE_MIN, params.graphScale);
   }
-  if (graphScaleDisplay && graphScaleSlider) {
-    graphScaleDisplay.textContent = graphScaleSlider.value;
-  }
+  updateGraphScaleDisplay();
 
   // Apply ruler parameters
   if (rulerRepeatsSlider) {
@@ -5395,6 +6209,12 @@ function applyUrlParameters() {
   }
   if (rulerUnitsSlider) {
     rulerUnitsSlider.value = params.rulerUnits;
+  }
+  if (rulerSpeedSlider) {
+    rulerSpeedSlider.value = params.rulerSpeed;
+  }
+  if (rulerReverseToggle) {
+    rulerReverseToggle.checked = params.rulerReverse;
   }
 
   // Apply ticker parameters
@@ -5407,6 +6227,12 @@ function applyUrlParameters() {
   if (tickerWidthRatioSlider) {
     tickerWidthRatioSlider.value = params.tickerWidthRatio;
   }
+  if (tickerSpeedSlider) {
+    tickerSpeedSlider.value = params.tickerSpeed;
+  }
+  if (tickerReverseToggle) {
+    tickerReverseToggle.checked = params.tickerReverse;
+  }
 
   // Apply waveform parameters
   if (waveformTypeSlider) {
@@ -5417,6 +6243,9 @@ function applyUrlParameters() {
   }
   if (waveformSpeedSlider) {
     waveformSpeedSlider.value = params.waveformSpeed;
+  }
+  if (waveformReverseToggle) {
+    waveformReverseToggle.checked = params.waveformReverse;
   }
   if (waveformEnvelopeToggle) {
     waveformEnvelopeToggle.checked = params.waveformEnvelope === 'true';
@@ -5430,23 +6259,16 @@ function applyUrlParameters() {
   if (waveformEnvelopeWavesSlider) {
     waveformEnvelopeWavesSlider.value = params.waveformEnvelopeWaves;
   }
-  if (waveformEnvelopeWavesDisplay) {
-    waveformEnvelopeWavesDisplay.textContent = params.waveformEnvelopeWaves;
-  }
+  updateWaveformEnvelopeWavesDisplay();
   if (waveformEnvelopeCenterSlider) {
     waveformEnvelopeCenterSlider.value = params.waveformEnvelopeCenter;
   }
-  if (waveformEnvelopeCenterDisplay) {
-    waveformEnvelopeCenterDisplay.textContent = params.waveformEnvelopeCenter;
-  }
+  updateWaveformEnvelopeCenterDisplay();
   if (waveformEnvelopeBipolarToggle) {
     waveformEnvelopeBipolarToggle.checked = params.waveformEnvelopeBipolar === 'true';
   }
 
   // Apply circles parameters
-  if (circlesModeSelect) {
-    circlesModeSelect.value = params.circlesMode;
-  }
   if (circlesFillSelect) {
     circlesFillSelect.value = params.circlesFill;
   }
@@ -5456,14 +6278,11 @@ function applyUrlParameters() {
   if (circlesSizeVariationSlider) {
     circlesSizeVariationSlider.value = params.circlesSizeVariation;
   }
-  if (circlesOverlapSlider) {
-    circlesOverlapSlider.value = params.circlesOverlap;
-  }
 
   // Update all displays and trigger style change
   updateAllDisplays();
   handleStyleChange();
-  handleCirclesModeChange();
+  resetCirclePatternCache();
 
   // Update binary data
   updateBinaryData(params.binaryText);
@@ -5473,16 +6292,29 @@ function updateAllDisplays() {
   // Update all slider displays
   updateRulerRepeatsDisplay();
   updateRulerUnitsDisplay();
+  updateRulerSpeedDisplay();
   updateTickerDisplay();
   updateTickerRatioDisplay();
   updateTickerWidthRatioDisplay();
+  updateTickerSpeedDisplay();
   updateWaveformTypeDisplay();
   updateWaveformFrequencyDisplay();
   updateWaveformSpeedDisplay();
+  updateWaveformEnvelopeWavesDisplay();
+  updateWaveformEnvelopeCenterDisplay();
   updateCirclesDensityDisplay();
   updateCirclesSizeVariationDisplay();
-  updateCirclesOverlapDisplay();
+  updateCirclesGradientVariantDisplay();
+  updateGradientVariantDisplay();
+  updateGridVariantDisplay();
+  updatePointConnectVariantDisplay();
   updateNeuralNetworkHiddenLayersDisplay();
+  updateTriangleGridVariantDisplay();
+  updateTrianglesVariantDisplay();
+  updateTrussSegmentsDisplay();
+  updateTrussThicknessDisplay();
+  updateStaffTempoDisplay();
+  updateGraphScaleDisplay();
 }
 
 function updateAudioParameters() {
@@ -5580,13 +6412,10 @@ function updateAudioParameters() {
   }
 }
 
-let resizeTimeout;
 function windowResized() {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    syncViewportHeightVar();
-    requestResponsiveWorkspaceSizing();
-  }, 16);
+  syncViewportHeightVar();
+  scheduleResponsiveCanvasResize();
+  requestResponsiveWorkspaceSizing();
 }
 
 // Frame rate limiting for performance
@@ -5609,14 +6438,20 @@ function getViewportHeight() {
 
 function syncViewportHeightVar() {
   const nextHeight = Math.round(getViewportHeight());
+  const currentHeight = parseInt(document.documentElement.style.getPropertyValue('--viewport-height'), 10);
   if (nextHeight > 0) {
     document.documentElement.style.setProperty('--viewport-height', `${nextHeight}px`);
   }
+  return nextHeight > 0 && currentHeight !== nextHeight;
 }
 
 function handleViewportHeightChange() {
-  syncViewportHeightVar();
+  const viewportHeightChanged = syncViewportHeightVar();
+  const layoutModeChanged = syncResponsiveLayoutMode();
   positionSaveMenu();
+  if (viewportHeightChanged || layoutModeChanged) {
+    scheduleResponsiveCanvasResize();
+  }
   requestResponsiveWorkspaceSizing();
 }
 
@@ -5643,7 +6478,7 @@ function draw() {
   }
   lastFrameTime = currentTime;
 
-  if (isPlaying) {
+  if (isMotionEnabledForStyle(getCurrentMotionStyle())) {
     if (typeof window.animationTime === 'undefined') {
       window.animationTime = 0;
     }
@@ -5699,7 +6534,7 @@ function draw() {
   // Draw bottom bar
   drawBottomBar(currentWidth);
 
-  if (isAnimated && currentTime - lastHeaderPreviewUpdateTime >= 120) {
+  if (isAnimated && isMotionEnabledForStyle(getCurrentMotionStyle()) && currentTime - lastHeaderPreviewUpdateTime >= 120) {
     updateHeaderBrandPreview(true);
   }
 }
@@ -5733,6 +6568,8 @@ function drawBottomBar(currentWidth) {
   // Get current foreground color
   const colorScheme = colors[currentColorMode];
   const fgColor = colorScheme ? color(colorScheme.fg) : color(0);
+  const currentMotionStyle = getCurrentMotionStyle();
+  const loopAnimationState = getCurrentLoopAnimationState(exactBarWidth);
 
   // Always draw the bar - solid, ruler, binary, or ticker
   if (currentShader === 0) {
@@ -5762,60 +6599,19 @@ function drawBottomBar(currentWidth) {
     resetShader();
     fill(fgColor);
     noStroke();
+    const rulerGeometry = createRulerPatternGeometry({
+      barStartX,
+      barY: 0,
+      exactBarWidth,
+      barHeight: rectHeight,
+      rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
+      rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+      loopOffsetX: currentMotionStyle === 'ruler' && loopAnimationState ? loopAnimationState.loopOffsetX : 0
+    });
 
-    const repeats = parseInt(rulerRepeatsSlider.value);
-    const units = parseInt(rulerUnitsSlider.value);
-
-    // Calculate total number of ticks needed (including major ticks)
-    const totalTicks = repeats * units + 1; // +1 for the final major tick
-
-    // Calculate tick width so that tick width = gap width
-    // Total space = totalTicks * tickWidth + (totalTicks - 1) * gapWidth
-    // Since tickWidth = gapWidth, total space = totalTicks * tickWidth + (totalTicks - 1) * tickWidth
-    // Total space = tickWidth * (2 * totalTicks - 1)
-    const tickWidth = exactBarWidth / (2 * totalTicks - 1);
-    const gapWidth = tickWidth; // Equal to tick width
-    const tickSpacing = tickWidth + gapWidth;
-
-    // Draw all ticks
-    for (let i = 0; i < totalTicks; i++) {
-      const tickX = barStartX + i * tickSpacing;
-
-      // Determine tick height based on position
-      let tickHeight;
-
-      if (i === 0 || i === totalTicks - 1) {
-        // Start and end ticks are full height
-        tickHeight = rectHeight;
-      } else if (i % units === 0) {
-        // Major ticks at unit boundaries are full height
-        tickHeight = rectHeight;
-      } else {
-        // Minor ticks vary by position within unit
-        const positionInUnit = i % units;
-
-        if (units === 10) {
-          // Metric system (10 units)
-          if (positionInUnit === 5) {
-            tickHeight = rectHeight * 0.75; // Medium tick at 5
-          } else if (positionInUnit % 2 === 0) {
-            tickHeight = rectHeight * 0.5; // Small tick at even numbers
-          } else {
-            tickHeight = rectHeight * 0.25; // Smallest tick at odd numbers
-          }
-        } else {
-          // For other unit counts, use a simpler pattern
-          if (positionInUnit === Math.floor(units / 2)) {
-            tickHeight = rectHeight * 0.75; // Medium tick at middle
-          } else {
-            tickHeight = rectHeight * 0.5; // Small ticks elsewhere
-          }
-        }
-      }
-
-      // Draw tick from bottom up
-      const tickY = rectHeight - tickHeight;
-      rect(tickX, tickY, tickWidth, tickHeight);
+    for (let i = 0; i < rulerGeometry.rects.length; i++) {
+      const rulerRect = rulerGeometry.rects[i];
+      rect(rulerRect.x, rulerRect.y, rulerRect.width, rulerRect.height);
     }
 
   } else if (currentShader === 2) {
@@ -5831,7 +6627,8 @@ function drawBottomBar(currentWidth) {
       barHeight: rectHeight,
       tickerRepeats: tickerSlider ? tickerSlider.value : 34,
       tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
-      tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2
+      tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
+      loopOffsetX: currentMotionStyle === 'ticker' && loopAnimationState ? loopAnimationState.loopOffsetX : 0
     });
 
     for (let i = 0; i < tickerGeometry.rects.length; i++) {
@@ -5882,7 +6679,9 @@ function drawBottomBar(currentWidth) {
     const frequency = parseInt(waveformFrequencySlider.value);
     const waveType = parseFloat(waveformTypeSlider.value);
     const speed = parseFloat(waveformSpeedSlider.value);
-    const time = typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0;
+    const time = currentMotionStyle === 'waveform' && loopAnimationState
+      ? loopAnimationState.timeSeconds
+      : 0;
     const points = getWaveformRenderPointCount(exactBarWidth, frequency);
     const {
       applyEnvelope,
@@ -5941,7 +6740,6 @@ function drawBottomBar(currentWidth) {
     // Circles mode - draw circle patterns within the bar area
     resetShader();
 
-    const selectedMode = circlesModeSelect ? circlesModeSelect.value : 'packing';
     const fillStyle = circlesFillSelect.value;
 
     if (fillStyle === 'fill') {
@@ -5955,9 +6753,8 @@ function drawBottomBar(currentWidth) {
 
     const density = parseInt(circlesDensitySlider.value);
     const sizeVariation = parseInt(circlesSizeVariationSlider.value);
-    const overlapAmount = parseInt(circlesOverlapSlider.value);
 
-    drawCirclePattern(null, barStartX, 0, exactBarWidth, rectHeight, density, sizeVariation, overlapAmount);
+    drawCirclePattern(null, barStartX, 0, exactBarWidth, rectHeight, density, sizeVariation);
   } else if (currentShader === 6) {
     // Numeric mode - get visualization mode
     resetShader();
@@ -6449,27 +7246,12 @@ function drawBottomBar(currentWidth) {
 // --- Phase 2c: Playback & Viewport Logic ---
 
 function togglePlayback() {
-  isPlaying = !isPlaying;
-
-  if (isPlaying) {
-    loop();
-  } else {
-    // Snap animation phase to mathematical zero-crossing for symmetry
-    if (currentShader === 4 && waveformSpeedSlider) {
-      const speed = parseFloat(waveformSpeedSlider.value);
-      if (speed > 0) {
-        // Round to nearest integer cycle to ensure consistent pause state
-        const currentCycles = window.animationTime * speed;
-        window.animationTime = Math.round(currentCycles) / speed;
-      }
-    }
-
-    noLoop();
-    redraw(); // Force draw of the perfectly snapped frame
+  const currentStyle = getCurrentMotionStyle();
+  if (!currentStyle) {
+    return;
   }
 
-  syncMotionToggleState();
-  requestUpdate();
+  setMotionEnabledForStyle(currentStyle, !isMotionEnabledForStyle(currentStyle));
 }
 
 function applyPanEdgeInset(min, max) {
@@ -6526,7 +7308,7 @@ function stopPanAnimation() {
 }
 
 function renderPanOffsetChange() {
-  if (!isPlaying) redraw();
+  if (!isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
 }
 
 function setPanOffset(nextOffset, options = {}) {
@@ -6606,7 +7388,7 @@ function setZoomLevel(nextZoomLevel) {
     zoomLevelDisplay.value = zoomLevelToDisplayPercent(zoomLevel) + '%';
   }
 
-  if (zoomChanged && !isPlaying) redraw();
+  if (zoomChanged && !isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
 }
 
 function getTouchDistance(touches) {
@@ -6790,34 +7572,6 @@ function bindBrowserZoomGuards() {
   }, { passive: false });
 }
 
-function setPanMode(nextActive) {
-  isPanningMode = !!nextActive;
-  if (!isPanningMode) {
-    isPanDragging = false;
-    stopPanAnimation();
-    panTargetOffset = { ...panOffset };
-    panVelocity = { x: 0, y: 0 };
-    clearPanPointerState();
-  }
-  if (panBtn) {
-    panBtn.classList.toggle('is-active', isPanningMode);
-    document.body.style.cursor = isPanningMode ? 'move' : 'default';
-  }
-  updatePanTouchAction();
-}
-
-function togglePanMode() {
-  setPanMode(!isPanningMode);
-}
-
-function handlePanModeOutsidePointerDown(event) {
-  if (!isPanningMode) return;
-  if (panBtn && panBtn.contains(event.target)) return;
-  if (canvasViewport && canvasViewport.contains(event.target)) return;
-
-  setPanMode(false);
-}
-
 function mouseDragged() {
   if (isPanningMode && panPointerId == null) {
     applyPanDragDelta(movedX, movedY);
@@ -6898,20 +7652,24 @@ function setupCustomDropdowns() {
       customOption.className = 'custom-option';
       customOption.textContent = option.textContent;
       customOption.dataset.value = option.value;
+      customOption.setAttribute('aria-disabled', String(option.disabled));
 
       if (option.selected) {
         customOption.classList.add('selected');
       }
 
-      if (option.hidden || option.disabled) {
+      if (option.hidden) {
         customOption.classList.add('is-hidden');
         customOption.setAttribute('aria-hidden', 'true');
-        customOption.setAttribute('aria-disabled', 'true');
+      }
+
+      if (option.disabled) {
+        customOption.classList.add('is-disabled');
       }
 
       customOption.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (customOption.classList.contains('is-hidden') || customOption.getAttribute('aria-disabled') === 'true') {
+        if (customOption.classList.contains('is-hidden') || customOption.classList.contains('is-disabled')) {
           return;
         }
 

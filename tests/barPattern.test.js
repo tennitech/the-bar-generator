@@ -29,7 +29,6 @@ function makeBaseConfig(overrides = {}) {
     fgColor: '#000000',
     textToBinary: (text) => text.split('').flatMap(() => [1, 0, 1, 0, 1, 0, 1, 0]),
     parseNumericString: () => [1, 2, 3, 4, 10, 5],
-    generateGridCircles: () => [{ x: 10, y: 9, r: 3 }],
     generateStaticPackedCircles: () => [{ x: 20, y: 9, r: 4 }],
     values: {
       rulerRepeats: 10,
@@ -42,17 +41,9 @@ function makeBaseConfig(overrides = {}) {
       waveformFrequency: 24,
       waveformSpeed: 1.0,
       timeSeconds: 0.3,
-      circlesMode: 'packing',
       circlesFill: 'stroke',
       circlesDensity: 50,
       circlesSizeVariation: 10,
-      circlesOverlap: 0,
-      circlesRows: 2,
-      circlesGridDensity: 100,
-      circlesSizeVariationY: 0,
-      circlesSizeVariationX: 0,
-      circlesGridOverlap: 0,
-      circlesLayout: 'straight',
       numericValue: '3.14159',
       numericMode: 'dotmatrix',
       circlesGradientVariant: 1,
@@ -172,8 +163,7 @@ describe('createBarPatternSVG', () => {
     const result = createBarPatternSVG(makeBaseConfig({
       currentShader: 5,
       values: {
-        ...makeBaseConfig().values,
-        circlesMode: 'packing'
+        ...makeBaseConfig().values
       }
     }));
     expect(result).toContain('<circle');
@@ -188,31 +178,55 @@ describe('createBarPatternSVG', () => {
         { x: 172, y: 15, r: 4 }
       ],
       values: {
-        ...makeBaseConfig().values,
-        circlesMode: 'packing'
+        ...makeBaseConfig().values
       }
     }));
-    const circleXValues = [...result.matchAll(/<circle cx="([^"]+)"/g)]
-      .map((match) => parseFloat(match[1]));
+    const circleBounds = [...result.matchAll(/<circle cx="([^"]+)" cy="[^"]+" r="([^"]+)"/g)]
+      .map((match) => ({
+        left: parseFloat(match[1]) - parseFloat(match[2]),
+        right: parseFloat(match[1]) + parseFloat(match[2])
+      }));
 
     expect(result).toContain('<clipPath');
-    expect(circleXValues.length).toBeGreaterThan(8);
-    expect(Math.min(...circleXValues)).toBeCloseTo(0);
-    expect(Math.max(...circleXValues)).toBeCloseTo(250);
+    expect(circleBounds.length).toBeGreaterThan(8);
+    expect(Math.min(...circleBounds.map((circle) => circle.left))).toBeLessThanOrEqual(0.1);
+    expect(Math.max(...circleBounds.map((circle) => circle.right))).toBeGreaterThanOrEqual(249.9);
   });
 
-  test('creates circles content in grid mode', () => {
+  test('uses a scattered fallback instead of aligned circle rows', () => {
     const result = createBarPatternSVG(makeBaseConfig({
       currentShader: 5,
+      generateStaticPackedCircles: () => [],
       values: {
         ...makeBaseConfig().values,
-        circlesMode: 'grid',
-        circlesLayout: 'stagger',
         circlesFill: 'fill'
       }
     }));
-    expect(result).toContain('<circle');
-    expect(result).toContain('fill="#000000"');
+
+    const circleYValues = [...result.matchAll(/<circle cx="[^"]+" cy="([^"]+)"/g)]
+      .map((match) => Math.round(parseFloat(match[1]) * 10) / 10);
+    const uniqueYValues = new Set(circleYValues);
+
+    expect(circleYValues.length).toBeGreaterThan(20);
+    expect(uniqueYValues.size).toBeGreaterThan(8);
+  });
+
+  test('does not pass legacy overlap arguments into packing circles generation', () => {
+    let capturedArgs = null;
+
+    createBarPatternSVG(makeBaseConfig({
+      currentShader: 5,
+      generateStaticPackedCircles: (...args) => {
+        capturedArgs = args;
+        return [{ x: 20, y: 9, r: 4 }];
+      },
+      values: {
+        ...makeBaseConfig().values,
+        circlesFill: 'stroke'
+      }
+    }));
+
+    expect(capturedArgs).toHaveLength(4);
   });
 
   test('keeps ruler, ticker, binary, and numeric outputs non-empty', () => {

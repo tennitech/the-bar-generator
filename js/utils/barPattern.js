@@ -125,6 +125,10 @@ function clampPatternVariant(value, max) {
   return Math.max(1, Math.min(max, parsed));
 }
 
+function normalizeCircleFillStyle(value) {
+  return value === 'fill' ? 'fill' : 'stroke';
+}
+
 function createLinesPatternGeometry(options = {}) {
   const barStartX = Number(options.barStartX || 0);
   const barY = Number(options.barY || 0);
@@ -188,6 +192,95 @@ function clipTickerRectToBar(rect, barStartX, barY, exactBarWidth, barHeight, ma
     y: clippedY,
     width: clippedWidth,
     height: clippedHeight
+  };
+}
+
+function createRulerPatternGeometry(options = {}) {
+  const barStartX = Number(options.barStartX || 0);
+  const barY = Number(options.barY || 0);
+  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
+  const barHeight = Math.max(1, Number(options.barHeight || 18));
+  const rulerRepeats = normalizeTickerWholeNumber(options.rulerRepeats, 10);
+  const rulerUnits = normalizeTickerWholeNumber(options.rulerUnits, 4);
+  const totalTicks = rulerRepeats * rulerUnits + 1;
+  const tickWidth = exactBarWidth / (2 * totalTicks - 1);
+  const tickSpacing = tickWidth * 2;
+  const repeatWidth = rulerUnits * tickSpacing;
+  const rects = [];
+  const addRect = (rect) => {
+    const clippedRect = clipTickerRectToBar(rect, barStartX, barY, exactBarWidth, barHeight);
+    if (clippedRect) {
+      rects.push(clippedRect);
+    }
+  };
+  const getTickHeight = (tickIndex) => {
+    if (tickIndex === 0 || tickIndex === totalTicks - 1 || tickIndex % rulerUnits === 0) {
+      return barHeight;
+    }
+
+    const positionInUnit = tickIndex % rulerUnits;
+    if (rulerUnits === 10) {
+      if (positionInUnit === 5) {
+        return barHeight * 0.75;
+      }
+      if (positionInUnit % 2 === 0) {
+        return barHeight * 0.5;
+      }
+      return barHeight * 0.25;
+    }
+
+    if (positionInUnit === Math.floor(rulerUnits / 2)) {
+      return barHeight * 0.75;
+    }
+
+    return barHeight * 0.5;
+  };
+
+  if (Number.isFinite(options.loopOffsetX)) {
+    const wrappedOffset = ((options.loopOffsetX % repeatWidth) + repeatWidth) % repeatWidth;
+    const drawStartX = barStartX - wrappedOffset;
+    const drawEndX = barStartX + exactBarWidth;
+
+    for (let repeatX = drawStartX - repeatWidth; repeatX <= drawEndX + repeatWidth; repeatX += repeatWidth) {
+      for (let tickIndex = 0; tickIndex <= rulerUnits; tickIndex++) {
+        const tickX = repeatX + tickIndex * tickSpacing;
+        if (tickX + tickWidth <= barStartX || tickX >= drawEndX) {
+          continue;
+        }
+
+        const tickHeight = getTickHeight(tickIndex);
+        addRect({
+          x: tickX,
+          y: barY + barHeight - tickHeight,
+          width: tickWidth,
+          height: tickHeight
+        });
+      }
+    }
+
+    return {
+      rects,
+      repeatWidth,
+      tickWidth,
+      tickSpacing
+    };
+  }
+
+  for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
+    const tickHeight = getTickHeight(tickIndex);
+    addRect({
+      x: barStartX + tickIndex * tickSpacing,
+      y: barY + barHeight - tickHeight,
+      width: tickWidth,
+      height: tickHeight
+    });
+  }
+
+  return {
+    rects,
+    repeatWidth,
+    tickWidth,
+    tickSpacing
   };
 }
 
@@ -1232,19 +1325,62 @@ function getRepresentativeCircleRadiusForSVG(circles, barHeight) {
   return Math.max(1.25, Math.min(barHeight * 0.36, medianRadius));
 }
 
+function getDeterministicCircleNoiseForSVG(index, seed) {
+  const value = Math.sin((index + 1) * 12.9898 + seed * 78.233) * 43758.5453123;
+  return value - Math.floor(value);
+}
+
+function clampCircleValueForSVG(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function fitCircleToBoundsForSVG(x, y, r, barWidth, barHeight) {
+  const maxRadius = Math.max(0.6, Math.min(barWidth, barHeight) * 0.5);
+  const safeRadius = clampCircleValueForSVG(r, 0.6, maxRadius);
+  const safeX = clampCircleValueForSVG(x, safeRadius, Math.max(safeRadius, barWidth - safeRadius));
+  const safeY = clampCircleValueForSVG(y, safeRadius, Math.max(safeRadius, barHeight - safeRadius));
+  const fittedRadius = Math.min(safeRadius, safeX, barWidth - safeX, safeY, barHeight - safeY);
+
+  if (!Number.isFinite(fittedRadius) || fittedRadius < 0.5) {
+    return null;
+  }
+
+  return {
+    x: safeX,
+    y: safeY,
+    r: fittedRadius
+  };
+}
+
 function createFullBleedCircleFallbackForSVG(barWidth, barHeight, radius) {
   const circles = [];
-  const safeRadius = Math.max(1.25, Math.min(barHeight * 0.36, radius));
-  const cols = Math.max(8, Math.ceil(barWidth / Math.max(5, safeRadius * 2.8)));
-  const rows = barHeight > safeRadius * 3 ? 3 : 2;
+  const safeRadius = Math.max(1.15, Math.min(barHeight * 0.32, radius));
+  const count = Math.max(28, Math.ceil(barWidth / Math.max(3, safeRadius * 1.35)) * 2);
 
-  for (let row = 0; row < rows; row++) {
-    const y = rows === 1 ? barHeight / 2 : (row / (rows - 1)) * barHeight;
-    const offset = row % 2 === 0 ? 0 : 0.5;
-    for (let col = 0; col < cols; col++) {
-      const progress = cols === 1 ? 0.5 : col / (cols - 1);
-      const x = Math.max(0, Math.min(barWidth, (progress + offset / (cols - 1)) * barWidth));
-      circles.push({ x, y, r: safeRadius });
+  for (let i = 0; i < count; i++) {
+    const progress = (i + 0.5) / count;
+    const sizeNoise = getDeterministicCircleNoiseForSVG(i, 1);
+    const accentNoise = getDeterministicCircleNoiseForSVG(i, 2);
+    const jitterNoise = getDeterministicCircleNoiseForSVG(i, 3);
+    const yNoise = getDeterministicCircleNoiseForSVG(i, 4);
+    let circleRadius = safeRadius * (0.2 + sizeNoise * 0.95);
+
+    if (accentNoise > 0.82) {
+      circleRadius *= 1.35;
+    }
+
+    circleRadius = clampCircleValueForSVG(circleRadius, 0.6, barHeight * 0.34);
+    const jitterX = (jitterNoise - 0.5) * (barWidth / count) * 1.8;
+    const circle = fitCircleToBoundsForSVG(
+      progress * barWidth + jitterX,
+      circleRadius + yNoise * Math.max(0, barHeight - circleRadius * 2),
+      circleRadius,
+      barWidth,
+      barHeight
+    );
+
+    if (circle) {
+      circles.push(circle);
     }
   }
 
@@ -1265,35 +1401,62 @@ function addMissingCircleEdgeCoverageForSVG(circles, barWidth, barHeight, radius
   });
 
   const edgeGap = Math.max(0.5, radius * 0.35);
-  const addHorizontalEdge = (y) => {
-    const count = Math.max(4, Math.ceil(barWidth / Math.max(8, radius * 4)));
+  const addHorizontalEdgeScatter = (isTopEdge) => {
+    const count = Math.max(6, Math.ceil(barWidth / Math.max(8, radius * 2.7)));
     for (let i = 0; i < count; i++) {
-      const x = count === 1 ? barWidth / 2 : (i / (count - 1)) * barWidth;
-      circles.push({ x, y, r: radius });
+      const xNoise = getDeterministicCircleNoiseForSVG(i, isTopEdge ? 11 : 17);
+      const yNoise = getDeterministicCircleNoiseForSVG(i, isTopEdge ? 12 : 18);
+      const rNoise = getDeterministicCircleNoiseForSVG(i, isTopEdge ? 13 : 19);
+      const circleRadius = clampCircleValueForSVG(radius * (0.45 + rNoise * 0.65), 0.6, barHeight * 0.32);
+      const circle = fitCircleToBoundsForSVG(
+        ((i + xNoise) / count) * barWidth,
+        isTopEdge
+          ? circleRadius + yNoise * radius * 0.85
+          : barHeight - circleRadius - yNoise * radius * 0.85,
+        circleRadius,
+        barWidth,
+        barHeight
+      );
+
+      if (circle) {
+        circles.push(circle);
+      }
     }
   };
-  const addVerticalEdge = (x) => {
+  const addVerticalEdgeScatter = (isLeftEdge) => {
     const count = Math.max(2, Math.ceil(barHeight / Math.max(4, radius * 3)));
     for (let i = 0; i < count; i++) {
-      const y = count === 1 ? barHeight / 2 : (i / (count - 1)) * barHeight;
-      circles.push({ x, y, r: radius });
+      const xNoise = getDeterministicCircleNoiseForSVG(i, isLeftEdge ? 23 : 29);
+      const yNoise = getDeterministicCircleNoiseForSVG(i, isLeftEdge ? 24 : 30);
+      const rNoise = getDeterministicCircleNoiseForSVG(i, isLeftEdge ? 25 : 31);
+      const circleRadius = clampCircleValueForSVG(radius * (0.45 + rNoise * 0.6), 0.6, barHeight * 0.32);
+      const circle = fitCircleToBoundsForSVG(
+        isLeftEdge
+          ? circleRadius + xNoise * radius * 0.8
+          : barWidth - circleRadius - xNoise * radius * 0.8,
+        ((i + yNoise) / count) * barHeight,
+        circleRadius,
+        barWidth,
+        barHeight
+      );
+
+      if (circle) {
+        circles.push(circle);
+      }
     }
   };
 
   if (bounds.left > edgeGap) {
-    addVerticalEdge(0);
+    addVerticalEdgeScatter(true);
   }
   if (bounds.right < barWidth - edgeGap) {
-    addVerticalEdge(barWidth);
-  }
-  if (bounds.left > edgeGap || bounds.right < barWidth - edgeGap) {
-    addHorizontalEdge(barHeight / 2);
+    addVerticalEdgeScatter(false);
   }
   if (bounds.top > edgeGap) {
-    addHorizontalEdge(0);
+    addHorizontalEdgeScatter(true);
   }
   if (bounds.bottom < barHeight - edgeGap) {
-    addHorizontalEdge(barHeight);
+    addHorizontalEdgeScatter(false);
   }
 }
 
@@ -1314,7 +1477,6 @@ function createBarPatternSVG(config) {
     textToBinary,
     textToMorse,
     parseNumericString,
-    generateGridCircles,
     generateStaticPackedCircles,
     values
   } = config;
@@ -1322,37 +1484,19 @@ function createBarPatternSVG(config) {
   let pattern = '';
 
   if (currentShader === 1) {
-    const rulerRepeats = parseInt(values.rulerRepeats, 10);
-    const rulerUnits = parseInt(values.rulerUnits, 10);
-    const rulerTotalTicks = rulerRepeats * rulerUnits + 1;
-    const rulerTickWidth = exactBarWidth / (2 * rulerTotalTicks - 1);
-    const rulerTickSpacing = rulerTickWidth * 2;
+    const rulerGeometry = createRulerPatternGeometry({
+      barStartX,
+      barY,
+      exactBarWidth,
+      barHeight,
+      rulerRepeats: values.rulerRepeats,
+      rulerUnits: values.rulerUnits,
+      loopOffsetX: values.loopOffsetX
+    });
 
-    for (let i = 0; i < rulerTotalTicks; i++) {
-      const tickX = barStartX + i * rulerTickSpacing;
-      let tickHeight;
-
-      if (i === 0 || i === rulerTotalTicks - 1 || i % rulerUnits === 0) {
-        tickHeight = barHeight;
-      } else {
-        const positionInUnit = i % rulerUnits;
-        if (rulerUnits === 10) {
-          if (positionInUnit === 5) {
-            tickHeight = barHeight * 0.75;
-          } else if (positionInUnit % 2 === 0) {
-            tickHeight = barHeight * 0.5;
-          } else {
-            tickHeight = barHeight * 0.25;
-          }
-        } else if (positionInUnit === Math.floor(rulerUnits / 2)) {
-          tickHeight = barHeight * 0.75;
-        } else {
-          tickHeight = barHeight * 0.5;
-        }
-      }
-
-      const tickY = barY + barHeight - tickHeight;
-      pattern += `\n    <rect x="${tickX}" y="${tickY}" width="${rulerTickWidth}" height="${tickHeight}" fill="${fgColor}"/>`;
+    for (let i = 0; i < rulerGeometry.rects.length; i++) {
+      const rect = rulerGeometry.rects[i];
+      pattern += `\n    <rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" fill="${fgColor}"/>`;
     }
     return pattern;
   }
@@ -1365,7 +1509,8 @@ function createBarPatternSVG(config) {
       barHeight,
       tickerRepeats: values.tickerRepeats,
       tickerRatio: values.tickerRatio,
-      tickerWidthRatio: values.tickerWidthRatio
+      tickerWidthRatio: values.tickerWidthRatio,
+      loopOffsetX: values.loopOffsetX
     });
 
     for (let i = 0; i < tickerGeometry.rects.length; i++) {
@@ -1434,33 +1579,13 @@ function createBarPatternSVG(config) {
   }
 
   if (currentShader === 5) {
-    const circlesMode = values.circlesMode || 'packing';
-    const circlesFill = values.circlesFill || 'stroke';
-    let circleData = [];
-
-    if (circlesMode === 'grid') {
-      const sharedDensity = parseInt(values.circlesDensity, 10);
-      const sharedVariation = parseInt(values.circlesSizeVariation, 10);
-      const sharedOverlap = parseInt(values.circlesOverlap, 10);
-      circleData = generateGridCircles(
-        exactBarWidth,
-        barHeight,
-        parseInt(values.circlesRows, 10) || 2,
-        parseInt(values.circlesGridDensity, 10) || sharedDensity || 50,
-        parseInt(values.circlesSizeVariationY, 10) || sharedVariation || 0,
-        parseInt(values.circlesSizeVariationX, 10) || 0,
-        parseInt(values.circlesGridOverlap, 10) || sharedOverlap || 0,
-        values.circlesLayout || 'straight'
-      );
-    } else {
-      circleData = generateStaticPackedCircles(
-        exactBarWidth,
-        barHeight,
-        parseInt(values.circlesDensity, 10),
-        parseInt(values.circlesSizeVariation, 10),
-        parseInt(values.circlesOverlap, 10)
-      );
-    }
+    const circlesFill = normalizeCircleFillStyle(values.circlesFill || 'stroke');
+    let circleData = generateStaticPackedCircles(
+      exactBarWidth,
+      barHeight,
+      parseInt(values.circlesDensity, 10),
+      parseInt(values.circlesSizeVariation, 10)
+    );
 
     circleData = ensureCirclePatternCoverageForSVG(circleData, exactBarWidth, barHeight);
     const clipId = createCirclePatternClipId(barStartX, barY, exactBarWidth, barHeight);
@@ -1930,6 +2055,7 @@ if (typeof window !== 'undefined') {
   window.createLinesPatternGeometry = createLinesPatternGeometry;
   window.createNeuralNetworkPatternGeometry = createNeuralNetworkPatternGeometry;
   window.createPointConnectPatternGeometry = createPointConnectPatternGeometry;
+  window.createRulerPatternGeometry = createRulerPatternGeometry;
   window.createTickerPatternGeometry = createTickerPatternGeometry;
   window.createTriangleGridPatternGeometry = createTriangleGridPatternGeometry;
   window.createTrussPatternGeometry = createTrussPatternGeometry;
@@ -1953,6 +2079,7 @@ if (typeof module !== 'undefined' && module.exports) {
     createLinesPatternGeometry,
     createNeuralNetworkPatternGeometry,
     createPointConnectPatternGeometry,
+    createRulerPatternGeometry,
     createTickerPatternGeometry,
     createTriangleGridPatternGeometry,
     createTrussPatternGeometry,
