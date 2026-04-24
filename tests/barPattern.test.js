@@ -142,6 +142,21 @@ describe('createBarPatternSVG', () => {
     expect(result).toContain('<path d="');
   });
 
+  test('scales the Artemis II SVG using the embedded viewBox and theme color', () => {
+    const result = createBarPatternSVG(makeBaseConfig({
+      currentShader: 24,
+      exactBarWidth: 208.4,
+      barHeight: 15.1,
+      fgColor: '#123456'
+    }));
+
+    expect(result).toContain('color="#123456"');
+    expect(result).toContain('scale(0.1');
+    expect(result).toContain('0.09999999999999999)');
+    expect(result).toContain('fill:currentColor');
+    expect(result).not.toContain('fill:white');
+  });
+
   test('serializes waveform envelope settings in SVG output', () => {
     const result = createBarPatternSVG(makeBaseConfig({
       currentShader: 4,

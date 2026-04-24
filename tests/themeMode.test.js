@@ -2,6 +2,7 @@ const {
   DEFAULT_COLOR_MODE,
   LEGACY_COLOR_MODE_ALIASES,
   normalizeColorModeValue,
+  syncCustomSelectOptionState,
   syncCustomSelectState
 } = require('../js/utils/themeMode');
 
@@ -83,5 +84,29 @@ describe('theme mode utils', () => {
     expect(customOptions[0].classList.contains('selected')).toBe(false);
     expect(customOptions[1].classList.contains('selected')).toBe(true);
     expect(customOptions[2].classList.contains('selected')).toBe(false);
+  });
+
+  test('syncs custom option hidden and disabled state when availability changes', () => {
+    const lunarOption = {
+      classList: createClassList(['is-hidden', 'is-disabled']),
+      setAttribute(name, value) {
+        this[name] = value;
+      }
+    };
+    const wrapper = {
+      querySelector(selector) {
+        return selector === '.custom-option[data-value="lunar"]' ? lunarOption : null;
+      }
+    };
+
+    syncCustomSelectOptionState(wrapper, 'lunar', {
+      hidden: false,
+      disabled: false
+    });
+
+    expect(lunarOption.classList.contains('is-hidden')).toBe(false);
+    expect(lunarOption.classList.contains('is-disabled')).toBe(false);
+    expect(lunarOption['aria-hidden']).toBe('false');
+    expect(lunarOption['aria-disabled']).toBe('false');
   });
 });

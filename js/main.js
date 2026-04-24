@@ -46,6 +46,8 @@ const LOGO_VERTICAL_OFFSET = -72; // Vertical offset for centering
 let styleSelect;
 let colorModeSelect;
 let headerLogoPreview;
+let headerLogoAnimationLoadPromise = null;
+let headerLogoAnimationControllerPromise = null;
 let binaryInput;
 let binaryGroup;
 let binaryAudioBtn;
@@ -158,6 +160,7 @@ let graphMultiInputs;
 let graphScaleSlider;
 let graphScaleDisplay;
 const sliderValueEditorConfigs = [];
+const externalScriptLoadPromises = new Map();
 
 const TRUSS_FAMILY_OPTIONS = [
   'flat',
@@ -620,6 +623,7 @@ const DEFAULT_ZOOM_LEVEL = 1.2;
 const MIN_DISPLAY_ZOOM_PERCENT = 50;
 const MAX_DISPLAY_ZOOM_PERCENT = 250;
 const COMPACT_LAYOUT_MAX_WIDTH = 900;
+const HEADER_ACTION_COLLAPSE_BUFFER = 96;
 const MIN_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MIN_DISPLAY_ZOOM_PERCENT / 100);
 const MAX_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MAX_DISPLAY_ZOOM_PERCENT / 100);
 
@@ -640,10 +644,16 @@ let responsiveWorkspaceSyncFrame = 0;
 let workspaceResizeTransitionFrame = 0;
 let workspaceResizeTransitionTimeout = 0;
 let isWorkspaceResizeTransitionActive = false;
+let saveButtonLayoutFrame = 0;
+let saveButtonResizeObserver = null;
 let lastCanvasSize = { width: 0, height: 0 };
 let responsiveCanvasResizeTimeout = 0;
 let lastCompactLayoutState = null;
 let desktopSidebarWasCollapsed = false;
+let responsiveLayoutAnimationFrame = 0;
+let responsiveLayoutAnimationDeadline = 0;
+let renderedResponsiveLogoScale = null;
+let forceNextDrawFrame = false;
 let isPanDragging = false;
 let isPanningMode = false;
 let isCanvasPinching = false;
@@ -684,11 +694,41 @@ function getResponsiveLogoScale(viewportWidth = width, viewportHeight = height) 
   return Math.min(MAX_LOGO_SCALE, widthLimitedScale, heightLimitedScale);
 }
 
+function getRenderedResponsiveLogoScale() {
+  const targetScale = getResponsiveLogoScale();
+
+  if (!Number.isFinite(renderedResponsiveLogoScale) || renderedResponsiveLogoScale <= 0) {
+    renderedResponsiveLogoScale = targetScale;
+    return targetScale;
+  }
+
+  const scaleDelta = targetScale - renderedResponsiveLogoScale;
+  if (Math.abs(scaleDelta) < 0.001) {
+    renderedResponsiveLogoScale = targetScale;
+    return targetScale;
+  }
+
+  renderedResponsiveLogoScale += scaleDelta * 0.18;
+  startResponsiveLayoutAnimation(220);
+  return renderedResponsiveLogoScale;
+}
+
 // Zoom/Pan/Playback UI references
 let zoomInBtn, zoomOutBtn, zoomResetBtn, zoomLevelDisplay;
 
 function isCompactLayoutViewport(viewportWidth = window.innerWidth) {
   return Math.max(0, Math.round(viewportWidth || 0)) <= COMPACT_LAYOUT_MAX_WIDTH;
+}
+
+function getWorkspaceDisplaySize() {
+  const container = typeof document !== 'undefined'
+    ? document.getElementById('p5-container')
+    : null;
+
+  return {
+    width: Math.max(1, Math.round((container && container.offsetWidth) || width || 0)),
+    height: Math.max(1, Math.round((container && container.offsetHeight) || height || 0))
+  };
 }
 
 const AVAILABLE_STYLE_VALUES = new Set([
@@ -1890,12 +1930,21 @@ function syncLunarColorOptionAvailability() {
   }
 
   const wrapperElement = colorModeSelect.parentElement;
+  if (themeModeUtils && typeof themeModeUtils.syncCustomSelectOptionState === 'function') {
+    themeModeUtils.syncCustomSelectOptionState(wrapperElement, 'lunar', {
+      hidden: !allowLunarTheme,
+      disabled: !allowLunarTheme
+    });
+    return;
+  }
+
   const customLunarOption = wrapperElement
     ? wrapperElement.querySelector('.custom-option[data-value="lunar"]')
     : null;
 
   if (customLunarOption) {
     customLunarOption.classList.toggle('is-hidden', !allowLunarTheme);
+    customLunarOption.classList.toggle('is-disabled', !allowLunarTheme);
     customLunarOption.setAttribute('aria-hidden', String(!allowLunarTheme));
     customLunarOption.setAttribute('aria-disabled', String(!allowLunarTheme));
   }
@@ -2191,6 +2240,35 @@ function syncResponsiveLayoutMode() {
   return true;
 }
 
+function startResponsiveLayoutAnimation(duration = 460) {
+  if (typeof window === 'undefined') return;
+
+  const endTime = performance.now() + Math.max(0, duration);
+  responsiveLayoutAnimationDeadline = Math.max(responsiveLayoutAnimationDeadline, endTime);
+
+  if (responsiveLayoutAnimationFrame) {
+    return;
+  }
+
+  const tick = (now) => {
+    responsiveLayoutAnimationFrame = 0;
+
+    if (!isMotionEnabledForStyle(getCurrentMotionStyle())) {
+      forceNextDrawFrame = true;
+      redraw();
+    }
+
+    if (now < responsiveLayoutAnimationDeadline) {
+      responsiveLayoutAnimationFrame = window.requestAnimationFrame(tick);
+      return;
+    }
+
+    responsiveLayoutAnimationDeadline = 0;
+  };
+
+  responsiveLayoutAnimationFrame = window.requestAnimationFrame(tick);
+}
+
 function hasPendingResponsiveCanvasResize() {
   return responsiveCanvasResizeTimeout !== 0;
 }
@@ -2230,10 +2308,16 @@ function syncResponsiveWorkspaceSizing() {
         return;
       }
 
+      forceNextDrawFrame = true;
       resizeCanvas(nextWidth, nextHeight);
       lastCanvasSize = { width: nextWidth, height: nextHeight };
       clampPanOffset();
-      renderPanOffsetChange();
+      startResponsiveLayoutAnimation(320);
+      requestAnimationFrame(() => {
+        clampPanOffset();
+        forceNextDrawFrame = true;
+        renderPanOffsetChange();
+      });
     }
   }
 
@@ -2299,6 +2383,80 @@ function setupResponsiveWorkspaceSizing() {
     requestResponsiveWorkspaceSizing();
   });
   responsiveWorkspaceResizeObserver.observe(resizeTarget);
+}
+
+function syncSaveButtonResponsiveLayout() {
+  saveButtonLayoutFrame = 0;
+  if (!saveButton || !saveButtonLabel) return;
+
+  const appHeader = saveButton.closest('.app-header') || document.querySelector('.app-header');
+  const headerActions = saveButton.closest('.header-actions');
+  const headerBrand = appHeader ? appHeader.querySelector('.header-brand') : null;
+  const brandTitle = appHeader ? appHeader.querySelector('.brand-title') : null;
+  const lunarCounter = appHeader ? appHeader.querySelector('.lunar_counter') : null;
+
+  saveButton.classList.remove('is-icon-only');
+
+  const labelStyle = window.getComputedStyle(saveButtonLabel);
+  const labelLineHeight = parseFloat(labelStyle.lineHeight);
+  const labelWrapped = saveButtonLabel.getClientRects().length > 1 ||
+    (Number.isFinite(labelLineHeight) && saveButtonLabel.offsetHeight > labelLineHeight * 1.35);
+  const brandTitleStyle = brandTitle ? window.getComputedStyle(brandTitle) : null;
+  const brandTitleLineHeight = brandTitleStyle ? parseFloat(brandTitleStyle.lineHeight) : NaN;
+  const brandTitleWrapped = brandTitle ? (
+    brandTitle.getClientRects().length > 1 ||
+    (Number.isFinite(brandTitleLineHeight) && brandTitle.offsetHeight > brandTitleLineHeight * 1.35)
+  ) : false;
+  const brandTitleConstrained = brandTitle ? brandTitle.scrollWidth > brandTitle.clientWidth + 1 : false;
+  const headerOverflow = appHeader ? appHeader.scrollWidth > appHeader.clientWidth + 1 : false;
+  const actionsOverflow = headerActions ? headerActions.scrollWidth > headerActions.clientWidth + 1 : false;
+  const brandRect = headerBrand ? headerBrand.getBoundingClientRect() : null;
+  const actionsRect = headerActions ? headerActions.getBoundingClientRect() : null;
+  const lunarCounterStyle = lunarCounter ? window.getComputedStyle(lunarCounter) : null;
+  const lunarCounterIsVisible = lunarCounter && lunarCounterStyle && lunarCounterStyle.display !== 'none';
+  const lunarCounterRect = lunarCounterIsVisible ? lunarCounter.getBoundingClientRect() : null;
+  const inlineGaps = [];
+
+  if (brandRect && actionsRect) inlineGaps.push(actionsRect.left - brandRect.right);
+  if (lunarCounterRect && actionsRect) inlineGaps.push(actionsRect.left - lunarCounterRect.right);
+
+  const smallestInlineGap = inlineGaps.length ? Math.min(...inlineGaps) : Infinity;
+  const headerIsTight = smallestInlineGap < HEADER_ACTION_COLLAPSE_BUFFER;
+
+  saveButton.classList.toggle(
+    'is-icon-only',
+    labelWrapped ||
+    brandTitleWrapped ||
+    brandTitleConstrained ||
+    headerOverflow ||
+    actionsOverflow ||
+    headerIsTight
+  );
+}
+
+function requestSaveButtonResponsiveLayout() {
+  if (saveButtonLayoutFrame || typeof window === 'undefined') return;
+  saveButtonLayoutFrame = window.requestAnimationFrame(syncSaveButtonResponsiveLayout);
+}
+
+function setupSaveButtonResponsiveLayout() {
+  if (!saveButton || typeof ResizeObserver === 'undefined') {
+    requestSaveButtonResponsiveLayout();
+    return;
+  }
+
+  if (saveButtonResizeObserver) {
+    saveButtonResizeObserver.disconnect();
+  }
+
+  saveButtonResizeObserver = new ResizeObserver(requestSaveButtonResponsiveLayout);
+
+  const appHeader = saveButton.closest('.app-header') || document.querySelector('.app-header');
+  const headerActions = saveButton.closest('.header-actions');
+
+  if (appHeader) saveButtonResizeObserver.observe(appHeader);
+  if (headerActions) saveButtonResizeObserver.observe(headerActions);
+  requestSaveButtonResponsiveLayout();
 }
 
 
@@ -2567,6 +2725,7 @@ async function setup() {
   appSidebar = document.getElementById('app-sidebar');
   sidebarScroll = document.getElementById('sidebar-scroll');
   headerLogoPreview = document.getElementById('header-logo-preview');
+  setupHeaderLogoAnimationTrigger();
   mobileMenuToggle = document.getElementById('mobile-menu-toggle');
   styleSelectLabel = document.getElementById('style-select-label');
   colorModeSelectLabel = document.getElementById('color-mode-select-label');
@@ -2591,6 +2750,7 @@ async function setup() {
   syncResponsiveLayoutMode();
   syncMissionControlInterfaceCopy();
   syncMissionControlSaveMenu();
+  setupSaveButtonResponsiveLayout();
 
   initializePreviewButtons();
 
@@ -3811,6 +3971,7 @@ function toggleMobileMenu() {
         mobileMenuToggle.focus();
       }
     }
+    startResponsiveLayoutAnimation(460);
   } else {
     // Desktop behavior (collapsible)
     appSidebar.classList.toggle('sidebar-collapsed');
@@ -3931,6 +4092,7 @@ function syncMissionControlSaveMenu() {
       missionControlActive ? 'Open RPI x Artemis II credits' : 'Open asset download menu'
     );
   }
+  requestSaveButtonResponsiveLayout();
 
   setSaveOptionCopy(savePngButton, menuCopy.png);
   setSaveOptionCopy(saveSvgButton, menuCopy.svg);
@@ -4375,6 +4537,111 @@ function updateHeaderBrandPreview(force = false) {
   headerLogoPreview.innerHTML = markup;
   lastHeaderPreviewMarkup = markup;
   lastHeaderPreviewUpdateTime = typeof millis === 'function' ? millis() : Date.now();
+}
+
+function loadExternalScriptOnce(src) {
+  const normalizedSrc = String(src || '').trim();
+  if (!normalizedSrc) {
+    return Promise.reject(new Error('Missing script source.'));
+  }
+
+  if (externalScriptLoadPromises.has(normalizedSrc)) {
+    return externalScriptLoadPromises.get(normalizedSrc);
+  }
+
+  const loadPromise = new Promise((resolve, reject) => {
+    const existingScript = document.querySelector(`script[src="${normalizedSrc}"]`);
+    if (existingScript) {
+      resolve(existingScript);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = normalizedSrc;
+    script.onload = () => resolve(script);
+    script.onerror = () => reject(new Error(`Failed to load script: ${normalizedSrc}`));
+    document.body.append(script);
+  });
+
+  externalScriptLoadPromises.set(normalizedSrc, loadPromise);
+  return loadPromise;
+}
+
+async function ensureHeaderLogoAnimationController() {
+  if (headerLogoAnimationControllerPromise) {
+    return headerLogoAnimationControllerPromise;
+  }
+
+  headerLogoAnimationControllerPromise = (async () => {
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20260424-header-logo-lazy');
+
+    if (!window.LogoAnimationOverlay
+      || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {
+      throw new Error('Header logo animation controller is unavailable.');
+    }
+
+    return window.LogoAnimationOverlay.createLogoAnimationController({
+      triggerEl: headerLogoPreview,
+      documentRef: document,
+      windowRef: window,
+      loadScript: loadExternalScriptOnce
+    });
+  })();
+
+  return headerLogoAnimationControllerPromise;
+}
+
+async function openHeaderLogoAnimation() {
+  if (headerLogoAnimationLoadPromise) {
+    return headerLogoAnimationLoadPromise;
+  }
+
+  headerLogoAnimationLoadPromise = (async () => {
+    try {
+      const controller = await ensureHeaderLogoAnimationController();
+      if (!controller || typeof controller.open !== 'function') {
+        throw new Error('Header logo animation failed to initialize.');
+      }
+
+      await controller.open();
+    } catch (error) {
+      console.error('Unable to launch the header logo animation.', error);
+      if (typeof Toast !== 'undefined' && Toast && typeof Toast.show === 'function') {
+        Toast.show('Animation unavailable right now.', 'error');
+      }
+    } finally {
+      headerLogoAnimationLoadPromise = null;
+    }
+  })();
+
+  return headerLogoAnimationLoadPromise;
+}
+
+function setupHeaderLogoAnimationTrigger() {
+  if (!headerLogoPreview || headerLogoPreview.dataset.animationTriggerReady === 'true') {
+    return;
+  }
+
+  headerLogoPreview.dataset.animationTriggerReady = 'true';
+  headerLogoPreview.classList.add('brand-mark-clickable');
+  headerLogoPreview.setAttribute('role', 'button');
+  headerLogoPreview.setAttribute('tabindex', '0');
+  headerLogoPreview.setAttribute('aria-label', 'Play full-screen ASCII animation');
+  headerLogoPreview.setAttribute('aria-haspopup', 'dialog');
+  headerLogoPreview.setAttribute('aria-expanded', 'false');
+
+  headerLogoPreview.addEventListener('click', () => {
+    void openHeaderLogoAnimation();
+  });
+
+  headerLogoPreview.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+
+    event.preventDefault();
+    void openHeaderLogoAnimation();
+  });
 }
 
 function requestUpdate() {
@@ -6414,7 +6681,9 @@ function updateAudioParameters() {
 
 function windowResized() {
   syncViewportHeightVar();
+  requestSaveButtonResponsiveLayout();
   scheduleResponsiveCanvasResize();
+  startResponsiveLayoutAnimation(220);
   requestResponsiveWorkspaceSizing();
 }
 
@@ -6448,9 +6717,11 @@ function syncViewportHeightVar() {
 function handleViewportHeightChange() {
   const viewportHeightChanged = syncViewportHeightVar();
   const layoutModeChanged = syncResponsiveLayoutMode();
+  requestSaveButtonResponsiveLayout();
   positionSaveMenu();
   if (viewportHeightChanged || layoutModeChanged) {
     scheduleResponsiveCanvasResize();
+    startResponsiveLayoutAnimation(layoutModeChanged ? 460 : 220);
   }
   requestResponsiveWorkspaceSizing();
 }
@@ -6473,9 +6744,10 @@ function draw() {
   // Limit frame rate to prevent excessive computation
   const currentTime = millis();
   const deltaTime = currentTime - lastFrameTime;
-  if (deltaTime < FRAME_INTERVAL) {
+  if (!forceNextDrawFrame && deltaTime < FRAME_INTERVAL) {
     return;
   }
+  forceNextDrawFrame = false;
   lastFrameTime = currentTime;
 
   if (isMotionEnabledForStyle(getCurrentMotionStyle())) {
@@ -6487,7 +6759,7 @@ function draw() {
 
   // Get current color scheme
   const colorScheme = colors[currentColorMode];
-  const responsiveLogoScale = getResponsiveLogoScale();
+  const responsiveLogoScale = getRenderedResponsiveLogoScale();
 
   // Keep the canvas transparent so the mark sits directly on the themed workspace.
   clear();
@@ -6532,15 +6804,14 @@ function draw() {
   pop();
 
   // Draw bottom bar
-  drawBottomBar(currentWidth);
+  drawBottomBar(currentWidth, responsiveLogoScale);
 
   if (isAnimated && isMotionEnabledForStyle(getCurrentMotionStyle()) && currentTime - lastHeaderPreviewUpdateTime >= 120) {
     updateHeaderBrandPreview(true);
   }
 }
 
-function drawBottomBar(currentWidth) {
-  const responsiveLogoScale = getResponsiveLogoScale();
+function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsiveLogoScale()) {
 
   // Use the exact same coordinate system and positioning as the logo
   push();
@@ -7269,10 +7540,13 @@ function applyPanEdgeInset(min, max) {
 }
 
 function getPanBounds() {
+  const workspaceDisplaySize = getWorkspaceDisplaySize();
+  const viewportWidth = workspaceDisplaySize.width;
+  const viewportHeight = workspaceDisplaySize.height;
   const responsiveLogoScale = getResponsiveLogoScale();
   const horizontalBounds = applyPanEdgeInset(
-    125 * zoomLevel - width / (2 * responsiveLogoScale),
-    width / (2 * responsiveLogoScale) - 125 * zoomLevel
+    125 * zoomLevel - viewportWidth / (2 * responsiveLogoScale),
+    viewportWidth / (2 * responsiveLogoScale) - 125 * zoomLevel
   );
   let minX = horizontalBounds.min;
   let maxX = horizontalBounds.max;
@@ -7281,8 +7555,8 @@ function getPanBounds() {
   }
 
   const verticalBounds = applyPanEdgeInset(
-    72 * zoomLevel - height / (2 * responsiveLogoScale),
-    height / (2 * responsiveLogoScale) - 79 * zoomLevel
+    72 * zoomLevel - viewportHeight / (2 * responsiveLogoScale),
+    viewportHeight / (2 * responsiveLogoScale) - 79 * zoomLevel
   );
   let minY = verticalBounds.min;
   let maxY = verticalBounds.max;

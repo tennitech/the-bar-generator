@@ -1,0 +1,45 @@
+@font-face {
+  font-family: 'RPIGeistMono';
+  src: url('../assets/fonts/RPIGeistMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #000000;
+  color: #d6001c;
+  font-family: 'RPIGeistMono', monospace;
+}
+
+.animation_page {
+  width: 100%;
+  height: 100%;
+  display: block;
+  padding: 0;
+}
+
+.animation_projection {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  overflow: hidden;
+  color: #d6001c;
+  font-family: 'RPIGeistMono', monospace;
+  font-size: 0.5rem;
+  line-height: 0.92;
+  letter-spacing: 0;
+  white-space: pre;
+  text-transform: none;
+  user-select: none;
+  text-shadow: 0 0 8px rgba(214, 0, 28, 0.1);
+}

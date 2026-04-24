@@ -1268,6 +1268,26 @@ function getLunarBarSVGSource() {
   return '';
 }
 
+function getLunarBarReferenceSize() {
+  const lunarSource = getLunarBarSVGSource();
+  const viewBoxMatch = lunarSource.match(/viewBox="([^"]+)"/i);
+
+  if (!viewBoxMatch) {
+    return { width: 499.92, height: 36 };
+  }
+
+  const parts = viewBoxMatch[1]
+    .trim()
+    .split(/[\s,]+/)
+    .map((value) => parseFloat(value));
+
+  if (parts.length !== 4 || !Number.isFinite(parts[2]) || !Number.isFinite(parts[3]) || parts[2] <= 0 || parts[3] <= 0) {
+    return { width: 499.92, height: 36 };
+  }
+
+  return { width: parts[2], height: parts[3] };
+}
+
 function createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor) {
   const lunarSource = getLunarBarSVGSource();
   const lunarContentMatch = lunarSource.match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/i);
@@ -1277,8 +1297,9 @@ function createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgC
     return '';
   }
 
-  const scaleX = exactBarWidth / 499.92;
-  const scaleY = barHeight / 36;
+  const { width: referenceWidth, height: referenceHeight } = getLunarBarReferenceSize();
+  const scaleX = exactBarWidth / referenceWidth;
+  const scaleY = barHeight / referenceHeight;
 
   return `\n    <g fill="${fgColor}" color="${fgColor}" transform="translate(${barStartX} ${barY}) scale(${scaleX} ${scaleY})">\n      ${lunarContent}\n    </g>`;
 }
