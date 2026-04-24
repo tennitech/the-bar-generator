@@ -22,6 +22,7 @@ const {
 function makeBaseConfig(overrides = {}) {
   return {
     currentShader: 1,
+    currentColorMode: 'black',
     barStartX: 0,
     barY: 0,
     exactBarWidth: 250,
@@ -140,6 +141,38 @@ describe('createBarPatternSVG', () => {
   test('creates waveform path content', () => {
     const result = createBarPatternSVG(makeBaseConfig({ currentShader: 4 }));
     expect(result).toContain('<path d="');
+  });
+
+  test('uses the white-source Artemis II asset for white-adjacent themes only', () => {
+    ['white', 'silver', 'gray', 'lunar'].forEach((currentColorMode) => {
+      const result = createBarPatternSVG(makeBaseConfig({
+        currentShader: 24,
+        currentColorMode,
+        exactBarWidth: 208.4,
+        barHeight: 15.1,
+        fgColor: '#123456'
+      }));
+
+      expect(result).toContain('color="#123456"');
+      expect(result).toContain('scale(0.1');
+      expect(result).toContain('0.09999999999999999)');
+      expect(result).toContain('fill:currentColor');
+    });
+  });
+
+  test('keeps the black-source Artemis II asset for other themes', () => {
+    const result = createBarPatternSVG(makeBaseConfig({
+      currentShader: 24,
+      currentColorMode: 'red',
+      exactBarWidth: 49.992,
+      barHeight: 3.6,
+      fgColor: '#123456'
+    }));
+
+    expect(result).toContain('color="#123456"');
+    expect(result).toContain('scale(0.09999999999999999 0.1)');
+    expect(result).toContain('<path d="M496.46,1.06');
+    expect(result).not.toContain('fill:currentColor');
   });
 
   test('serializes waveform envelope settings in SVG output', () => {

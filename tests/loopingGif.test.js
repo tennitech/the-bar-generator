@@ -1,10 +1,25 @@
 const {
+  clampLiveAnimationDeltaMs,
+  getPreferredLiveRenderFps,
   getLoopingAnimationState,
   isLoopingGifEligibleStyle,
   getLoopingGifFramePlan
 } = require('../js/utils/loopingGif');
 
 describe('loopingGif utils', () => {
+  test('targets a high-refresh live render cap without exceeding 120 fps', () => {
+    expect(getPreferredLiveRenderFps()).toBe(120);
+    expect(getPreferredLiveRenderFps(90)).toBe(90);
+    expect(getPreferredLiveRenderFps(240)).toBe(120);
+    expect(getPreferredLiveRenderFps(20)).toBe(60);
+  });
+
+  test('clamps live animation deltas to avoid giant jumps after stalls', () => {
+    expect(clampLiveAnimationDeltaMs(-5)).toBe(0);
+    expect(clampLiveAnimationDeltaMs(16.67)).toBeCloseTo(16.67);
+    expect(clampLiveAnimationDeltaMs(500)).toBeCloseTo(50);
+  });
+
   test('limits looping GIF eligibility to repeating styles', () => {
     expect(isLoopingGifEligibleStyle('ruler')).toBe(true);
     expect(isLoopingGifEligibleStyle('ticker')).toBe(true);

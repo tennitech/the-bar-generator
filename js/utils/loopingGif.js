@@ -14,6 +14,10 @@
   const MIN_CAPTURE_FRAMES = 24;
   const MAX_CAPTURE_FRAMES = 72;
   const MIN_GIF_FRAME_DELAY_MS = 20;
+  const DEFAULT_LIVE_RENDER_FPS = 120;
+  const MIN_LIVE_RENDER_FPS = 60;
+  const MAX_LIVE_RENDER_FPS = 120;
+  const MAX_LIVE_FRAME_DELTA_MS = 1000 / 20;
   const MIN_LOOP_SPEED = 0.2;
   const MAX_LOOP_SPEED = 5;
   const DEFAULT_LOOP_SPEEDS = {
@@ -129,6 +133,25 @@
     );
   }
 
+  function getPreferredLiveRenderFps(value = DEFAULT_LIVE_RENDER_FPS) {
+    const numericValue = Number(value);
+    const fallback = DEFAULT_LIVE_RENDER_FPS;
+    return clamp(
+      Math.round(Number.isFinite(numericValue) ? numericValue : fallback),
+      MIN_LIVE_RENDER_FPS,
+      MAX_LIVE_RENDER_FPS
+    );
+  }
+
+  function clampLiveAnimationDeltaMs(value) {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue) || numericValue <= 0) {
+      return 0;
+    }
+
+    return Math.min(numericValue, MAX_LIVE_FRAME_DELTA_MS);
+  }
+
   function isLoopingGifEligibleStyle(style) {
     return LOOPING_GIF_STYLE_SET.has(normalizeLoopingGifStyle(style));
   }
@@ -234,11 +257,14 @@
 
   return {
     DEFAULT_CAPTURE_FPS,
+    DEFAULT_LIVE_RENDER_FPS,
     MIN_GIF_FRAME_DELAY_MS,
     DEFAULT_LOOP_SPEEDS,
     DEFAULT_LOOP_REVERSE,
     LOOPING_GIF_STYLE_SET,
+    clampLiveAnimationDeltaMs,
     getDefaultLoopSpeed,
+    getPreferredLiveRenderFps,
     getLoopReverse,
     getLoopSpeed,
     getLoopingAnimationState,

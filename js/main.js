@@ -46,6 +46,8 @@ const LOGO_VERTICAL_OFFSET = -72; // Vertical offset for centering
 let styleSelect;
 let colorModeSelect;
 let headerLogoPreview;
+let headerLogoAnimationLoadPromise = null;
+let headerLogoAnimationControllerPromise = null;
 let binaryInput;
 let binaryGroup;
 let binaryAudioBtn;
@@ -158,6 +160,7 @@ let graphMultiInputs;
 let graphScaleSlider;
 let graphScaleDisplay;
 const sliderValueEditorConfigs = [];
+const externalScriptLoadPromises = new Map();
 
 const TRUSS_FAMILY_OPTIONS = [
   'flat',
@@ -378,6 +381,20 @@ const normalizeLoopSpeed = loopingGifUtils && typeof loopingGifUtils.normalizeLo
       return defaultSpeed;
     }
     return Math.max(0.2, Math.min(5, numericValue));
+  };
+const getPreferredLiveRenderFps = loopingGifUtils && typeof loopingGifUtils.getPreferredLiveRenderFps === 'function'
+  ? loopingGifUtils.getPreferredLiveRenderFps
+  : function fallbackGetPreferredLiveRenderFps() {
+    return 120;
+  };
+const clampLiveAnimationDeltaMs = loopingGifUtils && typeof loopingGifUtils.clampLiveAnimationDeltaMs === 'function'
+  ? loopingGifUtils.clampLiveAnimationDeltaMs
+  : function fallbackClampLiveAnimationDeltaMs(value) {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue) || numericValue <= 0) {
+      return 0;
+    }
+    return Math.min(numericValue, 1000 / 20);
   };
 
 let currentColorMode = DEFAULT_COLOR_MODE;
@@ -620,6 +637,7 @@ const DEFAULT_ZOOM_LEVEL = 1.2;
 const MIN_DISPLAY_ZOOM_PERCENT = 50;
 const MAX_DISPLAY_ZOOM_PERCENT = 250;
 const COMPACT_LAYOUT_MAX_WIDTH = 900;
+const HEADER_ACTION_COLLAPSE_BUFFER = 96;
 const MIN_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MIN_DISPLAY_ZOOM_PERCENT / 100);
 const MAX_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MAX_DISPLAY_ZOOM_PERCENT / 100);
 
@@ -640,10 +658,15 @@ let responsiveWorkspaceSyncFrame = 0;
 let workspaceResizeTransitionFrame = 0;
 let workspaceResizeTransitionTimeout = 0;
 let isWorkspaceResizeTransitionActive = false;
+let saveButtonLayoutFrame = 0;
+let saveButtonResizeObserver = null;
 let lastCanvasSize = { width: 0, height: 0 };
 let responsiveCanvasResizeTimeout = 0;
 let lastCompactLayoutState = null;
 let desktopSidebarWasCollapsed = false;
+let responsiveLayoutAnimationFrame = 0;
+let responsiveLayoutAnimationDeadline = 0;
+let renderedResponsiveLogoScale = null;
 let isPanDragging = false;
 let isPanningMode = false;
 let isCanvasPinching = false;
@@ -684,11 +707,41 @@ function getResponsiveLogoScale(viewportWidth = width, viewportHeight = height) 
   return Math.min(MAX_LOGO_SCALE, widthLimitedScale, heightLimitedScale);
 }
 
+function getRenderedResponsiveLogoScale() {
+  const targetScale = getResponsiveLogoScale();
+
+  if (!Number.isFinite(renderedResponsiveLogoScale) || renderedResponsiveLogoScale <= 0) {
+    renderedResponsiveLogoScale = targetScale;
+    return targetScale;
+  }
+
+  const scaleDelta = targetScale - renderedResponsiveLogoScale;
+  if (Math.abs(scaleDelta) < 0.001) {
+    renderedResponsiveLogoScale = targetScale;
+    return targetScale;
+  }
+
+  renderedResponsiveLogoScale += scaleDelta * 0.18;
+  startResponsiveLayoutAnimation(220);
+  return renderedResponsiveLogoScale;
+}
+
 // Zoom/Pan/Playback UI references
 let zoomInBtn, zoomOutBtn, zoomResetBtn, zoomLevelDisplay;
 
 function isCompactLayoutViewport(viewportWidth = window.innerWidth) {
   return Math.max(0, Math.round(viewportWidth || 0)) <= COMPACT_LAYOUT_MAX_WIDTH;
+}
+
+function getWorkspaceDisplaySize() {
+  const container = typeof document !== 'undefined'
+    ? document.getElementById('p5-container')
+    : null;
+
+  return {
+    width: Math.max(1, Math.round((container && container.offsetWidth) || width || 0)),
+    height: Math.max(1, Math.round((container && container.offsetHeight) || height || 0))
+  };
 }
 
 const AVAILABLE_STYLE_VALUES = new Set([
@@ -1218,7 +1271,7 @@ function setMotionEnabledForStyle(style, enabled, options = {}) {
 
   MOTION_ENABLED_BY_STYLE[normalizedStyle] = !!enabled;
   if (options.resetPhase !== false) {
-    window.animationTime = 0;
+    resetAnimationClock();
   }
 
   syncMotionToggleState();
@@ -1890,12 +1943,21 @@ function syncLunarColorOptionAvailability() {
   }
 
   const wrapperElement = colorModeSelect.parentElement;
+  if (themeModeUtils && typeof themeModeUtils.syncCustomSelectOptionState === 'function') {
+    themeModeUtils.syncCustomSelectOptionState(wrapperElement, 'lunar', {
+      hidden: !allowLunarTheme,
+      disabled: !allowLunarTheme
+    });
+    return;
+  }
+
   const customLunarOption = wrapperElement
     ? wrapperElement.querySelector('.custom-option[data-value="lunar"]')
     : null;
 
   if (customLunarOption) {
     customLunarOption.classList.toggle('is-hidden', !allowLunarTheme);
+    customLunarOption.classList.toggle('is-disabled', !allowLunarTheme);
     customLunarOption.setAttribute('aria-hidden', String(!allowLunarTheme));
     customLunarOption.setAttribute('aria-disabled', String(!allowLunarTheme));
   }
@@ -2191,6 +2253,34 @@ function syncResponsiveLayoutMode() {
   return true;
 }
 
+function startResponsiveLayoutAnimation(duration = 460) {
+  if (typeof window === 'undefined') return;
+
+  const endTime = performance.now() + Math.max(0, duration);
+  responsiveLayoutAnimationDeadline = Math.max(responsiveLayoutAnimationDeadline, endTime);
+
+  if (responsiveLayoutAnimationFrame) {
+    return;
+  }
+
+  const tick = (now) => {
+    responsiveLayoutAnimationFrame = 0;
+
+    if (!isMotionEnabledForStyle(getCurrentMotionStyle())) {
+      redraw();
+    }
+
+    if (now < responsiveLayoutAnimationDeadline) {
+      responsiveLayoutAnimationFrame = window.requestAnimationFrame(tick);
+      return;
+    }
+
+    responsiveLayoutAnimationDeadline = 0;
+  };
+
+  responsiveLayoutAnimationFrame = window.requestAnimationFrame(tick);
+}
+
 function hasPendingResponsiveCanvasResize() {
   return responsiveCanvasResizeTimeout !== 0;
 }
@@ -2233,7 +2323,11 @@ function syncResponsiveWorkspaceSizing() {
       resizeCanvas(nextWidth, nextHeight);
       lastCanvasSize = { width: nextWidth, height: nextHeight };
       clampPanOffset();
-      renderPanOffsetChange();
+      startResponsiveLayoutAnimation(320);
+      requestAnimationFrame(() => {
+        clampPanOffset();
+        renderPanOffsetChange();
+      });
     }
   }
 
@@ -2301,6 +2395,80 @@ function setupResponsiveWorkspaceSizing() {
   responsiveWorkspaceResizeObserver.observe(resizeTarget);
 }
 
+function syncSaveButtonResponsiveLayout() {
+  saveButtonLayoutFrame = 0;
+  if (!saveButton || !saveButtonLabel) return;
+
+  const appHeader = saveButton.closest('.app-header') || document.querySelector('.app-header');
+  const headerActions = saveButton.closest('.header-actions');
+  const headerBrand = appHeader ? appHeader.querySelector('.header-brand') : null;
+  const brandTitle = appHeader ? appHeader.querySelector('.brand-title') : null;
+  const lunarCounter = appHeader ? appHeader.querySelector('.lunar_counter') : null;
+
+  saveButton.classList.remove('is-icon-only');
+
+  const labelStyle = window.getComputedStyle(saveButtonLabel);
+  const labelLineHeight = parseFloat(labelStyle.lineHeight);
+  const labelWrapped = saveButtonLabel.getClientRects().length > 1 ||
+    (Number.isFinite(labelLineHeight) && saveButtonLabel.offsetHeight > labelLineHeight * 1.35);
+  const brandTitleStyle = brandTitle ? window.getComputedStyle(brandTitle) : null;
+  const brandTitleLineHeight = brandTitleStyle ? parseFloat(brandTitleStyle.lineHeight) : NaN;
+  const brandTitleWrapped = brandTitle ? (
+    brandTitle.getClientRects().length > 1 ||
+    (Number.isFinite(brandTitleLineHeight) && brandTitle.offsetHeight > brandTitleLineHeight * 1.35)
+  ) : false;
+  const brandTitleConstrained = brandTitle ? brandTitle.scrollWidth > brandTitle.clientWidth + 1 : false;
+  const headerOverflow = appHeader ? appHeader.scrollWidth > appHeader.clientWidth + 1 : false;
+  const actionsOverflow = headerActions ? headerActions.scrollWidth > headerActions.clientWidth + 1 : false;
+  const brandRect = headerBrand ? headerBrand.getBoundingClientRect() : null;
+  const actionsRect = headerActions ? headerActions.getBoundingClientRect() : null;
+  const lunarCounterStyle = lunarCounter ? window.getComputedStyle(lunarCounter) : null;
+  const lunarCounterIsVisible = lunarCounter && lunarCounterStyle && lunarCounterStyle.display !== 'none';
+  const lunarCounterRect = lunarCounterIsVisible ? lunarCounter.getBoundingClientRect() : null;
+  const inlineGaps = [];
+
+  if (brandRect && actionsRect) inlineGaps.push(actionsRect.left - brandRect.right);
+  if (lunarCounterRect && actionsRect) inlineGaps.push(actionsRect.left - lunarCounterRect.right);
+
+  const smallestInlineGap = inlineGaps.length ? Math.min(...inlineGaps) : Infinity;
+  const headerIsTight = smallestInlineGap < HEADER_ACTION_COLLAPSE_BUFFER;
+
+  saveButton.classList.toggle(
+    'is-icon-only',
+    labelWrapped ||
+    brandTitleWrapped ||
+    brandTitleConstrained ||
+    headerOverflow ||
+    actionsOverflow ||
+    headerIsTight
+  );
+}
+
+function requestSaveButtonResponsiveLayout() {
+  if (saveButtonLayoutFrame || typeof window === 'undefined') return;
+  saveButtonLayoutFrame = window.requestAnimationFrame(syncSaveButtonResponsiveLayout);
+}
+
+function setupSaveButtonResponsiveLayout() {
+  if (!saveButton || typeof ResizeObserver === 'undefined') {
+    requestSaveButtonResponsiveLayout();
+    return;
+  }
+
+  if (saveButtonResizeObserver) {
+    saveButtonResizeObserver.disconnect();
+  }
+
+  saveButtonResizeObserver = new ResizeObserver(requestSaveButtonResponsiveLayout);
+
+  const appHeader = saveButton.closest('.app-header') || document.querySelector('.app-header');
+  const headerActions = saveButton.closest('.header-actions');
+
+  if (appHeader) saveButtonResizeObserver.observe(appHeader);
+  if (headerActions) saveButtonResizeObserver.observe(headerActions);
+  requestSaveButtonResponsiveLayout();
+}
+
 
 // Shader storage
 let shaders = {
@@ -2335,6 +2503,10 @@ async function setup() {
   canvas.parent('p5-container');
   lastCanvasSize = { width, height };
   setupResponsiveWorkspaceSizing();
+
+  if (typeof frameRate === 'function') {
+    frameRate(getPreferredLiveRenderFps());
+  }
 
   // Handle WebGL context loss to prevent crashes
   canvas.elt.addEventListener('webglcontextlost', (event) => {
@@ -2432,17 +2604,44 @@ async function setup() {
   zoomLevelDisplay = document.getElementById('zoom-level');
 
   // Setup Zoom Listeners and Input
-  let zoomInterval = null;
+  let zoomHoldFrame = 0;
+  let zoomHoldDirection = 0;
+  let zoomHoldLastTime = 0;
+  const ZOOM_HOLD_SPEED_PER_SECOND = 1;
+  const stepZoomHold = (timestamp) => {
+    if (!zoomHoldDirection) {
+      zoomHoldFrame = 0;
+      zoomHoldLastTime = 0;
+      return;
+    }
+
+    if (!zoomHoldLastTime) {
+      zoomHoldLastTime = timestamp;
+    } else {
+      const deltaSeconds = Math.min(0.05, Math.max(0, (timestamp - zoomHoldLastTime) / 1000));
+      zoomHoldLastTime = timestamp;
+      if (deltaSeconds > 0) {
+        zoomCanvas(zoomHoldDirection * ZOOM_HOLD_SPEED_PER_SECOND * deltaSeconds);
+      }
+    }
+
+    zoomHoldFrame = requestAnimationFrame(stepZoomHold);
+  };
   const startZoom = (amount) => {
     zoomCanvas(amount);
-    if (!zoomInterval) {
-      zoomInterval = setInterval(() => zoomCanvas(amount * 0.5), 50);
+    zoomHoldDirection = Math.sign(amount);
+    if (!zoomHoldDirection || zoomHoldFrame) {
+      return;
     }
+    zoomHoldLastTime = 0;
+    zoomHoldFrame = requestAnimationFrame(stepZoomHold);
   };
   const stopZoom = () => {
-    if (zoomInterval) {
-      clearInterval(zoomInterval);
-      zoomInterval = null;
+    zoomHoldDirection = 0;
+    zoomHoldLastTime = 0;
+    if (zoomHoldFrame) {
+      cancelAnimationFrame(zoomHoldFrame);
+      zoomHoldFrame = 0;
     }
   };
 
@@ -2452,6 +2651,7 @@ async function setup() {
     zoomInBtn.addEventListener('mouseup', stopZoom);
     zoomInBtn.addEventListener('mouseleave', stopZoom);
     zoomInBtn.addEventListener('touchend', stopZoom);
+    zoomInBtn.addEventListener('touchcancel', stopZoom);
   }
   if (zoomOutBtn) {
     zoomOutBtn.addEventListener('mousedown', () => startZoom(-0.1));
@@ -2459,6 +2659,7 @@ async function setup() {
     zoomOutBtn.addEventListener('mouseup', stopZoom);
     zoomOutBtn.addEventListener('mouseleave', stopZoom);
     zoomOutBtn.addEventListener('touchend', stopZoom);
+    zoomOutBtn.addEventListener('touchcancel', stopZoom);
   }
   if (zoomResetBtn) {
     zoomResetBtn.addEventListener('click', () => {
@@ -2567,6 +2768,7 @@ async function setup() {
   appSidebar = document.getElementById('app-sidebar');
   sidebarScroll = document.getElementById('sidebar-scroll');
   headerLogoPreview = document.getElementById('header-logo-preview');
+  setupHeaderLogoAnimationTrigger();
   mobileMenuToggle = document.getElementById('mobile-menu-toggle');
   styleSelectLabel = document.getElementById('style-select-label');
   colorModeSelectLabel = document.getElementById('color-mode-select-label');
@@ -2591,6 +2793,7 @@ async function setup() {
   syncResponsiveLayoutMode();
   syncMissionControlInterfaceCopy();
   syncMissionControlSaveMenu();
+  setupSaveButtonResponsiveLayout();
 
   initializePreviewButtons();
 
@@ -2627,7 +2830,7 @@ async function setup() {
   }
   if (rulerReverseToggle) {
     rulerReverseToggle.addEventListener('change', function () {
-      window.animationTime = 0;
+      resetAnimationClock();
       updateUrlParameters();
       requestUpdate();
     });
@@ -2673,7 +2876,7 @@ async function setup() {
   }
   if (tickerReverseToggle) {
     tickerReverseToggle.addEventListener('change', function () {
-      window.animationTime = 0;
+      resetAnimationClock();
       updateUrlParameters();
       requestUpdate();
     });
@@ -2705,7 +2908,7 @@ async function setup() {
   }
   if (waveformReverseToggle) {
     waveformReverseToggle.addEventListener('change', function () {
-      window.animationTime = 0;
+      resetAnimationClock();
       updateUrlParameters();
       requestUpdate();
     });
@@ -3811,6 +4014,7 @@ function toggleMobileMenu() {
         mobileMenuToggle.focus();
       }
     }
+    startResponsiveLayoutAnimation(460);
   } else {
     // Desktop behavior (collapsible)
     appSidebar.classList.toggle('sidebar-collapsed');
@@ -3931,6 +4135,7 @@ function syncMissionControlSaveMenu() {
       missionControlActive ? 'Open RPI x Artemis II credits' : 'Open asset download menu'
     );
   }
+  requestSaveButtonResponsiveLayout();
 
   setSaveOptionCopy(savePngButton, menuCopy.png);
   setSaveOptionCopy(saveSvgButton, menuCopy.svg);
@@ -4282,7 +4487,7 @@ function buildHeaderPreviewSVG() {
     ? loopAnimationState.timeSeconds
     : (typeof window.animationTime !== 'undefined'
       ? window.animationTime
-      : (typeof millis === 'function' ? millis() / 1000.0 : 0));
+      : getAnimationNowMs() / 1000.0);
 
   let svgContent = `
 <svg viewBox="0 0 ${currentWidth} ${logoHeight}" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="overflow: visible;">
@@ -4297,6 +4502,7 @@ function buildHeaderPreviewSVG() {
   } else if (typeof createBarPatternSVG === 'function') {
     svgContent += createBarPatternSVG({
       currentShader,
+      currentColorMode,
       barStartX,
       barY,
       exactBarWidth,
@@ -4374,7 +4580,112 @@ function updateHeaderBrandPreview(force = false) {
 
   headerLogoPreview.innerHTML = markup;
   lastHeaderPreviewMarkup = markup;
-  lastHeaderPreviewUpdateTime = typeof millis === 'function' ? millis() : Date.now();
+  lastHeaderPreviewUpdateTime = getAnimationNowMs();
+}
+
+function loadExternalScriptOnce(src) {
+  const normalizedSrc = String(src || '').trim();
+  if (!normalizedSrc) {
+    return Promise.reject(new Error('Missing script source.'));
+  }
+
+  if (externalScriptLoadPromises.has(normalizedSrc)) {
+    return externalScriptLoadPromises.get(normalizedSrc);
+  }
+
+  const loadPromise = new Promise((resolve, reject) => {
+    const existingScript = document.querySelector(`script[src="${normalizedSrc}"]`);
+    if (existingScript) {
+      resolve(existingScript);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = normalizedSrc;
+    script.onload = () => resolve(script);
+    script.onerror = () => reject(new Error(`Failed to load script: ${normalizedSrc}`));
+    document.body.append(script);
+  });
+
+  externalScriptLoadPromises.set(normalizedSrc, loadPromise);
+  return loadPromise;
+}
+
+async function ensureHeaderLogoAnimationController() {
+  if (headerLogoAnimationControllerPromise) {
+    return headerLogoAnimationControllerPromise;
+  }
+
+  headerLogoAnimationControllerPromise = (async () => {
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20260424-header-logo-lazy');
+
+    if (!window.LogoAnimationOverlay
+      || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {
+      throw new Error('Header logo animation controller is unavailable.');
+    }
+
+    return window.LogoAnimationOverlay.createLogoAnimationController({
+      triggerEl: headerLogoPreview,
+      documentRef: document,
+      windowRef: window,
+      loadScript: loadExternalScriptOnce
+    });
+  })();
+
+  return headerLogoAnimationControllerPromise;
+}
+
+async function openHeaderLogoAnimation() {
+  if (headerLogoAnimationLoadPromise) {
+    return headerLogoAnimationLoadPromise;
+  }
+
+  headerLogoAnimationLoadPromise = (async () => {
+    try {
+      const controller = await ensureHeaderLogoAnimationController();
+      if (!controller || typeof controller.open !== 'function') {
+        throw new Error('Header logo animation failed to initialize.');
+      }
+
+      await controller.open();
+    } catch (error) {
+      console.error('Unable to launch the header logo animation.', error);
+      if (typeof Toast !== 'undefined' && Toast && typeof Toast.show === 'function') {
+        Toast.show('Animation unavailable right now.', 'error');
+      }
+    } finally {
+      headerLogoAnimationLoadPromise = null;
+    }
+  })();
+
+  return headerLogoAnimationLoadPromise;
+}
+
+function setupHeaderLogoAnimationTrigger() {
+  if (!headerLogoPreview || headerLogoPreview.dataset.animationTriggerReady === 'true') {
+    return;
+  }
+
+  headerLogoPreview.dataset.animationTriggerReady = 'true';
+  headerLogoPreview.classList.add('brand-mark-clickable');
+  headerLogoPreview.setAttribute('role', 'button');
+  headerLogoPreview.setAttribute('tabindex', '0');
+  headerLogoPreview.setAttribute('aria-label', 'Play full-screen animation');
+  headerLogoPreview.setAttribute('aria-haspopup', 'dialog');
+  headerLogoPreview.setAttribute('aria-expanded', 'false');
+
+  headerLogoPreview.addEventListener('click', () => {
+    void openHeaderLogoAnimation();
+  });
+
+  headerLogoPreview.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+
+    event.preventDefault();
+    void openHeaderLogoAnimation();
+  });
 }
 
 function requestUpdate() {
@@ -6414,15 +6725,32 @@ function updateAudioParameters() {
 
 function windowResized() {
   syncViewportHeightVar();
+  requestSaveButtonResponsiveLayout();
   scheduleResponsiveCanvasResize();
+  startResponsiveLayoutAnimation(220);
   requestResponsiveWorkspaceSizing();
 }
 
-// Frame rate limiting for performance
-let lastFrameTime = 0;
-const TARGET_FPS = 60;
-const FRAME_INTERVAL = 1000 / TARGET_FPS;
 let hasBoundViewportHeightSync = false;
+let lastAnimationFrameTimestamp = 0;
+
+function getAnimationNowMs() {
+  if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+    return performance.now();
+  }
+
+  if (typeof millis === 'function') {
+    return millis();
+  }
+
+  return Date.now();
+}
+
+function resetAnimationClock(nextTimeSeconds = 0) {
+  const normalizedTime = Number(nextTimeSeconds);
+  window.animationTime = Number.isFinite(normalizedTime) ? Math.max(0, normalizedTime) : 0;
+  lastAnimationFrameTimestamp = 0;
+}
 
 function getViewportHeight() {
   const visualViewportHeight = window.visualViewport && Number.isFinite(window.visualViewport.height)
@@ -6448,9 +6776,11 @@ function syncViewportHeightVar() {
 function handleViewportHeightChange() {
   const viewportHeightChanged = syncViewportHeightVar();
   const layoutModeChanged = syncResponsiveLayoutMode();
+  requestSaveButtonResponsiveLayout();
   positionSaveMenu();
   if (viewportHeightChanged || layoutModeChanged) {
     scheduleResponsiveCanvasResize();
+    startResponsiveLayoutAnimation(layoutModeChanged ? 460 : 220);
   }
   requestResponsiveWorkspaceSizing();
 }
@@ -6470,24 +6800,27 @@ function setupViewportHeightSync() {
 }
 
 function draw() {
-  // Limit frame rate to prevent excessive computation
-  const currentTime = millis();
-  const deltaTime = currentTime - lastFrameTime;
-  if (deltaTime < FRAME_INTERVAL) {
-    return;
-  }
-  lastFrameTime = currentTime;
+  const currentTime = getAnimationNowMs();
+  const currentMotionStyle = getCurrentMotionStyle();
 
-  if (isMotionEnabledForStyle(getCurrentMotionStyle())) {
+  if (isMotionEnabledForStyle(currentMotionStyle)) {
     if (typeof window.animationTime === 'undefined') {
       window.animationTime = 0;
     }
-    window.animationTime += deltaTime / 1000.0;
+    if (!lastAnimationFrameTimestamp) {
+      lastAnimationFrameTimestamp = currentTime;
+    } else {
+      const deltaTime = clampLiveAnimationDeltaMs(currentTime - lastAnimationFrameTimestamp);
+      lastAnimationFrameTimestamp = currentTime;
+      window.animationTime += deltaTime / 1000.0;
+    }
+  } else {
+    lastAnimationFrameTimestamp = currentTime;
   }
 
   // Get current color scheme
   const colorScheme = colors[currentColorMode];
-  const responsiveLogoScale = getResponsiveLogoScale();
+  const responsiveLogoScale = getRenderedResponsiveLogoScale();
 
   // Keep the canvas transparent so the mark sits directly on the themed workspace.
   clear();
@@ -6532,15 +6865,14 @@ function draw() {
   pop();
 
   // Draw bottom bar
-  drawBottomBar(currentWidth);
+  drawBottomBar(currentWidth, responsiveLogoScale);
 
-  if (isAnimated && isMotionEnabledForStyle(getCurrentMotionStyle()) && currentTime - lastHeaderPreviewUpdateTime >= 120) {
+  if (isAnimated && isMotionEnabledForStyle(currentMotionStyle) && currentTime - lastHeaderPreviewUpdateTime >= 120) {
     updateHeaderBrandPreview(true);
   }
 }
 
-function drawBottomBar(currentWidth) {
-  const responsiveLogoScale = getResponsiveLogoScale();
+function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsiveLogoScale()) {
 
   // Use the exact same coordinate system and positioning as the logo
   push();
@@ -6896,7 +7228,7 @@ function drawBottomBar(currentWidth) {
   } else if (currentShader === 24) {
     // Lunar pattern sourced from the Artemis bar asset.
     resetShader();
-    drawLunarBarPattern(null, barStartX, 0, exactBarWidth, rectHeight, colorScheme ? colorScheme.fg : '#000000');
+    drawLunarBarPattern(null, barStartX, 0, exactBarWidth, rectHeight, colorScheme ? colorScheme.fg : '#000000', currentColorMode);
   } else if (currentShader === 9) {
     // Truss / Geometric pattern
     resetShader();
@@ -7269,10 +7601,13 @@ function applyPanEdgeInset(min, max) {
 }
 
 function getPanBounds() {
+  const workspaceDisplaySize = getWorkspaceDisplaySize();
+  const viewportWidth = workspaceDisplaySize.width;
+  const viewportHeight = workspaceDisplaySize.height;
   const responsiveLogoScale = getResponsiveLogoScale();
   const horizontalBounds = applyPanEdgeInset(
-    125 * zoomLevel - width / (2 * responsiveLogoScale),
-    width / (2 * responsiveLogoScale) - 125 * zoomLevel
+    125 * zoomLevel - viewportWidth / (2 * responsiveLogoScale),
+    viewportWidth / (2 * responsiveLogoScale) - 125 * zoomLevel
   );
   let minX = horizontalBounds.min;
   let maxX = horizontalBounds.max;
@@ -7281,8 +7616,8 @@ function getPanBounds() {
   }
 
   const verticalBounds = applyPanEdgeInset(
-    72 * zoomLevel - height / (2 * responsiveLogoScale),
-    height / (2 * responsiveLogoScale) - 79 * zoomLevel
+    72 * zoomLevel - viewportHeight / (2 * responsiveLogoScale),
+    viewportHeight / (2 * responsiveLogoScale) - 79 * zoomLevel
   );
   let minY = verticalBounds.min;
   let maxY = verticalBounds.max;

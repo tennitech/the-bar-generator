@@ -1,6 +1,6 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-04-23
+**Last Updated:** 2026-04-24
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## 1. Project Overview
@@ -22,6 +22,11 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   `references/` - Documentation and guidelines.
 
 ## 3. Completed Milestones
+
+- **[2026-04-24] Header Logo Now Lazily Launches A Full-Screen Animation Overlay**:
+    - Kept generator boot unchanged and avoided new startup-time runtime dependencies by wiring the existing header logo preview as an on-demand trigger inside `js/main.js`, rather than mounting animation code during initial page load.
+    - Added `js/utils/logoAnimationOverlay.js` to build the full-screen overlay only after the first click or tap, lazy-load `third_party/t-rex-runner/runner.js`, inject the required sprite assets, and manage replay, close, `Escape`, and crash-restart behavior without interfering with the main p5/WebGL generator boot path.
+    - Added overlay and trigger styling in `css/style.css` plus targeted Jest coverage for the lazy controller so the header interaction can evolve without reintroducing the earlier black-screen startup failure.
 
 - **[2026-04-23] Workspace Controls Simplified To Zoom And Reset Only**:
     - Removed the dedicated pan button from the generator workspace controls so the preview toolbar stays aligned with the app’s primary job: adjusting and exporting a single fitted RPI logo bar rather than navigating a freeform canvas.
@@ -52,6 +57,44 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   [ ] **AI Exploration:** (Future) Event-specific background generation.
 
 ## 5. Recent Updates
+- **[2026-04-24] Live Motion Timing Reworked For High-Refresh Displays**:
+    - Removed the generator canvas's extra 60 fps gate and switched live motion timing onto a clamped high-resolution clock, so `RULER`, `TICKER`, and `WAVEFORM` animate with much smoother phase updates on 120 Hz displays instead of stepping through coarse frame-sized jumps.
+    - Set the live p5 render target to `120 fps`, which lets the generator actually use high-refresh panels while still keeping a hard upper bound instead of blindly chasing arbitrarily high refresh rates.
+    - Replaced the press-and-hold zoom button repeat timer with a `requestAnimationFrame` loop so zoom interactions now respond smoothly at the browser refresh rate rather than ticking forward in 50 ms chunks.
+- **[2026-04-24] Artemis II Color Variants Now Use The White-Source Bar Geometry**:
+    - Replaced the embedded `ARTEMIS II` bar source with the provided white-version artwork so the generator now recolors the updated shadow treatment instead of tinting the older black-source design.
+    - Updated the checked-in `assets/bars/bar-lunar.svg` asset to match that new source and refreshed the generator script cache key so browsers pull the replacement immediately.
+    - Changed lunar SVG export scaling to read the embedded asset's real `viewBox` dimensions, keeping downloaded Artemis II SVGs aligned after the new source switched from the old `499.92 x 36` frame to the new `2084 x 151` artwork bounds.
+- **[2026-04-24] Header Text And Action Collapse Tightened**:
+    - Locked `THE BAR GENERATOR` to a single line with overflow ellipsis instead of allowing the brand title to wrap at constrained widths.
+    - Made the Learn/Download header action collapse to its icon-only version before the header runs out of space by adding a measured spacing buffer around the brand, counter, and action cluster.
+- **[2026-04-24] Mobile Header Shrink Treatment Removed**:
+    - Removed the mobile-only header reductions that made the brand mark, action button, and title lockup switch into a smaller alternate treatment at narrow widths.
+    - Added measured responsive handling for the header action button so `Learn About RPI x Artemis` stays on one line when it fits and collapses to the icon-only control before the label can wrap.
+- **[2026-04-24] Lunar Backdrop Locked To Canvas Bottom**:
+    - Removed the top-offset Lunar backdrop sizing model after it still allowed tall, constrained layouts to lift the moon photo and expose empty canvas at the bottom.
+    - Switched the Lunar photo layer to bottom-anchored `cover` sizing so the image always fills the canvas and keeps its lower edge locked to the bottom during resize.
+- **[2026-04-24] Mission Control Header Counter No Longer Overlaps Learn Action**:
+    - Changed the Lunar header from an absolutely centered T-plus counter to a three-column grid layout so the brand, elapsed-time counter, and `Learn About RPI x Artemis` action reserve separate horizontal space.
+    - Kept the counter detail popover anchored to the counter itself by making the counter a positioned grid item instead of an overlay.
+- **[2026-04-24] GitHub Pages 404 Fallback Rebuilt To Match Puckman Mockup**:
+    - Replaced the previous marquee-inspired 404 page with a sparse white fallback screen matching the provided mockup: top rerouting pill, bottom-left `Oops... That's awkward.` copy, and the Puckman illustration anchored at the lower right.
+    - Added `assets/images/puckman.svg` and its local `assets/images/puckman.png` image source while preserving the existing GitHub Pages fallback redirect logic for bad routes and legacy generator links.
+    - Increased the visible reroute countdown to five seconds, matched the headline and notification sizing to the marquee homepage, and placed the headline plus hockey mark in one scaled bottom group so they shrink together across tablet and mobile widths.
+- **[2026-04-24] Logo And Lunar Backdrop Resize Motion Smoothed**:
+    - Added a rendered responsive-scale interpolation step so the main RPI mark eases toward its new canvas fit during window resize instead of switching to the new scale in a single frame.
+    - Moved the Lunar canvas photo out of the large background shorthand and into its own layered pseudo-element, allowing its position and size to transition independently from the grid overlay and reducing backdrop flicker during resize.
+    - Restored immediate canvas redraw on resize commits now that the rendered scale is smoothed, avoiding a blank cleared-buffer frame between `resizeCanvas(...)` and the next scheduled redraw.
+    - Added a forced draw-frame bypass for resize and layout-transition redraws so the frame limiter cannot skip the first redraw after the WebGL buffer changes, and slowed Lunar backdrop motion to keep it from moving too quickly during resize.
+    - Reworked Lunar backdrop motion to animate typed custom properties for image offset and width, replacing direct `background-position` and `background-size` transitions that stepped during continuous page resizing.
+    - Added a canvas-height-based minimum to the Lunar backdrop width calculation so tall, horizontally constrained workspaces keep the moon imagery covering the bottom of the canvas.
+- **[2026-04-24] Compact Sidebar Overlay Now Animates The Logo Toward A Half-Shown State**:
+    - Replaced the earlier compact-overlay fit experiment with a simpler layout model: the logo keeps its normal responsive scale on narrow widths instead of changing size based on overlay coverage.
+    - Removed the compact-sidebar horizontal logo shift afterward so opening the mobile overlay no longer moves the RPI mark at all; the logo now stays visually anchored while the sidebar slides over it.
+    - Kept the transition-time redraw loop and deferred canvas-resize commit so sidebar motion and window resizing still animate more smoothly while continuing to reduce resize flashing.
+- **[2026-04-24] Mission Control Theme Became Re-Selectable In Artemis II Again**:
+    - Fixed the custom `COLOR THEME` dropdown state so the `MISSION CONTROL` option now drops both its hidden and disabled styling when the active `BAR STYLE` switches to `ARTEMIS II`.
+    - Moved that option-state sync into the shared theme utility layer and added a regression test so the custom dropdown cannot drift away from the native select’s enabled state again.
 - **[2026-04-23] Compact Sidebar Overlay Now Starts Earlier To Stabilize Narrow-Width Logo Fit**:
     - Moved the generator’s fixed-sidebar-to-overlay transition up from the old phone-only breakpoint to a shared compact-layout breakpoint at `900px`, so tablet and narrow desktop widths no longer keep squeezing the canvas before suddenly flipping into overlay behavior.
     - Synchronized the JavaScript sidebar logic with that same compact breakpoint, including click-outside handling, focus trapping, save-menu positioning, and sidebar state resets when entering or leaving compact layout, so resize behavior stays consistent instead of fighting between CSS and runtime state.

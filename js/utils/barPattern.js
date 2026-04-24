@@ -1248,7 +1248,11 @@ function createRunwayBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fg
   return pattern;
 }
 
-function getLunarBarSVGSource() {
+function getLunarBarSVGSource(colorMode) {
+  if (typeof window !== 'undefined' && typeof window.getLunarBarSVGSourceForColorMode === 'function') {
+    return window.getLunarBarSVGSourceForColorMode(colorMode) || '';
+  }
+
   if (typeof window !== 'undefined' && window.LUNAR_BAR_SVG_SOURCE) {
     return window.LUNAR_BAR_SVG_SOURCE;
   }
@@ -1259,7 +1263,11 @@ function getLunarBarSVGSource() {
 
   if (typeof require !== 'undefined') {
     try {
-      return require('./lunarBarAsset').LUNAR_BAR_SVG_SOURCE || '';
+      const lunarBarAsset = require('./lunarBarAsset');
+      if (typeof lunarBarAsset.getLunarBarSVGSourceForColorMode === 'function') {
+        return lunarBarAsset.getLunarBarSVGSourceForColorMode(colorMode) || '';
+      }
+      return lunarBarAsset.LUNAR_BAR_SVG_SOURCE || '';
     } catch (error) {
       return '';
     }
@@ -1268,8 +1276,28 @@ function getLunarBarSVGSource() {
   return '';
 }
 
-function createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor) {
-  const lunarSource = getLunarBarSVGSource();
+function getLunarBarReferenceSize(colorMode) {
+  const lunarSource = getLunarBarSVGSource(colorMode);
+  const viewBoxMatch = lunarSource.match(/viewBox="([^"]+)"/i);
+
+  if (!viewBoxMatch) {
+    return { width: 499.92, height: 36 };
+  }
+
+  const parts = viewBoxMatch[1]
+    .trim()
+    .split(/[\s,]+/)
+    .map((value) => parseFloat(value));
+
+  if (parts.length !== 4 || !Number.isFinite(parts[2]) || !Number.isFinite(parts[3]) || parts[2] <= 0 || parts[3] <= 0) {
+    return { width: 499.92, height: 36 };
+  }
+
+  return { width: parts[2], height: parts[3] };
+}
+
+function createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor, colorMode) {
+  const lunarSource = getLunarBarSVGSource(colorMode);
   const lunarContentMatch = lunarSource.match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/i);
   const lunarContent = lunarContentMatch ? lunarContentMatch[1].trim() : '';
 
@@ -1277,8 +1305,9 @@ function createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgC
     return '';
   }
 
-  const scaleX = exactBarWidth / 499.92;
-  const scaleY = barHeight / 36;
+  const { width: referenceWidth, height: referenceHeight } = getLunarBarReferenceSize(colorMode);
+  const scaleX = exactBarWidth / referenceWidth;
+  const scaleY = barHeight / referenceHeight;
 
   return `\n    <g fill="${fgColor}" color="${fgColor}" transform="translate(${barStartX} ${barY}) scale(${scaleX} ${scaleY})">\n      ${lunarContent}\n    </g>`;
 }
@@ -1469,6 +1498,7 @@ function createCirclePatternClipId(barStartX, barY, exactBarWidth, barHeight) {
 function createBarPatternSVG(config) {
   const {
     currentShader,
+    currentColorMode,
     barStartX,
     barY,
     exactBarWidth,
@@ -1695,7 +1725,7 @@ function createBarPatternSVG(config) {
   }
 
   if (currentShader === 24) {
-    return createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor);
+    return createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor, currentColorMode);
   }
 
   if (currentShader === 9) {

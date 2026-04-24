@@ -135,8 +135,23 @@ function normalizeLunarBarColor(value) {
   return '#000000';
 }
 
-function createColorizedLunarBarDataURI(fgColor) {
-  const source = typeof window !== 'undefined' ? window.LUNAR_BAR_SVG_SOURCE : '';
+function getLunarBarSVGSourceForTheme(colorMode) {
+  if (typeof window !== 'undefined' && typeof window.getLunarBarSVGSourceForColorMode === 'function') {
+    return window.getLunarBarSVGSourceForColorMode(colorMode) || '';
+  }
+
+  return typeof window !== 'undefined' ? window.LUNAR_BAR_SVG_SOURCE : '';
+}
+
+function getLunarBarCacheKey(fgColor, colorMode) {
+  const normalizedColorMode = typeof colorMode === 'string' && colorMode.trim()
+    ? colorMode.trim().toLowerCase()
+    : 'default';
+  return `${normalizedColorMode}:${normalizeLunarBarColor(fgColor)}`;
+}
+
+function createColorizedLunarBarDataURI(fgColor, colorMode) {
+  const source = getLunarBarSVGSourceForTheme(colorMode);
   if (!source) {
     return '';
   }
@@ -150,34 +165,34 @@ function createColorizedLunarBarDataURI(fgColor) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(colorizedSource)}`;
 }
 
-function getLunarBarImage(fgColor) {
-  const color = normalizeLunarBarColor(fgColor);
+function getLunarBarImage(fgColor, colorMode) {
+  const cacheKey = getLunarBarCacheKey(fgColor, colorMode);
 
-  if (lunarBarImageCache.has(color)) {
-    return lunarBarImageCache.get(color);
+  if (lunarBarImageCache.has(cacheKey)) {
+    return lunarBarImageCache.get(cacheKey);
   }
 
-  if (lunarBarPendingColors.has(color) || typeof loadImage !== 'function') {
+  if (lunarBarPendingColors.has(cacheKey) || typeof loadImage !== 'function') {
     return null;
   }
 
-  const dataURI = createColorizedLunarBarDataURI(color);
+  const dataURI = createColorizedLunarBarDataURI(fgColor, colorMode);
   if (!dataURI) {
     return null;
   }
 
-  lunarBarPendingColors.add(color);
+  lunarBarPendingColors.add(cacheKey);
   loadImage(
     dataURI,
     (imageAsset) => {
-      lunarBarPendingColors.delete(color);
-      lunarBarImageCache.set(color, imageAsset);
+      lunarBarPendingColors.delete(cacheKey);
+      lunarBarImageCache.set(cacheKey, imageAsset);
       if (typeof requestUpdate === 'function') {
         requestUpdate();
       }
     },
     (error) => {
-      lunarBarPendingColors.delete(color);
+      lunarBarPendingColors.delete(cacheKey);
       console.warn('Unable to load Lunar bar SVG:', error);
     }
   );
@@ -185,9 +200,9 @@ function getLunarBarImage(fgColor) {
   return null;
 }
 
-function drawLunarBarPattern(target, barStartX, barY, exactBarWidth, barHeight, fgColor = '#000000') {
+function drawLunarBarPattern(target, barStartX, barY, exactBarWidth, barHeight, fgColor = '#000000', colorMode = currentColorMode) {
   const surface = target || window;
-  const imageAsset = getLunarBarImage(fgColor);
+  const imageAsset = getLunarBarImage(fgColor, colorMode);
 
   if (!imageAsset || !imageAsset.width || typeof surface.image !== 'function') {
     return;
@@ -635,7 +650,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     drawRunwayBarPattern(pg, barStartX, barY, exactBarWidth, rectHeight, fgColor);
   } else if (currentShader === 24) {
     // Lunar pattern sourced from the Artemis bar asset.
-    drawLunarBarPattern(pg, barStartX, barY, exactBarWidth, rectHeight, fgColor);
+    drawLunarBarPattern(pg, barStartX, barY, exactBarWidth, rectHeight, fgColor, currentColorMode);
   } else if (currentShader === 9) {
     // Truss / Geometric pattern
     const trussGeometry = createTrussPatternGeometry({
@@ -1330,6 +1345,7 @@ function saveSVG() {
     } else {
       svgContent += createBarPatternSVG({
         currentShader,
+        currentColorMode,
         barStartX,
         barY,
         exactBarWidth,

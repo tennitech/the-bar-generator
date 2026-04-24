@@ -81,12 +81,39 @@
     return resolvedLabel;
   }
 
+  function syncCustomSelectOptionState(wrapperElement, optionValue, options = {}) {
+    if (!wrapperElement || typeof wrapperElement.querySelector !== 'function') {
+      return null;
+    }
+
+    const customOption = wrapperElement.querySelector(`.custom-option[data-value="${optionValue}"]`);
+    if (!customOption) {
+      return null;
+    }
+
+    const hidden = Boolean(options.hidden);
+    const disabled = Boolean(options.disabled);
+
+    if (customOption.classList && typeof customOption.classList.toggle === 'function') {
+      customOption.classList.toggle('is-hidden', hidden);
+      customOption.classList.toggle('is-disabled', disabled);
+    }
+
+    if (typeof customOption.setAttribute === 'function') {
+      customOption.setAttribute('aria-hidden', String(hidden));
+      customOption.setAttribute('aria-disabled', String(disabled));
+    }
+
+    return customOption;
+  }
+
   return {
     DEFAULT_COLOR_MODE,
     AVAILABLE_COLOR_MODES,
     AVAILABLE_COLOR_MODE_SET,
     LEGACY_COLOR_MODE_ALIASES,
     normalizeColorModeValue,
-    syncCustomSelectState
+    syncCustomSelectState,
+    syncCustomSelectOptionState
   };
 });
