@@ -8,16 +8,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tennitech/rpi-logo-generator.git"
+    "url": "git+https://github.com/tennitech/the-bar-generator.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/tennitech/rpi-logo-generator/issues"
+    "url": "https://github.com/tennitech/the-bar-generator/issues"
   },
-  "homepage": "https://github.com/tennitech/rpi-logo-generator#readme",
+  "homepage": "https://github.com/tennitech/the-bar-generator#readme",
   "devDependencies": {
     "jest": "^30.2.0"
   }

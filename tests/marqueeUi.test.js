@@ -2,11 +2,24 @@ const {
   computeRowTopPositions,
   getEdgeCaseRowLiftPx,
   getNarrowPortraitHeroScaleCap,
+  getMarqueeBarStyle,
   getResponsiveMarqueeMetrics,
   getRowStepPx
 } = require('../js/marqueeUi.js');
 
 describe('marquee row layout helpers', () => {
+  test.each([
+    ['Style=Default.svg', 'solid'],
+    ['Style=Ruler CM.svg', 'ruler'],
+    ['Style=Ticker Md.svg', 'ticker'],
+    ['Style=Grid 1.svg', 'grid'],
+    ['Style=Lines Md.svg', 'lines'],
+    ['Style=Point Connect 2.svg', 'point-connect'],
+    ['Style=Triangle Grid 1.svg', 'triangle-grid']
+  ])('opens the matching generator for %s', (filename, expectedStyle) => {
+    expect(getMarqueeBarStyle(`assets/bar references/${filename}`).value).toBe(expectedStyle);
+  });
+
   test('keeps a constant vertical step across all computed rows', () => {
     const positions = computeRowTopPositions({
       rowCount: 4,
@@ -60,6 +73,10 @@ describe('marquee row layout helpers', () => {
 
   test('does not keep increasing that narrow clearance lift on very small widths', () => {
     expect(getEdgeCaseRowLiftPx(340, 877)).toBe(0);
+  });
+
+  test('lifts rows away from the title on short phones', () => {
+    expect(getEdgeCaseRowLiftPx(320, 568)).toBeGreaterThan(80);
   });
 
   test('shrinks the hero sooner for narrow portrait edge cases like 547x879', () => {

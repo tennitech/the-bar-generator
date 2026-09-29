@@ -1,6 +1,6 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-04-28
+**Last Updated:** 2026-09-29
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## 1. Project Overview
@@ -22,6 +22,12 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   `references/` - Documentation and guidelines.
 
 ## 3. Completed Milestones
+
+- **[2026-09-29] Full Site Audit and Accessibility/Navigation Repairs**:
+    - Audited the current `main` intro, all generator route shells, all 21 selectable bar styles, exports, responsive layouts, and automated accessibility states on a separate audit branch. Detailed evidence and remaining work are in `references/site_audit_2026-09-29.md`.
+    - Corrected intro bar links so the visible bar family opens its matching generator style, improved the first paint and short-phone layout, and updated production metadata and repository links.
+    - Restored browser zoom, added a generator heading and preview name, improved header contrast and logo minimum size, made custom selectors keyboard accessible, and kept the closed mobile sidebar out of the focus order.
+    - Honored reduced-motion preferences for the intro and the default state of animated Ruler, Ticker, and Waveform bars.
 
 - **[2026-04-28] Header Logo Animation Now Uses The Active Bar Design In An Overlay**:
     - Reworked the generator header logo trigger so it passes the current bar-only SVG and full RPI lockup SVG into the existing full-screen ASCII animation overlay through same-origin session storage.
@@ -451,6 +457,9 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   **Export Consistency:** Introduced shared SVG bar pattern generator (`js/utils/barPattern.js`) as single source of truth for non-solid bar exports.
 
 ## 7. Known Issues / Notes
+*   The client-side profanity filter does not cover hateful slurs or common Unicode variants. Treat its output as best-effort until a content policy and stronger tests are in place (see 2026-09-29 audit).
+*   The generator depends on a cdnjs p5 script with no local fallback or user-facing recovery state. If it fails to load, the preview canvas is absent (see 2026-09-29 audit).
+*   Manual screen-reader, physical mobile-device, browser zoom, Safari/Firefox, low-power performance, and brand approval checks remain to be completed before claiming full accessibility or brand compliance.
 *   `main.js` relies heavily on global variables (p5.js pattern). Future refactoring might consider modularizing this.
 *   Previously identified issue where ticker width ratio display failed to update has been resolved (2026-02-17).
 *   Previously identified SVG export drift between `main.js` and `drawing.js` has been addressed by shared utility (2026-02-17).

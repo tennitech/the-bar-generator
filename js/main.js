@@ -509,7 +509,7 @@ const themeClassByColorMode = {
 
 // Set this to a deployed Google Apps Script web app URL to send reports directly into a Google Sheet.
 const BUG_REPORT_APPS_SCRIPT_URL = '';
-const GITHUB_NEW_ISSUE_URL = 'https://github.com/tennitech/rpi-logo-generator/issues/new';
+const GITHUB_NEW_ISSUE_URL = 'https://github.com/tennitech/the-bar-generator/issues/new';
 const SURPRISE_TEXT_OPTIONS = [
   'RPI',
   'BUILD',
@@ -628,10 +628,13 @@ function textToMorse(text) {
 
 
 // Viewport & Playback State
+const DEFAULT_MOTION_ENABLED = !(typeof window !== 'undefined'
+  && window.matchMedia
+  && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 const MOTION_ENABLED_BY_STYLE = {
-  ruler: true,
-  ticker: true,
-  waveform: true
+  ruler: DEFAULT_MOTION_ENABLED,
+  ticker: DEFAULT_MOTION_ENABLED,
+  waveform: DEFAULT_MOTION_ENABLED
 };
 const DEFAULT_ZOOM_LEVEL = 1.2;
 const MIN_DISPLAY_ZOOM_PERCENT = 50;
@@ -3076,7 +3079,7 @@ async function setup() {
 
     // Handle Tab to trap focus
     if (e.key === 'Tab') {
-      const focusableContent = appSidebar.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      const focusableContent = getSidebarFocusableElements();
 
       if (focusableContent.length === 0) return;
 
@@ -3989,6 +3992,15 @@ function resetCirclePatternCache() {
   redraw();
 }
 
+function getSidebarFocusableElements() {
+  if (!appSidebar) return [];
+  return Array.from(appSidebar.querySelectorAll('button, [href], input, select, textarea, [tabindex]'))
+    .filter(element => !element.disabled
+      && element.tabIndex >= 0
+      && element.getClientRects().length > 0
+      && getComputedStyle(element).visibility !== 'hidden');
+}
+
 function toggleMobileMenu() {
   const isCompactLayout = isCompactLayoutViewport();
 
@@ -4001,7 +4013,7 @@ function toggleMobileMenu() {
       if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
 
       setTimeout(() => {
-        const firstFocusable = appSidebar.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const firstFocusable = getSidebarFocusableElements()[0];
         if (firstFocusable) firstFocusable.focus();
       }, 100);
     } else {
@@ -4223,6 +4235,8 @@ function syncSidebarToggleState() {
     ? appSidebar.classList.contains('active')
     : !appSidebar.classList.contains('sidebar-collapsed');
 
+  appSidebar.inert = !isExpanded;
+  appSidebar.setAttribute('aria-hidden', isExpanded ? 'false' : 'true');
   mobileMenuToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
   mobileMenuToggle.setAttribute('aria-label', isExpanded ? 'Close design controls' : 'Open design controls');
 }
@@ -8007,15 +8021,27 @@ function setupCustomDropdowns() {
     wrapper.appendChild(select);
 
     // Create trigger
-    const trigger = document.createElement('div');
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
     trigger.className = 'custom-select-trigger';
+    trigger.setAttribute('role', 'combobox');
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    trigger.setAttribute('aria-expanded', 'false');
+    const selectLabel = document.querySelector(`label[for="${select.id}"]`);
+    const accessibleLabel = selectLabel ? selectLabel.textContent.trim() : (select.getAttribute('aria-label') || 'Choose an option');
+    trigger.dataset.label = accessibleLabel;
     const selectedOption = select.options[select.selectedIndex];
     trigger.textContent = selectedOption ? selectedOption.textContent : 'Select...';
+    trigger.setAttribute('aria-label', `${accessibleLabel}: ${trigger.textContent}`);
     wrapper.appendChild(trigger);
 
     // Create options list
     const optionsList = document.createElement('div');
     optionsList.className = 'custom-select-options';
+    optionsList.id = `${select.id}-options`;
+    optionsList.setAttribute('role', 'listbox');
+    optionsList.setAttribute('aria-label', accessibleLabel);
+    trigger.setAttribute('aria-controls', optionsList.id);
     wrapper.appendChild(optionsList);
 
     const fadeTop = document.createElement('div');
@@ -8040,9 +8066,13 @@ function setupCustomDropdowns() {
       optionsList.classList.toggle('has-scroll-bottom', hasScrollBottom);
     };
 
+    let optionIndex = 0;
     const appendCustomOption = (option) => {
       const customOption = document.createElement('div');
       customOption.className = 'custom-option';
+      customOption.id = `${select.id}-option-${optionIndex++}`;
+      customOption.setAttribute('role', 'option');
+      customOption.setAttribute('aria-selected', String(option.selected));
       customOption.textContent = option.textContent;
       customOption.dataset.value = option.value;
       customOption.setAttribute('aria-disabled', String(option.disabled));
@@ -8066,16 +8096,7 @@ function setupCustomDropdowns() {
           return;
         }
 
-        // Update native select
-        select.value = option.value;
-        select.dispatchEvent(new Event('change'));
-
-        // Update UI
-        trigger.textContent = option.textContent;
-        wrapper.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
-        customOption.classList.add('selected');
-        wrapper.classList.remove('open');
-        updateScrollFades();
+        commitOption(customOption);
       });
 
       optionsViewport.appendChild(customOption);
@@ -8098,22 +8119,98 @@ function setupCustomDropdowns() {
       }
     });
 
+    const getEnabledOptions = () => Array.from(optionsViewport.querySelectorAll('.custom-option:not(.is-hidden):not(.is-disabled)'));
+    let activeOption = null;
+
+    function setActiveOption(option) {
+      if (!option) return;
+      activeOption = option;
+      trigger.setAttribute('aria-activedescendant', option.id);
+      option.scrollIntoView({ block: 'nearest' });
+    }
+
+    function setOpen(open) {
+      wrapper.classList.toggle('open', open);
+      trigger.setAttribute('aria-expanded', String(open));
+      if (open) {
+        const options = getEnabledOptions();
+        setActiveOption(options.find(option => option.dataset.value === select.value) || options[0]);
+        requestAnimationFrame(updateScrollFades);
+      } else {
+        trigger.removeAttribute('aria-activedescendant');
+        activeOption = null;
+      }
+    }
+
+    function commitOption(option) {
+      select.value = option.dataset.value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      setOpen(false);
+      trigger.focus();
+    }
+
     // Toggle dropdown
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
-      // Close all other dropdowns
       document.querySelectorAll('.custom-select-wrapper').forEach(w => {
-        if (w !== wrapper) w.classList.remove('open');
+        if (w !== wrapper) {
+          w.classList.remove('open');
+          const otherTrigger = w.querySelector('.custom-select-trigger');
+          if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+        }
       });
-      wrapper.classList.toggle('open');
-      requestAnimationFrame(updateScrollFades);
+      setOpen(!wrapper.classList.contains('open'));
+    });
+
+    trigger.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        if (wrapper.classList.contains('open')) {
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen(false);
+        }
+        return;
+      }
+      if (event.key === 'Tab') {
+        setOpen(false);
+        return;
+      }
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End', 'Enter', ' '].includes(event.key)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (!wrapper.classList.contains('open')) {
+        setOpen(true);
+        const options = getEnabledOptions();
+        if (event.key === 'Home') setActiveOption(options[0]);
+        if (event.key === 'End') setActiveOption(options[options.length - 1]);
+        return;
+      }
+      if (event.key === 'Enter' || event.key === ' ') {
+        if (activeOption) commitOption(activeOption);
+        return;
+      }
+      const options = getEnabledOptions();
+      if (!options.length) return;
+      const currentIndex = Math.max(0, options.indexOf(activeOption));
+      const nextIndex = event.key === 'Home' ? 0
+        : event.key === 'End' ? options.length - 1
+          : event.key === 'ArrowDown' ? Math.min(options.length - 1, currentIndex + 1)
+            : Math.max(0, currentIndex - 1);
+      setActiveOption(options[nextIndex]);
     });
 
     // Listen for external updates to the select (e.g. from keyboard shortcuts)
     select.addEventListener('change', () => {
       const newSelected = select.options[select.selectedIndex];
       syncCustomSelectUI(select, wrapper, select.value, newSelected ? newSelected.textContent : select.value);
+      wrapper.querySelectorAll('.custom-option').forEach(option => {
+        option.setAttribute('aria-selected', String(option.dataset.value === select.value));
+      });
       requestAnimationFrame(updateScrollFades);
+    });
+    select.addEventListener('input', () => {
+      const newSelected = select.options[select.selectedIndex];
+      syncCustomSelectUI(select, wrapper, select.value, newSelected ? newSelected.textContent : select.value);
     });
 
     optionsViewport.addEventListener('scroll', updateScrollFades);
@@ -8123,7 +8220,14 @@ function setupCustomDropdowns() {
   // click outside to close dropdowns
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.custom-select-wrapper')) {
-      document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+      document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+        w.classList.remove('open');
+        const trigger = w.querySelector('.custom-select-trigger');
+        if (trigger) {
+          trigger.setAttribute('aria-expanded', 'false');
+          trigger.removeAttribute('aria-activedescendant');
+        }
+      });
     }
   });
 }
