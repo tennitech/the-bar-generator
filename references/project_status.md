@@ -1,6 +1,6 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-09-29
+**Last Updated:** 2026-09-30
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## 1. Project Overview
@@ -22,6 +22,12 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   `references/` - Documentation and guidelines.
 
 ## 3. Completed Milestones
+
+- **[2026-09-30] Audit Follow-up: Faster Startup, Text Safety, and Export Accuracy**:
+    - Replaced the p5 CDN script with a locally licensed copy and added retry states for missing renderer files. Removed unused serial shader loading, allowed generator dependencies to download concurrently in execution order, and delayed the large Artemis II artwork script until that style is selected.
+    - Added Unicode-aware, best-effort profanity and hateful-slur filtering across live Binary/Morse rendering, URL sharing, and exports. Binary now encodes UTF-8, and Morse spacing/comma handling is corrected.
+    - Corrected Fibonacci segment values, added SVG clear space, improved ultrawide preview scale, and preserved native mobile pinch zoom. The header animation becomes a static mark under reduced motion.
+    - Added a browser smoke script and CI workflow for style routes, exports, responsive layouts, text safety, reduced motion, and renderer recovery. Local Chromium and Playwright WebKit sweeps passed. See `references/site_audit_2026-09-29.md` and `references/bar_science_notes.md`.
 
 - **[2026-09-29] Full Site Audit and Accessibility/Navigation Repairs**:
     - Audited the current `main` intro, all generator route shells, all 21 selectable bar styles, exports, responsive layouts, and automated accessibility states on a separate audit branch. Detailed evidence and remaining work are in `references/site_audit_2026-09-29.md`.
@@ -450,16 +456,17 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Created Frontify integration strategy document.
 
 ## 6. Design Decisions
-*   **Profanity Filter:** Implemented client-side for immediate feedback and user privacy.
+*   **Profanity Filter:** Implemented client-side for immediate feedback and user privacy. Unicode folding and a documented list improve coverage, but this is best-effort moderation rather than a guarantee.
+*   **Renderer Dependency:** An unchanged, licensed p5.js 1.7.0 build is served locally so generator boot is independent of cdnjs.
+*   **Browser Regression Check:** A small Playwright smoke script runs in CI without changing the site's vanilla runtime stack.
 *   **Font Format:** Chosen `.woff2` for optimal web performance.
 *   **Global Access:** `ProfanityFilter` attached to `window` for p5.js compatibility.
 *   **Frontify Integration:** Chosen external iframe embedding as the initial integration strategy for simplicity and speed.
 *   **Export Consistency:** Introduced shared SVG bar pattern generator (`js/utils/barPattern.js`) as single source of truth for non-solid bar exports.
 
 ## 7. Known Issues / Notes
-*   The client-side profanity filter does not cover hateful slurs or common Unicode variants. Treat its output as best-effort until a content policy and stronger tests are in place (see 2026-09-29 audit).
-*   The generator depends on a cdnjs p5 script with no local fallback or user-facing recovery state. If it fails to load, the preview canvas is absent (see 2026-09-29 audit).
-*   Manual screen-reader, physical mobile-device, browser zoom, Safari/Firefox, low-power performance, and brand approval checks remain to be completed before claiming full accessibility or brand compliance.
+*   The client-side text filter covers more offensive content and Unicode variants but cannot guarantee detection of every evasion or avoid every false positive. A formal owner-approved content policy is still needed.
+*   Manual screen-reader, physical mobile-device, 200%/400% browser zoom, Safari application/Firefox, low-power performance, and brand approval checks remain before claiming full accessibility or brand compliance.
 *   `main.js` relies heavily on global variables (p5.js pattern). Future refactoring might consider modularizing this.
 *   Previously identified issue where ticker width ratio display failed to update has been resolved (2026-02-17).
 *   Previously identified SVG export drift between `main.js` and `drawing.js` has been addressed by shared utility (2026-02-17).

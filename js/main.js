@@ -1,28 +1,3 @@
-// Shader loading utility
-async function loadShaderFile(path) {
-  try {
-    const response = await fetch(path);
-    return await response.text();
-  } catch (error) {
-    console.error(`Error loading shader file ${path}:`, error);
-    return null;
-  }
-}
-
-// Load shader from files
-async function loadShader(vertPath, fragPath) {
-  try {
-    const vertSource = await loadShaderFile(vertPath);
-    const fragSource = await loadShaderFile(fragPath);
-    if (vertSource && fragSource) {
-      return createShader(vertSource, fragSource);
-    }
-  } catch (error) {
-    console.error('Error loading shader:', error);
-  }
-  return null;
-}
-
 // Fixed logo paths (updated to match new 250px reference SVG exactly)
 const paths = {
   r: "M213.54 30.4413C213.535 30.3153 213.529 30.1893 213.524 30.0688C213.025 19.6551 209.147 12.0188 202.644 7.0447C202.491 6.92966 202.338 6.81462 202.184 6.71054C196.032 2.20215 187.629 0 177.583 0H117.692L116.125 1.5667V110.185L117.692 111.751H132.406L133.972 110.185V66.3605L135.533 64.7938H177.583C186.775 64.7938 194.948 62.6902 201.182 58.39C201.472 58.1928 201.751 57.9956 202.031 57.7874C207.942 53.3941 211.946 46.9136 213.179 38.2584C213.222 37.9516 213.261 37.6393 213.299 37.3216C213.337 37.0094 213.37 36.6917 213.398 36.3739C213.42 36.1493 213.441 35.9247 213.452 35.7001C213.54 34.6264 213.578 33.5254 213.578 32.3969C213.578 31.7341 213.567 31.0822 213.54 30.4413ZM135.533 48.5186L133.972 46.9519V17.8419L135.539 16.2752H176.487C190.522 16.2752 195.737 20.6466 195.737 32.3969C195.737 44.1472 190.522 48.5186 176.487 48.5186H135.533Z",
@@ -34,6 +9,7 @@ const paths = {
 // Layout constants
 const REFERENCE_WIDTH = 250;
 const MAX_LOGO_SCALE = 1.5;
+const MAX_ULTRAWIDE_LOGO_SCALE = 3;
 const REFERENCE_LOGO_HEIGHT = 111.76;
 const REFERENCE_BAR_Y = 132.911;
 const REFERENCE_BAR_HEIGHT = 18;
@@ -579,49 +555,32 @@ const MORSE_DICT = {
   'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
   'Y': '-.--', 'Z': '--..', '1': '.----', '2': '..---', '3': '...--',
   '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..',
-  '9': '----.', '0': '-----', ', ': '--..--', '.': '.-.-.-', '?': '..--..',
+  '9': '----.', '0': '-----', ',': '--..--', '.': '.-.-.-', '?': '..--..',
   '/': '-..-.', '-': '-....-', '(': '-.--.', ')': '-.--.-'
 };
 
 function textToMorse(text) {
   if (typeof text !== 'string') text = "RPI";
 
-  text = text.trim().toUpperCase().substring(0, 100);
+  text = Array.from(sanitizeBarText(text).normalize('NFKD').replace(/\p{M}/gu, '')
+    .trim().toUpperCase()).slice(0, 100).join('');
   if (!text) return [];
 
-  let morseArray = [];
-  const words = text.split(' ');
+  const words = text.split(/\s+/).map(word =>
+    Array.from(word, character => MORSE_DICT[character]).filter(Boolean)
+  ).filter(word => word.length);
+  const morseArray = [];
 
-  for (let w = 0; w < words.length; w++) {
-    const word = words[w];
-    for (let l = 0; l < word.length; l++) {
-      const char = word[l];
-      const code = MORSE_DICT[char];
-
-      if (code) {
-        for (let c = 0; c < code.length; c++) {
-          const symbol = code[c];
-          if (symbol === '.') {
-            morseArray.push(1); // Dot is 1 unit
-          } else if (symbol === '-') {
-            morseArray.push(1, 1, 1); // Dash is 3 units
-          }
-
-          if (c < code.length - 1) {
-            morseArray.push(0); // Inter-element gap is 1 unit
-          }
-        }
-
-        if (l < word.length - 1) {
-          morseArray.push(0, 0, 0); // Inter-letter gap is 3 units
-        }
+  words.forEach((codes, wordIndex) => {
+    if (wordIndex > 0) morseArray.push(0, 0, 0, 0, 0, 0, 0);
+    codes.forEach((code, letterIndex) => {
+      if (letterIndex > 0) morseArray.push(0, 0, 0);
+      for (let index = 0; index < code.length; index++) {
+        if (index > 0) morseArray.push(0);
+        morseArray.push(...(code[index] === '.' ? [1] : [1, 1, 1]));
       }
-    }
-
-    if (w < words.length - 1) {
-      morseArray.push(0, 0, 0, 0, 0, 0, 0); // Inter-word gap is 7 units
-    }
-  }
+    });
+  });
 
   return morseArray;
 }
@@ -652,9 +611,7 @@ let panAnimationFrame = 0;
 let panPointerId = null;
 let panPointerPosition = null;
 let panGestureHandlersBound = false;
-let pinchGestureHandlersBound = false;
 let browserZoomGuardsBound = false;
-let pinchTouchState = null;
 let safariGestureStartZoomLevel = null;
 let responsiveWorkspaceResizeObserver = null;
 let responsiveWorkspaceSyncFrame = 0;
@@ -672,7 +629,6 @@ let responsiveLayoutAnimationDeadline = 0;
 let renderedResponsiveLogoScale = null;
 let isPanDragging = false;
 let isPanningMode = false;
-let isCanvasPinching = false;
 let isAnimated = false;
 let lastHeaderPreviewMarkup = '';
 let lastHeaderPreviewUpdateTime = 0;
@@ -707,7 +663,11 @@ function getResponsiveLogoScale(viewportWidth = width, viewportHeight = height) 
   const heightLimitedScale =
     (safeHeight * RESPONSIVE_LOGO_HEIGHT_RATIO) / (REFERENCE_TOTAL_HEIGHT * DEFAULT_ZOOM_LEVEL);
 
-  return Math.min(MAX_LOGO_SCALE, widthLimitedScale, heightLimitedScale);
+  const workspaceScaleCap = Math.min(
+    MAX_ULTRAWIDE_LOGO_SCALE,
+    Math.max(MAX_LOGO_SCALE, safeWidth / 1200)
+  );
+  return Math.min(workspaceScaleCap, widthLimitedScale, heightLimitedScale);
 }
 
 function getRenderedResponsiveLogoScale() {
@@ -1976,19 +1936,24 @@ function displayPercentToZoomLevel(percent) {
 }
 
 // Convert text to binary
+function sanitizeBarText(text) {
+  return window.ProfanityFilter && typeof window.ProfanityFilter.sanitizeText === 'function'
+    ? window.ProfanityFilter.sanitizeText(text)
+    : text;
+}
+
 function textToBinary(text) {
   if (!text || typeof text !== 'string') text = "RPI"; // Default text
 
-  // Remove only tabs and newlines, keep regular spaces and limit length to prevent crashes
-  text = text.replace(/[\t\n\r]/g, '').substring(0, 100); // Limit to 100 characters max
+  // UTF-8 preserves the user's text; the old ASCII fallback silently encoded
+  // every non-ASCII character as "A".
+  text = Array.from(sanitizeBarText(text).replace(/[\t\n\r]/g, ''))
+    .slice(0, 100).join('');
 
   let binary = [];
-  for (let i = 0; i < text.length; i++) {
-    let charCode = text.charCodeAt(i);
-    // Ensure valid character code
-    if (isNaN(charCode) || charCode < 0 || charCode > 127) {
-      charCode = 65; // Default to 'A' for invalid characters
-    }
+  const bytes = new TextEncoder().encode(text);
+  for (let i = 0; i < bytes.length; i++) {
+    const charCode = bytes[i];
     for (let j = 7; j >= 0; j--) {
       binary.push((charCode >> j) & 1);
     }
@@ -2473,18 +2438,6 @@ function setupSaveButtonResponsiveLayout() {
 }
 
 
-// Shader storage
-let shaders = {
-  binary: null,
-  ticker: null,
-  ruler: null,
-  waveform: null,
-  circles: null,
-  numeric: null
-};
-
-
-
 // Convert SVG path to p5.js shape
 
 
@@ -2494,7 +2447,7 @@ let shaders = {
 // Helper function to draw bar patterns on graphics buffer
 
 
-async function setup() {
+function setup() {
   setupViewportHeightSync();
 
   // Create canvas that fills the container
@@ -2533,19 +2486,6 @@ async function setup() {
 
   // Initialize numeric data
   updateNumericData("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679");
-
-  // Load shaders from files
-  try {
-    shaders.binary = await loadShader('assets/shaders/vertex.glsl', 'assets/shaders/binary.frag');
-    shaders.ticker = await loadShader('assets/shaders/vertex.glsl', 'assets/shaders/ticker.frag');
-    shaders.ruler = await loadShader('assets/shaders/vertex.glsl', 'assets/shaders/ruler.frag');
-    shaders.waveform = await loadShader('assets/shaders/vertex.glsl', 'assets/shaders/waveform.frag');
-    shaders.circles = await loadShader('assets/shaders/vertex.glsl', 'assets/shaders/circles.frag');
-    shaders.numeric = await loadShader('assets/shaders/vertex.glsl', 'assets/shaders/numeric.frag');
-    console.log('Shaders loaded successfully');
-  } catch (error) {
-    console.error('Error loading shaders:', error);
-  }
 
   // Get control references
   styleSelect = document.getElementById('style-select');
@@ -2765,7 +2705,7 @@ async function setup() {
   appMain = document.querySelector('.app-main');
   canvasViewport = document.querySelector('.canvas-viewport');
   bindPanGestureHandlers();
-  bindCanvasPinchHandlers();
+  // Native pinch zoom stays available across the whole page, including the preview.
   bindBrowserZoomGuards();
   updatePanTouchAction();
   appSidebar = document.getElementById('app-sidebar');
@@ -4258,6 +4198,22 @@ function handleStyleChange() {
     styleSelect.value = selectedStyle;
   }
 
+  if (selectedStyle === 'lunar' && typeof window.getLunarBarSVGSourceForColorMode !== 'function') {
+    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20260424-artemis-ii-bar-refresh')
+      .then(() => {
+        if (styleSelect && styleSelect.value === 'lunar') {
+          requestUpdate();
+          updateHeaderBrandPreview(true);
+        }
+      })
+      .catch(error => {
+        console.error('Unable to load Artemis II bar artwork.', error);
+        if (typeof Toast !== 'undefined' && Toast && typeof Toast.show === 'function') {
+          Toast.show('Artemis II bar artwork is unavailable right now.', 'error');
+        }
+      });
+  }
+
   syncLunarColorOptionAvailability();
   if (selectedStyle !== 'lunar' && currentColorMode === 'lunar') {
     applyColorMode(lastNonLunarColorMode || DEFAULT_COLOR_MODE);
@@ -4503,7 +4459,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
     tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
     loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
-    binaryText: binaryInput ? (binaryInput.value || 'RPI') : 'RPI',
+    binaryText: binaryInput ? sanitizeBarText(binaryInput.value || 'RPI') : 'RPI',
     waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
     waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
     waveformSpeed: waveformSpeedSlider ? waveformSpeedSlider.value : 0.7,
@@ -4530,7 +4486,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1,
     triangleGridVariant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2,
     trianglesVariant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
-    morseText: morseInput ? morseInput.value : 'RPI',
+    morseText: morseInput ? sanitizeBarText(morseInput.value) : 'RPI',
     trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
     trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
     trussThickness: trussThicknessSlider ? trussThicknessSlider.value : 2,
@@ -4669,7 +4625,11 @@ function loadExternalScriptOnce(src) {
     const script = document.createElement('script');
     script.src = normalizedSrc;
     script.onload = () => resolve(script);
-    script.onerror = () => reject(new Error(`Failed to load script: ${normalizedSrc}`));
+    script.onerror = () => {
+      script.remove();
+      externalScriptLoadPromises.delete(normalizedSrc);
+      reject(new Error(`Failed to load script: ${normalizedSrc}`));
+    };
     document.body.append(script);
   });
 
@@ -4683,7 +4643,7 @@ async function ensureHeaderLogoAnimationController() {
   }
 
   headerLogoAnimationControllerPromise = (async () => {
-    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20260428-header-logo-slower-fade');
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20260930-audit-fixes');
 
     if (!window.LogoAnimationOverlay
       || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {
@@ -6225,13 +6185,13 @@ function updateUrlParameters() {
   // Add style-specific parameters only when that style is active
   if (styleSelect && styleSelect.value === 'binary') {
     if (binaryInput && binaryInput.value !== 'RPI') {
-      params.set('binaryText', binaryInput.value);
+      params.set('binaryText', sanitizeBarText(binaryInput.value));
     }
   }
 
   if (styleSelect && styleSelect.value === 'morse') {
     if (morseInput && morseInput.value !== 'RPI') {
-      params.set('morseText', morseInput.value);
+      params.set('morseText', sanitizeBarText(morseInput.value));
     }
   }
 
@@ -7798,20 +7758,6 @@ function setZoomLevel(nextZoomLevel) {
   if (zoomChanged && !isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
 }
 
-function getTouchDistance(touches) {
-  if (!touches || touches.length < 2) return 0;
-
-  const firstTouch = touches[0];
-  const secondTouch = touches[1];
-  return Math.hypot(secondTouch.clientX - firstTouch.clientX, secondTouch.clientY - firstTouch.clientY);
-}
-
-function stopCanvasPinchGesture() {
-  isCanvasPinching = false;
-  pinchTouchState = null;
-  safariGestureStartZoomLevel = null;
-}
-
 function updatePanTouchAction() {
   if (!canvasViewport) return;
   canvasViewport.classList.toggle('is-pan-active', isPanningMode);
@@ -7885,57 +7831,6 @@ function bindPanGestureHandlers() {
   canvasViewport.addEventListener('pointercancel', finishPointerPan);
 }
 
-function bindCanvasPinchHandlers() {
-  if (pinchGestureHandlersBound || !canvasViewport) return;
-  pinchGestureHandlersBound = true;
-
-  canvasViewport.addEventListener('touchstart', (event) => {
-    if (event.touches.length < 2) return;
-
-    const distance = getTouchDistance(event.touches);
-    if (!distance) return;
-
-    clearPanPointerState();
-    endPanDrag();
-    isCanvasPinching = true;
-    pinchTouchState = {
-      distance,
-      zoomLevel
-    };
-    event.preventDefault();
-  }, { passive: false });
-
-  canvasViewport.addEventListener('touchmove', (event) => {
-    if (!pinchTouchState || event.touches.length < 2) return;
-
-    const nextDistance = getTouchDistance(event.touches);
-    if (!nextDistance || !pinchTouchState.distance) return;
-
-    isCanvasPinching = true;
-    event.preventDefault();
-    setZoomLevel(pinchTouchState.zoomLevel * (nextDistance / pinchTouchState.distance));
-  }, { passive: false });
-
-  const finishCanvasTouchGesture = (event) => {
-    if (event.touches.length >= 2) {
-      const distance = getTouchDistance(event.touches);
-      if (!distance) return;
-
-      pinchTouchState = {
-        distance,
-        zoomLevel
-      };
-      isCanvasPinching = true;
-      return;
-    }
-
-    stopCanvasPinchGesture();
-  };
-
-  canvasViewport.addEventListener('touchend', finishCanvasTouchGesture, { passive: true });
-  canvasViewport.addEventListener('touchcancel', finishCanvasTouchGesture, { passive: true });
-}
-
 function bindBrowserZoomGuards() {
   if (browserZoomGuardsBound) return;
   browserZoomGuardsBound = true;
@@ -7945,9 +7840,8 @@ function bindBrowserZoomGuards() {
 
     const eventTarget = event.target;
     const isCanvasGesture = !!(canvasViewport && eventTarget instanceof Node && canvasViewport.contains(eventTarget));
-    event.preventDefault();
-
     if (!isCanvasGesture) return;
+    event.preventDefault();
 
     const zoomMultiplier = Math.exp(-event.deltaY * TRACKPAD_PINCH_ZOOM_SENSITIVITY);
     setZoomLevel(zoomLevel * zoomMultiplier);
@@ -7960,22 +7854,21 @@ function bindBrowserZoomGuards() {
     const eventTarget = event.target;
     const isCanvasGesture = !!(canvasViewport && eventTarget instanceof Node && canvasViewport.contains(eventTarget));
     safariGestureStartZoomLevel = isCanvasGesture ? zoomLevel : null;
-    event.preventDefault();
+    if (isCanvasGesture) event.preventDefault();
   }, { passive: false });
 
   document.addEventListener('gesturechange', (event) => {
     const eventTarget = event.target;
     const isCanvasGesture = !!(canvasViewport && eventTarget instanceof Node && canvasViewport.contains(eventTarget));
-    event.preventDefault();
-
     if (!isCanvasGesture || safariGestureStartZoomLevel == null || typeof event.scale !== 'number') return;
+    event.preventDefault();
 
     setZoomLevel(safariGestureStartZoomLevel * event.scale);
   }, { passive: false });
 
   document.addEventListener('gestureend', (event) => {
+    if (safariGestureStartZoomLevel != null) event.preventDefault();
     safariGestureStartZoomLevel = null;
-    event.preventDefault();
   }, { passive: false });
 }
 
@@ -7987,7 +7880,7 @@ function mouseDragged() {
 }
 
 function touchMoved() {
-  if (isPanningMode || isCanvasPinching) {
+  if (isPanningMode) {
     return false;
   }
 }

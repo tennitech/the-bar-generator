@@ -4,11 +4,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Generate unique, brand-compliant RPI logos and lockups with dynamic bar patterns.">
+  <meta name="description" content="Explore RPI logo bar patterns and download a generated mark.">
   <title>The Bar Generator | RPI</title>
   <base href="../">
-  <link href="css/style.css?v=20260428-animation-slower-fade" rel="stylesheet" type="text/css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+  <link href="css/style.css?v=20260930-audit-fixes" rel="stylesheet" type="text/css" />
+  <script src="third_party/p5/p5.min.js"></script>
 </head>
 
 <body>
@@ -239,8 +239,8 @@
           <div class="control">
             <label for="binary-input" class="control-label">INPUT TEXT</label>
             <input type="text" id="binary-input" placeholder="Enter text..." class="control-input"
-              aria-label="Binary Text Input">
-            <div class="control-hint">Type to translate to binary code</div>
+              maxlength="100" aria-label="Binary Text Input" aria-describedby="binary-input-hint">
+            <div id="binary-input-hint" class="control-hint">Text is encoded as UTF-8 bytes.</div>
           </div>
           <div class="runtime_section audio_section">
             <div class="control-header">PREVIEW</div>
@@ -259,8 +259,8 @@
           <div class="control">
             <label for="morse-input" class="control-label">INPUT TEXT</label>
             <input type="text" id="morse-input" placeholder="Enter text..." class="control-input"
-              aria-label="Morse Text Input">
-            <div class="control-hint">Type to translate to morse code</div>
+              maxlength="100" aria-label="Morse Text Input" aria-describedby="morse-input-hint">
+            <div id="morse-input-hint" class="control-hint">A–Z, 0–9 and common punctuation. Other characters are omitted.</div>
           </div>
           <div class="runtime_section audio_section">
             <div class="control-header">PREVIEW</div>
@@ -832,17 +832,23 @@
   <div id="toast-container"></div>
   <script src="third_party/gif.js/gif.js"></script>
   <script src="js/utils/generatorRoutes.js"></script>
-  <script src="js/utils/profanityFilter.js"></script>
+  <script src="js/utils/profanityFilter.js?v=20260930-audit-fixes"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/lunarBarAsset.js?v=20260424-artemis-ii-bar-refresh"></script>
-  <script src="js/utils/barPattern.js?v=20260428-animation-slower-fade"></script>
+  <script src="js/utils/barPattern.js?v=20260930-audit-fixes"></script>
   <script src="js/utils/loopingGif.js?v=20260423-motion-runtime-sync"></script>
   <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
   <script src="js/utils/previewControls.js?v=20260417-morse-randomize"></script>
   <script src="js/ui.js"></script>
-  <script src="js/main.js?v=20260428-animation-slower-fade"></script>
-  <script src="js/drawing.js?v=20260428-animation-slower-fade"></script>
+  <script src="js/main.js?v=20260930-audit-fixes"></script>
+  <script src="js/drawing.js?v=20260930-audit-fixes"></script>
+  <script>
+    if (typeof window.p5 !== 'function') {
+      document.getElementById('p5-container').innerHTML =
+        '<div class="generator_error" role="alert"><strong>Unable to load the preview.</strong><p>Try reloading the generator.</p><button type="button" id="retry-generator">Retry</button></div>';
+      document.getElementById('retry-generator').addEventListener('click', () => window.location.reload());
+    }
+  </script>
 </body>
 
 </html>

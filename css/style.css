@@ -1,4 +1,4 @@
-/* RPI Logo Generator - Brand-Compliant Styles
+/* RPI Logo Generator Styles
    Typography:  RPI Geist (body), RPI Geist Mono (labels, captions ≤14px), Replica (display)
    Colors:      Black #000, White #FFF, Red #D6001C  |  Secondary: Silver #E1EDF5, Gray #B9CCD8, Blue #0081CE, Gold #CDAC38
    Guidelines:  https://brand.rpi.edu
@@ -307,6 +307,21 @@ body {
 
 #p5-container canvas {
   display: block;
+}
+
+.generator_error {
+  margin: auto;
+  padding: 2rem;
+  color: var(--text-primary, #000);
+  font-family: 'RPIGeist', sans-serif;
+  text-align: center;
+}
+
+.generator_error button {
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  cursor: pointer;
 }
 
 /* ────────────────────────────────────────
@@ -1677,6 +1692,24 @@ body.has-logo-animation {
 
 .logo_animation_stage.inverted {
   filter: invert(1);
+}
+
+.logo_animation_static {
+  width: min(80vw, 50rem);
+  max-height: 80vh;
+  padding: clamp(2rem, 5vw, 5rem);
+  color: var(--text-primary);
+  background: var(--bg-canvas);
+}
+
+.logo_animation_static svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.logo_animation_button[hidden] {
+  display: none;
 }
 
 .logo_animation_frame {
@@ -3512,7 +3545,9 @@ input:checked + .slider:before {
   .app-sidebar *,
   .app-sidebar,
   .workspace-controls *,
-  .workspace-controls {
+  .workspace-controls,
+  .logo_animation_overlay,
+  .logo_animation_overlay * {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }

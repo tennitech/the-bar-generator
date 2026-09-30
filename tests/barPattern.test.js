@@ -643,7 +643,8 @@ describe('createBarPatternSVG', () => {
     expect(gradient.rects.length).toBeGreaterThan(0);
     expect(grid.lines.length).toBeGreaterThan(0);
     expect(triangles.polygons.length).toBeGreaterThan(0);
-    expect(fibonacci.rects.length).toBeGreaterThan(2);
+    expect(fibonacci.rects).toHaveLength(8);
+    expect(fibonacci.rects[6].width / fibonacci.rects[7].width).toBeCloseTo(2, 5);
     expect(fibonacci.rects[1].x).toBeGreaterThan(fibonacci.rects[0].x + fibonacci.rects[0].width);
     expect(union.topRects.length).toBe(5);
     expect(union.lowerPaths.length).toBe(5);

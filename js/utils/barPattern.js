@@ -761,7 +761,8 @@ function createFibonacciPatternGeometry(options = {}) {
   const barY = Number(options.barY || 0);
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const weights = [34, 21, 13, 8, 5, 3, 1];
+  // Consecutive Fibonacci values, shown in descending order.
+  const weights = [34, 21, 13, 8, 5, 3, 2, 1];
   const total = weights.reduce((sum, weight) => sum + weight, 0);
   const gapWidth = Math.max(0.9, exactBarWidth * 0.004442);
   const totalGapWidth = gapWidth * (weights.length - 1);

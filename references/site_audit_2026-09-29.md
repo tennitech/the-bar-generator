@@ -12,7 +12,7 @@
 
 | Area | Result |
 | --- | --- |
-| Existing unit tests | 10 suites, 88 tests passed after changes. |
+| Existing unit tests | 10 suites, 90 tests passed after follow-up changes. |
 | Route files | All 24 generator route shells returned HTTP 200 with the matching route style. Music, graph, and truss redirected to Solid as intended. |
 | Rendering | All 21 selectable styles switched without page errors in the desktop browser sweep. Sampled Binary, Lunar, and Waveform at phone, tablet, and ultrawide sizes. No horizontal document overflow at the five tested widths. |
 | SVG | All 21 selectable styles downloaded nonempty SVG files with vector content. |
@@ -30,31 +30,29 @@
 5. Honored reduced-motion settings for the marquee and initial motion-enabled generator bars.
 6. Corrected repository and issue links to `tennitech/the-bar-generator`, and replaced the production homepage's “Experiment” metadata.
 
-## Open findings, prioritized
+## Follow-up repairs — 2026-09-30
 
-### High — profanity and hateful-content filtering is incomplete
+- Removed six serial shader fetches and compilations from startup; the current renderer never used those shaders. Routed pages now download their dependency scripts concurrently while preserving execution order. The intro preloads the renderer and prefetches the generator shell. The 676 KB Artemis II artwork script loads only for that style or when selected later.
+- Vendored the unchanged p5.js 1.7.0 browser build with its LGPL-2.1 license. All generator pages now load it locally. Both the direct and routed generator show a Retry action if the renderer is unavailable.
+- Expanded client-side text moderation to cover unambiguous hateful slurs, full-width and accented forms, common lookalike characters, and existing leet/spacing forms. Binary and Morse conversion, share URLs, live preview, and exports now consume sanitized text. This remains a best-effort filter, not a guarantee against every offensive phrase.
+- Corrected the Fibonacci pattern to include `2` in the consecutive sequence. Binary now encodes Unicode text as UTF-8 instead of silently substituting `A`; Morse now encodes commas, normalizes accented letters, and avoids phantom gaps around unsupported characters. [Bar meaning and source notes](bar_science_notes.md) record the assumptions.
+- Preserved native mobile pinch zoom over the canvas, stopped intercepting browser zoom gestures outside it, and provided a static mark instead of the ASCII animation under reduced motion.
+- Enlarged the preview proportionally on ultrawide workspaces while preserving mark geometry. SVG exports now carry 20 viewBox units of clear space on each side, matching the existing PNG/GIF export padding model.
+- Added a browser smoke script and CI workflow. Local Chromium and Playwright WebKit runs passed all 21 style routes and SVG exports, a PNG signature check, five viewport widths, text safety, reduced motion, and missing-renderer recovery. A fresh axe-core 4.10.3 scan reported zero tested WCAG/best-practice violations on the intro, phone Ruler, ultrawide Artemis II, and reduced-motion overlay states. The Jest suite passed 10 suites and 90 tests using a fresh package-manager runner. In a Chromium intro-to-generator check, the renderer preload was reused from cache and a canvas was attached in 353 ms; this is one local observation, not a device-wide performance guarantee.
 
-`js/utils/profanityFilter.js` has a short fixed list of sexual/profane terms. It does not cover hateful slurs or many Unicode variants. In direct tests, basic and simple leet examples were caught, while a full-width spelling, a vowel with a diacritic, and an unlisted racial slur passed unchanged. Binary and Morse inputs use this filter, including when restored from URL state. The client-side filter should use an agreed content policy, Unicode normalization/confusable handling, explicit tests for evasion and false positives, and a review of every user-controlled text path before the site is presented as brand-safe. No filter can guarantee every offensive phrase is caught.
-
-### High — the generator has no recovery path when p5 fails to load
-
-Each generator route loads p5 1.7.0 from cdnjs. Blocking that request in Chromium produced no preview canvas and no user-facing error. The generator shell still appeared, making the failure look like a broken design. Bundle an approved local copy or add a fallback and retry/error state. The external script also has no Subresource Integrity attribute; deployment owners should review the third-party loading policy.
+## Remaining findings
 
 ### Medium — final accessibility verification is still needed
 
-The automated scan does not cover screen-reader behavior, 200%/400% zoom, actual iOS/Android touch, or Safari and Firefox. The canvas viewport uses `touch-action: none`, so browser pinch zoom over that region needs a physical-device check despite the corrected viewport meta tag. The on-demand ASCII overlay also needs a reduced-motion review. Run manual WCAG 2.2 AA checks before claiming conformance.
-
-### Medium — ultrawide preview uses a small fixed maximum scale
-
-At 3440×1440, layout and controls remained in bounds, but `MAX_LOGO_SCALE = 1.5` keeps the generated mark around 375px wide inside a 3140px workspace. This is usable with manual zoom, yet leaves the main preview visually small on very wide monitors. Review the intended maximum with design/brand owners before raising it.
+The automated scans and browser smoke tests do not cover screen-reader behavior, actual iOS/Android touch, or the Safari application. Playwright WebKit passed locally. Playwright Firefox stalled before launch on this Mac, so Firefox remains unverified. Native pinch zoom is no longer suppressed by the generator, but physical-device and 200%/400% browser-zoom checks are still needed before claiming WCAG 2.2 AA conformance.
 
 ### Medium — brand approvals and scientific assumptions are not evidenced in the repo
 
-The documented brand rules require approved logo color use, exact geometry, and meaningful, accurate bars. The site offers secondary logo colors, a club Runway bar, and an Artemis II bar. The repository does not contain approval records for these uses or validation notes for every bar's scientific meaning. Obtain the relevant brand and club approvals and record each bar's data/geometry assumptions before describing every output as approved and scientifically accurate.
+The documented brand rules require approved logo color use, exact geometry, and meaningful, accurate bars. The site offers secondary logo colors, a club Runway bar, and an Artemis II bar. The repository still does not contain approval records for these uses. The new [bar meaning notes](bar_science_notes.md) distinguish data encodings from decorative patterns, and generator metadata no longer claims every output is brand-compliant. Obtain the relevant brand and club approvals before making that claim.
 
 ### Low — performance and release coverage gaps
 
-The intro creates roughly 150–160 repeated image links and updates their transforms every animation frame. It now paints without waiting for preloading, but should be profiled on a lower-power phone, especially for battery and thermal impact. There is no checked-in browser test or CI workflow for routes, exports, keyboard flows, and responsive layouts. The existing Jest suite covers 88 unit cases but cannot catch a missing CDN dependency or browser-only interaction regression.
+The intro creates roughly 150–160 repeated image links and updates their transforms every animation frame. It should be profiled on a lower-power phone, especially for battery and thermal impact. The new CI browser smoke covers routes, SVG/PNG exports, viewport widths, text safety, and renderer recovery. It does not replace manual touch, keyboard, and assistive-technology testing.
 
 ## Limits of this audit
 
