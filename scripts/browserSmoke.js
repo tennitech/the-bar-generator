@@ -15,16 +15,32 @@ const styles = [
 
 async function openGenerator(page, style) {
   const errors = [];
+  const consoleErrors = [];
   const onPageError = error => errors.push(error.message);
+  const onConsole = message => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  };
   page.on('pageerror', onPageError);
+  page.on('console', onConsole);
   const response = await page.goto(`${baseUrl}/generator/${style}/`, {
     waitUntil: 'domcontentloaded'
   });
   assert.ok([200, 304].includes(response.status()), `${style} route response: ${response.status()}`);
-  await page.locator('#p5-container canvas').waitFor({ timeout: 15000 });
+  try {
+    await page.locator('#p5-container canvas').waitFor({ timeout: 15000 });
+  } catch (error) {
+    const state = await page.evaluate(() => ({
+      bodyText: document.body.innerText.slice(0, 500),
+      canvasCount: document.querySelectorAll('canvas').length,
+      p5Loaded: typeof window.p5 === 'function',
+      setupLoaded: typeof window.setup === 'function'
+    }));
+    throw new Error(`${style} canvas unavailable: ${JSON.stringify({ state, errors, consoleErrors })}`, { cause: error });
+  }
   assert.equal(await page.locator('#style-select').inputValue(), style);
   assert.deepEqual(errors, [], `${style} page errors`);
   page.off('pageerror', onPageError);
+  page.off('console', onConsole);
 }
 
 async function main() {

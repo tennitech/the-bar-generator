@@ -4,13 +4,13 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## 1. Project Overview
-A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows students and faculty to generate unique, brand-compliant RPI "Bar" logos and lockups. The tool strictly adheres to branding patterns while ensuring safety and stability.
+A web-based **Design Tool** intended for RPI's central Brand Hub. It lets students and faculty explore RPI bar patterns using configured brand assets and geometry. Secondary colors and proposed club or mission lockups still need owner approval before being described as brand-compliant.
 
 ## 2. Architecture & Tech Stack
 *   **Core:** Vanilla HTML5, CSS3, JavaScript (ES6+).
-*   **Rendering:** p5.js (WebGL mode) for 2D/3D graphics and shaders.
+*   **Rendering:** p5.js 1.7.0 (WebGL mode) for the live canvas, served from `third_party/p5/`.
 *   **Integration:** Designed to embed within the **Frontify** ecosystem.
-*   **Shaders:** GLSL fragment shaders for pattern generation.
+*   **Shaders:** `assets/shaders/` contains prototype GLSL files; the production generator no longer fetches or compiles them at startup.
 *   **Audio:** Web Audio API with AudioWorklet (`pulse-worklet.js`) for audio-reactive features.
 *   **Fonts:** Official `RPIGeist` family (WOFF2) served locally.
 
@@ -20,6 +20,8 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   `js/` - Logic (`main.js`, `drawing.js`, `pulse-worklet.js`).
     *   `utils/` - Helper modules (`profanityFilter.js`).
 *   `references/` - Documentation and guidelines.
+*   `scripts/` - Browser smoke regression script.
+*   `third_party/` - Local licensed browser dependencies.
 
 ## 3. Completed Milestones
 
