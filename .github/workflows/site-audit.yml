@@ -23,5 +23,5 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           node scripts/browserSmoke.js
-          RPI_BROWSER=firefox node scripts/browserSmoke.js
+          RPI_BROWSER=firefox MOZ_WEBRENDER=1 LIBGL_ALWAYS_SOFTWARE=1 node scripts/browserSmoke.js
           RPI_BROWSER=webkit node scripts/browserSmoke.js

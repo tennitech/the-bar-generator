@@ -44,7 +44,10 @@ async function openGenerator(page, style) {
 }
 
 async function main() {
-  const browser = await browserType.launch({ headless: true });
+  const browser = await browserType.launch({
+    headless: true,
+    ...(browserName === 'firefox' ? { firefoxUserPrefs: { 'webgl.force-enabled': true } } : {})
+  });
   try {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
