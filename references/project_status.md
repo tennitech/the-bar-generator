@@ -30,7 +30,7 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
     - Added Unicode-aware, best-effort profanity and hateful-slur filtering across live Binary/Morse rendering, URL sharing, and exports. Binary now encodes UTF-8, and Morse spacing/comma handling is corrected.
     - Corrected Fibonacci segment values, added SVG clear space, improved ultrawide preview scale, and preserved native mobile pinch zoom. The header animation becomes a static mark under reduced motion.
     - Added a 2D canvas fallback when a browser cannot create a WebGL context, preserving the generator rather than leaving it blank.
-    - Added a browser smoke script and CI workflow for style routes, exports, responsive layouts, text safety, reduced motion, and renderer recovery. Local Chromium and Playwright WebKit sweeps passed. See `references/site_audit_2026-09-29.md` and `references/bar_science_notes.md`.
+    - Added a browser smoke script and CI workflow for style routes, exports, responsive layouts, text safety, reduced motion, 2D fallback, and renderer recovery. Local Chromium/WebKit and Linux CI Chromium/Firefox/WebKit sweeps passed. See `references/site_audit_2026-09-29.md` and `references/bar_science_notes.md`.
 
 - **[2026-09-29] Full Site Audit and Accessibility/Navigation Repairs**:
     - Audited the current `main` intro, all generator route shells, all 21 selectable bar styles, exports, responsive layouts, and automated accessibility states on a separate audit branch. Detailed evidence and remaining work are in `references/site_audit_2026-09-29.md`.
@@ -469,7 +469,7 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 7. Known Issues / Notes
 *   The client-side text filter covers more offensive content and Unicode variants but cannot guarantee detection of every evasion or avoid every false positive. A formal owner-approved content policy is still needed.
-*   Manual screen-reader, physical mobile-device, 200%/400% browser zoom, Safari application/Firefox, low-power performance, and brand approval checks remain before claiming full accessibility or brand compliance.
+*   Manual screen-reader, physical mobile-device, 200%/400% browser zoom, Safari application, low-power performance, and brand approval checks remain before claiming full accessibility or brand compliance. Firefox passed headless Linux CI but could not be launched locally on this Mac.
 *   `main.js` relies heavily on global variables (p5.js pattern). Future refactoring might consider modularizing this.
 *   Previously identified issue where ticker width ratio display failed to update has been resolved (2026-02-17).
 *   Previously identified SVG export drift between `main.js` and `drawing.js` has been addressed by shared utility (2026-02-17).
