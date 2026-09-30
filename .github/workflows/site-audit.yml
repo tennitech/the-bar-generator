@@ -16,11 +16,12 @@ jobs:
       - run: npm ci
       - run: npm test -- --runInBand
       - run: npm install --no-save --package-lock=false playwright@1.62.1
-      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright install --with-deps chromium firefox webkit
       - name: Browser smoke
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 &
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           node scripts/browserSmoke.js
+          RPI_BROWSER=firefox node scripts/browserSmoke.js
           RPI_BROWSER=webkit node scripts/browserSmoke.js
