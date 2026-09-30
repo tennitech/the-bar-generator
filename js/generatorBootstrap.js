@@ -76,7 +76,7 @@
       window.__RPI_GENERATOR_P5_INSTANCE__ = new window.p5();
     }
   } catch (error) {
-    console.error(error);
+    console.error(error && error.stack ? error.stack : error);
     document.body.innerHTML = '<main class="generator_error" role="alert"><h1>Unable to load the generator</h1><p>Check your connection and try again.</p><button type="button" id="retry-generator">Retry</button></main>';
     document.getElementById('retry-generator').addEventListener('click', () => window.location.reload());
   }
