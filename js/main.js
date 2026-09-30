@@ -612,6 +612,7 @@ let panPointerId = null;
 let panPointerPosition = null;
 let panGestureHandlersBound = false;
 let browserZoomGuardsBound = false;
+let liveCanvasUsesWebGL = true;
 let safariGestureStartZoomLevel = null;
 let responsiveWorkspaceResizeObserver = null;
 let responsiveWorkspaceSyncFrame = 0;
@@ -2455,7 +2456,23 @@ function setup() {
   const width = container ? container.offsetWidth : windowWidth;
   const height = container ? container.offsetHeight : windowHeight;
 
-  let canvas = createCanvas(width, height, WEBGL);
+  const contextProbe = document.createElement('canvas');
+  try {
+    liveCanvasUsesWebGL = !!(contextProbe.getContext('webgl2') || contextProbe.getContext('webgl'));
+  } catch (error) {
+    liveCanvasUsesWebGL = false;
+  }
+
+  let canvas;
+  if (liveCanvasUsesWebGL) {
+    try {
+      canvas = createCanvas(width, height, WEBGL);
+    } catch (error) {
+      console.warn('WebGL canvas unavailable; using the 2D renderer.', error);
+      liveCanvasUsesWebGL = false;
+    }
+  }
+  if (!liveCanvasUsesWebGL) canvas = createCanvas(width, height);
   canvas.parent('p5-container');
   lastCanvasSize = { width, height };
   setupResponsiveWorkspaceSizing();
@@ -2465,16 +2482,18 @@ function setup() {
   }
 
   // Handle WebGL context loss to prevent crashes
-  canvas.elt.addEventListener('webglcontextlost', (event) => {
-    event.preventDefault();
-    console.warn('WebGL core context lost. Suspending animation loop.');
-    noLoop();
-  });
+  if (liveCanvasUsesWebGL) {
+    canvas.elt.addEventListener('webglcontextlost', (event) => {
+      event.preventDefault();
+      console.warn('WebGL core context lost. Suspending animation loop.');
+      noLoop();
+    });
 
-  canvas.elt.addEventListener('webglcontextrestored', () => {
-    console.log('WebGL core context restored. Resuming animation loop.');
-    loop();
-  });
+    canvas.elt.addEventListener('webglcontextrestored', () => {
+      console.log('WebGL core context restored. Resuming animation loop.');
+      loop();
+    });
+  }
 
 
 
@@ -6862,14 +6881,13 @@ function draw() {
   const logoHeight = REFERENCE_LOGO_HEIGHT; // Exact height from 250px reference
 
   // Reset shader for regular drawing
-  resetShader();
+  if (liveCanvasUsesWebGL) resetShader();
 
 
 
   // Draw the SVG logo
   push();
-  translate(-width / 2, -height / 2); // Convert to screen coordinates for WEBGL
-  translate(width / 2, height / 2);
+  if (!liveCanvasUsesWebGL) translate(width / 2, height / 2);
 
   // Keep 100% zoom proportional to the visible workspace instead of fixed CSS pixels.
   scale(responsiveLogoScale);
@@ -6908,8 +6926,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
 
   // Use the exact same coordinate system and positioning as the logo
   push();
-  translate(-width / 2, -height / 2); // Convert to screen coordinates for WEBGL
-  translate(width / 2, height / 2);
+  if (!liveCanvasUsesWebGL) translate(width / 2, height / 2);
 
   // Scale the same as logo
   scale(responsiveLogoScale);

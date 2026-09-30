@@ -38,13 +38,14 @@
 - Corrected the Fibonacci pattern to include `2` in the consecutive sequence. Binary now encodes Unicode text as UTF-8 instead of silently substituting `A`; Morse now encodes commas, normalizes accented letters, and avoids phantom gaps around unsupported characters. [Bar meaning and source notes](bar_science_notes.md) record the assumptions.
 - Preserved native mobile pinch zoom over the canvas, stopped intercepting browser zoom gestures outside it, and provided a static mark instead of the ASCII animation under reduced motion.
 - Enlarged the preview proportionally on ultrawide workspaces while preserving mark geometry. SVG exports now carry 20 viewBox units of clear space on each side, matching the existing PNG/GIF export padding model.
+- Added a 2D canvas fallback for browsers and devices that cannot create a WebGL context. The browser smoke test simulates WebGL denial and checks that the live generator still renders.
 - Added a browser smoke script and CI workflow. Local Chromium and Playwright WebKit runs passed all 21 style routes and SVG exports, a PNG signature check, five viewport widths, text safety, reduced motion, and missing-renderer recovery. A fresh axe-core 4.10.3 scan reported zero tested WCAG/best-practice violations on the intro, phone Ruler, ultrawide Artemis II, and reduced-motion overlay states. The Jest suite passed 10 suites and 90 tests using a fresh package-manager runner. In a Chromium intro-to-generator check, the renderer preload was reused from cache and a canvas was attached in 353 ms; this is one local observation, not a device-wide performance guarantee.
 
 ## Remaining findings
 
 ### Medium — final accessibility verification is still needed
 
-The automated scans and browser smoke tests do not cover screen-reader behavior, actual iOS/Android touch, or the Safari application. Playwright WebKit passed locally. Playwright Firefox stalled before launch on this Mac, so Firefox remains unverified. Native pinch zoom is no longer suppressed by the generator, but physical-device and 200%/400% browser-zoom checks are still needed before claiming WCAG 2.2 AA conformance.
+The automated scans and browser smoke tests do not cover screen-reader behavior, actual iOS/Android touch, or the Safari application. Playwright WebKit passed locally. Playwright Firefox stalled before launch on this Mac; Linux CI Firefox coverage is being checked with the new 2D fallback. Native pinch zoom is no longer suppressed by the generator, but physical-device and 200%/400% browser-zoom checks are still needed before claiming WCAG 2.2 AA conformance.
 
 ### Medium — brand approvals and scientific assumptions are not evidenced in the repo
 

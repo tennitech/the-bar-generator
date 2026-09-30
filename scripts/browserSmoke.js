@@ -37,6 +37,7 @@ async function openGenerator(page, style) {
     }));
     throw new Error(`${style} canvas unavailable: ${JSON.stringify({ state, errors, consoleErrors })}`, { cause: error });
   }
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   assert.equal(await page.locator('#style-select').inputValue(), style);
   assert.deepEqual(errors, [], `${style} page errors`);
   page.off('pageerror', onPageError);
@@ -113,6 +114,20 @@ async function main() {
     assert.equal(await reduced.locator('.logo_animation_frame').count(), 0);
     await reduced.close();
 
+    const fallback = await browser.newPage();
+    await fallback.addInitScript(() => {
+      const originalGetContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (kind, ...options) {
+        if (kind === 'webgl' || kind === 'webgl2' || kind === 'experimental-webgl') return null;
+        return originalGetContext.call(this, kind, ...options);
+      };
+    });
+    for (const style of styles) {
+      await openGenerator(fallback, style);
+      assert.equal(await fallback.evaluate(() => drawingContext instanceof CanvasRenderingContext2D), true);
+    }
+    await fallback.close();
+
     const blocked = await browser.newPage();
     await blocked.route('**/third_party/p5/p5.min.js', route => route.abort());
     await blocked.goto(`${baseUrl}/generator/solid/`);
@@ -124,7 +139,7 @@ async function main() {
     await blocked.close();
 
     await context.close();
-    console.log(`${browserName} smoke passed: ${styles.length} styles and SVG exports, PNG, 5 widths, text safety, reduced motion, renderer recovery.`);
+    console.log(`${browserName} smoke passed: ${styles.length} styles and SVG exports, PNG, 5 widths, text safety, reduced motion, 2D fallback, renderer recovery.`);
   } finally {
     await browser.close();
   }

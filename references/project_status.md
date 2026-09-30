@@ -8,7 +8,7 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 2. Architecture & Tech Stack
 *   **Core:** Vanilla HTML5, CSS3, JavaScript (ES6+).
-*   **Rendering:** p5.js 1.7.0 (WebGL mode) for the live canvas, served from `third_party/p5/`.
+*   **Rendering:** p5.js 1.7.0 for the live canvas, using WebGL when available and 2D canvas otherwise, served from `third_party/p5/`.
 *   **Integration:** Designed to embed within the **Frontify** ecosystem.
 *   **Shaders:** `assets/shaders/` contains prototype GLSL files; the production generator no longer fetches or compiles them at startup.
 *   **Audio:** Web Audio API with AudioWorklet (`pulse-worklet.js`) for audio-reactive features.
@@ -29,6 +29,7 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
     - Replaced the p5 CDN script with a locally licensed copy and added retry states for missing renderer files. Removed unused serial shader loading, allowed generator dependencies to download concurrently in execution order, and delayed the large Artemis II artwork script until that style is selected.
     - Added Unicode-aware, best-effort profanity and hateful-slur filtering across live Binary/Morse rendering, URL sharing, and exports. Binary now encodes UTF-8, and Morse spacing/comma handling is corrected.
     - Corrected Fibonacci segment values, added SVG clear space, improved ultrawide preview scale, and preserved native mobile pinch zoom. The header animation becomes a static mark under reduced motion.
+    - Added a 2D canvas fallback when a browser cannot create a WebGL context, preserving the generator rather than leaving it blank.
     - Added a browser smoke script and CI workflow for style routes, exports, responsive layouts, text safety, reduced motion, and renderer recovery. Local Chromium and Playwright WebKit sweeps passed. See `references/site_audit_2026-09-29.md` and `references/bar_science_notes.md`.
 
 - **[2026-09-29] Full Site Audit and Accessibility/Navigation Repairs**:
