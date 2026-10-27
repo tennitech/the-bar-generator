@@ -50,29 +50,38 @@ describe('experimental pattern compositions', () => {
     }
   );
 
-  test('Triangle 2 uses broad right-triangle pairs with consistent diagonal clearance', () => {
-    const { polygons } = createTrianglesPatternGeometry({ variant: 2 });
-    expect(polygons).toHaveLength(10);
-    const clearances = [];
-    for (let i = 0; i < polygons.length; i += 2) {
-      const upper = polygons[i];
-      const lower = polygons[i + 1];
-      expect(upper[0].y).toBe(upper[1].y);
-      expect(upper[0].x).toBe(upper[2].x);
-      expect(lower[0].x).toBe(lower[1].x);
-      expect(lower[1].y).toBe(lower[2].y);
-      // At the bay center the two hypotenuses leave a visible open channel.
-      const sampleX = (upper[0].x + lower[1].x) / 2;
-      const upperY = upper[2].y * (upper[1].x - sampleX) / (upper[1].x - upper[0].x);
-      const lowerY = lower[0].y + (lower[1].y - lower[0].y)
-        * (lower[0].x - sampleX) / (lower[0].x - lower[2].x);
-      clearances.push(lowerY - upperY);
+  test.each([[250, 18, 0, 0], [500, 36, -25, 132.4885]])(
+    'Triangle 2 is the exact complementary fill of Triangle 1 at %s × %s', (width, height, x, y) => {
+      const bounds = { barStartX: x, barY: y, exactBarWidth: width, barHeight: height };
+      const first = createTrianglesPatternGeometry({ ...bounds, variant: 1 }).polygons;
+      const second = createTrianglesPatternGeometry({ ...bounds, variant: 2 }).polygons;
+      expect(first).toHaveLength(14);
+      expect(second).toHaveLength(first.length);
+      const inside = (point, triangle) => {
+        const crosses = triangle.map((a, i) => {
+          const b = triangle[(i + 1) % triangle.length];
+          return (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
+        });
+        return crosses.every(v => v > 0) || crosses.every(v => v < 0);
+      };
+      const area = p => Math.abs(p.reduce((sum, a, i) => {
+        const b = p[(i + 1) % p.length];
+        return sum + a.x * b.y - b.x * a.y;
+      }, 0)) / 2;
+      first.forEach((triangle, i) => {
+        // The same two diagonal endpoints bound the two complementary pieces.
+        expect(second[i][0]).toEqual(triangle[0]);
+        expect(second[i][2]).toEqual(triangle[1]);
+        expect(area(triangle) + area(second[i])).toBeCloseTo(width * height / 14);
+        for (const tx of [0.1, 0.3, 0.6, 0.9]) {
+          for (const ty of [0.15, 0.45, 0.75, 0.95]) {
+            const point = { x: x + (i + tx) * width / 14, y: y + ty * height };
+            expect(Number(inside(point, triangle)) + Number(inside(point, second[i]))).toBe(1);
+          }
+        }
+      });
     }
-    clearances.forEach(gap => {
-      expect(gap).toBeGreaterThan(3);
-      expect(gap).toBeCloseTo(clearances[0]);
-    });
-  });
+  );
 
   test.each([[19, 'triangles'], [17, 'gradient'], [16, 'circlesGradient']])(
     'serializes the selected non-default variant for shader %s', (shader, key) => {

@@ -708,41 +708,21 @@ function createTrianglesPatternGeometry(options = {}) {
   const variant = clampPatternVariant(options.variant || 1, 2);
   const polygons = [];
 
-  const addRow = (count, y, height) => {
-    const cellWidth = exactBarWidth / count;
-    for (let i = 0; i < count; i++) {
-      const x = barStartX + i * cellWidth;
-      polygons.push([
-        { x, y },
-        { x: x + cellWidth, y: y + height },
-        { x, y: y + height }
-      ]);
-    }
-  };
-
-  if (variant === 1) {
-    addRow(14, barY, barHeight);
-  } else {
-    // The supplied triangle references use filled right-triangle primitives.
-    // Five broad bays retain that construction, with a consistent diagonal
-    // clearance between each pair and no sub-pixel subdivisions.
-    const count = 5;
-    const cellWidth = exactBarWidth / count;
-    const insetX = cellWidth * 0.1;
-    const insetY = barHeight / 9;
-    for (let i = 0; i < count; i++) {
-      const x = barStartX + i * cellWidth;
-      polygons.push([
-        { x, y: barY },
-        { x: x + cellWidth - insetX, y: barY },
-        { x, y: barY + barHeight - insetY }
-      ]);
-      polygons.push([
-        { x: x + cellWidth, y: barY + insetY },
-        { x: x + cellWidth, y: barY + barHeight },
-        { x: x + insetX, y: barY + barHeight }
-      ]);
-    }
+  const count = 14;
+  const cellWidth = exactBarWidth / count;
+  for (let i = 0; i < count; i++) {
+    const x = barStartX + i * cellWidth;
+    // Both variants share the same diagonal and cell bounds. Variant 2 fills
+    // the complementary half of each cell; variant 1 keeps its original points.
+    polygons.push(variant === 1 ? [
+      { x, y: barY },
+      { x: x + cellWidth, y: barY + barHeight },
+      { x, y: barY + barHeight }
+    ] : [
+      { x, y: barY },
+      { x: x + cellWidth, y: barY },
+      { x: x + cellWidth, y: barY + barHeight }
+    ]);
   }
 
   return { polygons };
