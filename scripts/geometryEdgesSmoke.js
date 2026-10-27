@@ -16,8 +16,12 @@ async function checkEdges(page, label) {
       if (pixels[(row * pg.width + x) * 4 + 3] > 8) { left = Math.min(left, x); right = Math.max(right, x); }
     }
     pg.remove();
-    return { left, right };
+    return { left, right, ruler: currentShader === 1 };
   });
+  if (result.ruler) {
+    assert.ok(result.left >= 80 && result.right <= 1079 && result.right > result.left, `${label}: ruler paint escapes its fixed viewport`);
+    return;
+  }
   assert.equal(result.left, 80, `${label}: left painted extent ${result.left}`);
   assert.equal(result.right, 1079, `${label}: right painted extent ${result.right}`);
 }
@@ -70,6 +74,7 @@ async function main() {
             hasFrameScale: /scale\(/.test(buildCurrentBarPatternSVGFragment()) };
         });
         assert.ok(motion.unchanged, `${style}: fitting changed interior tick positions or widths`);
+        if (style === 'ruler') assert.deepEqual(motion.markers, [], 'Ruler must not add forced end caps');
         assert.equal(motion.hasFrameScale, false, `${style}: phase-dependent spatial scaling`);
         if (referenceMarkers) assert.deepEqual(motion.markers, referenceMarkers, `${style}: boundary marks breathe with phase`);
         referenceMarkers = motion.markers;
