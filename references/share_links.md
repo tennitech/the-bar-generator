@@ -70,3 +70,7 @@ Before strict native validation, sharing delegates known Ruler/Ticker/Waveform s
 Saved names are document context in the existing header title, never floating debug-style labels over the canvas or part of the official mark. The compact menu keeps Copy link and optional-name editing together. Its two text controls share one type scale, with16px text on coarse/mobile to avoid input autozoom; menu states use existing semantic foreground/background tokens. Success updates the action to Copied with a check and announces it without repeating visible status prose.
 
 The sharing glyphs are exact Feather4.29.2 share/copy/check SVGs, matching the evidenced source of core existing toolbar icons. See [icon provenance](icon_provenance.md) for exact sources, license/hash verification, and outstanding non-sharing mismatches. No new package or icon CDN is loaded.
+
+## Current-main reconciliation
+
+The native manifest also captures Quantum phase, speed, reverse and loop intent from its existing controls. Restoring a link always pauses Quantum per that family's no-auto-start contract while retaining the explicit phase/rate/reverse values. Legacy query restoration on Back/Forward uses the existing Quantum normalizers, rather than relying on one-time page setup. The Quantum model, renderer and projection geometry are unchanged. Run `scripts/shareIntegrationSmoke.js` alongside the real-controls triangle check on the reconciled branch to verify these imports and actual SVG equality.

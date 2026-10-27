@@ -8199,6 +8199,8 @@ function setupShareLinks() {
       notes: currentStaffNotes, duration: currentNoteDuration }),
     restore: state => {
       stopAudio();
+      // Quantum links preserve phase/rate/reverse but follow its no-auto-start contract.
+      if (window.quantumControls) window.quantumControls.pause();
       sharePatternSeed = state.seed;
       currentStaffNotes = state.notes;
       currentNoteDuration = state.duration;
@@ -8235,6 +8237,13 @@ function setupShareLinks() {
       });
       resetAnimationClock();
       for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = DEFAULT_MOTION_ENABLED;
+      if (window.quantumControls && window.quantumModel) {
+        const query = new URLSearchParams(window.location.search);
+        document.getElementById('quantum-phase').value = window.quantumModel.normalizePhase(query.get('quantumPhase') || 0);
+        document.getElementById('quantum-speed-slider').value = window.quantumModel.normalizeSpeed(query.has('quantumSpeed') ? query.get('quantumSpeed') : 1);
+        document.getElementById('quantum-reverse-toggle').checked = query.get('quantumReverse') === 'true';
+        window.quantumControls.pause();
+      }
       applyUrlParameters();
       syncMotionToggleState();
       syncAllCustomSelects();
