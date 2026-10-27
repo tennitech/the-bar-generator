@@ -23,7 +23,7 @@ Open http://127.0.0.1:8000/. Check for an existing server before starting anothe
 5. Open a pull request into `main`. State the problem, the change, and the checks you ran. Include images for visible changes.
 6. Update `references/project_status.md` for material changes, architecture decisions, and known issues. Do not edit the historical project proposal.
 
-The required Unit tests and Browser tests checks must pass. Browser tests run for code, dependency, test, and workflow changes; their job skips browser execution for documentation-only changes. Run the affected checks locally with the commands in [README.md](README.md). Browser automation does not replace manual UI and accessibility checks.
+The fast Unit tests check is the only required automated check. Contributors and reviewers perform the relevant UI, keyboard, accessibility, motion, and export checks. Optional browser scripts are available in [README.md](README.md); run them locally when useful. They do not run in CI and are not merge requirements.
 
 ## License and assets
 
