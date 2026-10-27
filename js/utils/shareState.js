@@ -176,8 +176,7 @@
     const brandTitle = document.querySelector('.brand-title');
     const nameContext = prepareNameContext();
     const loadedName = nameContext.querySelector('#share-loaded-name');
-    const baseDocumentTitle = ['localhost', '127.0.0.1'].includes(location.hostname) && location.port === '4315'
-      ? 'BAR-05 · Share Links · 4315' : document.title;
+    const baseDocumentTitle = document.title;
     const nameInput = section.querySelector('#share-name');
     const output = section.querySelector('#share-url');
     const fallback = section.querySelector('#share-fallback');
@@ -260,7 +259,10 @@
         if (restoring) return true;
         loadError = '';
         if (!location.hash.startsWith(PREFIX)) return false;
-        try { history.replaceState(history.state, '', buildLink()); } catch (error) { status.textContent = error.message; }
+        try {
+          if (scope.URLState) scope.URLState.replace(buildLink());
+          else history.replaceState(history.state, '', buildLink());
+        } catch (error) { status.textContent = error.message; }
         return true;
       }
     };
@@ -337,6 +339,7 @@
     document.getElementById('app-sidebar').addEventListener('change', event => { if (!event.target.closest('[data-share-ui]')) { controller.syncUrl(); if (!section.hidden) refresh(); } });
     window.addEventListener('popstate', load);
     window.addEventListener('hashchange', load);
+    trigger.disabled = false;
     if (location.hash.startsWith(PREFIX)) load();
     resetCopyFeedback();
     updateNameContext();

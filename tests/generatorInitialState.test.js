@@ -1,3 +1,4 @@
+require('../js/utils/generatorRoutes');
 require('../js/utils/themeMode');
 const { resolveTheme, isCompactLayoutViewport } = require('../js/utils/generatorInitialState');
 
@@ -22,4 +23,18 @@ test.each([
   [844, true, true], [1440, true, false]
 ])('compact layout at %ipx with coarse=%s is %s', (width, coarse, expected) => {
   expect(isCompactLayoutViewport(width, coarse)).toBe(expected);
+});
+
+
+const { resolvePendingURL } = require('../js/utils/generatorInitialState');
+test('reload recovers only an exact same-origin pending generator URL', () => {
+  const current = 'https://example.test/generator/triangles/?trianglesCount=11';
+  const target = 'https://example.test/generator/triangles/?trianglesCount=19';
+  const record = { from: current, to: target };
+  expect(resolvePendingURL(record, current, 'reload')).toBe(target);
+  expect(resolvePendingURL(record, current, 'navigate')).toBe(null);
+  expect(resolvePendingURL(record, current + '#different', 'reload')).toBe(null);
+  expect(resolvePendingURL({ ...record, to: 'https://other.test/generator/solid/' }, current, 'reload')).toBe(null);
+  expect(resolvePendingURL({ ...record, to: 'https://example.test/elsewhere/' }, current, 'reload')).toBe(null);
+  expect(resolvePendingURL({ ...record, to: 'javascript:alert(1)' }, current, 'reload')).toBe(null);
 });

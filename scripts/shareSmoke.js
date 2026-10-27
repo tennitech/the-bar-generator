@@ -1,9 +1,10 @@
 // Isolated browser checks for complete client-side snapshots and actual downloaded SVGs.
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
-const { chromium } = require('playwright');
+const { chromium, webkit } = require('playwright');
+const browserName = process.env.RPI_BROWSER || 'chromium';
 const styles = [...require('../js/utils/generatorRoutes').ROUTABLE_STYLE_VALUES];
-const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4315';
+const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
 const evidence = process.env.RPI_EVIDENCE_DIR;
 async function ready(page) { await page.waitForFunction(() => window.barShareController); }
 async function svg(page) {
@@ -16,7 +17,7 @@ async function svg(page) {
   return value;
 }
 (async () => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await ({ chromium, webkit }[browserName]).launch({ headless: true });
   try {
     const page = await browser.newPage({ viewport: {width: 1440, height: 1000} });
     const errors = [];

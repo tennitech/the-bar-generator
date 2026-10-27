@@ -1,5 +1,29 @@
 /* First-paint state shared by routed and direct generator entry points. */
 (function (scope) {
+  let pendingURLChecked = false;
+  function resolvePendingURL(record, currentURL, navigationType) {
+    if (navigationType !== 'reload' || !record || record.from !== currentURL || typeof record.to !== 'string') return null;
+    try {
+      const current = new URL(currentURL), target = new URL(record.to);
+      if (target.origin !== current.origin || target.username || target.password
+        || !scope.GeneratorRoutes.getGeneratorRouteStyleFromPathname(target.pathname)) return null;
+      return target.href;
+    } catch (_) { return null; }
+  }
+  function restorePendingURL() {
+    if (pendingURLChecked) return;
+    pendingURLChecked = true;
+    try {
+      const raw = scope.sessionStorage.getItem('rpi-pending-url');
+      scope.sessionStorage.removeItem('rpi-pending-url');
+      const target = resolvePendingURL(raw ? JSON.parse(raw) : null, scope.location.href,
+        scope.performance.getEntriesByType('navigation')[0]?.type);
+      if (target) {
+        scope.history.replaceState(scope.history.state, '', target);
+        scope.__RPI_GENERATOR_ROUTE_STYLE__ = scope.GeneratorRoutes.getGeneratorRouteStyleFromPathname(new URL(target).pathname);
+      }
+    } catch (_) { /* A blocked session store must not prevent startup. */ }
+  }
   function isCompactLayoutViewport(viewportWidth, coarsePointer = false) {
     return Math.max(0, Math.round(viewportWidth || 0)) <= 900
       || (viewportWidth <= 1100 && coarsePointer);
@@ -60,6 +84,7 @@
   }
 
   function apply(root = document.body) {
+    restorePendingURL();
     let style = resolveStyle();
     let theme = resolveTheme(scope.location.search, style);
     if (scope.GeneratorParameters && root.querySelector('#color-mode-select')) {
@@ -167,7 +192,7 @@
     if (root.isConnected) syncHeaderLayout();
     return theme;
   }
-  const api = { resolveTheme, apply, syncHeaderLayout, isCompactLayoutViewport };
+  const api = { resolvePendingURL, resolveTheme, apply, syncHeaderLayout, isCompactLayoutViewport };
   scope.GeneratorInitialState = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const path=require('node:path');
 const {chromium,webkit,devices}=require('playwright');
-const base=process.env.RPI_SITE_URL||'http://127.0.0.1:4316';
+const base=process.env.RPI_SITE_URL||'http://127.0.0.1:8000';
 const engine=process.env.RPI_BROWSER||'chromium';
 const evidence=process.env.RPI_PUBLISH_EVIDENCE;
 async function main(){

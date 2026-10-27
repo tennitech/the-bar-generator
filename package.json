@@ -9,6 +9,7 @@
     "test:browser:install": "playwright install chromium firefox webkit",
     "test:motion": "node scripts/motionSmoke.js",
     "test:mobile": "node scripts/mobileSmoke.js",
+    "test:integration": "node scripts/integrationSmoke.js",
     "test:touch": "node scripts/viewerTouchSmoke.js",
     "test:mobile-theme": "node scripts/mobileThemeSmoke.js"
   },

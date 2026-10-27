@@ -2,8 +2,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium, webkit } = require('playwright');
-const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8765';
-const evidence = process.env.RPI_ENTRANCE_EVIDENCE || '/tmp/bar-generator-first-paint-evidence/entrances';
+const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
+const evidence = process.env.RPI_ENTRANCE_EVIDENCE || path.join(require('node:os').tmpdir(), 'rpi-entrance-evidence');
 fs.mkdirSync(evidence, { recursive: true });
 function observe() {
   window.__entranceEvents = [];

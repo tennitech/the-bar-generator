@@ -42,6 +42,8 @@
 /* ─── Design Tokens ─── */
 
 :root {
+  --icon-chevron-down: url('../third_party/feather/icons/chevron-down.svg');
+  --icon-loader: url('../third_party/feather/icons/loader.svg');
   --control-label-line-height: 1.3;
   --control-header-line-height: 1.333333;
 
@@ -452,6 +454,7 @@ body {
    Sidebar Controls
    ──────────────────────────────────────── */
 
+/* Page entrance fades the sidebar once, rather than staggering each group. */
 /* Control boxes retain their line metrics while the official fonts load. */
 .control {
   margin-bottom: 16px;
@@ -1093,11 +1096,12 @@ input:checked+.slider:before {
 
 .custom-select-trigger::after {
   content: '';
-  width: 6px;
-  height: 6px;
-  border-right: 1.5px solid var(--text-secondary);
-  border-bottom: 1.5px solid var(--text-secondary);
-  transform: translateY(-2px) rotate(45deg);
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  background: var(--text-secondary);
+  -webkit-mask: var(--icon-chevron-down) center / contain no-repeat;
+  mask: var(--icon-chevron-down) center / contain no-repeat;
   transition: transform var(--duration-fast) ease;
 }
 
@@ -1109,7 +1113,7 @@ input:checked+.slider:before {
 }
 
 .custom-select-wrapper.open .custom-select-trigger::after {
-  transform: translateY(2px) rotate(-135deg);
+  transform: rotate(180deg);
 }
 
 .custom-select-options {
@@ -3820,13 +3824,13 @@ body { min-height: 0; }
   .custom-select-wrapper::after {
     content: "";
     position: absolute;
-    right: 1rem;
-    top: 1.125rem;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-right: 2px solid var(--text-secondary);
-    border-bottom: 2px solid var(--text-secondary);
-    transform: rotate(45deg);
+    right: 0.75rem;
+    top: 1rem;
+    width: 1rem;
+    height: 1rem;
+    background: var(--text-secondary);
+    -webkit-mask: var(--icon-chevron-down) center / contain no-repeat;
+    mask: var(--icon-chevron-down) center / contain no-repeat;
     pointer-events: none;
   }
 }
@@ -3853,12 +3857,11 @@ body { min-height: 0; }
   .app-sidebar.active { transform: none; visibility: visible; }
 }
 
-/* Match BAR-07 shared control dimensions; every preview transport gets the same touch floor. */
+/* Preserve a visible keyboard ring and shared preview transport touch targets. */
 .switch input:focus-visible + .slider {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
 }
-
 @media (pointer: coarse) {
   .preview-controls, .audio-controls { gap: 0.5rem; }
   .preview-controls .preview-control-btn,
@@ -3867,18 +3870,6 @@ body { min-height: 0; }
     min-width: var(--control-touch-size);
     min-height: var(--control-touch-size);
   }
-  .control_row { min-height: 3rem; }
-  .switch { width: 3rem; min-height: var(--control-touch-size); flex-shrink: 0; }
-  .switch .slider { top: 0.5625rem; bottom: 0.5625rem; border-radius: 2rem; }
-  .switch .slider:before { width: 1.25rem; height: 1.25rem; left: 0.1875rem; bottom: 0.1875rem; }
-  .switch input:checked + .slider:before { transform: translateX(1.375rem); }
-  .slider_value-display { min-width: var(--control-touch-size); min-height: var(--control-touch-size); align-items: center; }
-  .slider_value-input { min-width: 3.25rem; min-height: var(--control-touch-size); font-size: 1rem; }
-  .control-slider { height: var(--control-touch-size); margin: 0.25rem 0; background: transparent; touch-action: pan-y pinch-zoom; }
-  .control-slider::-webkit-slider-runnable-track { height: 2px; background: var(--slider-track); }
-  .control-slider::-webkit-slider-thumb { width: 1.25rem; height: 1.75rem; margin-top: -0.8125rem; border-radius: 0.25rem; }
-  .control-slider::-moz-range-track { height: 2px; background: var(--slider-track); }
-  .control-slider::-moz-range-thumb { width: 1.25rem; height: 1.75rem; border-radius: 0.25rem; }
 }
 
 /* Motion chrome borrows the toolbar component; positions come from its anchors. */
@@ -3956,6 +3947,8 @@ body { min-height: 0; }
   mask: url('../assets/images/RPI Logo.svg') center / contain no-repeat;
 }
 
+.toast_icon { width: 1.25rem; height: 1.25rem; }
+
 /* Export choices and progress stay inside the existing anchored popover. */
 .export_menu { width: 17rem; min-width: 0; max-height: calc(100dvh - 5rem); overflow-y: auto; }
 .export_settings { padding: 0.5rem 0.75rem 0.75rem; border-bottom: 1px solid var(--border-color); }
@@ -3971,7 +3964,11 @@ body { min-height: 0; }
 .export_menu button:disabled, .export_menu select:disabled { opacity: 0.5; cursor: default; }
 .save-button { position: relative; }
 .save-button[aria-busy="true"] .icon-right { visibility: hidden; }
-.save-button[aria-busy="true"]::after { content: ''; position: absolute; right: 0.75rem; width: 0.875rem; height: 0.875rem; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: exportSpin 0.8s linear infinite; }
+.save-button[aria-busy="true"]::after { content: ''; position: absolute; right: 0.75rem; width: 0.875rem; height: 0.875rem; background: currentColor; mask: var(--icon-loader) center / contain no-repeat; animation: exportSpin 0.8s linear infinite; }
 @keyframes exportSpin { to { transform: rotate(360deg); } }
 @media (max-width: 56.25rem) { .export_size-select, .export_cancel { min-height: 2.75rem; } }
+@media (pointer: coarse) and (max-width: 68.75rem) {
+  .export_size-select, .export_cancel { min-height: 2.75rem; }
+  .export_size-select { height: 2.75rem; font-size: 1rem; }
+}
 @media (prefers-reduced-motion: reduce) { .save-button[aria-busy="true"]::after { animation: none; } }
