@@ -31,6 +31,49 @@ describe('experimental pattern compositions', () => {
     }
   );
 
+  test.each([[250, 18, 0, 132.4885], [500, 36, -25, 40], [125, 9, 20, -18]])(
+    'paints both exact horizontal boundaries at %s × %s', (width, height, x, y) => {
+      const bounds = { barStartX: x, barY: y, exactBarWidth: width, barHeight: height };
+      for (const variant of [1, 2, 3, 0, 99, '2']) {
+        for (const helper of [createLinesPatternGeometry, createGradientPatternGeometry,
+          createCirclesGradientPatternGeometry, createTrianglesPatternGeometry]) {
+          const geometry = helper({ ...bounds, variant });
+          const intervals = [
+            ...(geometry.rects || []).map(r => [r.x, r.x + r.width]),
+            ...(geometry.circles || []).map(c => [c.cx - c.r, c.cx + c.r]),
+            ...(geometry.polygons || []).map(p => [Math.min(...p.map(v => v.x)), Math.max(...p.map(v => v.x))])
+          ];
+          expect(Math.min(...intervals.map(v => v[0]))).toBeCloseTo(x, 8);
+          expect(Math.max(...intervals.map(v => v[1]))).toBeCloseTo(x + width, 8);
+        }
+      }
+    }
+  );
+
+  test('Triangle 2 uses broad right-triangle pairs with consistent diagonal clearance', () => {
+    const { polygons } = createTrianglesPatternGeometry({ variant: 2 });
+    expect(polygons).toHaveLength(10);
+    const clearances = [];
+    for (let i = 0; i < polygons.length; i += 2) {
+      const upper = polygons[i];
+      const lower = polygons[i + 1];
+      expect(upper[0].y).toBe(upper[1].y);
+      expect(upper[0].x).toBe(upper[2].x);
+      expect(lower[0].x).toBe(lower[1].x);
+      expect(lower[1].y).toBe(lower[2].y);
+      // At the bay center the two hypotenuses leave a visible open channel.
+      const sampleX = (upper[0].x + lower[1].x) / 2;
+      const upperY = upper[2].y * (upper[1].x - sampleX) / (upper[1].x - upper[0].x);
+      const lowerY = lower[0].y + (lower[1].y - lower[0].y)
+        * (lower[0].x - sampleX) / (lower[0].x - lower[2].x);
+      clearances.push(lowerY - upperY);
+    }
+    clearances.forEach(gap => {
+      expect(gap).toBeGreaterThan(3);
+      expect(gap).toBeCloseTo(clearances[0]);
+    });
+  });
+
   test.each([[19, 'triangles'], [17, 'gradient'], [16, 'circlesGradient']])(
     'serializes the selected non-default variant for shader %s', (shader, key) => {
       const render = variant => createBarPatternSVG({

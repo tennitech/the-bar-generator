@@ -153,12 +153,14 @@ function createLinesPatternGeometry(options = {}) {
   const count = variant === 1 ? 20 : 32;
   const cellWidth = exactBarWidth / count;
   const strokeWidth = cellWidth * 0.46;
+  // Anchor the painted end strokes to the exact edges, not inset cell centers.
+  const step = (exactBarWidth - strokeWidth) / (count - 1);
   const rects = [];
   for (let i = 0; i < count; i++) {
     const phase = i / (count - 1);
     const height = barHeight * (0.35 + 0.65 * Math.abs(Math.cos(phase * Math.PI * 3)));
     rects.push({
-      x: barStartX + i * cellWidth + (cellWidth - strokeWidth) / 2,
+      x: barStartX + i * step,
       y: barY + (barHeight - height) / 2,
       width: strokeWidth,
       height
@@ -602,23 +604,26 @@ function createGradientPatternGeometry(options = {}) {
   const rects = [];
   const count = 24;
   const cellWidth = exactBarWidth / count;
+  const widthAt = t => cellWidth * (variant === 1
+    ? 0.88 - 0.7 * t
+    : 0.2 + 0.68 * (1 - Math.abs(2 * t - 1)));
+  const firstWidth = widthAt(0);
+  const lastWidth = widthAt(1);
+  // Equally spaced centers span from the first painted left edge to the last
+  // painted right edge, retaining the area progression without end margins.
+  const centerSpan = exactBarWidth - (firstWidth + lastWidth) / 2;
   for (let i = 0; i < count; i++) {
     const t = i / (count - 1);
+    const width = widthAt(t);
+    const x = barStartX + firstWidth / 2 + t * centerSpan - width / 2;
     if (variant === 1) {
-      const width = cellWidth * (0.88 - 0.7 * t);
-      rects.push({
-        x: barStartX + i * cellWidth + (cellWidth - width) / 2,
-        y: barY, width, height: barHeight, radius: 0
-      });
+      rects.push({ x, y: barY, width, height: barHeight, radius: 0 });
     } else {
       // Three aligned rows converge toward a central band of maximum coverage.
-      const coverage = 0.2 + 0.68 * (1 - Math.abs(2 * t - 1));
-      const width = cellWidth * coverage;
       const height = barHeight / 4;
       for (let row = 0; row < 3; row++) {
         rects.push({
-          x: barStartX + i * cellWidth + (cellWidth - width) / 2,
-          y: barY + row * barHeight * 0.375,
+          x, y: barY + row * barHeight * 0.375,
           width, height, radius: 0
         });
       }
@@ -636,31 +641,28 @@ function createCirclesGradientPatternGeometry(options = {}) {
   const variant = clampPatternVariant(options.variant || 1, 3);
   const circles = [];
   const rects = [];
-  // Centers occupy cells, with radius constrained by both cell dimensions.
-  // This includes the outermost circles: no clipping is needed to make them fit.
+  // Row spacing bounds each radius vertically. Horizontal centers interpolate
+  // between tangent end circles, so every row paints both exact bar edges.
   const rows = variant === 2 ? 2 : 3;
   const columns = variant === 2 ? 24 : 28;
   const cellWidth = exactBarWidth / columns;
   const cellHeight = barHeight / rows;
   const maxRadius = Math.min(cellWidth, cellHeight) * 0.44;
+  const radiusAt = (t, row) => {
+    if (variant === 1) return maxRadius * [1, 0.72, 0.46][row];
+    if (variant === 2) return maxRadius * Math.sqrt(0.12 + 0.88 * t);
+    return maxRadius * Math.sqrt(0.16 + 0.84 * (1 - Math.abs(2 * t - 1)));
+  };
   for (let row = 0; row < rows; row++) {
+    const leftRadius = radiusAt(0, row);
+    const rightRadius = radiusAt(1, row);
+    const centerSpan = exactBarWidth - leftRadius - rightRadius;
     for (let col = 0; col < columns; col++) {
       const t = col / (columns - 1);
-      let factor;
-      if (variant === 1) {
-        // Vertical progression: large, medium, small; each row remains legible.
-        factor = [1, 0.72, 0.46][row];
-      } else if (variant === 2) {
-        // Unidirectional area progression, with a minimum visible dot size.
-        factor = Math.sqrt(0.12 + 0.88 * t);
-      } else {
-        // A symmetric lens of coverage, distinct from the directional ramp.
-        factor = Math.sqrt(0.16 + 0.84 * (1 - Math.abs(2 * t - 1)));
-      }
       circles.push({
-        cx: barStartX + (col + 0.5) * cellWidth,
+        cx: barStartX + leftRadius + t * centerSpan,
         cy: barY + (row + 0.5) * cellHeight,
-        r: maxRadius * factor
+        r: radiusAt(t, row)
       });
     }
   }
@@ -721,23 +723,24 @@ function createTrianglesPatternGeometry(options = {}) {
   if (variant === 1) {
     addRow(14, barY, barHeight);
   } else {
-    // Two counter-facing rows replace the former four-row subdivision,
-    // whose final triangles were barely one unit tall at nominal size.
-    const count = 14;
+    // The supplied triangle references use filled right-triangle primitives.
+    // Five broad bays retain that construction, with a consistent diagonal
+    // clearance between each pair and no sub-pixel subdivisions.
+    const count = 5;
     const cellWidth = exactBarWidth / count;
-    const gap = barHeight * 0.1;
-    const height = (barHeight - gap) / 2;
+    const insetX = cellWidth * 0.1;
+    const insetY = barHeight / 9;
     for (let i = 0; i < count; i++) {
       const x = barStartX + i * cellWidth;
       polygons.push([
         { x, y: barY },
-        { x: x + cellWidth * 0.88, y: barY + height },
-        { x, y: barY + height }
+        { x: x + cellWidth - insetX, y: barY },
+        { x, y: barY + barHeight - insetY }
       ]);
       polygons.push([
-        { x: x + cellWidth, y: barY + height + gap },
+        { x: x + cellWidth, y: barY + insetY },
         { x: x + cellWidth, y: barY + barHeight },
-        { x: x + cellWidth * 0.12, y: barY + height + gap }
+        { x: x + insetX, y: barY + barHeight }
       ]);
     }
   }
