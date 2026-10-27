@@ -7,7 +7,8 @@
     "test": "jest",
     "test:browser": "node scripts/browserSmoke.js",
     "test:browser:install": "playwright install chromium firefox webkit",
-    "test:motion": "node scripts/motionSmoke.js"
+    "test:motion": "node scripts/motionSmoke.js",
+    "test:mobile": "node scripts/mobileSmoke.js"
   },
   "repository": {
     "type": "git",
