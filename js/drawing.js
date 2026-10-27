@@ -1193,12 +1193,12 @@ function saveLoopingGIF() {
     const framePlan = window.loopingGifUtils.getLoopingGifFramePlan(selectedStyle, {
       rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
       rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
-      rulerSpeed: rulerSpeedSlider ? rulerSpeedSlider.value : 1,
+      rulerSpeed: normalizeLoopSpeed('ruler', rulerSpeedSlider ? rulerSpeedSlider.value : undefined),
       rulerReverse: rulerReverseToggle ? rulerReverseToggle.checked : false,
       tickerRepeats: tickerSlider ? tickerSlider.value : 34,
-      tickerSpeed: tickerSpeedSlider ? tickerSpeedSlider.value : 1,
+      tickerSpeed: normalizeLoopSpeed('ticker', tickerSpeedSlider ? tickerSpeedSlider.value : undefined),
       tickerReverse: tickerReverseToggle ? tickerReverseToggle.checked : false,
-      waveformSpeed: waveformSpeedSlider ? waveformSpeedSlider.value : 0.7,
+      waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
       waveformReverse: waveformReverseToggle ? waveformReverseToggle.checked : false
     }, {
       barWidth: EXPORT_REFERENCE_WIDTH
@@ -1339,16 +1339,16 @@ function saveSVG() {
           ...window.quantumControls.values(),
           rulerRepeats: rulerRepeatsSlider.value,
           rulerUnits: rulerUnitsSlider.value,
-          rulerSpeed: rulerSpeedSlider ? rulerSpeedSlider.value : 1,
+          rulerSpeed: normalizeLoopSpeed('ruler', rulerSpeedSlider ? rulerSpeedSlider.value : undefined),
           tickerRepeats: tickerSlider.value,
           tickerRatio: tickerRatioSlider.value,
           tickerWidthRatio: tickerWidthRatioSlider.value,
-          tickerSpeed: tickerSpeedSlider ? tickerSpeedSlider.value : 1,
+          tickerSpeed: normalizeLoopSpeed('ticker', tickerSpeedSlider ? tickerSpeedSlider.value : undefined),
           loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
           binaryText: binaryInput.value || 'RPI',
           waveformType: waveformTypeSlider.value,
           waveformFrequency: waveformFrequencySlider.value,
-          waveformSpeed: waveformSpeedSlider.value,
+          waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider.value),
           waveformEnvelope: waveformEnvelopeToggle ? waveformEnvelopeToggle.checked : false,
           waveformEnvelopeType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
           waveformEnvelopeWaves: waveformEnvelopeWavesSlider

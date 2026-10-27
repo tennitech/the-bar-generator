@@ -344,16 +344,8 @@ const getLoopingGifFramePlan = loopingGifUtils && typeof loopingGifUtils.getLoop
 const getLoopingAnimationState = loopingGifUtils && typeof loopingGifUtils.getLoopingAnimationState === 'function'
   ? loopingGifUtils.getLoopingAnimationState
   : null;
-const normalizeLoopSpeed = loopingGifUtils && typeof loopingGifUtils.normalizeLoopSpeed === 'function'
-  ? loopingGifUtils.normalizeLoopSpeed
-  : function fallbackNormalizeLoopSpeed(style, value) {
-    const defaultSpeed = style === 'waveform' ? 0.7 : 1;
-    const numericValue = parseFloat(value);
-    if (!Number.isFinite(numericValue)) {
-      return defaultSpeed;
-    }
-    return Math.max(0.2, Math.min(5, numericValue));
-  };
+const getDefaultLoopSpeed = style => loopingGifUtils.getDefaultLoopSpeed(style);
+const normalizeLoopSpeed = (style, value) => loopingGifUtils.normalizeLoopSpeed(style, value);
 const getPreferredLiveRenderFps = loopingGifUtils && typeof loopingGifUtils.getPreferredLiveRenderFps === 'function'
   ? loopingGifUtils.getPreferredLiveRenderFps
   : function fallbackGetPreferredLiveRenderFps() {
@@ -627,6 +619,7 @@ let isPanDragging = false;
 let isPanningMode = false;
 let isAnimated = false;
 let lastHeaderPreviewMarkup = '';
+let headerMotionSurface = null;
 let headerMotionCanvas = null;
 let headerMotionContext = null;
 let headerMotionColorMode = null;
@@ -1128,14 +1121,14 @@ function getLoopRuntimeValues() {
   return {
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
     rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
-    rulerSpeed: rulerSpeedSlider ? rulerSpeedSlider.value : 1,
+    rulerSpeed: normalizeLoopSpeed('ruler', rulerSpeedSlider ? rulerSpeedSlider.value : undefined),
     rulerReverse: rulerReverseToggle ? rulerReverseToggle.checked : false,
     tickerRepeats: tickerSlider ? tickerSlider.value : 34,
     tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
     tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
-    tickerSpeed: tickerSpeedSlider ? tickerSpeedSlider.value : 1,
+    tickerSpeed: normalizeLoopSpeed('ticker', tickerSpeedSlider ? tickerSpeedSlider.value : undefined),
     tickerReverse: tickerReverseToggle ? tickerReverseToggle.checked : false,
-    waveformSpeed: waveformSpeedSlider ? waveformSpeedSlider.value : 0.7,
+    waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
     waveformReverse: waveformReverseToggle ? waveformReverseToggle.checked : false
   };
 }
@@ -1340,7 +1333,7 @@ function resetStyleParameters(style) {
     case 'ruler':
       if (rulerRepeatsSlider) rulerRepeatsSlider.value = 10;
       if (rulerUnitsSlider) rulerUnitsSlider.value = 4;
-      if (rulerSpeedSlider) rulerSpeedSlider.value = 1;
+      if (rulerSpeedSlider) rulerSpeedSlider.value = getDefaultLoopSpeed('ruler');
       if (rulerReverseToggle) rulerReverseToggle.checked = false;
       updateRulerRepeatsDisplay();
       updateRulerUnitsDisplay();
@@ -1362,7 +1355,7 @@ function resetStyleParameters(style) {
       if (tickerSlider) tickerSlider.value = 34;
       if (tickerRatioSlider) tickerRatioSlider.value = 2;
       if (tickerWidthRatioSlider) tickerWidthRatioSlider.value = 2;
-      if (tickerSpeedSlider) tickerSpeedSlider.value = 1;
+      if (tickerSpeedSlider) tickerSpeedSlider.value = getDefaultLoopSpeed('ticker');
       if (tickerReverseToggle) tickerReverseToggle.checked = false;
       updateTickerDisplay();
       updateTickerRatioDisplay();
@@ -1373,7 +1366,7 @@ function resetStyleParameters(style) {
     case 'waveform':
       if (waveformTypeSlider) waveformTypeSlider.value = 0;
       if (waveformFrequencySlider) waveformFrequencySlider.value = 24;
-      if (waveformSpeedSlider) waveformSpeedSlider.value = 0.7;
+      if (waveformSpeedSlider) waveformSpeedSlider.value = getDefaultLoopSpeed('waveform');
       if (waveformReverseToggle) waveformReverseToggle.checked = false;
       if (waveformEnvelopeToggle) waveformEnvelopeToggle.checked = false;
       if (waveformEnvelopeType) waveformEnvelopeType.value = 'sine';
@@ -1523,7 +1516,7 @@ function randomizeStyleParameters(style) {
     case 'ruler':
       if (rulerRepeatsSlider) rulerRepeatsSlider.value = randomStepValue(4, 20, 1);
       if (rulerUnitsSlider) rulerUnitsSlider.value = pickRandom(['2', '4', '6', '8', '10']);
-      if (rulerSpeedSlider) rulerSpeedSlider.value = randomStepValue(0.4, 3.5, 0.1);
+      if (rulerSpeedSlider) rulerSpeedSlider.value = randomStepValue(Number(rulerSpeedSlider.min), Number(rulerSpeedSlider.max), 0.1);
       if (rulerReverseToggle) rulerReverseToggle.checked = randomChance(0.5);
       updateRulerRepeatsDisplay();
       updateRulerUnitsDisplay();
@@ -1549,7 +1542,7 @@ function randomizeStyleParameters(style) {
         applyTickerWidthRatioBounds(tickerRatioSlider, tickerWidthRatioSlider);
         tickerWidthRatioSlider.value = randomStepValue(1, parseInt(tickerWidthRatioSlider.max, 10), 1);
       }
-      if (tickerSpeedSlider) tickerSpeedSlider.value = randomStepValue(0.4, 3.5, 0.1);
+      if (tickerSpeedSlider) tickerSpeedSlider.value = randomStepValue(Number(tickerSpeedSlider.min), Number(tickerSpeedSlider.max), 0.1);
       if (tickerReverseToggle) tickerReverseToggle.checked = randomChance(0.5);
       updateTickerDisplay();
       updateTickerRatioDisplay();
@@ -1559,7 +1552,7 @@ function randomizeStyleParameters(style) {
     case 'waveform':
       if (waveformTypeSlider) waveformTypeSlider.value = pickRandom(['0', '1', '2', '3']);
       if (waveformFrequencySlider) waveformFrequencySlider.value = randomStepValue(12, 88, 1);
-      if (waveformSpeedSlider) waveformSpeedSlider.value = randomStepValue(0.3, 3.6, 0.1);
+      if (waveformSpeedSlider) waveformSpeedSlider.value = randomStepValue(Number(waveformSpeedSlider.min), Number(waveformSpeedSlider.max), 0.1);
       if (waveformReverseToggle) waveformReverseToggle.checked = randomChance(0.5);
       if (waveformEnvelopeToggle) waveformEnvelopeToggle.checked = randomChance(0.65);
       if (waveformEnvelopeType) waveformEnvelopeType.value = pickRandom(['sine', 'cosine', 'linear', 'inverse']);
@@ -2624,6 +2617,12 @@ function setup() {
   sidebarScroll = document.getElementById('sidebar-scroll');
   headerLogoPreview = document.getElementById('header-logo-preview');
   setupHeaderLogoAnimationTrigger();
+  document.addEventListener('transitionend', event => {
+    if (event.propertyName === 'color' && (event.target === document.body
+      || event.target === headerLogoPreview || event.target === headerLogoPreview.closest('.app-header'))) {
+      updateHeaderBrandPreview();
+    }
+  });
   mobileMenuToggle = document.getElementById('mobile-menu-toggle');
   styleSelectLabel = document.getElementById('style-select-label');
   colorModeSelectLabel = document.getElementById('color-mode-select-label');
@@ -2818,7 +2817,7 @@ function setup() {
   if (!window.location.search) {
     waveformTypeSlider.value = "0"; // SINE
     waveformFrequencySlider.value = "24"; // Frequency 24
-    waveformSpeedSlider.value = "0.7"; // Speed 0.7
+    waveformSpeedSlider.value = getDefaultLoopSpeed('waveform');
   }
 
   updateWaveformTypeDisplay(); // Set initial value
@@ -3693,6 +3692,7 @@ function updateRulerSpeedDisplay() {
   if (!rulerSpeedSlider || !rulerSpeedDisplay) return;
   rulerSpeedSlider.value = String(normalizeLoopSpeed('ruler', rulerSpeedSlider.value));
   rulerSpeedDisplay.textContent = parseFloat(rulerSpeedSlider.value).toFixed(1);
+  rulerSpeedSlider.setAttribute('aria-valuetext', `${rulerSpeedDisplay.textContent} major repeats per second`);
 }
 
 function updateTickerDisplay() {
@@ -3718,6 +3718,7 @@ function updateTickerSpeedDisplay() {
   if (!tickerSpeedSlider || !tickerSpeedDisplay) return;
   tickerSpeedSlider.value = String(normalizeLoopSpeed('ticker', tickerSpeedSlider.value));
   tickerSpeedDisplay.textContent = parseFloat(tickerSpeedSlider.value).toFixed(1);
+  tickerSpeedSlider.setAttribute('aria-valuetext', `${tickerSpeedDisplay.textContent} top-row repeats per second`);
 }
 
 function updateCirclesGradientVariantDisplay() {
@@ -3787,6 +3788,7 @@ function updateWaveformSpeedDisplay() {
   waveformSpeedSlider.value = String(normalizeLoopSpeed('waveform', waveformSpeedSlider.value));
   const sliderValue = parseFloat(waveformSpeedSlider.value);
   waveformSpeedDisplay.textContent = sliderValue.toFixed(1);
+  waveformSpeedSlider.setAttribute('aria-valuetext', `${sliderValue.toFixed(1)} cycles per second`);
 }
 
 function updateWaveformEnvelopeWavesDisplay() {
@@ -4390,7 +4392,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     binaryText: binaryInput ? sanitizeBarText(binaryInput.value || 'RPI') : 'RPI',
     waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
     waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
-    waveformSpeed: waveformSpeedSlider ? waveformSpeedSlider.value : 0.7,
+    waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
     waveformEnvelope: waveformEnvelopeToggle ? waveformEnvelopeToggle.checked : false,
     waveformEnvelopeType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
     waveformEnvelopeWaves: waveformEnvelopeWavesSlider
@@ -4525,31 +4527,32 @@ function buildHeaderLogoAnimationState() {
 // Keep the moving header mark on the same frame and phase as the main canvas.
 // Reuse its canvas and paths instead of replacing a full SVG tree every frame.
 function renderHeaderMotionPreview() {
-  if (!headerMotionCanvas || headerMotionCanvas.parentNode !== headerLogoPreview) {
-    headerMotionCanvas = document.createElement('canvas');
-    headerMotionCanvas.className = 'header_motion-canvas';
-    headerMotionCanvas.setAttribute('aria-hidden', 'true');
-    headerMotionCanvas.width = REFERENCE_WIDTH * 2;
-    headerMotionCanvas.height = Math.ceil(REFERENCE_TOTAL_HEIGHT * 2);
-    headerMotionContext = headerMotionCanvas.getContext('2d');
-    headerLogoPreview.replaceChildren(headerMotionCanvas);
+  if (!headerMotionSurface || headerMotionSurface.stage.parentNode !== headerLogoPreview) {
+    headerMotionSurface = window.HeaderMotionSurface.create(headerLogoPreview, {
+      width: REFERENCE_WIDTH, height: REFERENCE_TOTAL_HEIGHT,
+      barY: REFERENCE_BAR_Y, barHeight: REFERENCE_BAR_HEIGHT,
+      paths: [paths.r, paths.p, paths.i]
+    });
+    headerMotionCanvas = headerMotionSurface.canvas;
+    headerMotionContext = headerMotionSurface.context;
     headerMotionColorMode = null;
     headerMotionPixelWidth = 0;
     lastHeaderPreviewMarkup = '';
   }
-  const ctx = headerMotionContext;
-  if (!ctx) return;
-  if (!headerLetterPaths) headerLetterPaths = [paths.r, paths.p, paths.i].map(path => new Path2D(path));
-  if (headerMotionColorMode !== currentColorMode) {
-    headerMotionColor = getComputedStyle(headerLogoPreview).color;
-    headerMotionColorMode = currentColorMode;
+  const pixelRatio = window.devicePixelRatio || 1;
+  if (!headerMotionPixelWidth || headerMotionPixelRatio !== pixelRatio) {
+    const rect = headerLogoPreview.getBoundingClientRect();
+    headerMotionSurface.resize(rect.width, rect.height, pixelRatio);
+    headerMotionPixelWidth = rect.width * pixelRatio;
+    headerMotionPixelRatio = pixelRatio;
   }
-  ctx.setTransform(2, 0, 0, 2, 0, 0);
-  ctx.clearRect(0, 0, REFERENCE_WIDTH, REFERENCE_TOTAL_HEIGHT);
+  const ctx = headerMotionSurface.begin();
+  // The vector inherits live CSS color; do not cache an intermediate theme color
+  // in the raster bar while a header/body color transition is running.
+  headerMotionColor = getComputedStyle(headerLogoPreview).color;
+  headerMotionColorMode = currentColorMode;
   ctx.fillStyle = headerMotionColor;
-  headerLetterPaths.forEach(path => ctx.fill(path));
   ctx.save();
-  ctx.translate(0, REFERENCE_BAR_Y);
   ctx.beginPath();
   ctx.rect(0, 0, REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT);
   ctx.clip();
@@ -4572,29 +4575,7 @@ function renderHeaderMotionPreview() {
       ...values, barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH,
       barHeight: REFERENCE_BAR_HEIGHT, loopOffsetX: state.loopOffsetX
     });
-    if (style === 'ticker') {
-      const pixelRatio = window.devicePixelRatio || 1;
-      if (!headerMotionPixelWidth || headerMotionPixelRatio !== pixelRatio) {
-        headerMotionPixelWidth = headerMotionCanvas.getBoundingClientRect().width * pixelRatio;
-        headerMotionPixelRatio = pixelRatio;
-      }
-      const sampling = getTickerHeaderSampling({ ...values, pixelWidth: headerMotionPixelWidth });
-      // Below the display's sampling limit, average the row's exact area coverage.
-      // Drawing unresolved stripes produces a false direction even at matched phase.
-      for (const row of ['top', 'bottom']) {
-        if (sampling[row].resolved) {
-          geometry.rects.filter(rect => rect.row === row)
-            .forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
-        } else {
-          ctx.globalAlpha = sampling[row].coverage;
-          ctx.fillRect(0, row === 'top' ? 0 : REFERENCE_BAR_HEIGHT / 2,
-            REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT / 2);
-          ctx.globalAlpha = 1;
-        }
-      }
-    } else {
-      geometry.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
-    }
+    geometry.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
   } else if (style === 'waveform') {
     const frequency = Number(waveformFrequencySlider.value);
     const type = Number(waveformTypeSlider.value);
@@ -4616,15 +4597,17 @@ function renderHeaderMotionPreview() {
     ctx.fill();
   }
   ctx.restore();
+  headerMotionSurface.commit();
 }
 
 function updateHeaderBrandPreview(force = false) {
   if (!headerLogoPreview) return;
 
-  if (isMotionEnabledForStyle(getCurrentMotionStyle()) || (currentShader === 22 && document.getElementById('quantum-motion-toggle')?.checked)) {
+  if (styleSupportsMotion(getCurrentMotionStyle()) || currentShader === 22) {
     renderHeaderMotionPreview();
     return;
   }
+  headerMotionSurface = null;
   headerMotionCanvas = null;
   headerMotionContext = null;
   const markup = buildHeaderPreviewSVG();
@@ -6344,7 +6327,7 @@ function updateUrlParameters() {
     if (rulerUnitsSlider && parseInt(rulerUnitsSlider.value) !== 4) {
       params.set('rulerUnits', rulerUnitsSlider.value);
     }
-    if (rulerSpeedSlider && parseFloat(rulerSpeedSlider.value) !== 1) {
+    if (rulerSpeedSlider && parseFloat(rulerSpeedSlider.value) !== getDefaultLoopSpeed('ruler')) {
       params.set('rulerSpeed', rulerSpeedSlider.value);
     }
     if (rulerReverseToggle && rulerReverseToggle.checked) {
@@ -6362,7 +6345,7 @@ function updateUrlParameters() {
     if (tickerWidthRatioSlider && parseInt(tickerWidthRatioSlider.value) !== 2) {
       params.set('tickerWidthRatio', tickerWidthRatioSlider.value);
     }
-    if (tickerSpeedSlider && parseFloat(tickerSpeedSlider.value) !== 1) {
+    if (tickerSpeedSlider && parseFloat(tickerSpeedSlider.value) !== getDefaultLoopSpeed('ticker')) {
       params.set('tickerSpeed', tickerSpeedSlider.value);
     }
     if (tickerReverseToggle && tickerReverseToggle.checked) {
@@ -6377,7 +6360,7 @@ function updateUrlParameters() {
     if (waveformFrequencySlider && parseInt(waveformFrequencySlider.value) !== 24) {
       params.set('waveformFrequency', waveformFrequencySlider.value);
     }
-    if (waveformSpeedSlider && parseFloat(waveformSpeedSlider.value) !== 0.7) {
+    if (waveformSpeedSlider && parseFloat(waveformSpeedSlider.value) !== getDefaultLoopSpeed('waveform')) {
       params.set('waveformSpeed', waveformSpeedSlider.value);
     }
     if (waveformReverseToggle && waveformReverseToggle.checked) {

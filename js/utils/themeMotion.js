@@ -8,11 +8,22 @@
   let pendingUpdate = null;
   const media = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+  function commitImmediately(update) {
+    document.body.classList.add('has-theme-snapshot');
+    try {
+      update();
+      // Flush final styles before restoring normal interaction transitions.
+      getComputedStyle(document.body).color;
+    } finally {
+      document.body.classList.remove('has-theme-snapshot');
+    }
+  }
+
   function cancel() {
     generation++;
     const update = pendingUpdate;
     pendingUpdate = null;
-    if (update) update();
+    if (update) commitImmediately(update);
     if (transition) transition.skipTransition();
     transition = null;
     document.body.classList.remove('has-theme-snapshot');
@@ -23,7 +34,7 @@
   function run(update) {
     cancel();
     if (media.matches || document.hidden || document.body.classList.contains('has-logo-animation')) {
-      update();
+      commitImmediately(update);
       return;
     }
     const token = generation;
@@ -57,7 +68,7 @@
       transition.updateCallbackDone.catch(() => {});
       transition.finished.then(cleanup, cleanup);
     } else {
-      update();
+      commitImmediately(update);
       const motion = strip.animate([
         { transform: 'translateX(-100%)', opacity: 0 },
         { opacity: 0.16, offset: 0.12 },
