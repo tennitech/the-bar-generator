@@ -1,7 +1,7 @@
 (function (root) {
   let active = null, nextId = 0, lastProgressAt = 0;
   const byId = id => document.getElementById(id);
-  const controls = () => ['save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'copy-svg', 'copy-png', 'copy-jpeg'].map(byId).filter(Boolean);
+  const controls = () => ['save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'copy-svg', 'copy-png'].map(byId).filter(Boolean);
   function size() { return byId('export-size-select')?.value === 'large' ? 'large' : 'standard'; }
   function sync(credits = false) {
     if (byId('export-settings')) byId('export-settings').hidden = credits;
