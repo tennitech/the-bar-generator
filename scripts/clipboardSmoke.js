@@ -19,7 +19,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
         write: async items => { window.__testClipboard = await Promise.all(items.map(async item => {
           const data = {}; for (const type of item.types) data[type] = await item.getType(type); return data;
         })); },
-        writeText: async text => { window.__testSource = text; }
+        writeText: async text => { window.__testSource = text; window.__testClipboard = [{ 'text/plain': new Blob([text], { type: 'text/plain' }) }]; }
       } });
     });
     const errors = []; page.on('pageerror', e => errors.push(e.message));
@@ -46,7 +46,8 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
       for (let i = 0; i < data.length; i += 4) { if (data[i + 3] > 0 && data[i + 3] < 255) partial++; if (data[i + 3] > 250) { ink++; if (!firstInk) firstInk = [...data.slice(i, i + 4)]; } }
       return { types, type: blob.type, width: c.width, height: c.height, corner: [...data.slice(0, 4)], partial, ink, firstInk, pixelHash: hash };
     }, { engine, format });
-    const caps = await page.evaluate(() => ({ svg: logoClipboard.native('image/svg+xml'), jpeg: logoClipboard.native('image/jpeg') }));
+    assert.deepEqual(await page.locator('#clipboard-actions button').evaluateAll(nodes => nodes.map(node => node.id)), ['copy-svg', 'copy-png']);
+    const caps = await page.evaluate(() => ({ svg: logoClipboard.native('image/svg+xml') }));
     for (const size of ['standard', 'large']) for (const theme of ['black', 'white', 'red']) {
       await set('export-size-select', size); await set('color-mode-select', theme); await open();
       await page.locator('#copy-png').click(); await page.waitForFunction(() => !logoExportUI.isBusy());
@@ -59,13 +60,28 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
     if (caps.svg) {
       await page.evaluate(() => { window.__expectedSVG = captureLogoExportSnapshot().svgSource; });
       await open(); await page.locator('#copy-svg').click(); await page.waitForFunction(() => !logoExportUI.isBusy());
-      const result = await read('svg'); assert(result.types.includes('image/svg+xml'));
+      assert.match(await page.locator('#export-message').innerText(), /For Finder, use Download SVG/);
+      const result = await read('svg'); assert.deepEqual(result.types, ['image/svg+xml'], 'native SVG has no plain-text or HTML alternative');
       const parity = await page.evaluate(source => {
         const parse = text => new DOMParser().parseFromString(text, 'image/svg+xml');
         const paths = doc => [...doc.querySelectorAll('path, polygon, rect')].map(e => [e.tagName, ...[...e.attributes].map(a => `${a.name}=${a.value}`).sort()]);
         return JSON.stringify(paths(parse(source))) === JSON.stringify(paths(parse(window.__expectedSVG)));
       }, result.source); assert(parity, 'native SVG preserves the selected vector geometry'); assert(result.source.includes('<path'));
       assert(!result.source.includes('<image')); assert(result.source.includes('polygon')); results.push({ nativeSVG: result.type });
+      if (engine === 'chromium') {
+        // Observe a receiving browser's normal paste event too. This still
+        // does not prove a native application's SVG import behavior.
+        const receiver = await context.newPage();
+        try {
+          await receiver.goto(`${base}/references/clipboard_exports.md`);
+          await receiver.setContent('<div id="receiver" contenteditable>Paste</div><script>document.addEventListener("paste", event => { event.preventDefault(); window.__received = { types: [...event.clipboardData.types], plain: event.clipboardData.getData("text/plain"), html: event.clipboardData.getData("text/html"), files: event.clipboardData.files.length }; });</script>');
+          await receiver.locator('#receiver').focus(); await receiver.keyboard.press('ControlOrMeta+V');
+          await receiver.waitForFunction(() => window.__received);
+          const received = await receiver.evaluate(() => window.__received);
+          assert.deepEqual(received, { types: ['image/svg+xml'], plain: '', html: '', files: 0 });
+          results.push({ browserPasteEvent: received });
+        } finally { await receiver.close(); await page.bringToFront(); }
+      }
     }
     // Force the explicit source fallback, while retaining the real Chromium text write.
     await page.evaluate(() => {
@@ -73,41 +89,21 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
       ClipboardItem.supports = mime => mime === 'image/svg+xml' ? false : original(mime);
       logoClipboard.sync();
     });
-    await open(); assert.match(await page.locator('#copy-svg').innerText(), /Copy SVG source/);
+    await open(); assert.match(await page.locator('#copy-svg').innerText(), /Copy SVG source \(text\)/);
     await page.locator('#copy-svg').click(); await page.waitForFunction(() => !logoExportUI.isBusy());
+    assert.match(await page.locator('#export-message').innerText(), /SVG source text copied.*Finder file/);
     const source = await page.evaluate(async engine => engine === 'webkit' ? window.__testSource : navigator.clipboard.readText(), engine);
-    assert(source.includes('<svg')); assert(source.includes('<polygon')); results.push({ sourceFallback: true });
-    // Unsupported JPEG must deliver JPEG bytes and a visible matte, never PNG.
-    if (!caps.jpeg) for (const theme of ['black', 'white', 'red', 'silver', 'gray', 'blue', 'gold']) {
-      await set('color-mode-select', theme); await open();
-      assert.match(await page.locator('#copy-jpeg').innerText(), /Download JPEG/);
-      const download = page.waitForEvent('download'); await page.locator('#copy-jpeg').click();
-      const file = await download, bytes = await fs.readFile(await file.path());
-      assert.equal(bytes.readUInt16BE(0), 0xffd8); assert.match(file.suggestedFilename(), /-(black|white)-background-2000w.*\.jpeg$/);
-      const matte = await page.evaluate(async b64 => {
-        const image = new Image(); image.src = `data:image/jpeg;base64,${b64}`; await image.decode();
-        const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
-        const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0);
-        return { width: canvas.width, height: canvas.height, corner: [...ctx.getImageData(0, 0, 1, 1).data] };
-      }, bytes.toString('base64'));
-      assert.equal(matte.width, 2320); assert.equal(matte.height, 1524); assert.equal(matte.corner[3], 255);
-      assert.equal(matte.corner[0], ['white', 'silver', 'gray', 'gold', 'blue'].includes(theme) ? 0 : 255);
-      results.push({ jpegDownload: theme, ...matte });
-    }
-    // JPEG native branch is capability-forced with an adapter; current engines
-    // reject native JPEG, so this proves encoding/dispatch but not OS paste.
-    if (engine === 'webkit') {
-      await page.evaluate(() => {
-        const supports = ClipboardItem.supports.bind(ClipboardItem);
-        ClipboardItem.supports = mime => mime === 'image/jpeg' || supports(mime); logoClipboard.sync();
-      });
-      await set('export-size-select', 'standard'); await set('color-mode-select', 'white'); await open();
-      assert.match(await page.locator('#copy-jpeg').innerText(), /Copy JPEG/);
-      await page.locator('#copy-jpeg').click(); await page.waitForFunction(() => !logoExportUI.isBusy());
-      const jpeg = await read('jpeg'); assert.deepEqual(jpeg.types, ['image/jpeg']); assert.equal(jpeg.type, 'image/jpeg');
-      assert.equal(jpeg.width, 1160); assert.equal(jpeg.height, 762); assert.deepEqual(jpeg.corner, [0, 0, 0, 255]);
-      results.push({ jpegCapabilityAdapter: true, ...jpeg });
-    }
+    assert(source.includes('<svg')); assert(source.includes('<polygon'));
+    const sourceTypes = await page.evaluate(async engine => engine === 'webkit' ? Object.keys(window.__testClipboard[0]) : (await navigator.clipboard.read())[0].types, engine);
+    assert.deepEqual(sourceTypes, ['text/plain'], 'source action explicitly copies text, not an SVG image');
+    results.push({ sourceFallback: true, types: sourceTypes });
+    // File recovery is a genuine vector download, not a clipboard file promise.
+    await open();
+    assert.match(await page.locator('#save-svg').innerText(), /Download SVG/);
+    const waitingSVG = page.waitForEvent('download'); await page.locator('#save-svg').click();
+    const file = await waitingSVG, vector = await fs.readFile(await file.path(), 'utf8');
+    assert.match(file.suggestedFilename(), /\.svg$/); assert(vector.includes('<path')); assert(vector.includes('<polygon')); assert(!vector.includes('<image'));
+    results.push({ vectorFileRecovery: file.suggestedFilename() });
     // Capture an actual asynchronous PNG while controls change and reject duplicates.
     await set('color-mode-select', 'black'); await set('export-size-select', 'standard');
     await page.evaluate(() => {
@@ -150,7 +146,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
     await page.locator('#copy-svg').focus(); await page.keyboard.press('Enter'); await page.waitForFunction(() => !logoExportUI.isBusy());
     await open();
     await page.evaluate(() => { document.getElementById('toast-container').replaceChildren(); document.getElementById('export-progress').hidden = true; });
-    for (const id of ['copy-svg', 'copy-png', 'copy-jpeg']) {
+    for (const id of ['copy-svg', 'copy-png']) {
       const box = await page.locator(`#${id}`).boundingBox(); assert(box.height >= 44); assert(box.x >= 0); assert(box.x + box.width <= 390);
     }
     await fs.mkdir('/tmp/bar-clipboard-evidence', { recursive: true });
