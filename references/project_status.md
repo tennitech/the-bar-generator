@@ -25,6 +25,13 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 3. Completed Milestones
 
+- **[2026-10-27] Configurable geometric bar refinements**:
+    - Refined Lines, Gradient, Circles Gradient, and Triangles with deterministic primitive geometry and exact painted horizontal extents. Lines uses a sampled standing-wave envelope; the two Gradient treatments and three Circles Gradient treatments use distinct area/size progressions. These are geometric illustrations, not measured datasets.
+    - Triangle variants are complementary halves of the same cells. Added four diagonal directions and a count control from 6 to 28 (default 14). Direction defaults to Down right; choices are Down right, Up right, Up left, Down left. Preserved explicit saved directions and mapped legacy up/down values to Up right/Down right. Removed only this family's Randomize/Reset actions; reconfiguration redraws without perpetual motion.
+    - The header collector includes current triangle variant, direction, and count. These four static families now derive both SVG and transparent 4× PNG downloads from the same selected-state vector, fixing omitted variants and missing PNG bars. PNG uses the same 20-reference-unit clear space as SVG (80 pixels at 4×).
+    - Added focused regression coverage for bounded/complementary geometry, native defaults/order, legacy direction migration, and real header/preview/SVG/PNG selected-state parity. Unit suite: 142 tests passed; Chromium: 50 selected states passed; WebKit: 22 targeted states passed (WebKit compares identical interiors and >99.9% masks while retaining edge antialiasing). Integer export viewport dimensions prevent WebKit outer-edge insets; the final Chromium viewport rerun follows the shared test lease. Existing stack, typography, colors, filtering, and other export dispatchers are retained. Gradient naming/treatment still requires owner review against the dated brand restriction; user publication approval is not institutional brand approval.
+
+
 - **[2026-10-27] Feature branch lifecycle policy**:
     - New feature requests use new branches. Before switching features, agents report unfinished or user-unconfirmed work and its saved branch. Only an explicit user statement establishes user testing.
     - Branch deletion needs an explicit user request and a fresh ahead/behind, merge, pull request, and unsaved-work report. Automatic deletion of merged branches is disabled. Contribution and handoff guides now match AGENTS.md.
@@ -515,6 +522,7 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 *   **Export Consistency:** Introduced shared SVG bar pattern generator (`js/utils/barPattern.js`) as single source of truth for non-solid bar exports.
 
 ## 7. Known Issues / Notes
+*   The broader official-complete-vector alignment in the separate geometry work remains an integration dependency. These pattern changes retain current main's existing 250-unit wordmark/layout basis while unifying their header and downloads; they do not claim to resolve the separate complete-asset geometry audit.
 *   October 27 brand-site review: the Pattern page excludes gradients and complex imagery as pattern elements. Existing gradient and Artemis artwork treatments need RPI owner review. Student-club and official-library approvals are separate, and free font use does not establish public redistribution rights. See the dated source checklist in references/rpi_brand_guidelines.md. No new permission or brand approval was inferred.
 
 *   The client-side text filter covers more offensive content and Unicode variants but cannot guarantee detection of every evasion or avoid every false positive. A formal owner-approved content policy is still needed.

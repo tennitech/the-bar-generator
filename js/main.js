@@ -4457,7 +4457,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     pointConnectVariant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1,
     neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1,
     triangleGridVariant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2,
-    trianglesVariant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
+    ...getTrianglePatternControlValues(),
     morseText: morseInput ? sanitizeBarText(morseInput.value) : 'RPI',
     trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
     trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
