@@ -14,6 +14,15 @@ If another local rule file disagrees with this file, `AGENTS.md` wins. Keep all 
 
 This file remains the canonical agent policy. `references/AGENTS.md` and older local rule files are supplementary references, not competing policy.
 
+## Feature Branches, User Testing, And Deletion
+
+- Create a new branch whenever the user requests work on a new feature. Use the naming convention in `contributing.md`. Start from current `main` unless the feature needs unmerged work; explain that dependency. Clarifications and repairs to the same feature stay on its existing branch.
+- Before switching to a new feature, preserve the current work and tell the user where it is saved. Example: "The motion feature still awaits your testing. It is saved in `codex/fix-animation-timing`." State whether the branch is local, pushed to GitHub, or linked to an open pull request. Verify the save state before reporting it.
+- Omit that unfinished-feature note only when the earlier feature is complete AND the user has explicitly told you that they tested it. Automated checks, source inspection, a merge, silence, or approval without an explicit testing statement do not establish user testing. Keep unconfirmed work available on its branch.
+- Delete a local or remote branch only when the user explicitly asks for that deletion. A merge, completed feature, or passing test does not authorize deletion. Keep automatic deletion of merged branches disabled. Do not use `--delete-branch` or a cleanup command without explicit deletion authorization.
+- Before an authorized deletion, fetch current remote refs and inspect the target branch and any checkout that uses it. Report the comparison branch, ahead/behind counts, merge status, unmerged commits, open pull requests, and any unsaved changes. Explain what work would be removed before deleting it. Do not discard unrelated or unsaved work.
+- Verify the result after deletion and tell the user which local and remote branches were removed and which remain. If the requested deletion scope or loss of work needs a decision, ask for that decision; do not infer authorization for other branches.
+
 ## Applying RPI's Feel To This Tool
 
 These are repository applications of the official voice, design, and pattern rules, not new official quotations or a request to redesign the site.

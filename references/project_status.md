@@ -25,6 +25,11 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 3. Completed Milestones
 
+- **[2026-10-27] Feature branch lifecycle policy**:
+    - New feature requests use new branches. Before switching features, agents report unfinished or user-unconfirmed work and its saved branch. Only an explicit user statement establishes user testing.
+    - Branch deletion needs an explicit user request and a fresh ahead/behind, merge, pull request, and unsaved-work report. Automatic deletion of merged branches is disabled. Contribution and handoff guides now match AGENTS.md.
+
+
 - **[2026-10-27] Lightweight checks policy**:
     - At the owner's request, the fast unit suite is the only automated merge check. Removed browser installation and browser/motion execution from CI and removed Browser tests from main protection.
     - Kept the optional local browser scripts. Contributors and reviewers perform the relevant UI, accessibility, motion, and export checks. The unit job has a five-minute limit and retains public-repo, read-only, no-cache, and no-artifact controls.
