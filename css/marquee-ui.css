@@ -549,3 +549,13 @@ img {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Preserve the composition while allowing edge-to-edge browser surfaces. */
+.padding-global {
+  padding-left: max(var(--page-padding), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--page-padding), env(safe-area-inset-right, 0px));
+}
+.hero_shell {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
