@@ -156,8 +156,9 @@ describe('createBarPatternSVG', () => {
       }));
 
       expect(result).toContain('color="#123456"');
-      expect(result).toContain('scale(0.1');
-      expect(result).toContain('0.09999999999999999)');
+      expect(result).toContain('viewBox="0 0 2083.3335 151"');
+      expect(result).toContain('width="208.4" height="15.1"');
+      expect(result).toContain('preserveAspectRatio="none" overflow="hidden"');
       expect(result).toContain('fill:currentColor');
     });
   });
@@ -172,7 +173,8 @@ describe('createBarPatternSVG', () => {
     }));
 
     expect(result).toContain('color="#123456"');
-    expect(result).toContain('scale(0.09999999999999999 0.1)');
+    expect(result).toContain('viewBox="0 0 499.92 36"');
+    expect(result).toContain('width="49.992" height="3.6"');
     expect(result).toContain('<path d="M496.46,1.06');
     expect(result).not.toContain('fill:currentColor');
   });
@@ -588,7 +590,7 @@ describe('createBarPatternSVG', () => {
     expect(fibonacci).toContain('<rect');
     expect(union).toContain('<polygon');
     expect(waveQuantum).toContain('<polygon');
-    expect(lunar).toContain('<g fill="#000000"');
+    expect(lunar).toContain('fill="#000000"');
     expect(lunar).toContain('<path');
     expect(lunar).not.toContain('<image href=');
   });

@@ -133,97 +133,55 @@ function drawSVGPathOnGraphics(pg, pathData) {
   pg.endShape(CLOSE);
 }
 
-const lunarBarImageCache = new Map();
-const lunarBarPendingColors = new Set();
+// Live Artemis artwork stays SVG in the DOM. It shares the p5 transform, but
+// never passes through a fixed-size image/texture before zooming.
+let lunarBarVectorPreview = null;
+let lunarBarVectorPreviewSource = '';
 
-function normalizeLunarBarColor(value) {
-  if (typeof value === 'string' && value.trim()) {
-    return value.trim();
-  }
-
-  return '#000000';
+function syncLunarBarVectorPreviewVisibility(isLunar) {
+  if (lunarBarVectorPreview) lunarBarVectorPreview.hidden = !isLunar;
 }
 
-function getLunarBarSVGSourceForTheme(colorMode) {
-  if (typeof window !== 'undefined' && typeof window.getLunarBarSVGSourceForColorMode === 'function') {
-    return window.getLunarBarSVGSourceForColorMode(colorMode) || '';
+function projectLunarBarPoint(renderer, x, y) {
+  if (renderer.uMVMatrix && renderer.uPMatrix) {
+    const multiply = (m, p) => [0, 1, 2, 3].map(row =>
+      m[row] * p[0] + m[row + 4] * p[1] + m[row + 8] * p[2] + m[row + 12] * p[3]);
+    const point = multiply(renderer.uPMatrix.mat4, multiply(renderer.uMVMatrix.mat4, [x, y, 0, 1]));
+    return [(point[0] / point[3] + 1) * renderer.width / 2,
+      (1 - point[1] / point[3]) * renderer.height / 2];
   }
-
-  return typeof window !== 'undefined' ? window.LUNAR_BAR_SVG_SOURCE : '';
-}
-
-function getLunarBarCacheKey(fgColor, colorMode) {
-  const normalizedColorMode = typeof colorMode === 'string' && colorMode.trim()
-    ? colorMode.trim().toLowerCase()
-    : 'default';
-  return `${normalizedColorMode}:${normalizeLunarBarColor(fgColor)}`;
-}
-
-function createColorizedLunarBarDataURI(fgColor, colorMode) {
-  const source = getLunarBarSVGSourceForTheme(colorMode);
-  if (!source) {
-    return '';
-  }
-
-  const color = normalizeLunarBarColor(fgColor);
-  const colorizedSource = source.replace(
-    /<svg\b([^>]*)>/i,
-    `<svg$1 fill="${color}" color="${color}">`
-  );
-
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(colorizedSource)}`;
-}
-
-function getLunarBarImage(fgColor, colorMode) {
-  const cacheKey = getLunarBarCacheKey(fgColor, colorMode);
-
-  if (lunarBarImageCache.has(cacheKey)) {
-    return lunarBarImageCache.get(cacheKey);
-  }
-
-  if (lunarBarPendingColors.has(cacheKey) || typeof loadImage !== 'function') {
-    return null;
-  }
-
-  const dataURI = createColorizedLunarBarDataURI(fgColor, colorMode);
-  if (!dataURI) {
-    return null;
-  }
-
-  lunarBarPendingColors.add(cacheKey);
-  loadImage(
-    dataURI,
-    (imageAsset) => {
-      lunarBarPendingColors.delete(cacheKey);
-      lunarBarImageCache.set(cacheKey, imageAsset);
-      if (typeof requestUpdate === 'function') {
-        requestUpdate();
-      }
-    },
-    (error) => {
-      lunarBarPendingColors.delete(cacheKey);
-      console.warn('Unable to load Lunar bar SVG:', error);
-    }
-  );
-
-  return null;
+  const point = new DOMPoint(x, y).matrixTransform(renderer.drawingContext.getTransform());
+  const density = renderer.canvas.width / renderer.width;
+  return [point.x / density, point.y / density];
 }
 
 function drawLunarBarPattern(target, barStartX, barY, exactBarWidth, barHeight, fgColor = '#000000', colorMode = currentColorMode) {
-  const surface = target || window;
-  const imageAsset = getLunarBarImage(fgColor, colorMode);
-
-  if (!imageAsset || !imageAsset.width || typeof surface.image !== 'function') {
+  if (typeof window.createLunarBarVectorFragment !== 'function') return;
+  if (target) {
+    window.drawLunarBarVector(target.drawingContext, barStartX, barY, exactBarWidth, barHeight, fgColor, colorMode);
     return;
   }
-
-  if (typeof surface.push === 'function') surface.push();
-  if (typeof surface.imageMode === 'function') {
-    const cornerMode = surface.CORNER || (typeof CORNER !== 'undefined' ? CORNER : undefined);
-    if (cornerMode !== undefined) surface.imageMode(cornerMode);
+  const renderer = window._renderer;
+  if (!renderer) return;
+  if (!lunarBarVectorPreview || !lunarBarVectorPreview.isConnected) {
+    lunarBarVectorPreview = document.createElement('div');
+    lunarBarVectorPreviewSource = '';
+    lunarBarVectorPreview.dataset.lunarVectorPreview = '';
+    lunarBarVectorPreview.setAttribute('aria-hidden', 'true');
+    Object.assign(lunarBarVectorPreview.style, { position: 'absolute', inset: '0', overflow: 'hidden', pointerEvents: 'none' });
+    renderer.canvas.parentElement.append(lunarBarVectorPreview);
   }
-  surface.image(imageAsset, barStartX, barY, exactBarWidth, barHeight);
-  if (typeof surface.pop === 'function') surface.pop();
+  lunarBarVectorPreview.hidden = currentShader !== 24;
+  const sourceKey = `${exactBarWidth}:${barHeight}:${fgColor}:${colorMode}`;
+  if (lunarBarVectorPreviewSource !== sourceKey) {
+    const source = window.createLunarBarVectorFragment(0, 0, exactBarWidth, barHeight, fgColor, colorMode);
+    lunarBarVectorPreview.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${exactBarWidth}" height="${barHeight}" style="position:absolute;transform-origin:0 0;overflow:hidden">${source}</svg>`;
+    lunarBarVectorPreviewSource = sourceKey;
+  }
+  const origin = projectLunarBarPoint(renderer, barStartX, barY);
+  const right = projectLunarBarPoint(renderer, barStartX + exactBarWidth, barY);
+  const bottom = projectLunarBarPoint(renderer, barStartX, barY + barHeight);
+  lunarBarVectorPreview.firstElementChild.style.transform = `matrix(${(right[0] - origin[0]) / exactBarWidth},${(right[1] - origin[1]) / exactBarWidth},${(bottom[0] - origin[0]) / barHeight},${(bottom[1] - origin[1]) / barHeight},${origin[0]},${origin[1]})`;
 }
 
 function drawMusicHeadOnGraphics(pg, shape, x, y, rx, ry, filled, fgColor) {

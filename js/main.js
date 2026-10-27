@@ -668,7 +668,8 @@ function getRenderedResponsiveLogoScale() {
 let zoomInBtn, zoomOutBtn, zoomResetBtn, zoomLevelDisplay;
 
 function isCompactLayoutViewport(viewportWidth = window.innerWidth) {
-  return Math.max(0, Math.round(viewportWidth || 0)) <= COMPACT_LAYOUT_MAX_WIDTH;
+  return Math.max(0, Math.round(viewportWidth || 0)) <= COMPACT_LAYOUT_MAX_WIDTH
+    || (viewportWidth <= 1100 && window.matchMedia('(pointer: coarse)').matches);
 }
 
 function getWorkspaceDisplaySize() {
@@ -2219,7 +2220,11 @@ function scheduleResponsiveCanvasResize(delay = RESPONSIVE_CANVAS_RESIZE_SETTLE_
 function syncResponsiveWorkspaceSizing() {
   responsiveWorkspaceSyncFrame = 0;
   const controls = document.querySelector('.workspace-controls');
-  if (controls) previewControlSpace = controls.offsetHeight + (parseFloat(getComputedStyle(controls).bottom) || 0) + 16;
+  if (controls) {
+    const controlsStyle = getComputedStyle(controls);
+    previewControlSpace = controlsStyle.display === 'none' || controlsStyle.position === 'static'
+      ? 0 : controls.offsetHeight + (parseFloat(controlsStyle.bottom) || 0) + 16;
+  }
   syncViewportHeightVar();
   syncResponsiveLayoutMode();
   syncSidebarToggleState();
@@ -4112,7 +4117,7 @@ function handleStyleChange() {
   }
 
   if (selectedStyle === 'lunar' && typeof window.getLunarBarSVGSourceForColorMode !== 'function') {
-    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20260424-artemis-ii-bar-refresh')
+    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20261027-artemis-vector')
       .then(() => {
         if (styleSelect && styleSelect.value === 'lunar') {
           requestUpdate();
@@ -4209,6 +4214,10 @@ function handleStyleChange() {
     default:
       currentShader = 0;
       break;
+  }
+
+  if (typeof syncLunarBarVectorPreviewVisibility === 'function') {
+    syncLunarBarVectorPreviewVisibility(selectedStyle === 'lunar');
   }
 
   // Safely update UI elements only if they exist
@@ -6811,7 +6820,8 @@ function resetAnimationClock(nextTimeSeconds = 0) {
 }
 
 function getViewportHeight() {
-  const visualViewportHeight = window.visualViewport && Number.isFinite(window.visualViewport.height)
+  const visualViewportHeight = window.visualViewport && window.visualViewport.scale === 1
+    && Number.isFinite(window.visualViewport.height)
     ? window.visualViewport.height
     : 0;
 

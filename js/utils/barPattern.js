@@ -1311,19 +1311,10 @@ function getLunarBarReferenceSize(colorMode) {
 }
 
 function createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor, colorMode) {
-  const lunarSource = getLunarBarSVGSource(colorMode);
-  const lunarContentMatch = lunarSource.match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/i);
-  const lunarContent = lunarContentMatch ? lunarContentMatch[1].trim() : '';
-
-  if (!lunarContent) {
-    return '';
-  }
-
-  const { width: referenceWidth, height: referenceHeight } = getLunarBarReferenceSize(colorMode);
-  const scaleX = exactBarWidth / referenceWidth;
-  const scaleY = barHeight / referenceHeight;
-
-  return `\n    <g fill="${fgColor}" color="${fgColor}" transform="translate(${barStartX} ${barY}) scale(${scaleX} ${scaleY})">\n      ${lunarContent}\n    </g>`;
+  const asset = typeof window !== 'undefined' ? window : require('./lunarBarAsset');
+  return typeof asset.createLunarBarVectorFragment === 'function'
+    ? asset.createLunarBarVectorFragment(barStartX, barY, exactBarWidth, barHeight, fgColor, colorMode)
+    : '';
 }
 
 function ensureCirclePatternCoverageForSVG(circles, barWidth, barHeight) {
