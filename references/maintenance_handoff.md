@@ -14,7 +14,7 @@ Checks runs on pushes to `main` and on pull requests opened, reopened, or update
 
 Standard runner compute is free for public repos under current GitHub pricing. This is not a guarantee of future pricing. Do not add paid runners, stored artifacts, caches, private-repo execution, or paid services without checking cost and owner approval. GitHub Pages has its own deployment process.
 
-The account owner must confirm a $0 Actions budget with Stop usage when budget limit is reached enabled, including any separate cache storage budget. Account billing controls are separate from repository files. They were not configured by this change. Recheck the budget after transfer. If changing the repo to private, stop and review the workflow and required checks first; a skipped job is not evidence that tests passed.
+On October 27, 2026, GitHub billing showed no valid payment method and rejected creation of a repository-scoped $0 Actions budget. No payment method was added. Under current GitHub rules, usage beyond the free allowance is blocked without a valid payment method; larger paid runners are also blocked. The free public-repo test workflow remains enabled. If a payment method is added later, first configure a repository-scoped $0 Actions budget with Stop usage when budget limit is reached enabled, including any separate cache storage budget. Account billing controls are separate from repository files. Recheck these controls after transfer. If changing the repo to private, stop and review the workflow and required checks first; a skipped job is not evidence that tests passed.
 
 ## Before graduation
 

@@ -27,7 +27,7 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Added a public-repository-only unit-test workflow for pull requests into main and pushes to main, with read-only permissions, no cache or artifacts, a ten-minute timeout, and cancellation of replaced runs.
     - Added contribution, conduct, private security reporting, asset permission, and December 2026 handoff guides. Aligned package license metadata with the existing MIT LICENSE; no copyright ownership transfer was made.
     - Configured main to require pull requests, passing Unit tests, and resolved conversations, with force pushes and deletion blocked. No second approval is required during primary development. Enabled merged-branch cleanup and private vulnerability reports.
-    - Open items: RPI successor organization and maintainers, software licensing authority, bundled asset permissions, and owner-level billing stop controls. Browser audit fixes remain on the separate audit branch.
+    - Open items: RPI successor organization and maintainers, software licensing authority, bundled asset permissions, and billing controls after any payment-method or ownership change. GitHub billing has no valid payment method and rejected a $0 budget on October 27; paid Actions overages are blocked under current GitHub rules. No payment method was added. Browser audit fixes remain on the separate audit branch.
 
 
 - **[2026-04-28] Header Logo Animation Now Uses The Active Bar Design In An Overlay**:
