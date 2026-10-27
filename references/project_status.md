@@ -9,6 +9,8 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 ## 2. Architecture & Tech Stack
 *   **Core:** Vanilla HTML5, CSS3, JavaScript (ES6+).
 *   **Rendering:** p5.js 1.7.0 for the live canvas, using WebGL when available and 2D canvas otherwise, served from `third_party/p5/`.
+*   **Startup:** Shared initial-state, canonical query, dropdown and parameter utilities prepare theme and control chrome before the generator shell paints. The existing Share trigger and restored control labels occupy their final layout before renderer setup. Font preloads and explicit control line metrics limit fallback-font layout movement. Startup errors retain visible recovery. When shared-state startup is present, its motion normalizer loads before validation. The existing p5.js global runtime reuses these utilities, including one compact-layout decision for early and runtime sidebar state.
+*   **Navigation:** One native artwork print pass, including Artemis’s vector bar, keeps identity and controls fixed; reduced motion, history restoration and unsupported browsers bypass it. Captured artwork motion holds briefly and resumes without catching up presentation time.
 *   **Integration:** Designed to embed within the **Frontify** ecosystem.
 *   **Shaders:** `assets/shaders/` contains prototype GLSL files; the production generator no longer fetches or compiles them at startup.
 *   **Audio:** Web Audio API with AudioWorklet (`pulse-worklet.js`) for audio-reactive features.

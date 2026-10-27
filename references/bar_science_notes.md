@@ -7,6 +7,12 @@ This file distinguishes encoded data from illustrative patterns. It does not gra
 - The three letter paths in `js/main.js` exactly match `assets/images/RPI Wordmark 250px 2.svg` in the repository. The generated bar occupies the shared 250-unit width and 18-unit height below those letters.
 - SVG exports include 20 reference units of clear space on each side. Lines, Gradient, Circles Gradient, and Triangles use the same vector for transparent 4× PNG, with 80 pixels of padding (20 reference units). Other current PNG/GIF export paths retain 20-pixel padding pending the broader geometry integration. At print sizes, the person placing the mark must still enforce the 0.25-inch print clear-space rule.
 
+## Required painted extent
+
+The owner requires actual painted artwork to reach both exact nominal horizontal edges of the official bar area, while all strokes and fills remain inside it. A container or clip rectangle alone proves containment, not edge contact. Preserve the official 500 × 36 proportions, fixed placement, letterforms and letter-to-bar gap; do not add visible side padding to satisfy a bounds check. Floating-point tolerance is for numerical verification only.
+
+Apply this requirement to every family, variant and relevant animation phase in the main preview, header and supported SVG, PNG and GIF exports. It is an implementation requirement, not a claim of complete validation or formal RPI approval.
+
 ## Encoded and measurement-inspired styles
 
 | Style | Meaning and current assumption |
@@ -32,6 +38,10 @@ The p5 render ceiling is 1000 FPS so the browser's requestAnimationFrame cadence
 Each live phase step is at most one quarter of the smallest repeating tick interval: one cycle divided by the ruler unit count or ticker count ratio. Waveform uses one whole temporal cycle. A slow or delayed frame can therefore reduce live speed to avoid temporal aliasing that appears as reverse motion. This is a visual sampling limit, not a measurement of a physical signal. It cannot remove every perceptual artifact from very dense patterns at small display sizes.
 
 Waveform preview, header, and SVG output now use the same waveform function, including the sine phase origin at the lower bar edge. The former SVG sine origin differed by one quarter cycle. GIF loop planning and requested export speed remain unchanged; GIF frame-rate limits can still produce temporal aliasing at dense, fast settings. Exported SVG/PNG images are static snapshots of the current phase. Native display cadence still needs checks on physical high-refresh hardware.
+
+### Navigation artwork capture
+
+Navigation briefly holds live phase and decorative marquee movement while the captured artwork prints. It resumes from the held position without catching up elapsed presentation time. Interaction cancels the reveal immediately. This presentation hold does not change the bar geometry, model parameters or export calculations.
 
 ### Small header sampling and display-rate limits
 

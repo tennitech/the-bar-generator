@@ -47,3 +47,17 @@ test('Mission Control theme remains restricted to Artemis II', () => {
   expect(() => encodeState({v:1,controls:{'style-select':'solid','color-mode-select':'lunar'}}, restrictedManifest)).toThrow(/unavailable/);
   expect(() => encodeState({v:1,controls:{'style-select':'lunar','color-mode-select':'lunar'}}, restrictedManifest)).not.toThrow();
 });
+
+test('Ticker validates width against the restored count ratio rather than the previous page maximum', () => {
+  const previous = global.getTickerWidthRatioMax;
+  global.getTickerWidthRatioMax = require('../js/utils/tickerDisplay').getTickerWidthRatioMax;
+  const manifest = { 'ticker-ratio-slider': {type:'range',min:1,max:5,step:1}, 'ticker-width-ratio-slider': {type:'range',min:1,max:3,step:1} };
+  try {
+    const state = {v:1,controls:{'ticker-ratio-slider':'5','ticker-width-ratio-slider':'10'}};
+    expect(decodeState(encodeState(state,manifest),manifest).controls['ticker-width-ratio-slider']).toBe('10');
+    expect(() => encodeState({...state,controls:{...state.controls,'ticker-ratio-slider':'2'}},manifest)).toThrow(/out-of-range/);
+  } finally {
+    if (previous === undefined) delete global.getTickerWidthRatioMax;
+    else global.getTickerWidthRatioMax = previous;
+  }
+});

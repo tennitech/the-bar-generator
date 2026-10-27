@@ -42,6 +42,9 @@
 /* ─── Design Tokens ─── */
 
 :root {
+  --control-label-line-height: 1.3;
+  --control-header-line-height: 1.333333;
+
   /* Brand Core (from RPI Brand Guidelines §Color) */
   --rpi-red: #D6001C;
   --rpi-white: #ffffff;
@@ -449,22 +452,7 @@ body {
    Sidebar Controls
    ──────────────────────────────────────── */
 
-.control-group {
-  animation: fadeSlideIn 0.3s ease-out backwards;
-}
-
-.control-group:nth-child(1) {
-  animation-delay: 0.05s;
-}
-
-.control-group:nth-child(2) {
-  animation-delay: 0.1s;
-}
-
-.control-group:nth-child(3) {
-  animation-delay: 0.15s;
-}
-
+/* Control boxes retain their line metrics while the official fonts load. */
 .control {
   margin-bottom: 16px;
 }
@@ -475,6 +463,7 @@ body {
 
 .control-label {
   display: block;
+  line-height: var(--control-label-line-height);
   font-family: 'RPIGeistMono', monospace;
   font-size: 10px;
   color: var(--text-secondary);
@@ -485,6 +474,7 @@ body {
 }
 
 .control-header {
+  line-height: var(--control-header-line-height);
   font-family: 'RPIGeist', sans-serif;
   font-weight: 700;
   font-size: 12px;
@@ -497,6 +487,7 @@ body {
 }
 
 .control-hint {
+  line-height: var(--control-label-line-height);
   font-size: 10px;
   color: var(--text-secondary);
   margin-top: 4px;
@@ -686,7 +677,7 @@ body {
 .slider_label-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: baseline;
+  align-items: center;
   column-gap: 0.8rem;
 }
 
@@ -1265,7 +1256,7 @@ input:checked+.slider:before {
    Theme Variants (applied to <body>)
    ──────────────────────────────────────── */
 
-body.theme-light {
+:is(html, body).theme-light {
   --bg-app: var(--rpi-white);
   --bg-sidebar: var(--rpi-white);
   --bg-canvas: var(--rpi-white);
@@ -1273,7 +1264,7 @@ body.theme-light {
   --bg-header: var(--rpi-black);
 }
 
-body.theme-dark {
+:is(html, body).theme-dark {
   --bg-app: #000000;
   --bg-sidebar: #0f0f0f;
   --bg-canvas: #000000;
@@ -1289,7 +1280,7 @@ body.theme-dark {
   --neutral-300: #333333;
 }
 
-body.theme-red {
+:is(html, body).theme-red {
   --bg-app: var(--rpi-red);
   --bg-sidebar: var(--rpi-white);
   --bg-canvas: var(--rpi-red);
@@ -1299,7 +1290,7 @@ body.theme-red {
   --border-color: var(--neutral-300);
 }
 
-body.theme-inverted {
+:is(html, body).theme-inverted {
   --bg-app: var(--rpi-white);
   --bg-sidebar: var(--rpi-white);
   --bg-canvas: var(--rpi-white);
@@ -1331,7 +1322,7 @@ body.theme-inverted {
   --shadow-rgb: 0, 0, 0;
 }
 
-body.theme-black {
+:is(html, body).theme-black {
   --bg-app: #10161d;
   --bg-sidebar: #1b222b;
   --bg-canvas: #10161d;
@@ -1350,7 +1341,7 @@ body.theme-black {
   --surface-subtle-strong: #34414d;
 }
 
-body.theme-white {
+:is(html, body).theme-white {
   --bg-app: #f7f8fa;
   --bg-sidebar: #ffffff;
   --bg-canvas: #ffffff;
@@ -1369,7 +1360,7 @@ body.theme-white {
   --surface-subtle-strong: #dde4eb;
 }
 
-body.theme-red {
+:is(html, body).theme-red {
   --bg-app: #fff7f8;
   --bg-sidebar: #fffdfd;
   --bg-canvas: #fffdfd;
@@ -1388,7 +1379,7 @@ body.theme-red {
   --surface-subtle-strong: #eed8de;
 }
 
-body.theme-blue {
+:is(html, body).theme-blue {
   --bg-app: #f5faff;
   --bg-sidebar: #ffffff;
   --bg-canvas: #ffffff;
@@ -1407,7 +1398,7 @@ body.theme-blue {
   --surface-subtle-strong: #d7e7f4;
 }
 
-body.theme-gold {
+:is(html, body).theme-gold {
   --bg-app: #fffaf0;
   --bg-sidebar: #fffdf8;
   --bg-canvas: #fffdf8;
@@ -1426,7 +1417,7 @@ body.theme-gold {
   --surface-subtle-strong: #ece2be;
 }
 
-body.theme-silver {
+:is(html, body).theme-silver {
   --bg-app: #11161d;
   --bg-sidebar: #1b222b;
   --bg-canvas: #11161d;
@@ -1445,7 +1436,7 @@ body.theme-silver {
   --surface-subtle-strong: #374550;
 }
 
-body.theme-gray {
+:is(html, body).theme-gray {
   --bg-app: #151b21;
   --bg-sidebar: #20272f;
   --bg-canvas: #151b21;
@@ -1464,7 +1455,7 @@ body.theme-gray {
   --surface-subtle-strong: #3a4853;
 }
 
-body.theme-lunar {
+:is(html, body).theme-lunar {
   --bg-app: #060b16;
   --bg-sidebar: #0b1422;
   --bg-canvas: #03060d;
@@ -2514,10 +2505,11 @@ body.has-logo-animation {
   --dropdown-edge-fill-width: 18px;
 }
 
-body.theme-black,
-body.theme-red,
-body.theme-blue,
-body.theme-gold {
+:root,
+:is(html, body).theme-black,
+:is(html, body).theme-red,
+:is(html, body).theme-blue,
+:is(html, body).theme-gold {
   --bg-sidebar: #ffffff;
   --surface-panel: #ffffff;
   --surface-subtle: #f3f6f9;
@@ -2547,10 +2539,10 @@ body.theme-gold {
   --toggle-knob: #ffffff;
 }
 
-body.theme-white,
-body.theme-silver,
-body.theme-gray,
-body.theme-lunar {
+:is(html, body).theme-white,
+:is(html, body).theme-silver,
+:is(html, body).theme-gray,
+:is(html, body).theme-lunar {
   --bg-sidebar: #1b232c;
   --surface-panel: #202933;
   --surface-subtle: #27323d;
@@ -2580,7 +2572,8 @@ body.theme-lunar {
   --toggle-knob: #ffffff;
 }
 
-body.theme-black {
+:root,
+:is(html, body).theme-black {
   --bg-app: #f4f7fa;
   --bg-canvas: #ffffff;
   --bg-header: #edf2f6;
@@ -2601,7 +2594,7 @@ body.theme-black {
   --toggle-ring: rgba(17, 17, 17, 0.18);
 }
 
-body.theme-white {
+:is(html, body).theme-white {
   --bg-app: #10161d;
   --bg-canvas: #10161d;
   --bg-header: #05070a;
@@ -2622,7 +2615,7 @@ body.theme-white {
   --toggle-ring: rgba(255, 255, 255, 0.22);
 }
 
-body.theme-red {
+:is(html, body).theme-red {
   --bg-app: #fff7f8;
   --bg-canvas: #ffffff;
   --bg-header: #d6001c;
@@ -2643,7 +2636,7 @@ body.theme-red {
   --toggle-ring: rgba(214, 0, 28, 0.18);
 }
 
-body.theme-blue {
+:is(html, body).theme-blue {
   --bg-app: #f5faff;
   --bg-canvas: #ffffff;
   --bg-header: #0081ce;
@@ -2664,7 +2657,7 @@ body.theme-blue {
   --toggle-ring: rgba(0, 129, 206, 0.18);
 }
 
-body.theme-gold {
+:is(html, body).theme-gold {
   --bg-app: #fffaf0;
   --bg-canvas: #fffdf8;
   --bg-header: #cdac38;
@@ -2685,7 +2678,7 @@ body.theme-gold {
   --toggle-ring: rgba(205, 172, 56, 0.2);
 }
 
-body.theme-silver {
+:is(html, body).theme-silver {
   --bg-app: #11161d;
   --bg-canvas: #11161d;
   --bg-header: #dbe6ef;
@@ -2706,7 +2699,7 @@ body.theme-silver {
   --toggle-ring: rgba(225, 237, 245, 0.22);
 }
 
-body.theme-gray {
+:is(html, body).theme-gray {
   --bg-app: #151b21;
   --bg-canvas: #151b21;
   --bg-header: #b9ccd8;
@@ -2727,7 +2720,7 @@ body.theme-gray {
   --toggle-ring: rgba(185, 204, 216, 0.22);
 }
 
-body.theme-lunar {
+:is(html, body).theme-lunar {
   --lunar-red-rgb: 214, 0, 28;
   --lunar-blue-rgb: 0, 129, 206;
   --lunar-divider: color-mix(in srgb, var(--rpi-blue) 32%, #243752 68%);
@@ -3953,6 +3946,15 @@ body { min-height: 0; }
 .header_motion-stage { position: relative; display: block; width: 100%; height: 100%; }
 .header_motion-stage .header_motion-letters { display: block; width: 100%; height: 100%; }
 .header_motion-stage .header_motion-canvas { position: absolute; display: block; }
+
+/* Official mark stays in the header while the live preview initializes. */
+.brand_initial-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: currentColor;
+  mask: url('../assets/images/RPI Logo.svg') center / contain no-repeat;
+}
 
 /* Export choices and progress stay inside the existing anchored popover. */
 .export_menu { width: 17rem; min-width: 0; max-height: calc(100dvh - 5rem); overflow-y: auto; }

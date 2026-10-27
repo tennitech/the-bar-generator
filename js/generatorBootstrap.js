@@ -52,8 +52,29 @@
       scriptSources.splice(patternIndex < 0 ? scriptSources.length : patternIndex, 0, lunarSource);
     }
 
+    // Download dependencies together; async=false preserves their execution order.
+    const shellSources = Array.from(doc.querySelectorAll('script[src]'), script => script.getAttribute('src'));
+    const earlyScripts = new Set();
+    const earlySources = ['loopingGif', 'featherIcons', 'shareState', 'musicStyle', 'barPattern', 'tickerDisplay', 'profanityFilter', 'quantumModel', 'generatorParameters']
+      .map(name => shellSources.find(src => src.startsWith(`js/utils/${name}.js`))).filter(Boolean);
+    await Promise.all(earlySources.map(source => { earlyScripts.add(source); return loadScript(source); }));
+    // Reconcile fetched shell CSS before inserting its chrome (also protects old route stubs).
+    const shellCSS = doc.querySelector('link[rel="stylesheet"][href*="css/style.css"]');
+    const routeCSS = document.querySelector('link[rel="stylesheet"][href*="css/style.css"]');
+    if (shellCSS && routeCSS && routeCSS.getAttribute('href') !== shellCSS.getAttribute('href')) {
+      await new Promise((resolve, reject) => {
+        routeCSS.onload = resolve;
+        routeCSS.onerror = () => reject(new Error('The generator stylesheet did not load.'));
+        routeCSS.href = shellCSS.getAttribute('href');
+      });
+    }
+    window.BarShareState?.prepareTrigger(bodyClone);
+    window.GeneratorInitialState.apply(bodyClone);
     bodyClone.querySelectorAll('script').forEach(script => script.remove());
-    document.body.innerHTML = bodyClone.innerHTML;
+    document.body.replaceChildren(...bodyClone.childNodes);
+    window.setupCustomDropdowns();
+    window.ParameterControls.prepare(document);
+    window.GeneratorInitialState.syncHeaderLayout();
 
     if (doc.title) {
       document.title = doc.title;
@@ -64,7 +85,7 @@
       descriptionTag.setAttribute('content', sourceDescription.getAttribute('content') || '');
     }
 
-    await Promise.all(scriptSources.map(loadScript));
+    await Promise.all(scriptSources.filter(src => !earlyScripts.has(src)).map(loadScript));
 
     // The routed generator pages load p5 before the generator scripts are injected,
     // so p5's automatic global-mode boot can miss `window.setup`. Explicitly start
@@ -77,7 +98,10 @@
     }
   } catch (error) {
     console.error(error && error.stack ? error.stack : error);
-    document.body.innerHTML = '<main class="generator_error" role="alert"><h1>Unable to load the generator</h1><p>Check your connection and try again.</p><button type="button" id="retry-generator">Retry</button></main>';
+    const errorTarget = document.getElementById('p5-container') || document.body;
+    errorTarget.removeAttribute('role');
+    errorTarget.removeAttribute('aria-label');
+    errorTarget.innerHTML = '<div class="generator_error" role="alert"><h1>Unable to load the generator</h1><p>Check your connection and try again.</p><button type="button" id="retry-generator">Retry</button></div>';
     document.getElementById('retry-generator').addEventListener('click', () => window.location.reload());
   }
 })();

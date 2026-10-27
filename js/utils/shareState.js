@@ -42,7 +42,9 @@
     const controls = {};
     for (const id of Object.keys(manifest).sort()) {
       if (!Object.hasOwn(sourceControls, id)) continue;
-      const spec = manifest[id];
+      const spec = id === 'ticker-width-ratio-slider' && typeof scope.getTickerWidthRatioMax === 'function'
+        ? { ...manifest[id], max: scope.getTickerWidthRatioMax(sourceControls['ticker-ratio-slider']) }
+        : manifest[id];
       const raw = sourceControls[id];
       if (spec.type === 'checkbox') {
         if (typeof raw !== 'boolean') throw new Error('This share link has an invalid toggle.');
@@ -97,6 +99,51 @@
     };
   }
 
+  function prepareTrigger(root = document) {
+    const existing = root.querySelector('#share-button');
+    if (existing) return existing;
+    const trigger = document.createElement('button');
+    trigger.id = 'share-button';
+    trigger.type = 'button';
+    trigger.className = 'header_icon-button share_trigger';
+    trigger.setAttribute('aria-label', 'Share bar');
+    trigger.setAttribute('title', 'Share bar');
+    trigger.setAttribute('aria-haspopup', 'dialog');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.setAttribute('aria-controls', 'share-popover');
+    trigger.innerHTML = scope.FeatherIcons.getIconMarkup('share', 'header_icon');
+    root.querySelector('.header-actions .save-section').after(trigger);
+    trigger.addEventListener('click', () => {
+      if (trigger.openShare) trigger.openShare();
+      else trigger.dataset.pendingOpen = 'true';
+    });
+    return trigger;
+  }
+
+  function prepareNameContext(root = document, name = '') {
+    let nameContext = root.querySelector('.share_document-context');
+    if (!nameContext) {
+      nameContext = document.createElement('span');
+      nameContext.className = 'share_document-context';
+      nameContext.hidden = true;
+      const separator = document.createElement('span');
+      separator.textContent = ' / ';
+      separator.setAttribute('aria-hidden', 'true');
+      const loadedName = document.createElement('span');
+      loadedName.id = 'share-loaded-name';
+      nameContext.append(separator, loadedName);
+      const brandTitle = root.querySelector('.brand-title');
+      brandTitle.append(nameContext);
+    }
+    const loadedName = nameContext.querySelector('#share-loaded-name');
+    loadedName.textContent = name;
+    nameContext.hidden = !name;
+    const brandTitle = root.querySelector('.brand-title');
+    brandTitle.classList.toggle('has-document-name', !!name);
+    brandTitle.title = name;
+    return nameContext;
+  }
+
   function initialize(bridge) {
     const fields = Array.from(document.querySelectorAll('#app-sidebar input[id], #app-sidebar select[id]'))
       .filter(field => !field.closest('[data-share-ui]'));
@@ -115,17 +162,7 @@
     let restoring = false;
     let name = '';
     let loadError = '';
-    const trigger = document.createElement('button');
-    trigger.id = 'share-button';
-    trigger.type = 'button';
-    trigger.className = 'header_icon-button share_trigger';
-    trigger.setAttribute('aria-label', 'Share bar');
-    trigger.setAttribute('title', 'Share bar');
-    trigger.setAttribute('aria-haspopup', 'dialog');
-    trigger.setAttribute('aria-expanded', 'false');
-    trigger.setAttribute('aria-controls', 'share-popover');
-    trigger.innerHTML = scope.FeatherIcons.getIconMarkup('share', 'header_icon');
-    document.querySelector('.header-actions .save-section').after(trigger);
+    const trigger = prepareTrigger();
     const section = document.createElement('section');
     section.id = 'share-popover';
     section.className = 'save-menu share_popover';
@@ -136,17 +173,9 @@
     section.innerHTML = '<button id="share-copy" class="save-option share_copy" type="button"><span class="option-label" data-share-copy-label>Copy link</span><span class="share_menu-icon" data-share-copy-icon></span></button><label class="u-sr-only" for="share-name">Name (optional, up to 80 characters)</label><input id="share-name" class="control-input share_name" type="text" maxlength="160" placeholder="Name this bar"><div id="share-fallback" class="share_fallback" hidden><label for="share-url">Select and copy</label><textarea id="share-url" rows="2" readonly spellcheck="false"></textarea></div><p id="share-status" class="share_status" role="status" aria-live="polite"></p>';
     document.body.append(section);
     // A named bar is document context in the app header, never part of the official mark.
-    const nameContext = document.createElement('span');
-    nameContext.className = 'share_document-context';
-    nameContext.hidden = true;
-    const separator = document.createElement('span');
-    separator.textContent = ' / ';
-    separator.setAttribute('aria-hidden', 'true');
-    const loadedName = document.createElement('span');
-    loadedName.id = 'share-loaded-name';
-    nameContext.append(separator, loadedName);
     const brandTitle = document.querySelector('.brand-title');
-    brandTitle.append(nameContext);
+    const nameContext = prepareNameContext();
+    const loadedName = nameContext.querySelector('#share-loaded-name');
     const baseDocumentTitle = ['localhost', '127.0.0.1'].includes(location.hostname) && location.port === '4315'
       ? 'BAR-05 · Share Links · 4315' : document.title;
     const nameInput = section.querySelector('#share-name');
@@ -187,6 +216,10 @@
       restoring = true;
       try {
         const values = { ...defaultControls, ...snapshot.controls };
+        const countRatio = document.getElementById('ticker-ratio-slider');
+        const widthRatio = document.getElementById('ticker-width-ratio-slider');
+        if (countRatio) countRatio.value = values[countRatio.id];
+        scope.applyTickerWidthRatioBounds?.(countRatio, widthRatio);
         for (const field of fields) {
           if (field.type === 'checkbox') field.checked = values[field.id];
           else field.value = field.type === 'text' ? sanitize(values[field.id]) : values[field.id];
@@ -257,7 +290,11 @@
         if (moveFocus) copyButton.focus({preventScroll:true});
       } else if (moveFocus) trigger.focus({preventScroll:true});
     }
-    trigger.addEventListener('click', () => setOpen(section.hidden));
+    trigger.openShare = () => setOpen(section.hidden);
+    if (trigger.dataset.pendingOpen === 'true') {
+      delete trigger.dataset.pendingOpen;
+      trigger.openShare();
+    }
     document.addEventListener('pointerdown', event => {
       if (!section.hidden && !section.contains(event.target) && !trigger.contains(event.target)) setOpen(false, false);
     });
@@ -306,7 +343,7 @@
     return controller;
   }
 
-  const api = { VERSION, MAX_FRAGMENT_LENGTH, MAX_NAME_LENGTH, MAX_TEXT_LENGTH, normalizeState, normalizeRuntime, encodeState, decodeState, seededRandom, initialize };
+  const api = { VERSION, MAX_FRAGMENT_LENGTH, MAX_NAME_LENGTH, MAX_TEXT_LENGTH, normalizeState, normalizeRuntime, encodeState, decodeState, seededRandom, prepareTrigger, prepareNameContext, initialize };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   scope.BarShareState = api;
 })(typeof window !== 'undefined' ? window : globalThis);

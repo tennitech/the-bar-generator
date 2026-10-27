@@ -1,0 +1,23 @@
+/* Only the artwork prints; the identity and controls never fade or move. */
+html.has-page-entrance [data-entrance-plane]:not(.is-entry-complete) {
+  mask-image: linear-gradient(to right, #000 0, #000 0, transparent 1px);
+}
+
+html.has-page-entrance::view-transition { pointer-events: none; }
+html.has-page-entrance::view-transition-group(*) { animation: none; }
+html.has-page-entrance::view-transition-old(*) { display: none; }
+html.has-page-entrance::view-transition-new(*) { animation: none; }
+html.has-page-entrance::view-transition-new(page-artwork) {
+  animation: pagePrint var(--entry-duration, 680ms) cubic-bezier(0.42, 0, 0.58, 1)
+    var(--entry-buffer, 60ms) backwards;
+}
+
+@keyframes pagePrint {
+  from { clip-path: inset(0 var(--entry-clip-start, 100%) 0 0); }
+  to { clip-path: inset(0 var(--entry-clip-end, 0%) 0 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.has-page-entrance [data-entrance-plane] { mask-image: none; }
+  html.has-page-entrance::view-transition-new(page-artwork) { animation: none; }
+}
