@@ -21,3 +21,11 @@ Vanilla JavaScript, WebGL (GLSL shaders), Web Audio API (AudioWorklet)
 
 ## Local Development
 Serve with any static web server: `python3 -m http.server` or `npx serve`
+
+## Contribution and maintenance
+
+See [contributing.md](contributing.md) for setup and pull requests, [code_of_conduct.md](code_of_conduct.md) for project conduct, and [security.md](security.md) for private vulnerability reports. Current access rules and the December transition steps are in [maintenance and handoff](references/maintenance_handoff.md).
+
+## License
+
+Project software uses the [MIT license](LICENSE). Preserve [third-party notices](THIRD_PARTY_NOTICES.md). RPI trademarks and bundled asset permissions require separate review; see [asset licensing notes](references/asset_licensing.md).
