@@ -1,11 +1,16 @@
-.share_panel { border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem; font-size: .8rem; }
-.share_panel summary { cursor: pointer; padding: .5rem 0; font-weight: 600; }
-.share_panel-content { display: grid; gap: .625rem; padding-top: .5rem; }
-.share_panel input, .share_panel textarea, .share_panel button { box-sizing: border-box; width: 100%; min-width: 0; font: inherit; color: var(--text-primary); background: var(--control-surface); border: 1px solid var(--control-border); border-radius: 0; padding: .625rem; }
-.share_panel textarea { resize: vertical; overflow-wrap: anywhere; }
-.share_panel button { min-height: 2.75rem; cursor: pointer; }
-.share_panel p { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
-.share_panel :is(input, textarea, button, summary):focus-visible { outline: 2px solid var(--text-primary); outline-offset: 3px; }
-
+:root { --share-popover-layer: 200; }
+.header_icon-button.share_trigger { position: relative; flex-shrink: 0; }
+.save-menu.share_popover { position: fixed; z-index: var(--share-popover-layer); box-sizing: border-box; width: min(14rem, calc(100vw - 1rem)); min-width: 0; max-height: calc(100dvh - 1rem); overflow-y: auto; transform: none; }
+.share_popover[hidden], .share_fallback[hidden] { display: none; }
+.share_popover .share_copy { min-height: 2.75rem; flex-direction: row; justify-content: space-between; align-items: center; color: var(--text-primary); }
+.share_popover .share_copy:focus-visible { background: var(--menu-option-hover-bg); outline: 1px solid var(--menu-border); outline-offset: -1px; }
+.share_popover .share_name { box-sizing: border-box; width: 100%; min-height: 2.75rem; padding: .625rem .75rem; font-size: .75rem; border: 0; border-top: 1px solid var(--menu-border); border-radius: 0; background: transparent; }
+.share_popover .share_name::placeholder { color: var(--text-secondary); opacity: 1; }
+.share_popover .share_name:focus-visible { outline: 1px solid var(--menu-border); outline-offset: -1px; }
+.share_fallback { display: grid; gap: .5rem; padding: .5rem .75rem; font-size: .75rem; }
+.share_fallback textarea { box-sizing: border-box; width: 100%; min-width: 0; min-height: 2.75rem; resize: vertical; padding: .5rem; font: inherit; color: var(--text-primary); background: var(--control-surface); border: 1px solid var(--control-border); }
+.share_status { margin: 0; padding: .5rem .75rem; font-size: .75rem; line-height: 1.4; color: var(--text-primary); }
+.share_status:empty { display: none; }
 .share_caption { position: absolute; top: 1rem; left: 1rem; right: 1rem; margin: 0; text-align: center; font-size: .8rem; line-height: 1.5; color: var(--text-primary); overflow-wrap: anywhere; pointer-events: none; }
 .share_caption[hidden] { display: none; }
+@media (max-width: 900px), (pointer: coarse) { .share_trigger::before { content: ""; position: absolute; inset: -3px; } .share_popover .share_name { font-size: 1rem; } }

@@ -41,7 +41,7 @@ async function svg(page) {
       await page.selectOption('#style-select', style, {force:true});
       await page.evaluate(() => {
         liveMotionPhase = 0.375; window.animationTime = 23;
-        document.querySelector('.share_panel').open = true;
+        document.getElementById('share-button').click();
         const input = document.getElementById('share-name'); input.value = 'Exploration α 🚀 <img onerror=alert(1)>';
         input.dispatchEvent(new Event('input', {bubbles:true}));
       });
@@ -63,12 +63,30 @@ async function svg(page) {
       await page.goto(link); await ready(page);
       assert.equal(await page.inputValue('#color-mode-select'), color);
     }
-    // Native details and controls remain keyboard accessible.
-    await page.locator('.share_panel').evaluate(element => { element.open = false; });
-    await page.locator('.share_panel summary').focus(); await page.keyboard.press('Enter');
-    assert.equal(await page.locator('.share_panel').evaluate(element => element.open), true);
+    // Toolbar popover supports keyboard entry, Escape, outside dismissal and focus exit.
+    await page.keyboard.press('Escape');
+    await page.locator('#share-button').focus(); await page.keyboard.press('Enter');
+    assert.equal(await page.locator('#share-button').getAttribute('aria-expanded'), 'true');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'share-copy');
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'share-name');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#share-popover').isVisible(), false);
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'share-button');
+    await page.click('#share-button');
+    await page.mouse.click(20, 400);
+    assert.equal(await page.locator('#share-popover').isVisible(), false);
+    await page.click('#share-button');
+    await page.evaluate(() => document.getElementById('mobile-menu-toggle').focus());
+    assert.equal(await page.locator('#share-popover').isVisible(), false);
+    // Successful clipboard feedback without changing the host system clipboard.
+    await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', {configurable:true,value:{writeText:async text=>{window.__copiedShareLink=text;}}}));
+    await page.click('#share-button'); await page.click('#share-copy');
+    assert.equal(await page.locator('#share-copy').textContent(), 'Copied');
+    assert.equal(await page.locator('#share-status').textContent(), 'Link copied.');
+    assert.ok(await page.evaluate(() => window.__copiedShareLink.includes('#bar=')));
+    assert.equal(await page.locator('#share-fallback').isVisible(), false);
+    await page.keyboard.press('Escape');
     // Same-document Back/Forward restores fields and the canonical route style, not the boot route.
     const original = page.url();
     const second = await page.evaluate(() => {
@@ -84,7 +102,7 @@ async function svg(page) {
     assert.equal(await page.inputValue('#binary-input'), '');
     // Force clipboard rejection and verify an accessible manual copy path.
     await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', {value:{writeText:async()=>{throw Error('blocked')}}}));
-    await page.locator('.share_panel').evaluate(element => { element.open = true; });
+    await page.click('#share-button');
     await page.locator('#share-copy').click();
     assert.match(await page.locator('#share-status').textContent(), /Copy the selected link/);
     assert.equal(await page.evaluate(() => document.activeElement.id), 'share-url');
@@ -114,10 +132,24 @@ async function svg(page) {
     await reduced.waitForTimeout(150);
     assert.equal(await reduced.evaluate(() => barShareController.capture().runtime.phase), phase);
     if (evidence) {
-      await reduced.screenshot({path:`${evidence}/bar-05-mobile.png`});
+      await reduced.screenshot({path:`${evidence}/bar-05-toolbar-mobile-closed.png`});
+      await reduced.click('#share-button');
+      await reduced.screenshot({path:`${evidence}/bar-05-toolbar-mobile.png`});
       await page.goto(original); await ready(page);
-      await page.locator('.share_panel summary').scrollIntoViewIfNeeded();
-      await page.screenshot({path:`${evidence}/bar-05-after.png`});
+      await page.click('#share-button');
+      await page.screenshot({path:`${evidence}/bar-05-toolbar-desktop.png`});
+    }
+    if (!await reduced.locator('#share-popover').isVisible()) await reduced.click('#share-button');
+    for (const width of [320, 390, 768, 1440]) {
+      await reduced.setViewportSize({width,height:844});
+      const bounds = await reduced.locator('#share-popover').boundingBox();
+      assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width, `popover fits ${width}px`);
+      assert.ok(await reduced.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+      const target = await reduced.locator('#share-button').boundingBox();
+      if (width <= 900) {
+        const inset = await reduced.locator('#share-button').evaluate(button => parseFloat(getComputedStyle(button, '::before').top));
+        assert.ok(target.width - inset * 2 >= 44 && target.height - inset * 2 >= 44);
+      }
     }
     assert.deepEqual(errors, []);
     assert.ok(requests.every(url => url.startsWith(base) || url.startsWith('blob:') || url.startsWith('data:')), 'no external server requests');

@@ -104,16 +104,36 @@
     let restoring = false;
     let name = '';
     let loadError = '';
-    const section = document.createElement('details');
-    section.className = 'share_panel';
+    const trigger = document.createElement('button');
+    trigger.id = 'share-button';
+    trigger.type = 'button';
+    trigger.className = 'header_icon-button share_trigger';
+    trigger.setAttribute('aria-label', 'Share bar');
+    trigger.setAttribute('title', 'Share bar');
+    trigger.setAttribute('aria-haspopup', 'dialog');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.setAttribute('aria-controls', 'share-popover');
+    trigger.innerHTML = '<svg class="header_icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4M5 13v7h14v-7"/></svg>';
+    document.querySelector('.header-actions .save-section').after(trigger);
+    const section = document.createElement('section');
+    section.id = 'share-popover';
+    section.className = 'save-menu share_popover';
+    section.hidden = true;
     section.dataset.shareUi = '';
-    section.innerHTML = '<summary>Share this bar</summary><div class="share_panel-content"><label for="share-name">Name (optional, up to 80 characters)</label><input id="share-name" type="text" maxlength="160" placeholder="A name for this configuration"><p id="share-loaded-name" hidden></p><button id="share-copy" type="button">Copy share link</button><label for="share-url">Link — select to copy manually</label><textarea id="share-url" rows="3" readonly spellcheck="false"></textarea><p>Settings and text stay in the link. Anyone with it can read them. Links can be long; some messaging services shorten or reject them.</p><p id="share-status" role="status" aria-live="polite"></p></div>';
-    document.querySelector('#sidebar-scroll .sidebar-content').append(section);
-    const nameInput = section.querySelector('#share-name');
-    const loadedName = section.querySelector('#share-loaded-name');
+    section.setAttribute('role', 'dialog');
+    section.setAttribute('aria-label', 'Share bar');
+    section.innerHTML = '<button id="share-copy" class="save-option share_copy" type="button"><span class="option-label" data-share-copy-label>Copy link</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="1"/><path d="M16 8V3H3v13h5"/></svg></button><label class="u-sr-only" for="share-name">Name (optional, up to 80 characters)</label><input id="share-name" class="control-input share_name" type="text" maxlength="160" placeholder="Name (optional)"><div id="share-fallback" class="share_fallback" hidden><label for="share-url">Select and copy</label><textarea id="share-url" rows="2" readonly spellcheck="false"></textarea></div><p id="share-status" class="share_status" role="status" aria-live="polite"></p>';
+    document.body.append(section);
+    const loadedName = document.createElement('p');
+    loadedName.id = 'share-loaded-name';
+    loadedName.hidden = true;
     loadedName.className = 'share_caption';
     document.getElementById('app-main').append(loadedName);
+    const nameInput = section.querySelector('#share-name');
     const output = section.querySelector('#share-url');
+    const fallback = section.querySelector('#share-fallback');
+    const copyButton = section.querySelector('#share-copy');
+    const copyLabel = section.querySelector('[data-share-copy-label]');
     const status = section.querySelector('#share-status');
     const sanitize = value => bridge.sanitize ? bridge.sanitize(value) : value;
     const capture = () => ({ v: VERSION, name: sanitize(name), controls: Object.fromEntries(fields.map(field => [field.id,
@@ -127,7 +147,7 @@
       return url.href;
     }
     function refresh() {
-      try { output.value = buildLink(); status.textContent = loadError || `${output.value.length.toLocaleString()} characters. No upload or account needed.`; }
+      try { output.value = buildLink(); status.textContent = loadError; copyButton.title = `${output.value.length.toLocaleString()} characters. Some messaging apps limit long links.`; }
       catch (error) { output.value = ''; status.textContent = error.message; }
     }
     function apply(snapshot) {
@@ -148,7 +168,7 @@
           field.dispatchEvent(new Event(field.type === 'range' || field.type === 'text' ? 'input' : 'change', { bubbles: true }));
         }
         bridge.refresh();
-        if (name) section.open = true;
+
       } finally { restoring = false; }
     }
     function load() {
@@ -167,7 +187,7 @@
           restoring = false;
         }
         refresh();
-      } catch (error) { restoring = false; loadError = error.message; section.open = true; refresh(); }
+      } catch (error) { restoring = false; loadError = error.message; setOpen(true, false); }
     }
     const controller = {
       capture, manifest, buildLink,
@@ -180,20 +200,69 @@
       }
     };
     scope.barShareController = controller;
-    nameInput.addEventListener('input', () => { name = safeText(sanitize(nameInput.value), MAX_NAME_LENGTH); nameInput.value = name; loadedName.textContent = name ? `Shared configuration: ${name}` : ''; loadedName.hidden = !name; controller.syncUrl(); refresh(); });
-    section.addEventListener('toggle', () => { if (section.open) refresh(); });
-    section.querySelector('#share-copy').addEventListener('click', async () => {
+    nameInput.addEventListener('input', () => { name = safeText(sanitize(nameInput.value), MAX_NAME_LENGTH); nameInput.value = name; copyLabel.textContent = 'Copy link'; loadedName.textContent = name ? `Shared configuration: ${name}` : ''; loadedName.hidden = !name; controller.syncUrl(); refresh(); });
+    function positionPopover() {
+      if (section.hidden) return;
+      const anchor = trigger.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const left = viewport ? viewport.offsetLeft : 0;
+      const top = viewport ? viewport.offsetTop : 0;
+      const width = viewport ? viewport.width : innerWidth;
+      const height = viewport ? viewport.height : innerHeight;
+      section.style.maxHeight = `${Math.max(44, height - 16)}px`;
+      section.style.left = `${Math.max(left + 8, Math.min(anchor.right - section.offsetWidth, left + width - section.offsetWidth - 8))}px`;
+      section.style.top = `${Math.max(top + 8, Math.min(anchor.bottom + 8, top + height - section.offsetHeight - 8))}px`;
+    }
+    function setOpen(open, moveFocus = true) {
+      section.hidden = !open;
+      trigger.setAttribute('aria-expanded', String(open));
+      if (open) {
+        if (typeof scope.hideSaveMenu === 'function') scope.hideSaveMenu();
+        fallback.hidden = true;
+        copyLabel.textContent = 'Copy link';
+        refresh();
+        positionPopover();
+        if (moveFocus) copyButton.focus({preventScroll:true});
+      } else if (moveFocus) trigger.focus({preventScroll:true});
+    }
+    trigger.addEventListener('click', () => setOpen(section.hidden));
+    document.addEventListener('pointerdown', event => {
+      if (!section.hidden && !section.contains(event.target) && !trigger.contains(event.target)) setOpen(false, false);
+    });
+    document.addEventListener('keydown', event => {
+      if (!section.hidden && event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(false);
+      }
+    }, true);
+    document.addEventListener('focusin', event => {
+      if (!section.hidden && !section.contains(event.target) && event.target !== trigger) setOpen(false, false);
+    });
+    window.addEventListener('resize', positionPopover);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', positionPopover);
+      window.visualViewport.addEventListener('scroll', positionPopover);
+    }
+    copyButton.addEventListener('click', async () => {
       loadError = '';
       refresh();
       if (!output.value) return;
       try {
         if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('Clipboard unavailable');
         await navigator.clipboard.writeText(output.value);
-        status.textContent = 'Share link copied.';
-      } catch (_) { output.focus(); output.select(); status.textContent = 'Copy the selected link with your keyboard or touch menu.'; }
+        copyLabel.textContent = 'Copied';
+        status.textContent = 'Link copied.';
+        fallback.hidden = true;
+      } catch (_) {
+        fallback.hidden = false;
+        positionPopover();
+        output.focus(); output.select();
+        status.textContent = 'Copy the selected link with your keyboard or touch menu.';
+      }
     });
-    document.getElementById('app-sidebar').addEventListener('input', event => { if (!event.target.closest('[data-share-ui]')) { controller.syncUrl(); if (section.open) refresh(); } });
-    document.getElementById('app-sidebar').addEventListener('change', event => { if (!event.target.closest('[data-share-ui]')) { controller.syncUrl(); if (section.open) refresh(); } });
+    document.getElementById('app-sidebar').addEventListener('input', event => { if (!event.target.closest('[data-share-ui]')) { controller.syncUrl(); if (!section.hidden) refresh(); } });
+    document.getElementById('app-sidebar').addEventListener('change', event => { if (!event.target.closest('[data-share-ui]')) { controller.syncUrl(); if (!section.hidden) refresh(); } });
     window.addEventListener('popstate', load);
     window.addEventListener('hashchange', load);
     if (location.hash.startsWith(PREFIX)) load();
