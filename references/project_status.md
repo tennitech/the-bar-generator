@@ -25,6 +25,13 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 3. Completed Milestones
 
+- **[2026-10-27] Lightweight checks policy**:
+    - At the owner's request, the fast unit suite is the only automated merge check. Removed browser installation and browser/motion execution from CI and removed Browser tests from main protection.
+    - Kept the optional local browser scripts. Contributors and reviewers perform the relevant UI, accessibility, motion, and export checks. The unit job has a five-minute limit and retains public-repo, read-only, no-cache, and no-artifact controls.
+
+
+
+
 - **[2026-10-27] Audit integration and development conventions**:
     - Integrated the September audit with the existing main-branch contribution setup. Kept both sets of status records and the verified billing restriction.
     - Added a development README, issue forms, branch and commit naming guidance, Node.js version metadata, and reproducible Playwright test commands with a locked test dependency. Root AGENTS.md now gives a required reading path, actionable brand intent, solid-bar size qualifications, and completion checks.
