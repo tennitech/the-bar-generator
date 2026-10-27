@@ -637,6 +637,8 @@ let headerMotionContext = null;
 let headerMotionColorMode = null;
 let headerMotionColor = null;
 let headerLetterPaths = null;
+let headerMotionPixelWidth = 0;
+let headerMotionPixelRatio = 0;
 let liveMotionPhase = 0;
 const RESPONSIVE_CANVAS_RESIZE_SETTLE_MS = 120;
 const WAVEFORM_RENDER_MIN_POINTS = 240;
@@ -4611,6 +4613,7 @@ function renderHeaderMotionPreview() {
     headerMotionContext = headerMotionCanvas.getContext('2d');
     headerLogoPreview.replaceChildren(headerMotionCanvas);
     headerMotionColorMode = null;
+    headerMotionPixelWidth = 0;
     lastHeaderPreviewMarkup = '';
   }
   const ctx = headerMotionContext;
@@ -4637,7 +4640,29 @@ function renderHeaderMotionPreview() {
       ...values, barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH,
       barHeight: REFERENCE_BAR_HEIGHT, loopOffsetX: state.loopOffsetX
     });
-    geometry.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
+    if (style === 'ticker') {
+      const pixelRatio = window.devicePixelRatio || 1;
+      if (!headerMotionPixelWidth || headerMotionPixelRatio !== pixelRatio) {
+        headerMotionPixelWidth = headerMotionCanvas.getBoundingClientRect().width * pixelRatio;
+        headerMotionPixelRatio = pixelRatio;
+      }
+      const sampling = getTickerHeaderSampling({ ...values, pixelWidth: headerMotionPixelWidth });
+      // Below the display's sampling limit, average the row's exact area coverage.
+      // Drawing unresolved stripes produces a false direction even at matched phase.
+      for (const row of ['top', 'bottom']) {
+        if (sampling[row].resolved) {
+          geometry.rects.filter(rect => rect.row === row)
+            .forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
+        } else {
+          ctx.globalAlpha = sampling[row].coverage;
+          ctx.fillRect(0, row === 'top' ? 0 : REFERENCE_BAR_HEIGHT / 2,
+            REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT / 2);
+          ctx.globalAlpha = 1;
+        }
+      }
+    } else {
+      geometry.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
+    }
   } else if (style === 'waveform') {
     const frequency = Number(waveformFrequencySlider.value);
     const type = Number(waveformTypeSlider.value);
@@ -6828,6 +6853,7 @@ function updateAudioParameters() {
 }
 
 function windowResized() {
+  headerMotionPixelWidth = 0;
   syncViewportHeightVar();
   requestSaveButtonResponsiveLayout();
   scheduleResponsiveCanvasResize();

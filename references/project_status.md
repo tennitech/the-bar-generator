@@ -25,6 +25,11 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 3. Completed Milestones
 
+- **[2026-10-27] Small header ticker direction repair**:
+    - Confirmed equal ticker geometry and phase in both previews. The tiny header could still show an apparent reverse direction because dense rows exceeded its spatial sampling limit.
+    - Unresolved header rows now use their exact mean coverage; resolved rows keep their moving geometry. Device pixel ratio and resize determine which rows can be shown. Main preview and export geometry remain unchanged.
+
+
 - **[2026-10-27] Lightweight checks policy**:
     - At the owner's request, the fast unit suite is the only automated merge check. Removed browser installation and browser/motion execution from CI and removed Browser tests from main protection.
     - Kept the optional local browser and motion scripts. Contributors and reviewers perform the relevant UI, accessibility, motion, and export checks. The unit job has a five-minute limit and retains public-repo, read-only, no-cache, and no-artifact controls.
