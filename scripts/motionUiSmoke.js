@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { chromium, webkit, devices } = require('playwright');
-const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4316';
+const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
 const engine = process.env.RPI_BROWSER || 'chromium';
 const evidence = process.env.RPI_MOTION_EVIDENCE;
 
@@ -50,7 +50,15 @@ async function main() {
       await activate('#logo-animation-replay');
       assert.equal(await page.locator('.logo_animation_frame').count(), 1);
       await page.setViewportSize(mode === 'desktop' ? { width: 1100, height: 600 } : { width: 320, height: 568 });
-      await page.waitForFunction(() => Math.abs(document.querySelector('#logo-animation-close').getBoundingClientRect().x - document.querySelector('#mobile-menu-toggle').getBoundingClientRect().x) < 0.01);
+      await page.waitForFunction(() => {
+        const aligned = (a, b) => {
+          const first = document.querySelector(a).getBoundingClientRect();
+          const second = document.querySelector(b).getBoundingClientRect();
+          return ['x', 'y', 'width', 'height'].every(key => Math.abs(first[key] - second[key]) < 0.01);
+        };
+        return aligned('#logo-animation-close', '#mobile-menu-toggle')
+          && aligned('#logo-animation-replay', '.header-actions a[aria-label*="GitHub"]');
+      });
       const resized = await measure();
       assert.deepEqual(resized.replay, resized.github);
       assert.deepEqual(resized.close, resized.menu);
@@ -110,11 +118,12 @@ async function main() {
       await page.evaluate(() => { document.startViewTransition=undefined; const s=document.querySelector('#color-mode-select');s.value='red';s.dispatchEvent(new Event('change')); });
       await page.waitForFunction(() => !document.querySelector('.theme_scan'));
       assert.equal(await page.evaluate(() => document.body.classList.contains('theme-red')), true);
-      // Exercise the known fourth action without depending on the Share worker's markup.
+      // Exercise the real fourth action; older isolated shells use a temporary text control.
       await page.evaluate(() => {
+        if (document.getElementById('share-button')) return;
         const slot=document.createElement('button');slot.id='qa-share-slot';
         slot.className='header_icon-button';slot.setAttribute('aria-label','Share placeholder');
-        slot.textContent='↗';document.querySelector('#mobile-menu-toggle').before(slot);
+        slot.textContent='Share';document.querySelector('#mobile-menu-toggle').before(slot);
       });
       await activate('#header-logo-preview');
       await page.locator('#logo-animation-close').waitFor();
@@ -131,7 +140,7 @@ async function main() {
       });
       await page.keyboard.press('Escape');
       await page.waitForFunction(() => !document.body.classList.contains('has-logo-animation'));
-      await page.evaluate(() => document.querySelector('#qa-share-slot').remove());
+      await page.evaluate(() => document.querySelector('#qa-share-slot')?.remove());
       if (mode === 'desktop') {
         await page.locator('#color-mode-select').evaluate(select => select.parentElement.querySelector('.custom-select-trigger').focus());
         await page.keyboard.press('End');await page.keyboard.press('Enter');

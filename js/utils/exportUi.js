@@ -67,6 +67,8 @@
       byId('export-message').textContent = 'Cancelling export…';
       // Keep native focus while cancellation propagates. A disabled focused
       // button blurs immediately, before finish() can restore its owner.
+      // WebKit pointer activation does not automatically focus native buttons.
+      byId('export-cancel').focus({ preventScroll: true });
       byId('export-cancel').setAttribute('aria-disabled', 'true');
       active.controller.abort();
     });

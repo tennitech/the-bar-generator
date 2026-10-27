@@ -1,11 +1,11 @@
 // Default mode checks real integrated controls. The explicit fixture mode checks
-// future native controls against the current share branch without importing BAR-02 rendering.
+// future native controls against the current share branch without importing triangle rendering.
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
-const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4315';
+const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
 const fixture = process.env.RPI_TRIANGLE_SHARE_FIXTURE === '1';
 const evidence = process.env.RPI_EVIDENCE_DIR;
-const controlsFixture = '<div class="control"><label for="triangles-direction-select" class="control-label">DIRECTION</label><div class="select-wrapper"><select id="triangles-direction-select" class="control-select"><option value="down-right" selected>DOWN RIGHT ↘</option><option value="up-right">UP RIGHT ↗</option><option value="up-left">UP LEFT ↖</option><option value="down-left">DOWN LEFT ↙</option></select></div></div><div class="control"><label for="triangles-count-slider" class="control-label">COUNT</label><input id="triangles-count-slider" class="control-slider" type="range" min="6" max="28" step="1" value="14"></div>';
+const controlsFixture = '<div class="control"><label for="triangles-direction-select" class="control-label">DIRECTION</label><div class="select-wrapper"><select id="triangles-direction-select" class="control-select"><option value="down-right" selected>Down right</option><option value="up-right">Up right</option><option value="up-left">Up left</option><option value="down-left">Down left</option></select></div></div><div class="control"><label for="triangles-count-slider" class="control-label">COUNT</label><input id="triangles-count-slider" class="control-slider" type="range" min="6" max="28" step="1" value="14"></div>';
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
@@ -14,7 +14,7 @@ const controlsFixture = '<div class="control"><label for="triangles-direction-se
     if (fixture) await page.route('**/generator/index.html*', async route => {
       const response = await route.fetch();
       const html = await response.text();
-      assert.ok(!html.includes('id="triangles-direction-select"'), 'Use real mode when BAR-02 controls are present');
+      assert.ok(!html.includes('id="triangles-direction-select"'), 'Use real mode when triangle controls are present');
       const marker = '<div id="triangles-group" class="control-group" style="display: none;">';
       assert.ok(html.includes(marker), 'Fixture insertion point exists');
       await route.fulfill({ response, body: html.replace(marker, marker + controlsFixture) });
@@ -23,13 +23,13 @@ const controlsFixture = '<div class="control"><label for="triangles-direction-se
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`${base}/generator/triangles/`);
     await page.waitForFunction(() => window.barShareController);
-    assert.equal(await page.locator('#triangles-direction-select').count(), 1, 'BAR-02 direction control present');
-    assert.equal(await page.locator('#triangles-count-slider').count(), 1, 'BAR-02 count control present');
+    assert.equal(await page.locator('#triangles-direction-select').count(), 1, 'triangle direction control present');
+    assert.equal(await page.locator('#triangles-count-slider').count(), 1, 'triangle count control present');
     const manifest = await page.evaluate(() => barShareController.manifest);
     assert.deepEqual(manifest['triangles-direction-select'].options, ['down-right', 'up-right', 'up-left', 'down-left']);
     assert.deepEqual([manifest['triangles-count-slider'].min, manifest['triangles-count-slider'].max, manifest['triangles-count-slider'].step], [6, 28, 1]);
     assert.equal(await page.inputValue('#triangles-direction-select'), 'down-right', 'new unshared app default');
-    const directions = ['down-right', 'up-right', 'up-left', 'down-left'];
+    const directions = ['up-left', 'up-right', 'down-left', 'down-right'];
     const cases = [1, 2].flatMap(variant => directions.map((direction, index) => [variant, direction, [6, 14, 28, 6][index]]));
     for (const [variant, direction, count] of cases) {
       await page.selectOption('#triangles-direction-select', direction, { force: true });
@@ -86,6 +86,6 @@ const controlsFixture = '<div class="control"><label for="triangles-direction-se
     if (evidence) await page.screenshot({ path: `${evidence}/bar-05-triangle-${fixture ? 'fixture' : 'integrated'}.png` });
     assert.deepEqual(errors, []);
     console.log(`PASS ${fixture ? 'fixture' : 'integrated'} four-direction legacy migration and unchanged minimal toolbar UI`);
-    if (fixture) console.log('Fixture covers native state plumbing only; BAR-02/BAR-01 rendered geometry and actual SVG parity require integrated mode.');
+    if (fixture) console.log('Fixture covers native state plumbing only; combined rendered geometry and actual SVG parity require integrated mode.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

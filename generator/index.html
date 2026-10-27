@@ -7,15 +7,36 @@
   <meta name="description" content="Explore RPI logo bar patterns and download a generated mark.">
   <title>The Bar Generator | RPI</title>
   <base href="../">
-  <link href="css/style.css?v=20261027-transparent-exports" rel="stylesheet" type="text/css" />
+  <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link href="css/style.css?v=20261027-integration-final" rel="stylesheet" type="text/css" />
+  <link href="css/page-entrance.css?v=20261027-print-pass" rel="stylesheet" type="text/css">
+  <script src="js/utils/pageEntrance.js?v=20261027-print-pass"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261027-motion-polish"></script>
+  <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
+  <script src="js/utils/customDropdowns.js?v=20261027-print-pass"></script>
+  <script src="js/utils/parameterControls.js?v=20261027-print-pass"></script>
+  <script src="js/utils/loopingGif.js?v=20261027-motion-polish"></script>
+  <script src="js/utils/featherIcons.js?v=20261027-integration-final"></script>
+  <script src="js/utils/shareState.js?v=20261027-integration-final"></script>
+  <script src="js/utils/musicStyle.js"></script>
+  <script src="js/utils/barPattern.js?v=20261027-quantum-motion"></script>
+  <script src="js/utils/tickerDisplay.js"></script>
+  <script src="js/utils/profanityFilter.js?v=20260930-audit-fixes"></script>
+  <script src="js/utils/quantumModel.js"></script>
+  <script src="js/utils/generatorParameters.js?v=20261027-print-pass"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261027-integration-final"></script>
+  <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
 </head>
 
-<body>
+<body class="theme-black">
+  <script>GeneratorInitialState.apply(document.body);</script>
   <!-- App Header -->
-  <header class="app-header">
+  <header class="app-header" data-page-entrance>
     <div class="header-brand">
-      <div id="header-logo-preview" class="brand-mark" aria-hidden="true"></div>
+      <div id="header-logo-preview" class="brand-mark" aria-hidden="true"><span class="brand_initial-mark"></span></div>
       <span class="brand-divider">|</span>
       <span class="brand-title">THE BAR GENERATOR</span>
     </div>
@@ -59,20 +80,8 @@
         <button id="save-button" class="save-button primary-button" aria-haspopup="dialog" aria-expanded="false"
           aria-controls="save-menu">
           <span id="save-button-label">Download Asset</span>
-          <svg class="icon-right icon-download" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <svg class="icon-right icon-book" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-            <path d="M8 7h6"></path>
-            <path d="M8 11h8"></path>
-          </svg>
+          <svg data-feather="download" class="icon-right icon-download" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <svg data-feather="book-open" class="icon-right icon-book" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         </button>
         <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Download asset">
           <div id="export-settings" class="export_settings">
@@ -103,34 +112,19 @@
       </div>
       <a class="header_icon-button" href="https://github.com/tennitech/the-bar-generator" target="_blank"
         rel="noopener noreferrer" aria-label="View project repository on GitHub" title="View project repository">
-        <svg class="header_icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-          fill="currentColor" aria-hidden="true">
-          <path
-            d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.41 7.86 10.94.58.11.79-.25.79-.56 0-.28-.01-1.2-.02-2.18-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.76 2.68 1.25 3.33.96.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.47.11-3.06 0 0 .97-.31 3.18 1.17.92-.26 1.91-.39 2.9-.4.98 0 1.97.14 2.9.4 2.21-1.49 3.18-1.17 3.18-1.17.63 1.59.24 2.77.12 3.06.74.8 1.18 1.82 1.18 3.07 0 4.41-2.7 5.38-5.27 5.66.41.35.78 1.04.78 2.1 0 1.52-.01 2.74-.01 3.11 0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
-        </svg>
+        <svg data-feather="github" class="header_icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
       </a>
       <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open design controls" aria-expanded="false"
         aria-controls="app-sidebar">
-        <svg class="menu-toggle_icon menu-toggle_icon-menu" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round"
-          stroke-linejoin="round" aria-hidden="true">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-        <svg class="menu-toggle_icon menu-toggle_icon-close" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round"
-          stroke-linejoin="round" aria-hidden="true">
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-        </svg>
+        <svg data-feather="menu" class="menu-toggle_icon menu-toggle_icon-menu" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg data-feather="x" class="menu-toggle_icon menu-toggle_icon-close" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
   </header>
 
   <div class="app-layout">
     <!-- Sidebar Controls -->
-    <aside id="app-sidebar" class="app-sidebar" role="region" aria-label="Design Controls">
+    <aside id="app-sidebar" class="app-sidebar" data-page-entrance role="region" aria-label="Design Controls">
       <div class="mobile_controls-header">
         <h2>Design controls</h2>
         <button id="mobile-controls-close" type="button">Done</button>
@@ -141,7 +135,7 @@
           <div class="control">
             <label id="style-select-label" for="style-select" class="control-label">BAR STYLE</label>
             <div class="select-wrapper">
-              <select id="style-select" class="control-select">
+              <select id="style-select" data-url-parameter="style" class="control-select">
                 <optgroup label="Dynamic">
                   <option value="ruler">Ruler</option>
                   <option value="ticker">Ticker</option>
@@ -183,7 +177,7 @@
           <div class="control">
             <label id="color-mode-select-label" for="color-mode-select" class="control-label">COLOR THEME</label>
             <div class="select-wrapper">
-              <select id="color-mode-select" class="control-select">
+              <select id="color-mode-select" data-url-parameter="colorMode" class="control-select">
                 <option value="black">Black</option>
                 <option value="white">White</option>
                 <option value="red">Red</option>
@@ -213,18 +207,18 @@
         </div>
 
         <!-- Dynamic Control Groups -->
-        <div id="ruler-group" class="control-group" style="display: none;">
+        <div id="ruler-group" data-parameter-actions="ruler" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <p class="control-hint">The edge marks stay fixed while the ticks move.</p>
           <div class="control slider-control">
             <label for="ruler-repeats-slider" class="control-label">REPEATS <span
-                id="ruler-repeats-display">10</span></label>
-            <input type="range" id="ruler-repeats-slider" min="4" max="20" value="10" class="control-slider"
+                id="ruler-repeats-display" data-slider-value>10</span></label>
+            <input type="range" id="ruler-repeats-slider" data-url-parameter="rulerRepeats" min="4" max="20" value="10" class="control-slider"
               aria-label="Ruler Repeats">
           </div>
           <div class="control slider-control">
-            <label for="ruler-units-slider" class="control-label">UNITS <span id="ruler-units-display">4</span></label>
-            <input type="range" id="ruler-units-slider" min="2" max="10" step="2" value="4" class="control-slider"
+            <label for="ruler-units-slider" class="control-label">UNITS <span id="ruler-units-display" data-slider-value>4</span></label>
+            <input type="range" id="ruler-units-slider" data-url-parameter="rulerUnits" min="2" max="10" step="2" value="4" class="control-slider"
               aria-label="Ruler Units">
           </div>
           <div class="runtime_section motion_section">
@@ -239,24 +233,24 @@
             <div class="control control_row control_row-toggle">
               <label for="ruler-reverse-toggle" class="control-label control_row-label">REVERSE</label>
               <label class="switch">
-                <input type="checkbox" id="ruler-reverse-toggle">
+                <input type="checkbox" id="ruler-reverse-toggle" data-url-parameter="rulerReverse">
                 <span class="slider round"></span>
               </label>
             </div>
             <div class="control slider-control runtime_speed-control">
-              <label for="ruler-speed-slider" class="control-label">SPEED <span id="ruler-speed-display">0.3</span></label>
-              <input type="range" id="ruler-speed-slider" min="0.2" max="0.6" step="0.1" value="0.3" class="control-slider"
+              <label for="ruler-speed-slider" class="control-label">SPEED <span id="ruler-speed-display" data-slider-value>0.3</span></label>
+              <input type="range" id="ruler-speed-slider" data-url-parameter="rulerSpeed" min="0.2" max="0.6" step="0.1" value="0.3" class="control-slider"
                 aria-label="Ruler Motion Speed" aria-describedby="ruler-speed-unit">
               <p id="ruler-speed-unit" class="control-hint">major repeats / s</p>
             </div>
           </div>
         </div>
 
-        <div id="binary-group" class="control-group" style="display: none;">
+        <div id="binary-group" data-parameter-actions="binary" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control">
             <label for="binary-input" class="control-label">INPUT TEXT</label>
-            <input type="text" id="binary-input" placeholder="Enter text..." class="control-input"
+            <input type="text" id="binary-input" data-url-parameter="binaryText" placeholder="Enter text..." class="control-input"
               maxlength="100" aria-label="Binary Text Input" aria-describedby="binary-input-hint">
             <div id="binary-input-hint" class="control-hint">Text is encoded as UTF-8 bytes.</div>
           </div>
@@ -272,11 +266,11 @@
           </div>
         </div>
 
-        <div id="morse-group" class="control-group" style="display: none;">
+        <div id="morse-group" data-parameter-actions="morse" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control">
             <label for="morse-input" class="control-label">INPUT TEXT</label>
-            <input type="text" id="morse-input" placeholder="Enter text..." class="control-input"
+            <input type="text" id="morse-input" data-url-parameter="morseText" placeholder="Enter text..." class="control-input"
               maxlength="100" aria-label="Morse Text Input" aria-describedby="morse-input-hint">
             <div id="morse-input-hint" class="control-hint">A–Z, 0–9 and common punctuation. Other characters are omitted.</div>
           </div>
@@ -292,26 +286,26 @@
           </div>
         </div>
 
-        <div id="ticker-group" class="control-group" style="display: none;">
+        <div id="ticker-group" data-parameter-actions="ticker" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <p class="control-hint">The edge marks stay fixed while the ticks move.</p>
           <div class="control slider-control">
-            <label for="ticker-slider" class="control-label">REPEATS <span id="ticker-display">34</span></label>
-            <input type="range" id="ticker-slider" min="5" max="40" value="34" class="control-slider"
+            <label for="ticker-slider" class="control-label">REPEATS <span id="ticker-display" data-slider-value>34</span></label>
+            <input type="range" id="ticker-slider" data-url-parameter="tickerRepeats" min="5" max="40" value="34" class="control-slider"
               aria-label="Ticker Repeats">
           </div>
 
           <div class="control slider-control">
             <label for="ticker-ratio-slider" class="control-label">COUNT RATIO <span
-                id="ticker-ratio-display">2:1</span></label>
-            <input type="range" id="ticker-ratio-slider" min="1" max="5" value="2" class="control-slider"
+                id="ticker-ratio-display" data-slider-value>2:1</span></label>
+            <input type="range" id="ticker-ratio-slider" data-url-parameter="tickerRatio" min="1" max="5" value="2" class="control-slider"
               aria-label="Ticker Count Ratio">
           </div>
 
           <div class="control slider-control">
             <label for="ticker-width-ratio-slider" class="control-label">WIDTH RATIO <span
-                id="ticker-width-ratio-display">1:2</span></label>
-            <input type="range" id="ticker-width-ratio-slider" min="1" max="3" value="2" class="control-slider"
+                id="ticker-width-ratio-display" data-slider-value>1:2</span></label>
+            <input type="range" id="ticker-width-ratio-slider" data-url-parameter="tickerWidthRatio" min="1" max="3" value="2" class="control-slider"
               aria-label="Ticker Width Ratio">
           </div>
           <div class="runtime_section motion_section">
@@ -326,13 +320,13 @@
             <div class="control control_row control_row-toggle">
               <label for="ticker-reverse-toggle" class="control-label control_row-label">REVERSE</label>
               <label class="switch">
-                <input type="checkbox" id="ticker-reverse-toggle">
+                <input type="checkbox" id="ticker-reverse-toggle" data-url-parameter="tickerReverse">
                 <span class="slider round"></span>
               </label>
             </div>
             <div class="control slider-control runtime_speed-control">
-              <label for="ticker-speed-slider" class="control-label">SPEED <span id="ticker-speed-display">0.4</span></label>
-              <input type="range" id="ticker-speed-slider" min="0.2" max="0.8" step="0.1" value="0.4" class="control-slider"
+              <label for="ticker-speed-slider" class="control-label">SPEED <span id="ticker-speed-display" data-slider-value>0.4</span></label>
+              <input type="range" id="ticker-speed-slider" data-url-parameter="tickerSpeed" min="0.2" max="0.8" step="0.1" value="0.4" class="control-slider"
                 aria-label="Ticker Motion Speed" aria-describedby="ticker-speed-unit">
               <p id="ticker-speed-unit" class="control-hint">top-row repeats / s</p>
             </div>
@@ -367,38 +361,38 @@
               </label>
             </div>
             <div class="control slider-control runtime_speed-control">
-              <label for="quantum-speed-slider" class="control-label">SPEED <span id="quantum-speed-display">1.0</span></label>
+              <label for="quantum-speed-slider" class="control-label">SPEED <span id="quantum-speed-display" data-slider-value>1.0</span></label>
               <input id="quantum-speed-slider" type="range" min="0.2" max="1" step="0.1" value="1" class="control-slider" aria-label="Quantum motion speed">
             </div>
             <div class="control slider-control">
-              <label for="quantum-phase" class="control-label">PHASE <span id="quantum-phase-display">0.0%</span></label>
+              <label for="quantum-phase" class="control-label">PHASE <span id="quantum-phase-display" data-slider-value>0.0%</span></label>
               <input id="quantum-phase" type="range" min="0" max="1" step="any" value="0" class="control-slider" aria-label="Quantum phase as fraction of recurrence" aria-describedby="quantum-description">
             </div>
             <div id="quantum-description" class="control-hint">Three projections of one wavefunction on a ring. The curves show amplitude, not particle paths or probabilities.</div>
           </div>
         </div>
 
-        <div id="waveform-group" class="control-group" style="display: none;">
+        <div id="waveform-group" data-parameter-actions="waveform" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <p class="control-hint">The bottom line marks zero; the filled shape shows a synthetic waveform.</p>
           <div class="control slider-control">
             <label for="waveform-type-slider" class="control-label">TYPE <span
                 id="waveform-type-display">SINE</span></label>
-            <input type="range" id="waveform-type-slider" min="0" max="3" step="0.01" value="0" class="control-slider"
+            <input type="range" id="waveform-type-slider" data-url-parameter="waveformType" min="0" max="3" step="0.01" value="0" class="control-slider"
               aria-label="Waveform Type">
           </div>
 
           <div class="control slider-control">
             <label for="waveform-frequency-slider" class="control-label">FREQUENCY <span
-                id="waveform-frequency-display">24</span></label>
-            <input type="range" id="waveform-frequency-slider" min="10" max="100" value="24" class="control-slider"
+                id="waveform-frequency-display" data-slider-value>24</span></label>
+            <input type="range" id="waveform-frequency-slider" data-url-parameter="waveformFrequency" min="10" max="100" value="24" class="control-slider"
               aria-label="Waveform Frequency">
           </div>
 
           <div class="control control_row control_row-toggle">
             <label for="waveform-envelope-toggle" class="control-label" style="margin-bottom: 0;">ENVELOPE</label>
             <label class="switch">
-              <input type="checkbox" id="waveform-envelope-toggle">
+              <input type="checkbox" id="waveform-envelope-toggle" data-url-parameter="waveformEnvelope">
               <span class="slider round"></span>
             </label>
           </div>
@@ -407,7 +401,7 @@
             style="display: none; padding-left: 12px; border-left: 2px solid var(--border-color); margin-top: 8px; margin-bottom: 16px;">
             <div class="control">
               <label for="waveform-envelope-type" class="control-label">SHAPE</label>
-              <select id="waveform-envelope-type" class="control-select" aria-label="Envelope Shape">
+              <select id="waveform-envelope-type" data-url-parameter="waveformEnvelopeType" class="control-select" aria-label="Envelope Shape">
                 <option value="sine">Sine</option>
                 <option value="cosine">Cosine</option>
                 <option value="linear">Linear</option>
@@ -416,21 +410,21 @@
             </div>
             <div class="control slider-control">
               <label for="waveform-envelope-waves-slider" class="control-label">WAVES <span
-                  id="waveform-envelope-waves-display">1</span></label>
-              <input type="range" id="waveform-envelope-waves-slider" min="1" max="10" step="1" value="1"
+                  id="waveform-envelope-waves-display" data-slider-value>1</span></label>
+              <input type="range" id="waveform-envelope-waves-slider" data-url-parameter="waveformEnvelopeWaves" min="1" max="10" step="1" value="1"
                 class="control-slider" aria-label="Envelope Waves">
             </div>
             <div class="control slider-control">
               <label for="waveform-envelope-center-slider" class="control-label">CENTER OFFSET <span
-                  id="waveform-envelope-center-display">0</span></label>
-              <input type="range" id="waveform-envelope-center-slider" min="-0.5" max="0.5" step="0.1" value="0"
+                  id="waveform-envelope-center-display" data-slider-value>0</span></label>
+              <input type="range" id="waveform-envelope-center-slider" data-url-parameter="waveformEnvelopeCenter" min="-0.5" max="0.5" step="0.1" value="0"
                 class="control-slider" aria-label="Envelope Center Offset">
             </div>
             <div class="control control_row control_row-toggle" style="margin-top: 8px;">
               <label for="waveform-envelope-bipolar-toggle" class="control-label"
                 style="margin-bottom: 0;">BIPOLAR</label>
               <label class="switch">
-                <input type="checkbox" id="waveform-envelope-bipolar-toggle">
+                <input type="checkbox" id="waveform-envelope-bipolar-toggle" data-url-parameter="waveformEnvelopeBipolar">
                 <span class="slider round"></span>
               </label>
             </div>
@@ -448,14 +442,14 @@
             <div class="control control_row control_row-toggle">
               <label for="waveform-reverse-toggle" class="control-label control_row-label">REVERSE</label>
               <label class="switch">
-                <input type="checkbox" id="waveform-reverse-toggle">
+                <input type="checkbox" id="waveform-reverse-toggle" data-url-parameter="waveformReverse">
                 <span class="slider round"></span>
               </label>
             </div>
             <div class="control slider-control runtime_speed-control">
               <label for="waveform-speed-slider" class="control-label">SPEED <span
-                  id="waveform-speed-display">0.3</span></label>
-              <input type="range" id="waveform-speed-slider" min="0.2" max="1" step="0.1" value="0.3" class="control-slider"
+                  id="waveform-speed-display" data-slider-value>0.3</span></label>
+              <input type="range" id="waveform-speed-slider" data-url-parameter="waveformSpeed" min="0.2" max="1" step="0.1" value="0.3" class="control-slider"
                 aria-label="Waveform Motion Speed" aria-describedby="waveform-speed-unit">
               <p id="waveform-speed-unit" class="control-hint">cycles / s</p>
             </div>
@@ -472,26 +466,26 @@
           </div>
         </div>
 
-        <div id="circles-group" class="control-group" style="display: none;">
+        <div id="circles-group" data-parameter-actions="circles" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="circles-density-slider" class="control-label">DENSITY <span
-                id="circles-density-display">50</span>%</label>
-            <input type="range" id="circles-density-slider" min="10" max="100" value="50" class="control-slider"
+                id="circles-density-display" data-slider-value>50</span>%</label>
+            <input type="range" id="circles-density-slider" data-url-parameter="circlesDensity" min="10" max="100" value="50" class="control-slider"
               aria-label="Circles Density">
           </div>
 
           <div class="control slider-control">
             <label for="circles-size-variation-slider" class="control-label">VARIATION <span
-                id="circles-size-variation-display">0</span>%</label>
-            <input type="range" id="circles-size-variation-slider" min="0" max="100" value="0" class="control-slider"
+                id="circles-size-variation-display" data-slider-value>0</span>%</label>
+            <input type="range" id="circles-size-variation-slider" data-url-parameter="circlesSizeVariation" min="0" max="100" value="0" class="control-slider"
               aria-label="Size Variation">
           </div>
 
           <div class="control">
             <label for="circles-fill-select" class="control-label">STYLE</label>
             <div class="select-wrapper">
-              <select id="circles-fill-select" class="control-select">
+              <select id="circles-fill-select" data-url-parameter="circlesFill" class="control-select">
                 <option value="stroke">Stroke</option>
                 <option value="fill">Fill</option>
               </select>
@@ -499,19 +493,19 @@
           </div>
         </div>
 
-        <div id="numeric-group" class="control-group" style="display: none;">
+        <div id="numeric-group" data-parameter-actions="numeric" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <p class="control-hint">Side marks show the bar’s limits; the pattern between them encodes the digits.</p>
           <div class="control">
             <label for="numeric-input" class="control-label">NUMBER / FORMULA</label>
-            <input type="text" id="numeric-input" placeholder="Enter a number..." class="control-input"
+            <input type="text" id="numeric-input" data-url-parameter="numericValue" placeholder="Enter a number..." class="control-input"
               value="3.14159..." aria-label="Numeric Input">
           </div>
 
           <div class="control">
             <label for="numeric-mode-select" class="control-label">VISUALIZATION</label>
             <div class="select-wrapper">
-              <select id="numeric-mode-select" class="control-select">
+              <select id="numeric-mode-select" data-url-parameter="numericMode" class="control-select">
                 <option value="dotmatrix">Dot Matrix</option>
                 <option value="height">Height Encoding</option>
               </select>
@@ -519,7 +513,7 @@
           </div>
         </div>
 
-        <div id="truss-group" class="control-group" style="display: none;">
+        <div id="truss-group" data-parameter-actions="truss" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control">
             <label for="truss-family-select" class="control-label">TRUSS FAMILY</label>
@@ -544,24 +538,24 @@
           </div>
           <div class="control slider-control">
             <label for="truss-segments-slider" class="control-label">SEGMENTS <span
-                id="truss-segments-display">15</span></label>
-            <input type="range" id="truss-segments-slider" min="5" max="50" value="15" class="control-slider"
+                id="truss-segments-display" data-slider-value>15</span></label>
+            <input type="range" id="truss-segments-slider" data-url-parameter="trussSegments" min="5" max="50" value="15" class="control-slider"
               aria-label="Truss Segments">
           </div>
           <div class="control slider-control">
             <label for="truss-thickness-slider" class="control-label">THICKNESS <span
-                id="truss-thickness-display">2</span></label>
-            <input type="range" id="truss-thickness-slider" min="0.5" max="5" step="0.5" value="2"
+                id="truss-thickness-display" data-slider-value>2</span></label>
+            <input type="range" id="truss-thickness-slider" data-url-parameter="trussThickness" min="0.5" max="5" step="0.5" value="2"
               class="control-slider" aria-label="Truss Thickness">
           </div>
         </div>
 
-        <div id="staff-group" class="control-group" style="display: none;">
+        <div id="staff-group" data-parameter-actions="music" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control">
             <label for="staff-instrument-select" class="control-label">INSTRUMENT</label>
             <div class="select-wrapper">
-              <select id="staff-instrument-select" class="control-select">
+              <select id="staff-instrument-select" data-url-parameter="staffInstrument" class="control-select">
                 <option value="piano">Piano</option>
                 <option value="synth">Synth</option>
                 <option value="marimba">Marimba / Pluck</option>
@@ -571,7 +565,7 @@
           <div class="control">
             <label for="staff-note-shape-select" class="control-label">NOTE SHAPE</label>
             <div class="select-wrapper">
-              <select id="staff-note-shape-select" class="control-select">
+              <select id="staff-note-shape-select" data-url-parameter="staffNoteShape" class="control-select">
                 <option value="circle">Circles</option>
                 <option value="square">Squares</option>
                 <option value="diamond">Diamonds</option>
@@ -582,21 +576,21 @@
           <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
             <label for="staff-reverb-toggle" class="control-label" style="margin-bottom: 0;">REVERB</label>
             <label class="switch">
-              <input type="checkbox" id="staff-reverb-toggle">
+              <input type="checkbox" id="staff-reverb-toggle" data-url-parameter="staffReverb">
               <span class="slider round"></span>
             </label>
           </div>
           <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
             <label for="staff-tremolo-toggle" class="control-label" style="margin-bottom: 0;">TREMOLO</label>
             <label class="switch">
-              <input type="checkbox" id="staff-tremolo-toggle">
+              <input type="checkbox" id="staff-tremolo-toggle" data-url-parameter="staffTremolo">
               <span class="slider round"></span>
             </label>
           </div>
           <div class="control slider-control">
-            <label for="staff-tempo-slider" class="control-label">TEMPO <span id="staff-tempo-display">120</span>
+            <label for="staff-tempo-slider" class="control-label">TEMPO <span id="staff-tempo-display" data-slider-value>120</span>
               BPM</label>
-            <input type="range" id="staff-tempo-slider" min="60" max="240" step="1" value="120" class="control-slider"
+            <input type="range" id="staff-tempo-slider" data-url-parameter="staffTempo" min="60" max="240" step="1" value="120" class="control-slider"
               aria-label="Staff Tempo">
           </div>
           <div class="control">
@@ -645,119 +639,119 @@
           </div>
         </div>
 
-        <div id="graph-group" class="control-group" style="display: none;">
+        <div id="graph-group" data-parameter-actions="graph" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control">
             <label for="graph-input" class="control-label">STREAM 1</label>
-            <input type="text" id="graph-input" placeholder="ENTER TEXT..." class="control-input" value="RPI"
+            <input type="text" id="graph-input" data-url-parameter="graphText" placeholder="ENTER TEXT..." class="control-input" value="RPI"
               aria-label="Graph Text Input">
             <div class="control-hint">Type to generate line graph values</div>
           </div>
           <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
             <label for="graph-multi-toggle" class="control-label" style="margin-bottom: 0;">MULTI STREAMS (NO FILL)</label>
             <label class="switch">
-              <input type="checkbox" id="graph-multi-toggle">
+              <input type="checkbox" id="graph-multi-toggle" data-url-parameter="graphMulti">
               <span class="slider round"></span>
             </label>
           </div>
           <div id="graph-multi-inputs" class="graph-multi-inputs" style="display: none;">
             <div class="control">
               <label for="graph-input-2" class="control-label">STREAM 2</label>
-              <input type="text" id="graph-input-2" placeholder="OPTIONAL..." class="control-input"
+              <input type="text" id="graph-input-2" data-url-parameter="graphText2" placeholder="OPTIONAL..." class="control-input"
                 aria-label="Graph Stream 2 Input">
             </div>
             <div class="control">
               <label for="graph-input-3" class="control-label">STREAM 3</label>
-              <input type="text" id="graph-input-3" placeholder="OPTIONAL..." class="control-input"
+              <input type="text" id="graph-input-3" data-url-parameter="graphText3" placeholder="OPTIONAL..." class="control-input"
                 aria-label="Graph Stream 3 Input">
             </div>
             <div class="control">
               <label for="graph-input-4" class="control-label">STREAM 4</label>
-              <input type="text" id="graph-input-4" placeholder="OPTIONAL..." class="control-input"
+              <input type="text" id="graph-input-4" data-url-parameter="graphText4" placeholder="OPTIONAL..." class="control-input"
                 aria-label="Graph Stream 4 Input">
             </div>
             <div class="control">
               <label for="graph-input-5" class="control-label">STREAM 5</label>
-              <input type="text" id="graph-input-5" placeholder="OPTIONAL..." class="control-input"
+              <input type="text" id="graph-input-5" data-url-parameter="graphText5" placeholder="OPTIONAL..." class="control-input"
                 aria-label="Graph Stream 5 Input">
             </div>
             <div class="control-hint">Up to 5 streams</div>
           </div>
           <div class="control slider-control">
             <label for="graph-scale-slider" class="control-label">SCALE MAX <span
-                id="graph-scale-display">10</span></label>
+                id="graph-scale-display" data-slider-value>10</span></label>
             <input type="range" id="graph-scale-slider" min="4" max="14" value="10" class="control-slider"
               aria-label="Graph Scale Max">
           </div>
         </div>
 
-        <div id="circles-gradient-group" class="control-group" style="display: none;">
+        <div id="circles-gradient-group" data-parameter-actions="circles-gradient" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="circles-gradient-variant-slider" class="control-label">VARIANT <span
-                id="circles-gradient-variant-display">1</span></label>
-            <input type="range" id="circles-gradient-variant-slider" min="1" max="3" value="1"
+                id="circles-gradient-variant-display" data-slider-value>1</span></label>
+            <input type="range" id="circles-gradient-variant-slider" data-url-parameter="circlesGradientVariant" min="1" max="3" value="1"
               class="control-slider" aria-label="Circles Gradient Variant">
           </div>
         </div>
 
-        <div id="gradient-group" class="control-group" style="display: none;">
+        <div id="gradient-group" data-parameter-actions="gradient" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="gradient-variant-slider" class="control-label">VARIANT <span
-                id="gradient-variant-display">1</span></label>
-            <input type="range" id="gradient-variant-slider" min="1" max="2" value="1" class="control-slider"
+                id="gradient-variant-display" data-slider-value>1</span></label>
+            <input type="range" id="gradient-variant-slider" data-url-parameter="gradientVariant" min="1" max="2" value="1" class="control-slider"
               aria-label="Gradient Variant">
           </div>
         </div>
 
-        <div id="grid-group" class="control-group" style="display: none;">
+        <div id="grid-group" data-parameter-actions="grid" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="grid-variant-slider" class="control-label">VARIANT <span
-                id="grid-variant-display">1</span></label>
-            <input type="range" id="grid-variant-slider" min="1" max="3" value="1" class="control-slider"
+                id="grid-variant-display" data-slider-value>1</span></label>
+            <input type="range" id="grid-variant-slider" data-url-parameter="gridVariant" min="1" max="3" value="1" class="control-slider"
               aria-label="Grid Variant">
           </div>
         </div>
 
-        <div id="lines-group" class="control-group" style="display: none;">
+        <div id="lines-group" data-parameter-actions="lines" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="lines-variant-slider" class="control-label">VARIANT <span
                 id="lines-variant-display">MD</span></label>
-            <input type="range" id="lines-variant-slider" min="1" max="2" value="2" class="control-slider"
+            <input type="range" id="lines-variant-slider" data-url-parameter="linesVariant" min="1" max="2" value="2" class="control-slider"
               aria-label="Lines Variant">
           </div>
         </div>
 
-        <div id="point-connect-group" class="control-group" style="display: none;">
+        <div id="point-connect-group" data-parameter-actions="point-connect" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="point-connect-variant-slider" class="control-label">VARIANT <span
-                id="point-connect-variant-display">1</span></label>
-            <input type="range" id="point-connect-variant-slider" min="1" max="2" value="1" class="control-slider"
+                id="point-connect-variant-display" data-slider-value>1</span></label>
+            <input type="range" id="point-connect-variant-slider" data-url-parameter="pointConnectVariant" min="1" max="2" value="1" class="control-slider"
               aria-label="Point Connect Variant">
           </div>
         </div>
 
-        <div id="neural-network-group" class="control-group" style="display: none;">
+        <div id="neural-network-group" data-parameter-actions="neural-network" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="neural-network-hidden-layers-slider" class="control-label">HIDDEN LAYERS <span
-                id="neural-network-hidden-layers-display">1</span></label>
-            <input type="range" id="neural-network-hidden-layers-slider" min="1" max="5" value="1"
+                id="neural-network-hidden-layers-display" data-slider-value>1</span></label>
+            <input type="range" id="neural-network-hidden-layers-slider" data-url-parameter="neuralNetworkHiddenLayers" min="1" max="5" value="1"
               class="control-slider" aria-label="Neural Network Hidden Layers">
           </div>
           <div class="control-hint">Adjusts the number of interior network layers in the bar</div>
         </div>
 
-        <div id="triangle-grid-group" class="control-group" style="display: none;">
+        <div id="triangle-grid-group" data-parameter-actions="triangle-grid" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="triangle-grid-variant-slider" class="control-label">VARIANT <span
-                id="triangle-grid-variant-display">2</span></label>
-            <input type="range" id="triangle-grid-variant-slider" min="1" max="3" value="2" class="control-slider"
+                id="triangle-grid-variant-display" data-slider-value>2</span></label>
+            <input type="range" id="triangle-grid-variant-slider" data-url-parameter="triangleGridVariant" min="1" max="3" value="2" class="control-slider"
               aria-label="Triangle Grid Variant">
           </div>
         </div>
@@ -766,23 +760,23 @@
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="triangles-variant-slider" class="control-label">VARIANT <span
-                id="triangles-variant-display">1</span></label>
-            <input type="range" id="triangles-variant-slider" min="1" max="2" value="1" class="control-slider"
+                id="triangles-variant-display" data-slider-value>1</span></label>
+            <input type="range" id="triangles-variant-slider" data-url-parameter="trianglesVariant" min="1" max="2" value="1" class="control-slider"
               aria-label="Triangles Variant">
           </div>
           <div class="control">
             <label for="triangles-direction-select" class="control-label">DIRECTION</label>
-            <select id="triangles-direction-select" class="control-select" aria-label="Triangle diagonal direction">
-              <option value="down-right" selected>Down right ↘</option>
-              <option value="up-right">Up right ↗</option>
-              <option value="up-left">Up left ↖</option>
-              <option value="down-left">Down left ↙</option>
+            <select id="triangles-direction-select" data-url-parameter="trianglesDirection" class="control-select" aria-label="Triangle diagonal direction">
+              <option value="down-right" selected>Down right</option>
+              <option value="up-right">Up right</option>
+              <option value="up-left">Up left</option>
+              <option value="down-left">Down left</option>
             </select>
           </div>
           <div class="control slider-control">
             <label for="triangles-count-slider" class="control-label">TRIANGLES <span
-                id="triangles-count-display">14</span></label>
-            <input type="range" id="triangles-count-slider" min="6" max="28" step="1" value="14" class="control-slider"
+                id="triangles-count-display" data-slider-value>14</span></label>
+            <input type="range" id="triangles-count-slider" data-url-parameter="trianglesCount" min="6" max="28" step="1" value="14" class="control-slider"
               aria-label="Triangle count">
           </div>
         </div>
@@ -810,27 +804,21 @@
       <h1 class="u-sr-only">RPI Bar Generator</h1>
       <div class="canvas-viewport">
         <div class="logo-container">
+          <noscript><p class="generator_error">Enable JavaScript to generate and export a bar.</p></noscript>
           <div id="p5-container" role="img" aria-label="Preview of the generated RPI logo"></div>
         </div>
       </div>
 
       <!-- Visual Workspace Actions -->
-      <div class="workspace-controls zoom_controls" role="group" aria-label="Preview zoom">
+      <div class="workspace-controls zoom_controls" data-page-entrance role="group" aria-label="Preview zoom">
         <div class="zoom_controls-row">
         <button id="zoom-out-btn" class="workspace-btn" aria-label="Zoom out (-)" aria-keyshortcuts="-" data-tooltip="Zoom out (-)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
+          <svg data-feather="minus" class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
         <input type="text" id="zoom-level" class="zoom-level-input" value="100%" aria-label="Preview zoom" role="spinbutton" inputmode="decimal" aria-valuemin="100" aria-valuemax="400" aria-valuenow="100" aria-describedby="zoom-help"
           title="100% fits this viewport. Preview zoom does not change exports.">
         <button id="zoom-in-btn" class="workspace-btn" aria-label="Zoom in (+)" aria-keyshortcuts="= Shift+= Plus" data-tooltip="Zoom in (+)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
+          <svg data-feather="plus" class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
         <div class="workspace-divider"></div>
         <button id="zoom-reset-btn" class="workspace-btn zoom_controls-fit" aria-label="Fit logo to viewport (0)" aria-keyshortcuts="0" data-tooltip="Fit whole mark (0)">Fit</button>
@@ -849,11 +837,7 @@
           <h2 id="bug-report-title" class="report_dialog-title">Report a Problem</h2>
         </div>
         <button id="bug-report-close" class="report_dialog-close" type="button" aria-label="Close report dialog">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <svg data-feather="x" class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
@@ -895,29 +879,21 @@
   </dialog>
 
   <div id="toast-container"></div>
+  <script>BarShareState.prepareTrigger(); GeneratorInitialState.apply(document.body); setupCustomDropdowns(); ParameterControls.prepare(document);</script>
   <script src="third_party/gif.js/gif.js"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261027-motion-polish"></script>
-  <script src="js/utils/profanityFilter.js?v=20260930-audit-fixes"></script>
-  <script src="js/utils/tickerDisplay.js"></script>
-  <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/quantumModel.js"></script>
   <script src="js/utils/quantumControls.js"></script>
-  <script src="js/utils/barPattern.js?v=20261027-quantum-motion"></script>
-  <script src="js/utils/loopingGif.js?v=20261027-motion-polish"></script>
-  <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
-  <script src="js/utils/previewControls.js?v=20260417-morse-randomize"></script>
+  <script src="js/utils/previewControls.js?v=20261027-integration-final"></script>
   <script src="js/utils/viewportZoom.js?v=20261027-viewport-zoom"></script>
   <script src="js/utils/viewerTouch.js"></script>
   <script src="js/utils/headerMotionSurface.js"></script>
   <script src="js/utils/themeMotion.js"></script>
-  <script src="js/utils/featherIcons.js"></script>
-  <script src="js/utils/shareState.js"></script>
-  <script src="js/ui.js"></script>
+  <script src="js/ui.js?v=20261027-integration-final"></script>
   <script src="js/utils/logoGeometry.js"></script>
+  <script src="js/utils/urlState.js?v=20261027-integration-final"></script>
   <script src="js/utils/exportOptions.js"></script>
   <script src="js/utils/transparentGif.js"></script>
-  <script src="js/utils/exportUi.js"></script>
-  <script src="js/main.js?v=20261027-transparent-exports"></script>
+  <script src="js/utils/exportUi.js?v=20261027-integration-final"></script>
+  <script src="js/main.js?v=20261027-integration-final"></script>
   <script src="js/drawing.js?v=20261027-transparent-exports"></script>
   <script>
     if (typeof window.p5 !== 'function') {

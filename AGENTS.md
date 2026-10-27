@@ -139,6 +139,8 @@ Avoid:
 - The bar must obey the official geometry:
   - use the official 500 × 36 px bar design area and scale it proportionally with the official vectors
   - keep spacing, placement, and letterform proportions fixed
+  - require actual painted artwork to touch both nominal horizontal edges without overflow, across variants and animation phases; a clip/container alone is insufficient
+  - preserve scientific coordinates and fixed reference geometry; do not rescale motion per frame to force edge contact
   - use primitive geometry such as rectangles, ellipses, polygons, and lines
   - do not infer new numerical geometry from ambiguous prose about the width of lettering
 - Any bars should be scientifically accurate.

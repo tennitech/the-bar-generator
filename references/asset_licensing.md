@@ -23,3 +23,20 @@ Source references: [RPI intellectual property policy](https://doso.rpi.edu/polic
 The official [Typography page](https://brand.rpi.edu/document/4#/-/typography) says RPI Geist and Mono are free to use and downloadable. Replica requires a paid license. The [font library](https://brand.rpi.edu/document/13) was inspected, but no font license files were downloaded or audited. Public redistribution terms remain unverified. These findings do not close the asset-permission items above.
 
 The [Bar rules](https://brand.rpi.edu/document/4#/-/the-bar) distinguish Student Union approval for internal club use from formal brand approval for the official library. Record the applicable approval, not just the asset source. See the dated source checklist in rpi_brand_guidelines.md.
+
+## Feather action icons
+
+UI action icons use the static Feather4.29.2subset from the official tagged
+repository. The unchanged MIT license (Cole Bemis,2013–2023) is retained at
+`third_party/feather/LICENSE`; source URLs and file hashes are recorded in
+`third_party/feather/notice.md` and `manifest.json`. This permission covers those
+icons only and does not resolve the RPI trademark, fonts or artwork items above.
+
+## Integration review screenshots
+
+`references/review-images/integration-desktop.png` and `integration-mobile.png`
+were generated from this repository’s running application on October27,2026.
+They reuse existing configured identity/font assets and the licensed Feather
+glyphs. No external image or replacement artwork was added; the underlying
+permission questions above remain unchanged. See integration-validation.md in
+the same review-images directory for capture conditions and limitations.

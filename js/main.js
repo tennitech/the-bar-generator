@@ -581,7 +581,6 @@ const MOTION_ENABLED_BY_STYLE = {
   waveform: DEFAULT_MOTION_ENABLED
 };
 const DEFAULT_ZOOM_LEVEL = 1;
-const COMPACT_LAYOUT_MAX_WIDTH = 900;
 const HEADER_ACTION_COLLAPSE_BUFFER = 96;
 
 let zoomLevel = DEFAULT_ZOOM_LEVEL;
@@ -659,8 +658,7 @@ function getRenderedResponsiveLogoScale() {
 let zoomInBtn, zoomOutBtn, zoomResetBtn, zoomLevelDisplay;
 
 function isCompactLayoutViewport(viewportWidth = window.innerWidth) {
-  return Math.max(0, Math.round(viewportWidth || 0)) <= COMPACT_LAYOUT_MAX_WIDTH
-    || (viewportWidth <= 1100 && window.matchMedia('(pointer: coarse)').matches);
+  return window.GeneratorInitialState.isCompactLayoutViewport(viewportWidth, window.matchMedia('(pointer: coarse)').matches);
 }
 
 function isCompactTouchLayoutViewport() {
@@ -960,56 +958,11 @@ function activateSliderValueEditor(config) {
   });
 }
 
-function prepareSliderValueLabelLayout(display) {
-  if (!display) return;
-
-  const label = display.closest('label.control-label');
-  if (!label || label.dataset.sliderValueLayout === 'ready') {
-    return;
-  }
-
-  const nodes = Array.from(label.childNodes);
-  const displayIndex = nodes.indexOf(display);
-  if (displayIndex === -1) {
-    return;
-  }
-
-  const labelText = document.createElement('span');
-  labelText.className = 'slider_label-text';
-
-  const valueGroup = document.createElement('span');
-  valueGroup.className = 'slider_value-group';
-
-  nodes.forEach((node, index) => {
-    if (index < displayIndex) {
-      labelText.appendChild(node);
-      return;
-    }
-
-    if (node.nodeType === 3) {
-      if (node.textContent.trim().length === 0) {
-        return;
-      }
-
-      const affix = document.createElement('span');
-      affix.className = 'slider_value-affix';
-      affix.textContent = node.textContent;
-      valueGroup.appendChild(affix);
-      return;
-    }
-
-    valueGroup.appendChild(node);
-  });
-
-  label.replaceChildren(labelText, valueGroup);
-  label.classList.add('slider_label-row');
-  label.dataset.sliderValueLayout = 'ready';
-}
 
 function registerSliderValueEditor(config) {
   if (!config || !config.display || !config.slider) return;
 
-  prepareSliderValueLabelLayout(config.display);
+  window.ParameterControls.prepareSliderValueLabel(config.display);
   config.display.classList.add('slider_value-display');
   config.display.tabIndex = 0;
   config.display.setAttribute('role', 'button');
@@ -1469,45 +1422,7 @@ function resetStyleParameters(style) {
 }
 
 function setupControlGroupResetButtons() {
-  Object.entries(RESETTABLE_GROUP_STYLE_MAP).forEach(([groupId, style]) => {
-    const group = document.getElementById(groupId);
-    const header = group?.querySelector('.control-header');
-    if (!header || header.querySelector('.control-reset-btn')) return;
-
-    const label = document.createElement('span');
-    label.className = 'control-header-label';
-    label.textContent = header.textContent.trim();
-    header.textContent = '';
-    header.appendChild(label);
-
-    const actions = document.createElement('div');
-    actions.className = 'control-header-actions';
-
-    if (SURPRISEABLE_STYLE_SET.has(style)) {
-      const surpriseBtn = document.createElement('button');
-      surpriseBtn.type = 'button';
-      surpriseBtn.className = 'control-surprise-btn';
-      surpriseBtn.textContent = 'Randomize';
-      surpriseBtn.setAttribute('aria-label', `Randomize ${style} parameters`);
-      surpriseBtn.addEventListener('click', (event) => {
-        event.preventDefault();
-        randomizeStyleParameters(style);
-      });
-      actions.appendChild(surpriseBtn);
-    }
-
-    const resetBtn = document.createElement('button');
-    resetBtn.type = 'button';
-    resetBtn.className = 'control-reset-btn';
-    resetBtn.textContent = 'Reset';
-    resetBtn.setAttribute('aria-label', `Reset ${style} parameters`);
-    resetBtn.addEventListener('click', (event) => {
-      event.preventDefault();
-      resetStyleParameters(style);
-    });
-    actions.appendChild(resetBtn);
-    header.appendChild(actions);
-  });
+  window.ParameterControls.prepare(document);
 }
 
 function randomizeStyleParameters(style) {
@@ -2313,51 +2228,7 @@ function setupResponsiveWorkspaceSizing() {
 
 function syncSaveButtonResponsiveLayout() {
   saveButtonLayoutFrame = 0;
-  if (!saveButton || !saveButtonLabel) return;
-
-  const appHeader = saveButton.closest('.app-header') || document.querySelector('.app-header');
-  const headerActions = saveButton.closest('.header-actions');
-  const headerBrand = appHeader ? appHeader.querySelector('.header-brand') : null;
-  const brandTitle = appHeader ? appHeader.querySelector('.brand-title') : null;
-  const lunarCounter = appHeader ? appHeader.querySelector('.lunar_counter') : null;
-
-  saveButton.classList.remove('is-icon-only');
-
-  const labelStyle = window.getComputedStyle(saveButtonLabel);
-  const labelLineHeight = parseFloat(labelStyle.lineHeight);
-  const labelWrapped = saveButtonLabel.getClientRects().length > 1 ||
-    (Number.isFinite(labelLineHeight) && saveButtonLabel.offsetHeight > labelLineHeight * 1.35);
-  const brandTitleStyle = brandTitle ? window.getComputedStyle(brandTitle) : null;
-  const brandTitleLineHeight = brandTitleStyle ? parseFloat(brandTitleStyle.lineHeight) : NaN;
-  const brandTitleWrapped = brandTitle ? (
-    brandTitle.getClientRects().length > 1 ||
-    (Number.isFinite(brandTitleLineHeight) && brandTitle.offsetHeight > brandTitleLineHeight * 1.35)
-  ) : false;
-  const brandTitleConstrained = brandTitle ? brandTitle.scrollWidth > brandTitle.clientWidth + 1 : false;
-  const headerOverflow = appHeader ? appHeader.scrollWidth > appHeader.clientWidth + 1 : false;
-  const actionsOverflow = headerActions ? headerActions.scrollWidth > headerActions.clientWidth + 1 : false;
-  const brandRect = headerBrand ? headerBrand.getBoundingClientRect() : null;
-  const actionsRect = headerActions ? headerActions.getBoundingClientRect() : null;
-  const lunarCounterStyle = lunarCounter ? window.getComputedStyle(lunarCounter) : null;
-  const lunarCounterIsVisible = lunarCounter && lunarCounterStyle && lunarCounterStyle.display !== 'none';
-  const lunarCounterRect = lunarCounterIsVisible ? lunarCounter.getBoundingClientRect() : null;
-  const inlineGaps = [];
-
-  if (brandRect && actionsRect) inlineGaps.push(actionsRect.left - brandRect.right);
-  if (lunarCounterRect && actionsRect) inlineGaps.push(actionsRect.left - lunarCounterRect.right);
-
-  const smallestInlineGap = inlineGaps.length ? Math.min(...inlineGaps) : Infinity;
-  const headerIsTight = smallestInlineGap < HEADER_ACTION_COLLAPSE_BUFFER;
-
-  saveButton.classList.toggle(
-    'is-icon-only',
-    labelWrapped ||
-    brandTitleWrapped ||
-    brandTitleConstrained ||
-    headerOverflow ||
-    actionsOverflow ||
-    headerIsTight
-  );
+  window.GeneratorInitialState.syncHeaderLayout(saveButton, saveButtonLabel, HEADER_ACTION_COLLAPSE_BUFFER);
 }
 
 function requestSaveButtonResponsiveLayout() {
@@ -3520,10 +3391,12 @@ function setup() {
   setupCustomDropdowns();
   syncLunarColorOptionAvailability();
   syncAllCustomSelects();
+  window.ParameterControls.bindActions({ randomize: randomizeStyleParameters, reset: resetStyleParameters });
   updateHeaderBrandPreview(true);
 
   setupLunarSplashdownCounter();
   setupShareLinks();
+  window.addEventListener('urlstateerror', () => Toast.show('The address could not update. Use Share to copy the current bar.', 'error'));
 
   // Add global keyboard event listener for more reliable shift detection
   document.addEventListener('keydown', function (event) {
@@ -3922,7 +3795,7 @@ function toggleMobileMenu() {
 
       mobileSidebarFocusFrame = requestAnimationFrame(() => {
         mobileSidebarFocusFrame = 0;
-        if (!appSidebar.classList.contains('active') || !isCompactLayoutViewport()) return;
+        if (!appSidebar.classList.contains('active') || !isCompactLayoutViewport() || appSidebar.contains(document.activeElement)) return;
         const firstFocusable = getSidebarFocusableElements()[0];
         if (firstFocusable) firstFocusable.focus({ preventScroll: true });
       });
@@ -4414,10 +4287,13 @@ function applyColorMode(colorMode) {
   // Remove all theme classes first
   document.body.classList.remove(...new Set(Object.values(themeClassByColorMode)));
 
+  document.documentElement.classList.remove(...new Set(Object.values(themeClassByColorMode)));
+
   // Add appropriate theme class
   const themeClass = themeClassByColorMode[currentColorMode] || themeClassByColorMode[DEFAULT_COLOR_MODE];
   if (themeClass) {
     document.body.classList.add(themeClass);
+    document.documentElement.classList.add(themeClass);
   }
 
   if (colorModeSelect) {
@@ -4737,7 +4613,7 @@ async function ensureHeaderLogoAnimationController() {
   }
 
   headerLogoAnimationControllerPromise = (async () => {
-    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261027-motion-polish');
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261027-integration-final');
 
     if (!window.LogoAnimationOverlay
       || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {
@@ -6174,102 +6050,7 @@ function scheduleStaffNote() {
 
 // URL parameter management
 function getUrlParameters() {
-  const params = new URLSearchParams(window.location.search);
-  const routeStyle = window.GeneratorRoutes
-    ? window.GeneratorRoutes.getGeneratorRouteStyleFromPathname(window.location.pathname)
-    : window.__RPI_GENERATOR_ROUTE_STYLE__;
-  const style = normalizeStyleValue(routeStyle || params.get('style') || 'solid');
-  const requestedColorMode = normalizeColorModeValue(params.get('colorMode') || DEFAULT_COLOR_MODE);
-  const colorMode = style === 'lunar' || requestedColorMode !== 'lunar'
-    ? requestedColorMode
-    : DEFAULT_COLOR_MODE;
-
-  return {
-    style,
-    colorMode,
-
-    // Binary parameters
-    binaryText: params.get('binaryText') || 'RPI',
-
-    // Numeric parameters
-    numericValue: params.get('numericValue') || '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679',
-    numericMode: params.get('numericMode') || 'dotmatrix',
-    circlesGradientVariant: Math.max(1, Math.min(3, parseInt(params.get('circlesGradientVariant')) || 1)),
-    gradientVariant: Math.max(1, Math.min(2, parseInt(params.get('gradientVariant')) || 1)),
-    gridVariant: Math.max(1, Math.min(3, parseInt(params.get('gridVariant')) || 1)),
-
-    // Reference pattern parameters
-    linesVariant: Math.max(1, Math.min(2, parseInt(params.get('linesVariant')) || 2)),
-    pointConnectVariant: Math.max(1, Math.min(2, parseInt(params.get('pointConnectVariant')) || 1)),
-    neuralNetworkHiddenLayers: Math.max(1, Math.min(5, parseInt(params.get('neuralNetworkHiddenLayers')) || 1)),
-    triangleGridVariant: Math.max(1, Math.min(3, parseInt(params.get('triangleGridVariant')) || 2)),
-    trianglesVariant: Math.max(1, Math.min(2, parseInt(params.get('trianglesVariant')) || 1)),
-    trianglesDirection: normalizeTrianglePatternDirection(params.get('trianglesDirection')),
-    trianglesCount: normalizeTrianglesPatternSettings({ count: params.has('trianglesCount') ? params.get('trianglesCount') : undefined }).count,
-
-    // Ruler parameters
-    rulerRepeats: parseInt(params.get('rulerRepeats')) || 10,
-    rulerUnits: parseInt(params.get('rulerUnits')) || 4,
-    rulerSpeed: normalizeLoopSpeed('ruler', params.get('rulerSpeed')),
-    rulerReverse: params.get('rulerReverse') === 'true',
-
-    // Ticker parameters
-    tickerRepeats: parseInt(params.get('tickerRepeats')) || 34,
-    tickerRatio: parseInt(params.get('tickerRatio')) || 2,
-    tickerWidthRatio: parseInt(params.get('tickerWidthRatio')) || 2,
-    tickerSpeed: normalizeLoopSpeed('ticker', params.get('tickerSpeed')),
-    tickerReverse: params.get('tickerReverse') === 'true',
-
-    // Waveform parameters
-    waveformType: parseFloat(params.get('waveformType')) || 0,
-    waveformFrequency: parseInt(params.get('waveformFrequency')) || 24,
-    waveformSpeed: normalizeLoopSpeed('waveform', params.get('waveformSpeed')),
-    waveformReverse: params.get('waveformReverse') === 'true',
-
-    waveformEnvelope: params.get('waveformEnvelope') || 'false',
-    waveformEnvelopeType: params.get('waveformEnvelopeType') || 'sine',
-    waveformEnvelopeWaves: typeof normalizeWaveformEnvelopeWaves === 'function'
-      ? normalizeWaveformEnvelopeWaves(params.get('waveformEnvelopeWaves'))
-      : Math.max(1, Math.min(10, Math.round(parseFloat(params.get('waveformEnvelopeWaves'))) || 1)),
-    waveformEnvelopeCenter: typeof normalizeWaveformEnvelopeCenter === 'function'
-      ? normalizeWaveformEnvelopeCenter(params.get('waveformEnvelopeCenter'))
-      : Math.max(-0.5, Math.min(0.5, parseFloat(params.get('waveformEnvelopeCenter')) || 0)),
-    waveformEnvelopeBipolar: params.get('waveformEnvelopeBipolar') || 'false',
-
-    // Circles parameters
-    circlesFill: params.get('circlesFill') || 'stroke',
-    circlesDensity: parseInt(params.get('circlesDensity')) || 50,
-    circlesSizeVariation: parseInt(params.get('circlesSizeVariation')) || 0,
-
-    // Truss parameters
-    trussFamily: normalizeTrussFamilyValue(params.get('trussFamily') || 'flat'),
-    trussSegments: parseInt(params.get('trussSegments')) || 15,
-    trussThickness: parseFloat(params.get('trussThickness')) || 2,
-
-    // Staff parameters
-    staffNotes: params.get('staffNotes') || '',
-    staffTempo: parseInt(params.get('staffTempo')) || 120,
-    staffInstrument: params.get('staffInstrument') || 'piano',
-    staffNoteShape: normalizeMusicNoteShape(params.get('staffNoteShape') || 'circle'),
-    staffReverb: params.get('staffReverb') === 'true',
-    staffTremolo: params.get('staffTremolo') === 'true',
-
-    // Pulse parameters
-    pulseText: params.get('pulseText') || 'RPI',
-    pulseIntensity: parseFloat(params.get('pulseIntensity')) || 5,
-
-    // Graph parameters
-    graphText: params.get('graphText') || 'RPI',
-    graphText2: params.get('graphText2') || '',
-    graphText3: params.get('graphText3') || '',
-    graphText4: params.get('graphText4') || '',
-    graphText5: params.get('graphText5') || '',
-    graphMulti: params.get('graphMulti') === 'true',
-    graphScale: Math.max(GRAPH_SCALE_MIN, parseInt(params.get('graphScale')) || GRAPH_SCALE_DEFAULT),
-
-    // Additional parameters
-    morseText: params.has('morseText') ? params.get('morseText') : 'RPI'
-  };
+  return window.GeneratorParameters.read();
 }
 
 function updateUrlParameters() {
@@ -6513,7 +6294,7 @@ function updateUrlParameters() {
   const newUrl = window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorUrl === 'function'
     ? window.GeneratorRoutes.buildGeneratorUrl(selectedStyle, params, window.location.pathname)
     : (params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname);
-  window.history.replaceState(window.history.state, '', newUrl + window.location.hash);
+  window.URLState.replace(newUrl + window.location.hash);
 }
 
 function applyUrlParameters() {
@@ -6957,9 +6738,10 @@ function setupViewportHeightSync() {
 
 function draw() {
   const currentTime = getAnimationNowMs();
-  window.quantumControls.tick(currentTime, document.hidden || document.body.classList.contains('has-logo-animation'));
+  const drawingSuspended = document.hidden || document.body.classList.contains('has-logo-animation') || window.PageEntrance?.isHoldingArtwork?.();
+  window.quantumControls.tick(currentTime, drawingSuspended);
   const currentMotionStyle = getCurrentMotionStyle();
-  if (document.hidden || document.body.classList.contains('has-logo-animation')) {
+  if (drawingSuspended) {
     lastAnimationFrameTimestamp = 0;
     return;
   }
@@ -8038,238 +7820,8 @@ function touchEnded() {
   endPanDrag();
 }
 
-// --- Custom Dropdown Logic ---
-function setupCustomDropdowns() {
-  const selects = document.querySelectorAll('.control-select');
-
-  selects.forEach(select => {
-    // Check if already initialized to avoid duplicates
-    if (select.parentNode.classList.contains('custom-select-wrapper')) return;
-
-    // Create wrapper
-    const wrapper = document.createElement('div');
-    wrapper.className = 'custom-select-wrapper';
-    select.parentNode.insertBefore(wrapper, select);
-    wrapper.appendChild(select);
-
-    // Create trigger
-    const trigger = document.createElement('button');
-    trigger.type = 'button';
-    trigger.className = 'custom-select-trigger';
-    trigger.setAttribute('role', 'combobox');
-    trigger.setAttribute('aria-haspopup', 'listbox');
-    trigger.setAttribute('aria-expanded', 'false');
-    const selectLabel = document.querySelector(`label[for="${select.id}"]`);
-    const accessibleLabel = selectLabel ? selectLabel.textContent.trim() : (select.getAttribute('aria-label') || 'Choose an option');
-    trigger.dataset.label = accessibleLabel;
-    const selectedOption = select.options[select.selectedIndex];
-    trigger.textContent = selectedOption ? selectedOption.textContent : 'Select...';
-    trigger.setAttribute('aria-label', `${accessibleLabel}: ${trigger.textContent}`);
-    wrapper.appendChild(trigger);
-
-    // Create options list
-    const optionsList = document.createElement('div');
-    optionsList.className = 'custom-select-options';
-    optionsList.id = `${select.id}-options`;
-    optionsList.setAttribute('role', 'listbox');
-    optionsList.setAttribute('aria-label', accessibleLabel);
-    trigger.setAttribute('aria-controls', optionsList.id);
-    wrapper.appendChild(optionsList);
-
-    const fadeTop = document.createElement('div');
-    fadeTop.className = 'custom-select-scroll-fade custom-select-scroll-fade-top';
-    optionsList.appendChild(fadeTop);
-
-    const optionsViewport = document.createElement('div');
-    optionsViewport.className = 'custom-select-options-scroll';
-    optionsList.appendChild(optionsViewport);
-
-    const fadeBottom = document.createElement('div');
-    fadeBottom.className = 'custom-select-scroll-fade custom-select-scroll-fade-bottom';
-    optionsList.appendChild(fadeBottom);
-
-    const updateScrollFades = () => {
-      const canScroll = optionsViewport.scrollHeight > optionsViewport.clientHeight + 1;
-      const hasScrollTop = canScroll && optionsViewport.scrollTop > 1;
-      const hasScrollBottom = canScroll &&
-        optionsViewport.scrollTop + optionsViewport.clientHeight < optionsViewport.scrollHeight - 1;
-
-      optionsList.classList.toggle('has-scroll-top', hasScrollTop);
-      optionsList.classList.toggle('has-scroll-bottom', hasScrollBottom);
-    };
-
-    let optionIndex = 0;
-    const appendCustomOption = (option) => {
-      const customOption = document.createElement('div');
-      customOption.className = 'custom-option';
-      customOption.id = `${select.id}-option-${optionIndex++}`;
-      customOption.setAttribute('role', 'option');
-      customOption.setAttribute('aria-selected', String(option.selected));
-      customOption.textContent = option.textContent;
-      customOption.dataset.value = option.value;
-      customOption.setAttribute('aria-disabled', String(option.disabled));
-
-      if (option.selected) {
-        customOption.classList.add('selected');
-      }
-
-      if (option.hidden) {
-        customOption.classList.add('is-hidden');
-        customOption.setAttribute('aria-hidden', 'true');
-      }
-
-      if (option.disabled) {
-        customOption.classList.add('is-disabled');
-      }
-
-      customOption.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (customOption.classList.contains('is-hidden') || customOption.classList.contains('is-disabled')) {
-          return;
-        }
-
-        commitOption(customOption);
-      });
-
-      optionsViewport.appendChild(customOption);
-    };
-
-    // Populate options, preserving optgroup headings where present.
-    Array.from(select.children).forEach(child => {
-      if (child.tagName === 'OPTGROUP') {
-        const groupLabel = document.createElement('div');
-        groupLabel.className = 'custom-option-group-label';
-        groupLabel.textContent = child.label;
-        optionsViewport.appendChild(groupLabel);
-
-        Array.from(child.children).forEach(option => appendCustomOption(option));
-        return;
-      }
-
-      if (child.tagName === 'OPTION') {
-        appendCustomOption(child);
-      }
-    });
-
-    const getEnabledOptions = () => Array.from(optionsViewport.querySelectorAll('.custom-option:not(.is-hidden):not(.is-disabled)'));
-    let activeOption = null;
-
-    function setActiveOption(option) {
-      if (!option) return;
-      activeOption = option;
-      trigger.setAttribute('aria-activedescendant', option.id);
-      option.scrollIntoView({ block: 'nearest' });
-    }
-
-    function setOpen(open) {
-      wrapper.classList.toggle('open', open);
-      trigger.setAttribute('aria-expanded', String(open));
-      if (open) {
-        const options = getEnabledOptions();
-        setActiveOption(options.find(option => option.dataset.value === select.value) || options[0]);
-        requestAnimationFrame(updateScrollFades);
-      } else {
-        trigger.removeAttribute('aria-activedescendant');
-        activeOption = null;
-      }
-    }
-
-    function commitOption(option) {
-      select.value = option.dataset.value;
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-      setOpen(false);
-      trigger.focus();
-    }
-
-    // Toggle dropdown
-    trigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      document.querySelectorAll('.custom-select-wrapper').forEach(w => {
-        if (w !== wrapper) {
-          w.classList.remove('open');
-          const otherTrigger = w.querySelector('.custom-select-trigger');
-          if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
-        }
-      });
-      setOpen(!wrapper.classList.contains('open'));
-    });
-
-    trigger.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        if (wrapper.classList.contains('open')) {
-          event.preventDefault();
-          event.stopPropagation();
-          setOpen(false);
-        }
-        return;
-      }
-      if (event.key === 'Tab') {
-        setOpen(false);
-        return;
-      }
-      if (!['ArrowDown', 'ArrowUp', 'Home', 'End', 'Enter', ' '].includes(event.key)) return;
-      event.preventDefault();
-      event.stopPropagation();
-      if (!wrapper.classList.contains('open')) {
-        setOpen(true);
-        const options = getEnabledOptions();
-        if (event.key === 'Home') setActiveOption(options[0]);
-        if (event.key === 'End') setActiveOption(options[options.length - 1]);
-        return;
-      }
-      if (event.key === 'Enter' || event.key === ' ') {
-        if (activeOption) commitOption(activeOption);
-        return;
-      }
-      const options = getEnabledOptions();
-      if (!options.length) return;
-      const currentIndex = Math.max(0, options.indexOf(activeOption));
-      const nextIndex = event.key === 'Home' ? 0
-        : event.key === 'End' ? options.length - 1
-          : event.key === 'ArrowDown' ? Math.min(options.length - 1, currentIndex + 1)
-            : Math.max(0, currentIndex - 1);
-      setActiveOption(options[nextIndex]);
-    });
-
-    // Listen for external updates to the select (e.g. from keyboard shortcuts)
-    select.addEventListener('change', () => {
-      const newSelected = select.options[select.selectedIndex];
-      syncCustomSelectUI(select, wrapper, select.value, newSelected ? newSelected.textContent : select.value);
-      wrapper.querySelectorAll('.custom-option').forEach(option => {
-        option.setAttribute('aria-selected', String(option.dataset.value === select.value));
-      });
-      requestAnimationFrame(updateScrollFades);
-    });
-    select.addEventListener('input', () => {
-      const newSelected = select.options[select.selectedIndex];
-      syncCustomSelectUI(select, wrapper, select.value, newSelected ? newSelected.textContent : select.value);
-    });
-
-    optionsViewport.addEventListener('scroll', updateScrollFades);
-    requestAnimationFrame(updateScrollFades);
-  });
-
-  // click outside to close dropdowns
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.custom-select-wrapper')) {
-      document.querySelectorAll('.custom-select-wrapper').forEach(w => {
-        w.classList.remove('open');
-        const trigger = w.querySelector('.custom-select-trigger');
-        if (trigger) {
-          trigger.setAttribute('aria-expanded', 'false');
-          trigger.removeAttribute('aria-activedescendant');
-        }
-      });
-    }
-  });
-}
-
 // Ensure custom dropdowns are initialized when DOM is ready
 document.addEventListener('DOMContentLoaded', setupCustomDropdowns);
-
-if (['localhost', '127.0.0.1'].includes(location.hostname) && location.port === '4311') {
-  document.title = `BAR-01 · Geometry · 4311 | ${document.title}`;
-}
 
 // Share links bridge the legacy p5 global state without coupling serialization to rendering.
 let sharePatternSeed = typeof crypto !== 'undefined' && crypto.getRandomValues
@@ -8289,8 +7841,6 @@ function setupShareLinks() {
       notes: currentStaffNotes, duration: currentNoteDuration }),
     restore: state => {
       stopAudio();
-      // Quantum links preserve phase/rate/reverse but follow its no-auto-start contract.
-      if (window.quantumControls) window.quantumControls.pause();
       sharePatternSeed = state.seed;
       currentStaffNotes = state.notes;
       currentNoteDuration = state.duration;
@@ -8305,6 +7855,8 @@ function setupShareLinks() {
       document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
         button.classList.toggle('active', Number(button.dataset.duration) === state.duration);
       });
+      window.quantumControls.pause();
+      window.quantumControls.sync();
       resetCirclePatternCache();
     },
     refresh: () => {
@@ -8327,16 +7879,16 @@ function setupShareLinks() {
       });
       resetAnimationClock();
       for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = DEFAULT_MOTION_ENABLED;
-      if (window.quantumControls && window.quantumModel) {
-        const query = new URLSearchParams(window.location.search);
-        document.getElementById('quantum-phase').value = window.quantumModel.normalizePhase(query.get('quantumPhase') || 0);
-        document.getElementById('quantum-speed-slider').value = window.quantumModel.normalizeSpeed(query.has('quantumSpeed') ? query.get('quantumSpeed') : 1);
-        document.getElementById('quantum-reverse-toggle').checked = query.get('quantumReverse') === 'true';
-        window.quantumControls.pause();
-      }
       applyUrlParameters();
+      const quantumQuery = new URLSearchParams(location.search);
+      document.getElementById('quantum-phase').value = quantumModel.normalizePhase(quantumQuery.get('quantumPhase') || 0);
+      document.getElementById('quantum-speed-slider').value = quantumModel.normalizeSpeed(quantumQuery.has('quantumSpeed') ? quantumQuery.get('quantumSpeed') : 1);
+      document.getElementById('quantum-reverse-toggle').checked = quantumQuery.get('quantumReverse') === 'true';
+      window.quantumControls.pause();
+      window.quantumControls.sync();
       syncMotionToggleState();
       syncAllCustomSelects();
     }
   });
+
 }

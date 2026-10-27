@@ -7,16 +7,30 @@
   <meta name="description" content="Explore RPI logo bar patterns and download a generated mark.">
   <title>RPI Logo Generator</title>
   <base href="../../">
-  <link href="css/style.css?v=20261027-motion-polish" rel="stylesheet" type="text/css" />
-  <script src="third_party/p5/p5.min.js"></script>
+  <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link href="css/page-entrance.css?v=20261027-print-pass" rel="stylesheet" type="text/css">
+  <script src="js/utils/pageEntrance.js?v=20261027-print-pass"></script>
   <script>
     window.__RPI_GENERATOR_ROUTE_STYLE__ = 'point-connect';
-    window.__RPI_GENERATOR_PAGE_SOURCE__ = 'generator/index.html?v=20261027-motion-polish';
+    window.__RPI_GENERATOR_PAGE_SOURCE__ = 'generator/index.html?v=20261027-integration-final';
   </script>
+  <link href="css/style.css?v=20261027-integration-final" rel="stylesheet" type="text/css" />
+  <script src="js/utils/generatorRoutes.js?v=20261027-motion-polish"></script>
+  <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
+  <script src="js/utils/customDropdowns.js?v=20261027-print-pass"></script>
+  <script src="js/utils/parameterControls.js?v=20261027-print-pass"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261027-integration-final"></script>
+  <script>GeneratorInitialState.apply(document.documentElement);</script>
+  <script src="third_party/p5/p5.min.js"></script>
+
 </head>
 
-<body>
-  <script src="js/generatorBootstrap.js?v=20261027-motion-polish"></script>
+<body class="theme-black">
+  <script>GeneratorInitialState.apply(document.body);</script>
+  <noscript><main class="generator_error"><h1>The Bar Generator</h1><p>Enable JavaScript to generate and export a bar.</p><a href="index.html">Back to bar styles</a></main></noscript>
+  <script src="js/generatorBootstrap.js?v=20261027-integration-final"></script>
 </body>
 
 </html>

@@ -9,6 +9,9 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 ## 2. Architecture & Tech Stack
 *   **Core:** Vanilla HTML5, CSS3, JavaScript (ES6+).
 *   **Rendering:** p5.js 1.7.0 for the live canvas, using WebGL when available and 2D canvas otherwise, served from `third_party/p5/`.
+*   **Startup:** Shared initial-state, canonical query, dropdown and parameter utilities prepare theme and control chrome before the generator shell paints. The existing Share trigger and restored control labels occupy their final layout before renderer setup. Font preloads and explicit control line metrics limit fallback-font layout movement. Startup errors retain visible recovery. When shared-state startup is present, its motion normalizer loads before validation. The existing p5.js global runtime reuses these utilities, including one compact-layout decision for early and runtime sidebar state.
+*   **URL state:** Query and shared-fragment edits use one bounded 200ms writer. Navigation cancels stale pending writes; a validated same-origin session handoff retains the final pending edit on immediate reload before initial controls paint. WebKit rapid-edit/reload tests cover this behavior.
+*   **Navigation:** One native artwork print pass, including Artemis’s vector bar, keeps identity and controls fixed; reduced motion, history restoration and unsupported browsers bypass it. Captured artwork motion holds briefly and resumes without catching up presentation time.
 *   **Integration:** Designed to embed within the **Frontify** ecosystem.
 *   **Shaders:** `assets/shaders/` contains prototype GLSL files; the production generator no longer fetches or compiles them at startup.
 *   **Audio:** Web Audio API with AudioWorklet (`pulse-worklet.js`) for audio-reactive features.
@@ -23,11 +26,36 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 *   `scripts/` - Browser smoke regression script.
 *   `third_party/` - Local licensed browser dependencies.
 
-## Backlog coordination — October 27, 2026
+Toolbar and visual review follow the [project acceptance record](bar_coordination.md): measured neighbor consistency, full-toolbar bounding boxes and screenshots, complete-page hierarchy and interaction states, and a minimal Share menu. Functional checks do not establish owner or institutional approval.
 
-- Owner requirement: every bar's painted artwork must reach the exact nominal left and right edges without overflowing the bar rectangle, while preserving official dimensions and letter-to-bar spacing. Containment alone is insufficient. Applies across styles, variants, animation phases, previews, and exports; see [bar coordination](bar_coordination.md).
-- Earlier Triangle variant 2 overlap designs were rejected and superseded by the owner-requested complementary/configurable version. Publication was authorized after verification and PR #30 merged; manual user testing remains unconfirmed, so its feature branches/worktree are retained.
-- BAR-02 local preview connection resets were reproduced under parallel cold loads and resolved in its development server by increasing the connection backlog. Repository runtime code was unchanged. See the coordination record for evidence and integration boundaries.
+## Integration status — October 27, 2026
+
+The combined application retains published Artemis(PR25), mobile(PR26/32),
+Quantum(PR27), entrances(PR28), motion(PR29), patterns(PR30), sharing(PR31) and
+geometry/transparent exports(PR33). The complete official vector basis fixes
+width 250, bar top 132.4885, height 18 and gap 21. Preview/header/export collection
+preserves selected variants, count, direction, phase and seeded packing without
+per-frame spatial fitting. See [science notes](bar_science_notes.md) and
+[geometry](bar_geometry.md).
+
+The final consistency work uses 19 exact licensed Feather 4.29.2 glyphs throughout
+UI action and busy states. Coarse native export-size controls use 16px text and
+44px height; explicit WebKit Cancel focus and delayed sidebar-editor focus are
+preserved. Query/fragment edits use a bounded 200ms writer, with navigation
+cancellation and same-origin reload recovery. Consumed cache handoffs are cleared.
+
+Verification passed 290 unit tests in 28 suites, 23 Chromium and 16 WebKit complete-tree
+suites, then 11 Chromium/4 WebKit release/lifecycle follow-ups. Coverage includes
+52 startup cases,12 shared first-paint cases,34 entrance scenarios,31 geometry
+variants,50 pattern states per engine,86 edge/control cases, all 21 share families,
+header DPR 1/2/3, actual mobile/pinch interaction, all six family/size transparent
+GIF exports per engine and request-time PNG/SVG capture under changing controls.
+See [verification](integration_qa.md), [transparent exports](transparent_gif_exports.md),
+[icon sources](icon_provenance.md) and [review images](review-images/integration-validation.md).
+
+Physical Safari/keyboards, screen readers, continuous-motion judgment,
+high-refresh/low-power performance and formal RPI/asset approval remain separate
+limitations. Automated software checks do not establish manual owner acceptance.
 
 ## 3. Completed Milestones
 
@@ -35,13 +63,13 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
     - Kept official header letters in one persistent SVG and repaint only a supersampled moving bar. Pause/play retains the surfaces; explicit theme changes keep vector and raster colors aligned.
     - Limited Ruler/Ticker/Waveform to 0.6/0.8/1.0 recurrences per display second, with family-specific units and calmer 0.3/0.4/0.3 defaults. Existing slow settings remain available. Controls, Reset/Randomize, legacy URL imports and export planning share finite-value, bound and step normalization. Quantum retains its own uniform 0.2×–1× time multiplier and static default.
     - Logo-triggered intro controls keep the accepted GitHub/menu alignment and share the scrim/projection entrance and exit lifecycle, with disabled invisible/closing controls, CSS completion, interruption-safe focus and immediate reduced motion. User theme changes use one short ordered ASCII reveal; startup theme restoration stays immediate.
-    - `references/motion_rendering.md` records the rendering and rate rationale. Local scripts cover actual-size header stability, imported speeds, themes, frame-by-frame intro lifecycle and export regression. Physical-device, manual assistive-technology and formal brand approval remain separate checks. Future BAR-05 fragment sharing must call the exposed speed migration helper before strict manifest validation.
+    - `references/motion_rendering.md` records the rendering and rate rationale. Local scripts cover actual-size header stability, imported speeds, themes, frame-by-frame intro lifecycle and export regression. Physical-device, manual assistive-technology and formal brand approval remain separate checks. Fragment sharing uses the exposed speed migration helper before strict manifest validation.
 
 - **[2026-10-27] Configurable geometric bar refinements**:
     - Refined Lines, Gradient, Circles Gradient, and Triangles with deterministic primitive geometry and exact painted horizontal extents. Lines uses a sampled standing-wave envelope; the two Gradient treatments and three Circles Gradient treatments use distinct area/size progressions. These are geometric illustrations, not measured datasets.
     - Triangle variants are complementary halves of the same cells. Added four diagonal directions and a count control from 6 to 28 (default 14). Direction defaults to Down right; choices are Down right, Up right, Up left, Down left. Preserved explicit saved directions and mapped legacy up/down values to Up right/Down right. Removed only this family's Randomize/Reset actions; reconfiguration redraws without perpetual motion.
     - The header collector includes current triangle variant, direction, and count. These four static families now derive both SVG and transparent 4× PNG downloads from the same selected-state vector, fixing omitted variants and missing PNG bars. PNG uses the same 20-reference-unit clear space as SVG (80 pixels at 4×).
-    - Added focused regression coverage for bounded/complementary geometry, native defaults/order, legacy direction migration, and real header/preview/SVG/PNG selected-state parity. Unit suite: 142 tests passed; Chromium: 50 selected states passed; WebKit: 22 targeted states passed (WebKit compares identical interiors and >99.9% masks while retaining edge antialiasing). Integer export viewport dimensions prevent WebKit outer-edge insets; the final exact-head Chromium 50-state rerun and aggregate 21-style smoke passed under the shared test lease, and the temporary server closed. PR #30 merged as f01ee45570aa116d6b4865729dc96bd65d666546 and Pages deployment succeeded. Existing stack, typography, colors, filtering, and other export dispatchers are retained. Gradient naming/treatment still requires owner review against the dated brand restriction; user publication approval is not institutional brand approval.
+    - Added focused regression coverage for bounded/complementary geometry, native defaults/order, legacy direction migration, and real header/preview/SVG/PNG selected-state parity. Unit suite: 142 tests passed; Chromium: 50 selected states passed; WebKit: 22 targeted states passed (WebKit compares identical interiors and >99.9% masks while retaining edge antialiasing). Integer export viewport dimensions prevent WebKit outer-edge insets; the final Chromium viewport rerun follows the shared test lease. Existing stack, typography, colors, filtering, and other export dispatchers are retained. Gradient naming/treatment still requires owner review against the dated brand restriction; user publication approval is not institutional brand approval.
 
 
 - **[2026-10-27] Feature branch lifecycle policy**:

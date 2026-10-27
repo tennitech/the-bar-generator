@@ -1,37 +1,18 @@
 (function (root, factory) {
-  const api = factory();
+  const registry = typeof module !== 'undefined' && module.exports ? require('./featherIcons') : root.FeatherIcons;
+  const api = factory(registry);
 
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = api;
   }
 
   root.previewControlUtils = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (registry) {
   const ICONS = {
-    play: [
-      '<svg class="preview-control-btn_glyph preview-control-btn_glyph-play" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">',
-      '<path d="M8 6.25v11.5a.75.75 0 0 0 1.14.644l8.78-5.75a.75.75 0 0 0 0-1.288l-8.78-5.75A.75.75 0 0 0 8 6.25Z"/>',
-      '</svg>'
-    ].join(''),
-    pause: [
-      '<svg class="preview-control-btn_glyph preview-control-btn_glyph-pause" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">',
-      '<path d="M8.5 5.5h2.75A.75.75 0 0 1 12 6.25v11.5a.75.75 0 0 1-.75.75H8.5a.75.75 0 0 1-.75-.75V6.25a.75.75 0 0 1 .75-.75Zm4.25.75a.75.75 0 0 1 .75-.75h2.75a.75.75 0 0 1 .75.75v11.5a.75.75 0 0 1-.75.75H13.5a.75.75 0 0 1-.75-.75V6.25Z"/>',
-      '</svg>'
-    ].join(''),
-    audioOn: [
-      '<svg class="preview-control-btn_glyph preview-control-btn_glyph-audio-on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
-      '<path d="M5 14h3l4 4V6L8 10H5z"/>',
-      '<path d="M16 9.5a4.5 4.5 0 0 1 0 5"/>',
-      '<path d="M18.5 7a8 8 0 0 1 0 10"/>',
-      '</svg>'
-    ].join(''),
-    audioOff: [
-      '<svg class="preview-control-btn_glyph preview-control-btn_glyph-audio-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
-      '<path d="M5 14h3l4 4V6L8 10H5z"/>',
-      '<path d="M16.5 9.5 20 13"/>',
-      '<path d="M20 9.5 16.5 13"/>',
-      '</svg>'
-    ].join('')
+    play: registry.getIconMarkup('play', 'preview-control-btn_glyph preview-control-btn_glyph-play'),
+    pause: registry.getIconMarkup('pause', 'preview-control-btn_glyph preview-control-btn_glyph-pause'),
+    audioOn: registry.getIconMarkup('volume-2', 'preview-control-btn_glyph preview-control-btn_glyph-audio-on'),
+    audioOff: registry.getIconMarkup('volume-x', 'preview-control-btn_glyph preview-control-btn_glyph-audio-off')
   };
 
   function getPreviewButtonMarkup(kind) {

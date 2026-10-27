@@ -22,15 +22,15 @@ The earlier common maximum was 5, allowing 50 minor Ruler crossings/s, 25 Ticker
 
 `loopingGifUtils.normalizeLoopSpeed` owns finite-value validation, family bounds, 0.1 step rounding and defaults. UI ranges, Reset, Randomize, URL restore, runtime values, SVG/PNG snapshots and GIF planning use the same values. Missing, empty, boolean, malformed and nonfinite values select the family default; finite excessive values clamp; valid slow values remain. Speed changes preserve phase. A delayed frame can still slow live progression through the pre-existing temporal sampling guard; it does not change the requested GIF rate.
 
-BAR-05 must use `loopingGifUtils.normalizeMotionSpeedControls(value.controls)` before its strict manifest validation to migrate old v1 snapshots with excessive speeds. The helper changes only the three known speed IDs and leaves all unrelated fields to existing validation. The coordinator has a tested narrow patch; the Share serializer is not owned by this change.
+The combined Share validator uses `loopingGifUtils.normalizeMotionSpeedControls(value.controls)` before strict manifest validation to migrate old v1 snapshots with excessive speeds. The helper changes only the three known speed IDs and leaves all unrelated fields to existing validation. The narrow supplied adapter is applied in the integration checkout; unrelated invalid controls still reject.
 
-Quantum is separate. BAR-03 revision 2 uses one common 0.2×–1× multiplier, default/max 1×, against a 120-display-second recurrence, preserving all relative n² frequencies and fixed spatial/vertical scales. Its highest component rate remains 49/120 ≈ 0.4083 cycles/s at 1×. SPEED must not be relabeled as a single quantum cycles/s value. BAR-06 does not change the model, modes, controls, static default, reverse behavior, or paused share restoration. See [the Quantum model](quantum_model.md) for its independent policy and scientific invariants; the merged model and controls are preserved.
+Quantum is separate. The Quantum model uses one common 0.2×–1× multiplier, default/max 1×, against a 120-display-second recurrence, preserving all relative n² frequencies and fixed spatial/vertical scales. Its highest component rate remains 49/120 ≈ 0.4083 cycles/s at 1×. SPEED must not be relabeled as a single quantum cycles/s value. Header rendering does not change the model, modes, controls, static default, reverse behavior, or paused share restoration. See quantum_model.md for the final assumptions and mappings.
 
 ## Intro transition lifecycle
 
 Entrance duration/easing and exit duration/easing are centralized CSS tokens. Scrim, projection and controls inherit one active pair. Controls remain disabled until the actual entrance transition begins. They become disabled again during closing; the overlay keeps background content inert and waits on its actual CSS transition promises before hiding, removing the frame and restoring focus. Reopening invalidates old completion callbacks. There is no guessed exit timeout. Reduced motion completes immediately through the same lifecycle.
 
-The shared status/science references reflect this policy. The pending BAR-05 Share UI is separate: existing canonical and legacy query imports already use bounded normalization, and fragment sharing must adopt the documented migration helper before its own strict validation.
+The shared status/science references in the integration checkout now describe this policy. Final combined and physical-device acceptance remain separate.
 
 ## Review evidence
 

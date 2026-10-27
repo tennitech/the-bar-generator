@@ -1,13 +1,13 @@
-// Run against an already-authorized temporary server. This script never starts
-// a server. Use the coordinator's test lease before launching a browser.
+// Run against an existing local test server; this script owns only its browser.
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { createHash } = require('node:crypto');
-const { chromium } = require('playwright');
+const { chromium, webkit } = require('playwright');
+const engine = process.env.RPI_BROWSER || 'chromium';
 const { parseGif, decodeFrames } = require('../tests/helpers/gifDecoder');
-const site = process.env.RPI_SITE_URL || 'http://127.0.0.1:4311';
-const output = process.env.RPI_EXPORT_EVIDENCE || '/tmp/bar-generator-transparent-exports';
+const site = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
+const output = process.env.RPI_EXPORT_EVIDENCE || require('node:path').join(require('node:os').tmpdir(), 'rpi-transparent-exports');
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 
 async function configure(page, family, size) {
@@ -32,7 +32,7 @@ async function configure(page, family, size) {
     const color = document.getElementById('color-mode-select');
     color.value = family === 'ruler' ? 'black' : family === 'ticker' ? 'white' : 'red';
     color.dispatchEvent(new Event('change', { bubbles: true }));
-    // BAR05 supplies this input on the combined branch. The fixture exercises
+    // Sharing supplies this input on the combined branch. The fixture exercises
     // the same optional-title hook on the isolated export branch.
     if (!document.getElementById('share-name')) {
       const input = document.createElement('input'); input.id = 'share-name'; input.hidden = true;
@@ -69,19 +69,21 @@ async function download(page, method, destination) {
   assert.ok(result, `${method} must complete`);
   const file = await pending;
   await file.saveAs(destination);
-  assert.match(file.suggestedFilename(), /--étude-月-loop\./u);
+  assert.match(file.suggestedFilename().normalize('NFC'), /--étude-月-loop\./u);
   return result;
 }
 
 async function compositeEvidence(page, gif, rgba, filename) {
   const encoded = Buffer.from(rgba).toString('base64');
-  await page.evaluate(({ width, height, encoded }) => {
+  const composites = await page.evaluate(({ width, height, encoded }) => {
     const section = document.createElement('section'); section.id = 'export-evidence';
-    section.style = 'position:fixed;inset:0;z-index:999999;background:#888;padding:16px;overflow:auto';
+    section.style = 'position:fixed;top:16px;left:16px;z-index:999999;background:#888;padding:16px;width:1120px;max-width:calc(100vw - 32px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px';
+    const composites = [];
     for (const [name, background] of [['light', '#fff'], ['dark', '#000'], ['checker', null]]) {
-      const label = document.createElement('p'); label.textContent = name; section.append(label);
+      const group = document.createElement('div');
+      const label = document.createElement('p'); label.textContent = name; group.append(label);
       const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
-      canvas.style = 'display:block;width:min(100%,1160px);height:auto';
+      canvas.style = 'display:block;width:100%;height:auto';
       const ctx = canvas.getContext('2d');
       if (background) { ctx.fillStyle = background; ctx.fillRect(0, 0, width, height); }
       else for (let y = 0; y < height; y += 16) for (let x = 0; x < width; x += 16) {
@@ -89,10 +91,12 @@ async function compositeEvidence(page, gif, rgba, filename) {
       }
       const source = document.createElement('canvas'); source.width = width; source.height = height;
       source.getContext('2d').putImageData(new ImageData(Uint8ClampedArray.from(atob(encoded), c => c.charCodeAt(0)), width, height), 0, 0);
-      ctx.drawImage(source, 0, 0); section.append(canvas);
+      ctx.drawImage(source, 0, 0); group.append(canvas); section.append(group);
+      composites.push({ name, png: canvas.toDataURL('image/png').split(',')[1] });
     }
-    document.body.append(section);
+    document.body.append(section); return composites;
   }, { width: gif.width, height: gif.height, encoded });
+  for (const composite of composites) await fs.writeFile(filename.replace(/\.png$/, `-${composite.name}.png`), Buffer.from(composite.png, 'base64'));
   await page.locator('#export-evidence').screenshot({ path: filename });
   await page.locator('#export-evidence').evaluate(element => element.remove());
 }
@@ -114,6 +118,7 @@ async function checkUI(page) {
   assert.equal(await page.locator('#export-size-select').isDisabled(), true);
   assert.deepEqual(await page.locator('#save-button').boundingBox(), before, 'No toolbar size shift');
   assert.equal(await page.locator('#save-button').evaluate(el => getComputedStyle(el, '::after').animationName), 'none');
+  assert.match(await page.locator('#save-button').evaluate(el => getComputedStyle(el, '::after').maskImage), /feather\/icons\/loader\.svg/);
   await page.locator('#export-cancel').click();
   await page.evaluate(() => uiExport);
   assert.equal(await page.evaluate(() => logoExportUI.isBusy()), false);
@@ -147,13 +152,16 @@ async function checkUI(page) {
 
 async function main() {
   await fs.mkdir(output, { recursive: true });
-  const browser = await chromium.launch();
+  const browser = await ({ chromium, webkit }[engine]).launch();
   const records = [];
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
     for (const family of ['ruler', 'ticker', 'waveform']) for (const size of ['standard', 'large']) {
       await configure(page, family, size);
-      if (family === 'ruler' && size === 'standard') await checkUI(page);
+      if (family === 'ruler' && size === 'standard') {
+        await checkUI(page);
+        if (process.env.RPI_EXPORT_UI_ONLY === '1') { console.log(`${engine}: export focus/cancel/retry, busy Feather mask and reduced motion passed`); return; }
+      }
       const filename = path.join(output, `${family}-${size}.gif`);
       const result = await download(page, 'saveLoopingGIF', filename);
       const oracle = await page.evaluate(() => ({ expected: exportExpected, snapshot: exportSnapshot }));
@@ -185,7 +193,17 @@ async function main() {
       // Browser-native decoding separately checks dimensions and disposal output.
       const encoded = (await fs.readFile(filename)).toString('base64');
       const native = await page.evaluate(async encoded => {
-        if (!window.ImageDecoder) return { supported: false };
+        if (!window.ImageDecoder) {
+          const blob = await (await fetch(`data:image/gif;base64,${encoded}`)).blob();
+          const image = await createImageBitmap(blob);
+          const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
+          const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0); image.close();
+          const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          const alpha = new Uint8Array(canvas.width * canvas.height);
+          for (let i = 0; i < alpha.length; i++) alpha[i] = rgba[i * 4 + 3];
+          const firstFrameHash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', alpha)), b => b.toString(16).padStart(2, '0')).join('');
+          return { supported: false, firstFrameHash };
+        }
         const decoder = new ImageDecoder({ data: Uint8Array.from(atob(encoded), c => c.charCodeAt(0)), type: 'image/gif' });
         await decoder.tracks.ready;
         const frameCount = decoder.tracks.selectedTrack.frameCount, hashes = [];
@@ -200,8 +218,9 @@ async function main() {
         }
         decoder.close(); return { supported: true, frameCount, hashes };
       }, encoded);
-      assert.equal(native.supported, true, 'Chromium native ImageDecoder available');
-      assert.deepEqual(native.hashes, [oracle.expected[0], oracle.expected.at(-1)]);
+      if (engine === 'chromium') assert.equal(native.supported, true, 'Chromium native ImageDecoder available');
+      if (native.supported) assert.deepEqual(native.hashes, [oracle.expected[0], oracle.expected.at(-1)]);
+      else assert.equal(native.firstFrameHash, oracle.expected[0], 'Native first-frame GIF alpha matches the independent oracle');
       const pngFile = path.join(output, `${family}-${size}.png`);
       await download(page, 'savePNG', pngFile);
       const png = await fs.readFile(pngFile);
@@ -224,7 +243,7 @@ async function main() {
         assert.match(svg, /<title>Étude 月 \/ loop<\/title>/u);
         assert.doesNotMatch(svg, /<image\b/);
       }
-      records.push({ family, size, ...result.metrics, nativeDecoder: true, decodedFrames: index });
+      records.push({ family, size, ...result.metrics, nativeDecoder: native.supported, nativeFirstFrame: true, decodedFrames: index });
       await fs.writeFile(path.join(output, 'results.json'), JSON.stringify(records, null, 2));
       console.log(JSON.stringify(records.at(-1)));
     }

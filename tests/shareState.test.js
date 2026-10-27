@@ -47,3 +47,41 @@ test('Mission Control theme remains restricted to Artemis II', () => {
   expect(() => encodeState({v:1,controls:{'style-select':'solid','color-mode-select':'lunar'}}, restrictedManifest)).toThrow(/unavailable/);
   expect(() => encodeState({v:1,controls:{'style-select':'lunar','color-mode-select':'lunar'}}, restrictedManifest)).not.toThrow();
 });
+
+
+test('legacy motion rates migrate narrowly before strict share validation', () => {
+  const motion = require('../js/utils/loopingGif');
+  const previous = global.loopingGifUtils;
+  global.loopingGifUtils = motion;
+  try {
+    const manifest = {
+      'ruler-speed-slider': { type: 'range', min: 0.2, max: 0.6, step: 0.1 },
+      'ticker-speed-slider': { type: 'range', min: 0.2, max: 0.8, step: 0.1 },
+      'waveform-speed-slider': { type: 'range', min: 0.2, max: 1, step: 0.1 },
+      'triangles-count-slider': { type: 'range', min: 6, max: 28, step: 1 }
+    };
+    const controls = { 'ruler-speed-slider': '5', 'ticker-speed-slider': '999',
+      'waveform-speed-slider': '0.35', 'triangles-count-slider': '14' };
+    const raw = '#bar=' + Buffer.from(JSON.stringify({ v: 1, controls })).toString('base64url');
+    const decoded = decodeState(raw, manifest);
+    expect(decoded.controls).toEqual({ ...controls, 'ruler-speed-slider': '0.6',
+      'ticker-speed-slider': '0.8', 'waveform-speed-slider': '0.4' });
+    const invalid = '#bar=' + Buffer.from(JSON.stringify({ v: 1,
+      controls: { ...controls, 'triangles-count-slider': '999' } })).toString('base64url');
+    expect(() => decodeState(invalid, manifest)).toThrow();
+  } finally { global.loopingGifUtils = previous; }
+});
+
+test('Ticker validates width against the restored count ratio rather than the previous page maximum', () => {
+  const previous = global.getTickerWidthRatioMax;
+  global.getTickerWidthRatioMax = require('../js/utils/tickerDisplay').getTickerWidthRatioMax;
+  const manifest = { 'ticker-ratio-slider': {type:'range',min:1,max:5,step:1}, 'ticker-width-ratio-slider': {type:'range',min:1,max:3,step:1} };
+  try {
+    const state = {v:1,controls:{'ticker-ratio-slider':'5','ticker-width-ratio-slider':'10'}};
+    expect(decodeState(encodeState(state,manifest),manifest).controls['ticker-width-ratio-slider']).toBe('10');
+    expect(() => encodeState({...state,controls:{...state.controls,'ticker-ratio-slider':'2'}},manifest)).toThrow(/out-of-range/);
+  } finally {
+    if (previous === undefined) delete global.getTickerWidthRatioMax;
+    else global.getTickerWidthRatioMax = previous;
+  }
+});

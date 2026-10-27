@@ -50,17 +50,20 @@ RPI_SITE_URL=http://127.0.0.1:8000 npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:motion
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/transparentGifSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/patternExportSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/firstPaintSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/sharedFirstPaintSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/pageEntranceSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=firefox npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit npm run test:browser
 ```
 
-Keep the local server running for browser checks. Chromium is the default browser; the default test URL is `http://127.0.0.1:8765`. On Linux, browser installation can also need system packages: `npx playwright install --with-deps chromium firefox webkit`.
+Keep the local server running for browser checks. Run the startup and entrance scripts one at a time; their screenshots and results are written to temporary evidence folders. Recorded-frame checks do not replace normal-speed visual review. Chromium is the default browser; the default test URL is `http://127.0.0.1:8765`. On Linux, browser installation can also need system packages: `npx playwright install --with-deps chromium firefox webkit`.
 
 Browser checks cover the 21 selectable styles, SVG downloads, a PNG file signature, five viewport sizes, text filtering, reduced motion, 2D fallback, and renderer failure states. They do not establish visual accuracy or full accessibility compliance. Check changed UI, keyboard controls, touch behavior, and exports by hand. Playwright WebKit is not a test of the Safari app.
 
 ## Preview zoom
 
-100% fits the complete mark to the available preview area. Enlarge up to 400% to inspect the bar. Use the − / + buttons, enter a percentage, or scroll over the preview. Drag while enlarged. Fit or the 0 key restores the full mark; + and − also work outside text controls. Native touch pinch zoom and browser keyboard zoom remain available.
+100% fits the complete mark to the available preview area. Enlarge up to 400% to inspect the bar. Use the − / + buttons, enter a percentage, or scroll over the preview. Drag while enlarged. Fit or the 0 key restores the full mark; + and − also work outside text controls. Two-finger pinch inside the viewer enlarges the artwork; pinch outside it and browser keyboard zoom enlarge the page.
 
 Zoom is relative to the current viewport and does not change downloads. The same 100% setting can be larger on a desktop than on a phone. Check the final placement size separately before using a complex bar pattern.
 
@@ -106,3 +109,26 @@ GitHub Pages publishes the root of `main`. A merge to `main` can update the publ
 ## License and brand assets
 
 Project software uses the [MIT license](LICENSE). Retain [third-party notices](THIRD_PARTY_NOTICES.md) and their license files. RPI trademark rights and bundled font, artwork, and audio permissions need separate review. See the [asset permission record](references/asset_licensing.md). The software license does not establish approval for every generated mark.
+
+Additional focused rendering, sharing and interaction checks:
+
+```sh
+RPI_SITE_URL=http://127.0.0.1:8000 npm run test:integration
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/triangleShareSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/shareSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/geometrySmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/geometryEdgesSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/quantumIntegrationSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/firstPaintSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/pageEntranceSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/headerMotionSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/introLifecycleSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/iconsSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/exportSnapshotSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/urlStateSmoke.js
+```
+
+`test:integration` checks real triangle controls, downloaded SVG equality after
+share restore, rendered header/raster bounds, and same-document packing seeds.
+`RPI_BROWSER=webkit` selects WebKit for the integration and geometry scripts.
+These remain optional local checks; the fast unit suite is the only CI merge check.

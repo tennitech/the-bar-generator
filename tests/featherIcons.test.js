@@ -2,11 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { icons, getIconMarkup, source } = require('../js/utils/featherIcons');
-const hashes = {
-  share: 'effae7164671d39452a674f414ce0536e21e266632ddc7d8ec90d4fe7f1e7043',
-  copy: 'a32de6b675efb2d05a19455cde9d7350706257069e0a52d0a99fdf51a565fe91',
-  check: '1df722c1758fb0cb4868c38eb038fecf64c3717fe09ceaeb43783b70d027a1c4'
-};
+const hashes = require('../third_party/feather/manifest.json').icons;
 test.each(Object.keys(hashes))('%s uses exact pinned Feather SVG, not redrawn geometry', name => {
   const raw = fs.readFileSync(path.join(__dirname, '../third_party/feather/icons', `${name}.svg`));
   expect(crypto.createHash('sha256').update(raw).digest('hex')).toBe(hashes[name]);
@@ -19,4 +15,19 @@ test('source and accessibility metadata are explicit; unknown icons fail closed'
   expect(source).toBe('feathericons/feather@v4.29.2');
   expect(() => getIconMarkup('invented')).toThrow();
   expect(getIconMarkup('share', 'safe" onclick="bad')).not.toContain('onclick="');
+});
+
+
+test('static action icons use the same exact Feather child geometry and decorative semantics', () => {
+  const html = fs.readFileSync(path.join(__dirname, '../generator/index.html'), 'utf8');
+  const matches = Array.from(html.matchAll(/<svg data-feather="([a-z-]+)"[^>]*>([\s\S]*?)<\/svg>/g));
+  expect(matches).toHaveLength(8);
+  for (const [markup, name, children] of matches) {
+    const expected = icons[name].match(/<svg[^>]*>([\s\S]*)<\/svg>/)[1];
+    expect(children).toBe(expected);
+    expect(markup).toContain('stroke-width="2"');
+    expect(markup).toContain('aria-hidden="true"');
+    expect(markup).toContain('focusable="false"');
+  }
+  expect(html).not.toMatch(/[↘↗↖↙]/);
 });

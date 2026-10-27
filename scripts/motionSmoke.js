@@ -13,6 +13,8 @@ async function main() {
     for (const style of ['ruler', 'ticker', 'waveform']) {
       await page.goto(`${baseUrl}/generator/${style}/?${style}Speed=5&rulerUnits=10&tickerRatio=5`);
       await page.locator('#header-logo-preview canvas').waitFor();
+      // The captured entrance intentionally holds artwork; measure steady live motion afterward.
+      await page.waitForFunction(() => !window.PageEntrance?.isActive?.());
       const result = await page.evaluate(async style => {
         const canvas = document.querySelector('#header-logo-preview canvas');
         const original = window.draw;
@@ -99,6 +101,8 @@ async function main() {
       await page.keyboard.press('Escape');
       await page.locator('.logo_animation_overlay').waitFor({ state: 'hidden' });
       await page.locator('#header-logo-preview canvas').waitFor();
+      // The captured entrance intentionally holds artwork; measure steady live motion afterward.
+      await page.waitForFunction(() => !window.PageEntrance?.isActive?.());
       assert.deepEqual(errors, [], `${style}: browser errors`);
     }
   } finally { await browser.close(); }
