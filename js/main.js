@@ -3530,6 +3530,7 @@ function setup() {
   updateHeaderBrandPreview(true);
 
   setupLunarSplashdownCounter();
+  setupShareLinks();
 
   // Add global keyboard event listener for more reliable shift detection
   document.addEventListener('keydown', function (event) {
@@ -4922,6 +4923,7 @@ function calculatePhaseParameters(density, sizeVariation, area, barHeight) {
 
 // Execute a single packing phase
 function executePackingPhase(barWidth, barHeight, existingCircles, phase) {
+  const random = getSharePatternRandom(barWidth, barHeight, existingCircles.length, phase.minRadius, phase.maxRadius);
   const newCircles = [];
   const minDistanceMultiplier = 2.0;
 
@@ -4934,9 +4936,9 @@ function executePackingPhase(barWidth, barHeight, existingCircles, phase) {
 
     // Generate candidates using improved sampling
     for (let candidate = 0; candidate < phase.candidatesPerAttempt; candidate++) {
-      const radius = phase.minRadius + Math.random() * (phase.maxRadius - phase.minRadius);
-      const x = radius + Math.random() * (barWidth - 2 * radius);
-      const y = radius + Math.random() * (barHeight - 2 * radius);
+      const radius = phase.minRadius + random() * (phase.maxRadius - phase.minRadius);
+      const x = radius + random() * (barWidth - 2 * radius);
+      const y = radius + random() * (barHeight - 2 * radius);
 
       if (!hasCollisionFast(x, y, radius, existingCircles, newCircles, spatialGrid, minDistanceMultiplier)) {
         // Score based on distance to nearest circles and position diversity
@@ -4960,6 +4962,7 @@ function executePackingPhase(barWidth, barHeight, existingCircles, phase) {
 
 // Execute gap-filling phase using spatial analysis
 function executeGapFillingPhase(barWidth, barHeight, existingCircles, density, sizeVariation) {
+  const random = getSharePatternRandom(barWidth, barHeight, existingCircles.length, density, sizeVariation);
   const gapFillingCircles = [];
   const minDistanceMultiplier = 2.0;
 
@@ -4977,7 +4980,7 @@ function executeGapFillingPhase(barWidth, barHeight, existingCircles, density, s
     for (let attempt = 0; attempt < 20; attempt++) {
       const radius = Math.max(
         targetRadius * 0.5,
-        targetRadius + (Math.random() - 0.5) * radiusVariation
+        targetRadius + (random() - 0.5) * radiusVariation
       );
 
       if (!hasCollisionWithAllCircles(gap.x, gap.y, radius, existingCircles, gapFillingCircles, minDistanceMultiplier)) {
@@ -5150,12 +5153,13 @@ function calculateCircleOverlap(x1, y1, r1, x2, y2, r2) {
 
 // Identify gaps in the current packing
 function identifyGaps(width, height, circles) {
+  const random = getSharePatternRandom(width, height, circles.length);
   const gaps = [];
   const samplePoints = Math.min(2000, width * height / 50); // Adaptive sampling
 
   for (let i = 0; i < samplePoints; i++) {
-    const x = Math.random() * width;
-    const y = Math.random() * height;
+    const x = random() * width;
+    const y = random() * height;
 
     // Find the largest circle that could fit at this point
     let maxRadius = Math.min(x, width - x, y, height - y);
@@ -6155,11 +6159,9 @@ function scheduleStaffNote() {
 // URL parameter management
 function getUrlParameters() {
   const params = new URLSearchParams(window.location.search);
-  const routeStyle = window.__RPI_GENERATOR_ROUTE_STYLE__
-    ? normalizeStyleValue(window.__RPI_GENERATOR_ROUTE_STYLE__)
-    : (window.GeneratorRoutes && typeof window.GeneratorRoutes.getGeneratorRouteStyleFromPathname === 'function'
-      ? window.GeneratorRoutes.getGeneratorRouteStyleFromPathname(window.location.pathname)
-      : null);
+  const routeStyle = window.GeneratorRoutes
+    ? window.GeneratorRoutes.getGeneratorRouteStyleFromPathname(window.location.pathname)
+    : window.__RPI_GENERATOR_ROUTE_STYLE__;
   const style = normalizeStyleValue(routeStyle || params.get('style') || 'solid');
   const requestedColorMode = normalizeColorModeValue(params.get('colorMode') || DEFAULT_COLOR_MODE);
   const colorMode = style === 'lunar' || requestedColorMode !== 'lunar'
@@ -6255,6 +6257,7 @@ function getUrlParameters() {
 }
 
 function updateUrlParameters() {
+  if (window.barShareController && window.barShareController.syncUrl()) return;
   const params = new URLSearchParams();
   const selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
 
@@ -6494,7 +6497,7 @@ function updateUrlParameters() {
   const newUrl = window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorUrl === 'function'
     ? window.GeneratorRoutes.buildGeneratorUrl(selectedStyle, params, window.location.pathname)
     : (params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname);
-  window.history.replaceState({}, '', newUrl);
+  window.history.replaceState(window.history.state, '', newUrl + window.location.hash);
 }
 
 function applyUrlParameters() {
@@ -8222,3 +8225,74 @@ function setupCustomDropdowns() {
 
 // Ensure custom dropdowns are initialized when DOM is ready
 document.addEventListener('DOMContentLoaded', setupCustomDropdowns);
+
+
+// Share links bridge the legacy p5 global state without coupling serialization to rendering.
+let sharePatternSeed = typeof crypto !== 'undefined' && crypto.getRandomValues
+  ? crypto.getRandomValues(new Uint32Array(1))[0] : 1;
+
+function getSharePatternRandom(...values) {
+  let seed = sharePatternSeed;
+  for (const character of values.join(':')) seed = Math.imul(seed ^ character.charCodeAt(0), 16777619) >>> 0;
+  return window.BarShareState ? window.BarShareState.seededRandom(seed) : Math.random;
+}
+
+function setupShareLinks() {
+  if (!window.BarShareState) return;
+  window.BarShareState.initialize({
+    sanitize: sanitizeBarText,
+    capture: () => ({ seed: sharePatternSeed, phase: liveMotionPhase, time: window.animationTime,
+      notes: currentStaffNotes, duration: currentNoteDuration }),
+    restore: state => {
+      stopAudio();
+      // Quantum links preserve phase/rate/reverse but follow its no-auto-start contract.
+      if (window.quantumControls) window.quantumControls.pause();
+      sharePatternSeed = state.seed;
+      currentStaffNotes = state.notes;
+      currentNoteDuration = state.duration;
+      resetAnimationClock(state.time);
+      liveMotionPhase = state.phase;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) {
+        const toggle = document.getElementById(`${style}-motion-toggle`);
+        MOTION_ENABLED_BY_STYLE[style] = !!(toggle && toggle.checked && !reduce);
+        if (toggle) toggle.checked = MOTION_ENABLED_BY_STYLE[style];
+      }
+      document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
+        button.classList.toggle('active', Number(button.dataset.duration) === state.duration);
+      });
+      resetCirclePatternCache();
+    },
+    refresh: () => {
+      applyColorMode(colorModeSelect.value);
+      updateBinaryData(binaryInput.value);
+      updateMorseData(morseInput.value);
+      updateNumericData(numericInput.value);
+      updateAllDisplays();
+      handleStyleChange();
+      syncMotionToggleState();
+      syncAllCustomSelects();
+      updateAudioControlsUI();
+      requestUpdate();
+    },
+    legacy: () => {
+      stopAudio();
+      currentNoteDuration = 1;
+      document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
+        button.classList.toggle('active', Number(button.dataset.duration) === 1);
+      });
+      resetAnimationClock();
+      for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = DEFAULT_MOTION_ENABLED;
+      if (window.quantumControls && window.quantumModel) {
+        const query = new URLSearchParams(window.location.search);
+        document.getElementById('quantum-phase').value = window.quantumModel.normalizePhase(query.get('quantumPhase') || 0);
+        document.getElementById('quantum-speed-slider').value = window.quantumModel.normalizeSpeed(query.has('quantumSpeed') ? query.get('quantumSpeed') : 1);
+        document.getElementById('quantum-reverse-toggle').checked = query.get('quantumReverse') === 'true';
+        window.quantumControls.pause();
+      }
+      applyUrlParameters();
+      syncMotionToggleState();
+      syncAllCustomSelects();
+    }
+  });
+}
