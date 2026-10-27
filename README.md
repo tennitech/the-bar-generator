@@ -6,6 +6,15 @@ A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a 
 
 **[Open the site](https://tennitech.github.io/the-bar-generator/)** · **[Report a bug](https://github.com/tennitech/the-bar-generator/issues/new/choose)** · **[Contribute](contributing.md)**
 
+## Project intent and reading map
+
+The tool is a place to explore meaningful systems with technical precision. Keep the controls calm and clear so the generated bar can be expressive. Use RPI's curious, humble, genuine, resilient, offbeat, and relatable voice. Explain the pattern's actual rule and use specific evidence.
+
+- [AGENTS.md](AGENTS.md): mandatory agent policy and reading order.
+- [contributing.md](contributing.md): human workflow, branch names, tests, and pull requests.
+- [RPI brand guidelines](references/rpi_brand_guidelines.md): dated official sources and detailed brand checks.
+- [Project status](references/project_status.md): current state, decisions, and known issues.
+
 ## Requirements
 
 - Node.js 22 and npm for tests. The `.nvmrc` file selects Node.js 22 if you use nvm.

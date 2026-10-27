@@ -27,7 +27,7 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 - **[2026-10-27] Audit integration and development conventions**:
     - Integrated the September audit with the existing main-branch contribution setup. Kept both sets of status records and the verified billing restriction.
-    - Added a development README, issue forms, branch and commit naming guidance, Node.js version metadata, and reproducible Playwright test commands with a locked test dependency.
+    - Added a development README, issue forms, branch and commit naming guidance, Node.js version metadata, and reproducible Playwright test commands with a locked test dependency. Root AGENTS.md now gives a required reading path, actionable brand intent, solid-bar size qualifications, and completion checks.
     - Consolidated unit and three-engine browser checks into one public-repo-only workflow. Removed the older duplicate workflow. Browser execution skips documentation-only changes; both check names remain available for main protection.
     - Branches use feat/, fix/, docs/, test/, or chore/ with a lowercase hyphenated description; Codex branches retain codex/<type>-<description>. Normal changes use short-lived branches and pull requests into main.
 

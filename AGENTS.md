@@ -4,6 +4,28 @@ This is the canonical agent instruction file for this repository.
 
 If another local rule file disagrees with this file, `AGENTS.md` wins. Keep all other agent and rule files as references or supplements so the policy does not drift again.
 
+## Required Reading Before Edits
+
+1. Read `references/project_status.md` for the current state and known issues.
+2. For copy, design, pattern, or export changes, read the dated checklist in `references/rpi_brand_guidelines.md` and its relevant full sections.
+3. For asset changes, read `references/asset_licensing.md` and the actual asset license or permission record.
+4. For behavior or mathematical changes, read `references/bar_science_notes.md` and the relevant export references and source code. Confirm preview/export parity.
+5. Read `contributing.md` for branch, test, and pull request conventions. Use `README.md` for development commands.
+
+This file remains the canonical agent policy. `references/AGENTS.md` and older local rule files are supplementary references, not competing policy.
+
+## Applying RPI's Feel To This Tool
+
+These are repository applications of the official voice, design, and pattern rules, not new official quotations or a request to redesign the site.
+
+- Be experimental and technically precise. Help people explore and understand meaningful systems.
+- Be curious, humble, genuine, resilient, offbeat, and relatable. Use specific evidence and approachable language.
+- Keep controls clear and calm so the generated bar can be expressive. Use red with purpose.
+- Explain the real rule, data, or encoding behind a pattern. Document its source and assumptions.
+- Show the process and useful failures. Make the recovery action clear.
+- Use authentic work and imagery where appropriate. Avoid generic corporate or luxury styling, stock campus stereotypes, empty claims, forced slogans, and decorative complexity without a system.
+- When a source conflicts with the app or policy, record the conflict for review. Retain stricter app controls until the owner resolves it. Do not infer formal approval from existing features or test results.
+
 ## Source Guides
 
 - Primary reference provided by the user: `Client First Quick Guide (1).pdf`
@@ -104,8 +126,10 @@ Avoid:
 - The primary logo is the `RPI` lettering with the bar.
 - The bar is a variable element and may contain data visualization, metrics, or patterns.
 - The bar must obey the official geometry:
-  - bar height equals the width of the lettering line
-  - spacing remains fixed
+  - use the official 500 × 36 px bar design area and scale it proportionally with the official vectors
+  - keep spacing, placement, and letterform proportions fixed
+  - use primitive geometry such as rectangles, ellipses, polygons, and lines
+  - do not infer new numerical geometry from ambiguous prose about the width of lettering
 - Any bars should be scientifically accurate.
 - Update the project reference markdown files whenever bar logic, scientific assumptions, or bar-related export behavior changes.
 - Prioritize function over form. It can look cool, but it MUST be accurate.
@@ -113,8 +137,9 @@ Avoid:
   - digital: minimum `10px` on all sides
   - print: minimum `0.25in`
 - Minimum size:
-  - digital: minimum `60px` width
-  - print: minimum `0.75in` width
+  - with a solid bar, digital: minimum `60px` width
+  - with a solid bar, print: minimum `0.75in` width
+  - complex patterns can require larger display sizes; do not invent a universal numerical minimum
 - Do not:
   - distort or stretch the logo
   - add outlines or shadows
@@ -238,3 +263,5 @@ Before making code changes, agents should check the following:
 6. If JavaScript behavior is changing, are the selectors stable and independent from styling utilities?
 7. If the user explicitly asked for delegation or parallel agent work, would a bounded subagent workflow improve focus, speed, or verification quality?
 8. If architecture, policy, or known issues changed, was `references/project_status.md` updated?
+9. For visual or behavior changes, were the relevant rendered states and exports checked? Were keyboard access, contrast, and reduced motion checked where relevant?
+10. Does the completion report distinguish source inspection, automated checks, visual checks, and formal RPI approval? State only the validation performed and record open approval questions.
