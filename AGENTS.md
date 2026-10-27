@@ -140,6 +140,7 @@ Avoid:
   - use the official 500 × 36 px bar design area and scale it proportionally with the official vectors
   - keep spacing, placement, and letterform proportions fixed
   - require actual painted artwork to touch both nominal horizontal edges without overflow, across variants and animation phases; a clip/container alone is insufficient
+  - Ruler exception, explicitly corrected by the owner October 27: retain natural ticks and edge whitespace within the fixed bar viewport; do not add forced end caps or fit individual phases to the edges
   - preserve scientific coordinates and fixed reference geometry; do not rescale motion per frame to force edge contact
   - use primitive geometry such as rectangles, ellipses, polygons, and lines
   - do not infer new numerical geometry from ambiguous prose about the width of lettering
