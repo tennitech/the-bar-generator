@@ -25,6 +25,11 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 3. Completed Milestones
 
+- **[2026-10-27] PR-only fast checks**:
+    - Unit tests now run only on ready pull requests into main. Drafts skip execution, marking ready starts the check, and replaced runs are cancelled. Removed duplicate test execution after merge.
+    - Retained the required Unit tests status, strict main protection, Node.js 22, pinned actions, public-repo guard, read-only token, and no cache or artifact uploads. npm prefers any runner-local cached packages without adding a stored Actions cache. Pages deployment after merge is unchanged.
+
+
 - **[2026-10-27] Small header ticker direction repair**:
     - Confirmed equal ticker geometry and phase in both previews. The tiny header could still show an apparent reverse direction because dense rows exceeded its spatial sampling limit.
     - Unresolved header rows now use their exact mean coverage; resolved rows keep their moving geometry. Device pixel ratio and resize determine which rows can be shown. Main preview and export geometry remain unchanged.

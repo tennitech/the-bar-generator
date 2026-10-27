@@ -77,7 +77,7 @@ Read [contributing.md](contributing.md) and [AGENTS.md](AGENTS.md) before editin
 
 ## Automation and deployment
 
-The Checks workflow runs the fast unit tests on pull requests into `main` and pushes to `main`. It does not install browsers or run UI tests. There is no scheduled run. Replaced runs are cancelled and each job has a five-minute limit.
+The Checks workflow runs the fast unit tests only on ready pull requests targeting `main`. Feature branch pushes without a ready pull request and draft pull requests do not run tests. Marking a draft ready starts the check. Merging does not repeat the same tests. It does not install browsers or run UI tests. There is no scheduled run. Replaced runs are cancelled and each job has a five-minute limit.
 
 Contributors and reviewers perform the relevant browser, keyboard, accessibility, motion, and export checks. The browser and motion scripts above are optional local tools for changes that need them; they are not merge requirements.
 
