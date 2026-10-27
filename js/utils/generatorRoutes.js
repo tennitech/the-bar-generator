@@ -32,6 +32,8 @@
     'neuralNetworkHiddenLayers',
     'triangleGridVariant',
     'trianglesVariant',
+    'trianglesDirection',
+    'trianglesCount',
     'rulerRepeats',
     'rulerUnits',
     'tickerRepeats',
