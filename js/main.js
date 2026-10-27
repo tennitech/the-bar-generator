@@ -281,6 +281,7 @@ let oscillatorGains = {
   pulse: null
 };
 let pulseWorkletNode = null;
+let mobileSidebarFocusFrame = 0;
 let lastFocusedElement = null; // For accessibility focus management
 let bugReportLastFocusedElement = null;
 
@@ -606,6 +607,7 @@ let previewControlSpace = 88;
 let panOffset = { x: 0, y: 0 };
 let panPointerId = null;
 let panPointerPosition = null;
+let viewerTouchController = null;
 let panGestureHandlersBound = false;
 let browserZoomGuardsBound = false;
 let liveCanvasUsesWebGL = true;
@@ -670,6 +672,10 @@ let zoomInBtn, zoomOutBtn, zoomResetBtn, zoomLevelDisplay;
 function isCompactLayoutViewport(viewportWidth = window.innerWidth) {
   return Math.max(0, Math.round(viewportWidth || 0)) <= COMPACT_LAYOUT_MAX_WIDTH
     || (viewportWidth <= 1100 && window.matchMedia('(pointer: coarse)').matches);
+}
+
+function isCompactTouchLayoutViewport() {
+  return window.matchMedia('(pointer: coarse) and (max-width: 1100px)').matches;
 }
 
 function getWorkspaceDisplaySize() {
@@ -2167,6 +2173,7 @@ function syncResponsiveLayoutMode() {
     appSidebar.classList.toggle('sidebar-collapsed', desktopSidebarWasCollapsed);
   }
 
+  headerMotionColorMode = null;
   lastCompactLayoutState = isCompactLayout;
   return true;
 }
@@ -2244,7 +2251,7 @@ function syncResponsiveWorkspaceSizing() {
       lastCanvasSize = { width: nextWidth, height: nextHeight };
       clampPanOffset();
       updateZoomControls();
-      startResponsiveLayoutAnimation(320);
+      if (!isCompactTouchLayoutViewport()) startResponsiveLayoutAnimation(320);
       requestAnimationFrame(() => {
         clampPanOffset();
         renderPanOffsetChange();
@@ -2616,7 +2623,7 @@ function setup() {
   appMain = document.querySelector('.app-main');
   canvasViewport = document.querySelector('.canvas-viewport');
   bindPanGestureHandlers();
-  // Native pinch zoom stays available across the whole page, including the preview.
+  // Touch gestures over the artwork belong to the viewer; page zoom stays available outside it.
   bindBrowserZoomGuards();
   updatePanTouchAction();
   appSidebar = document.getElementById('app-sidebar');
@@ -3851,6 +3858,8 @@ function getSidebarFocusableElements() {
 }
 
 function toggleMobileMenu() {
+  if (mobileSidebarFocusFrame) cancelAnimationFrame(mobileSidebarFocusFrame);
+  mobileSidebarFocusFrame = 0;
   const isCompactLayout = isCompactLayoutViewport();
 
   if (isCompactLayout) {
@@ -3861,21 +3870,23 @@ function toggleMobileMenu() {
       appSidebar.classList.add('active');
       if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
 
-      setTimeout(() => {
+      mobileSidebarFocusFrame = requestAnimationFrame(() => {
+        mobileSidebarFocusFrame = 0;
+        if (!appSidebar.classList.contains('active') || !isCompactLayoutViewport()) return;
         const firstFocusable = getSidebarFocusableElements()[0];
-        if (firstFocusable) firstFocusable.focus();
-      }, 100);
+        if (firstFocusable) firstFocusable.focus({ preventScroll: true });
+      });
     } else {
       // Closing sidebar in compact overlay layout
       appSidebar.classList.remove('active');
 
       if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
-        lastFocusedElement.focus();
+        lastFocusedElement.focus({ preventScroll: true });
       } else if (mobileMenuToggle) {
-        mobileMenuToggle.focus();
+        mobileMenuToggle.focus({ preventScroll: true });
       }
     }
-    startResponsiveLayoutAnimation(460);
+    if (!isCompactTouchLayoutViewport()) startResponsiveLayoutAnimation(460);
   } else {
     // Desktop behavior (collapsible)
     appSidebar.classList.toggle('sidebar-collapsed');
@@ -3884,6 +3895,7 @@ function toggleMobileMenu() {
   }
 
   syncSidebarToggleState();
+  if (isCompactTouchLayoutViewport()) syncResponsiveWorkspaceSizing();
 }
 
 function handleClickOutside(event) {
@@ -3894,6 +3906,10 @@ function handleClickOutside(event) {
     appSidebar && appSidebar.contains(event.target)) {
     return;
   }
+
+  // A viewer touch might become a pinch. Its gesture handler dismisses the
+  // panel only after a completed tap, so layout cannot move under two fingers.
+  if (event.pointerType === 'touch' && canvasViewport?.contains(event.target)) return;
 
   // Close the sidebar if it's open
   if (appSidebar && appSidebar.classList.contains('active')) {
@@ -4330,6 +4346,7 @@ function applyColorMode(colorMode) {
     lastNonLunarColorMode = currentColorMode;
   }
 
+  document.body.style.setProperty('--preview-foreground', colors[currentColorMode].fg);
   syncLunarColorOptionAvailability();
 
   // Remove all theme classes first
@@ -6759,6 +6776,7 @@ function updateAudioParameters() {
 }
 
 function windowResized() {
+  headerMotionColorMode = null;
   headerMotionPixelWidth = 0;
   syncViewportHeightVar();
   requestSaveButtonResponsiveLayout();
@@ -7689,15 +7707,23 @@ function fitPreview() {
 }
 
 function setZoomLevel(nextZoomLevel, options = {}) {
+  if (!options.immediate && viewerTouchController) viewerTouchController.cancel();
   zoomTargetLevel = window.viewportZoomUtils.clampZoom(nextZoomLevel);
   zoomResettingPan = !!options.resetPan;
   zoomAnchor = options.anchor || getBarZoomAnchor();
   zoomAnchorState = { pan: { ...panOffset }, level: zoomLevel };
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reducedMotion) {
+  if (reducedMotion || options.immediate) {
+    if (zoomAnimationFrame) cancelAnimationFrame(zoomAnimationFrame);
+    zoomAnimationFrame = 0;
     panOffset = zoomResettingPan ? { x: 0, y: 0 } : window.viewportZoomUtils.anchorPan(
       panOffset, zoomAnchor, zoomLevel, zoomTargetLevel, getResponsiveLogoScale());
     zoomLevel = zoomTargetLevel;
+    if (options.panDelta) {
+      const scale = getResponsiveLogoScale();
+      panOffset.x += options.panDelta.x / scale;
+      panOffset.y += options.panDelta.y / scale;
+    }
     clampPanOffset();
 
     if (!isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
@@ -7761,8 +7787,38 @@ function bindPanGestureHandlers() {
   if (panGestureHandlersBound || !canvasViewport) return;
   panGestureHandlersBound = true;
 
+  viewerTouchController = window.viewerTouchUtils.bindViewerTouch(canvasViewport, {
+    onStart() {
+      clearPanPointerState();
+      endPanDrag();
+      if (zoomAnimationFrame) cancelAnimationFrame(zoomAnimationFrame);
+      zoomAnimationFrame = 0;
+      zoomTargetLevel = zoomLevel;
+      updateZoomControls();
+    },
+    onPan(delta) {
+      if (isPanningMode) {
+        isPanDragging = true;
+        canvasViewport.classList.add('is-dragging');
+        applyPanDragDelta(delta.x, delta.y);
+      }
+    },
+    onPinch({ ratio, anchor, delta }) {
+      isPanDragging = true;
+      canvasViewport.classList.add('is-dragging');
+      setZoomLevel(zoomLevel * ratio, {
+        anchor: getPointerZoomAnchor(anchor), panDelta: delta, immediate: true
+      });
+    },
+    onEnd: endPanDrag,
+    onTap() {
+      if (isCompactLayoutViewport() && appSidebar?.classList.contains('active')) toggleMobileMenu();
+    }
+  });
+
   canvasViewport.addEventListener('dblclick', fitPreview);
   canvasViewport.addEventListener('pointerdown', (event) => {
+    if (event.pointerType === 'touch') return;
     if (!isPanningMode) return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     if (panPointerId != null) { clearPanPointerState(); endPanDrag(); return; }
@@ -7784,6 +7840,7 @@ function bindPanGestureHandlers() {
   });
 
   canvasViewport.addEventListener('pointermove', (event) => {
+    if (event.pointerType === 'touch') return;
     if (!isPanningMode || panPointerId !== event.pointerId || !panPointerPosition) return;
 
     const deltaX = event.clientX - panPointerPosition.x;
@@ -7797,6 +7854,7 @@ function bindPanGestureHandlers() {
   });
 
   const finishPointerPan = (event) => {
+    if (event.pointerType === 'touch') return;
     if (panPointerId !== event.pointerId) return;
     clearPanPointerState();
     endPanDrag();
