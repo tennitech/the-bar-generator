@@ -228,7 +228,7 @@
         return;
       }
 
-      script.src = `${basePath}js/utils/pagesFallback.js`;
+      script.src = `${basePath}js/utils/pagesFallback.js?v=20261027-motion-polish`;
       script.onload = function onFallbackScriptLoad() {
         const redirectUrl = window.PagesFallback && typeof window.PagesFallback.getPagesFallbackRedirectUrl === 'function'
           ? window.PagesFallback.getPagesFallbackRedirectUrl(window.location.pathname, window.location.search, {

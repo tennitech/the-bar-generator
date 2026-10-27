@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261027-motion-polish';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
@@ -20,7 +20,7 @@
       return window.GeneratorRoutes;
     }
 
-    await loadScript('js/utils/generatorRoutes.js');
+    await loadScript('js/utils/generatorRoutes.js?v=20261027-motion-polish');
     return window.GeneratorRoutes || null;
   }
 

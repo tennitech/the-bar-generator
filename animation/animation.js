@@ -750,3 +750,12 @@ window.addEventListener('resize', async () => {
 prepare().catch((error) => {
   projection.textContent = error.message;
 });
+
+// The projection has no interactive content; Escape still works after a touch
+// focuses the iframe instead of the parent document.
+window.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && window.parent !== window) {
+    event.preventDefault();
+    window.parent.postMessage({ type: 'rpi-logo-animation-close' }, window.location.origin);
+  }
+});
