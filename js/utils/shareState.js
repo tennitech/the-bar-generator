@@ -1,0 +1,207 @@
+/* Stable, versioned client-only snapshots. UMD matches the generator's unbundled scripts. */
+(function (scope) {
+  const VERSION = 1;
+  const MAX_FRAGMENT_LENGTH = 24000;
+  const MAX_NAME_LENGTH = 80;
+  const MAX_TEXT_LENGTH = 4096;
+  const PREFIX = '#bar=';
+  const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
+  const safeText = (value, limit) => Array.from(String(value || '').replace(/[\u0000-\u001f\u007f]/g, '')).slice(0, limit).join('');
+
+  function normalizeRuntime(value) {
+    const data = isRecord(value) ? value : {};
+    const bounded = (key, fallback, max) => Number.isFinite(data[key]) && data[key] >= 0 && data[key] <= max ? data[key] : fallback;
+    const notes = Array.isArray(data.notes) ? data.notes.slice(0, 64).filter(note => isRecord(note)
+      && /^[A-G](?:#|b)?[0-8]$/.test(note.note) && [0.25, 0.5, 1, 2].includes(note.duration))
+      .map(note => ({ note: note.note, duration: note.duration })) : [];
+    let duration = 0;
+    const boundedNotes = notes.filter(note => { duration += note.duration; return duration <= 16; });
+    return {
+      seed: Math.floor(bounded('seed', 1, 4294967295)),
+      phase: bounded('phase', 0, 1),
+      time: bounded('time', 0, 1e9),
+      duration: [0.25, 0.5, 1, 2].includes(data.duration) ? data.duration : 1,
+      notes: boundedNotes
+    };
+  }
+
+  function normalizeState(value, manifest) {
+    if (!isRecord(value) || value.v !== VERSION) throw new Error('This share link uses an unsupported version.');
+    if (!isRecord(value.controls)) throw new Error('This share link has no valid controls.');
+    const controls = {};
+    for (const id of Object.keys(manifest).sort()) {
+      if (!Object.hasOwn(value.controls, id)) continue;
+      const spec = manifest[id];
+      const raw = value.controls[id];
+      if (spec.type === 'checkbox') {
+        if (typeof raw !== 'boolean') throw new Error('This share link has an invalid toggle.');
+        controls[id] = raw;
+      } else if (spec.options) {
+        if (typeof raw !== 'string' || !spec.options.includes(raw)) throw new Error('This share link has an unavailable option.');
+        controls[id] = raw;
+      } else if (spec.type === 'range' || spec.type === 'number') {
+        const number = typeof raw === 'string' && raw.trim() ? Number(raw) : NaN;
+        if (!Number.isFinite(number) || number < spec.min || number > spec.max) throw new Error('This share link has an out-of-range control.');
+        if (spec.step && Math.abs((number - spec.min) / spec.step - Math.round((number - spec.min) / spec.step)) > 1e-6) throw new Error('This share link has an invalid control step.');
+        controls[id] = String(number);
+      } else {
+        if (typeof raw !== 'string' || Array.from(raw).length > Math.min(spec.maxLength || MAX_TEXT_LENGTH, MAX_TEXT_LENGTH)) throw new Error('Text in this share link is too long.');
+        controls[id] = raw;
+      }
+    }
+    if (controls['color-mode-select'] === 'lunar' && controls['style-select'] !== 'lunar') throw new Error('This share link uses a theme unavailable for this bar.');
+    return { v: VERSION, name: safeText(value.name, MAX_NAME_LENGTH), controls, runtime: normalizeRuntime(value.runtime) };
+  }
+
+  function encodeState(value, manifest) {
+    const state = normalizeState(value, manifest);
+    const bytes = new TextEncoder().encode(JSON.stringify(state));
+    const encoded = btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join(''))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    if (encoded.length + PREFIX.length > MAX_FRAGMENT_LENGTH) throw new Error('This configuration is too large for a share link. Shorten its text and try again.');
+    return PREFIX + encoded;
+  }
+
+  function decodeState(fragment, manifest) {
+    if (!fragment.startsWith(PREFIX)) return null;
+    if (fragment.length > MAX_FRAGMENT_LENGTH) throw new Error('This share link is too long.');
+    try {
+      const encoded = fragment.slice(PREFIX.length);
+      if (!encoded || !/^[A-Za-z0-9_-]+$/.test(encoded)) throw new Error('encoding');
+      const bytes = Uint8Array.from(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')), char => char.charCodeAt(0));
+      return normalizeState(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)), manifest);
+    } catch (error) {
+      if (/share link|Text in/.test(error.message)) throw error;
+      throw new Error('This share link is malformed. Use the controls to start again.');
+    }
+  }
+
+  function seededRandom(seed) {
+    let value = seed >>> 0;
+    return () => {
+      value = (value + 0x6D2B79F5) >>> 0;
+      let t = Math.imul(value ^ (value >>> 15), 1 | value);
+      t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function initialize(bridge) {
+    const fields = Array.from(document.querySelectorAll('#app-sidebar input[id], #app-sidebar select[id]'))
+      .filter(field => !field.closest('[data-share-ui]'));
+    const manifest = {};
+    for (const field of fields) {
+      manifest[field.id] = {
+        type: field.type,
+        min: Number(field.min || 0), max: Number(field.max || 100), step: Number(field.step || 1),
+        maxLength: field.maxLength > 0 ? field.maxLength : MAX_TEXT_LENGTH,
+        ...(field.tagName === 'SELECT' ? { options: Array.from(field.options).filter(option => field.id !== 'style-select' || !option.disabled).map(option => option.value) } : {})
+      };
+    }
+    const defaultControls = Object.fromEntries(fields.map(field => [field.id, field.type === 'checkbox'
+      ? field.defaultChecked : field.tagName === 'SELECT' ? (Array.from(field.options).find(option => option.defaultSelected) || field.options[0]).value : field.defaultValue]));
+    defaultControls['style-select'] = 'solid';
+    let restoring = false;
+    let name = '';
+    let loadError = '';
+    const section = document.createElement('details');
+    section.className = 'share_panel';
+    section.dataset.shareUi = '';
+    section.innerHTML = '<summary>Share this bar</summary><div class="share_panel-content"><label for="share-name">Name (optional, up to 80 characters)</label><input id="share-name" type="text" maxlength="160" placeholder="A name for this configuration"><p id="share-loaded-name" hidden></p><button id="share-copy" type="button">Copy share link</button><label for="share-url">Link — select to copy manually</label><textarea id="share-url" rows="3" readonly spellcheck="false"></textarea><p>Settings and text stay in the link. Anyone with it can read them. Links can be long; some messaging services shorten or reject them.</p><p id="share-status" role="status" aria-live="polite"></p></div>';
+    document.querySelector('#sidebar-scroll .sidebar-content').append(section);
+    const nameInput = section.querySelector('#share-name');
+    const loadedName = section.querySelector('#share-loaded-name');
+    loadedName.className = 'share_caption';
+    document.getElementById('app-main').append(loadedName);
+    const output = section.querySelector('#share-url');
+    const status = section.querySelector('#share-status');
+    const sanitize = value => bridge.sanitize ? bridge.sanitize(value) : value;
+    const capture = () => ({ v: VERSION, name: sanitize(name), controls: Object.fromEntries(fields.map(field => [field.id,
+      field.type === 'checkbox' ? field.checked : (field.type === 'text' ? sanitize(field.value) : field.value)])), runtime: bridge.capture() });
+    function buildLink() {
+      const snapshot = capture();
+      const url = new URL(location.href);
+      url.pathname = scope.GeneratorRoutes.buildGeneratorPath(snapshot.controls['style-select'], location.pathname);
+      url.search = '';
+      url.hash = encodeState(snapshot, manifest);
+      return url.href;
+    }
+    function refresh() {
+      try { output.value = buildLink(); status.textContent = loadError || `${output.value.length.toLocaleString()} characters. No upload or account needed.`; }
+      catch (error) { output.value = ''; status.textContent = error.message; }
+    }
+    function apply(snapshot) {
+      restoring = true;
+      try {
+        const values = { ...defaultControls, ...snapshot.controls };
+        for (const field of fields) {
+          if (field.type === 'checkbox') field.checked = values[field.id];
+          else field.value = field.type === 'text' ? sanitize(values[field.id]) : values[field.id];
+        }
+        name = sanitize(snapshot.name);
+        nameInput.value = name;
+        loadedName.textContent = name ? `Shared configuration: ${name}` : '';
+        loadedName.hidden = !name;
+        bridge.restore(snapshot.runtime);
+        for (const field of fields) {
+          if (field.id === 'style-select' || field.id === 'color-mode-select') continue;
+          field.dispatchEvent(new Event(field.type === 'range' || field.type === 'text' ? 'input' : 'change', { bubbles: true }));
+        }
+        bridge.refresh();
+        if (name) section.open = true;
+      } finally { restoring = false; }
+    }
+    function load() {
+      loadError = '';
+      try {
+        const snapshot = decodeState(location.hash, manifest);
+        if (snapshot) apply(snapshot);
+        else {
+          restoring = true;
+          for (const field of fields) {
+            if (field.type === 'checkbox') field.checked = defaultControls[field.id];
+            else field.value = defaultControls[field.id];
+          }
+          bridge.legacy();
+          name = ''; nameInput.value = ''; loadedName.hidden = true;
+          restoring = false;
+        }
+        refresh();
+      } catch (error) { restoring = false; loadError = error.message; section.open = true; refresh(); }
+    }
+    const controller = {
+      capture, manifest, buildLink,
+      syncUrl() {
+        if (restoring) return true;
+        loadError = '';
+        if (!location.hash.startsWith(PREFIX)) return false;
+        try { history.replaceState(history.state, '', buildLink()); } catch (error) { status.textContent = error.message; }
+        return true;
+      }
+    };
+    scope.barShareController = controller;
+    nameInput.addEventListener('input', () => { name = safeText(sanitize(nameInput.value), MAX_NAME_LENGTH); nameInput.value = name; loadedName.textContent = name ? `Shared configuration: ${name}` : ''; loadedName.hidden = !name; controller.syncUrl(); refresh(); });
+    section.addEventListener('toggle', () => { if (section.open) refresh(); });
+    section.querySelector('#share-copy').addEventListener('click', async () => {
+      loadError = '';
+      refresh();
+      if (!output.value) return;
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(output.value);
+        status.textContent = 'Share link copied.';
+      } catch (_) { output.focus(); output.select(); status.textContent = 'Copy the selected link with your keyboard or touch menu.'; }
+    });
+    document.getElementById('app-sidebar').addEventListener('input', event => { if (!event.target.closest('[data-share-ui]')) { controller.syncUrl(); if (section.open) refresh(); } });
+    document.getElementById('app-sidebar').addEventListener('change', event => { if (!event.target.closest('[data-share-ui]')) { controller.syncUrl(); if (section.open) refresh(); } });
+    window.addEventListener('popstate', load);
+    window.addEventListener('hashchange', load);
+    if (location.hash.startsWith(PREFIX)) load();
+    if (['localhost', '127.0.0.1'].includes(location.hostname) && location.port === '4315') document.title = 'BAR-05 · Share Links · 4315';
+    return controller;
+  }
+
+  const api = { VERSION, MAX_FRAGMENT_LENGTH, MAX_NAME_LENGTH, MAX_TEXT_LENGTH, normalizeState, normalizeRuntime, encodeState, decodeState, seededRandom, initialize };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  scope.BarShareState = api;
+})(typeof window !== 'undefined' ? window : globalThis);

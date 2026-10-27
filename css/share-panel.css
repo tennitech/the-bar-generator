@@ -1,0 +1,11 @@
+.share_panel { border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem; font-size: .8rem; }
+.share_panel summary { cursor: pointer; padding: .5rem 0; font-weight: 600; }
+.share_panel-content { display: grid; gap: .625rem; padding-top: .5rem; }
+.share_panel input, .share_panel textarea, .share_panel button { box-sizing: border-box; width: 100%; min-width: 0; font: inherit; color: var(--text-primary); background: var(--control-surface); border: 1px solid var(--control-border); border-radius: 0; padding: .625rem; }
+.share_panel textarea { resize: vertical; overflow-wrap: anywhere; }
+.share_panel button { min-height: 2.75rem; cursor: pointer; }
+.share_panel p { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
+.share_panel :is(input, textarea, button, summary):focus-visible { outline: 2px solid var(--text-primary); outline-offset: 3px; }
+
+.share_caption { position: absolute; top: 1rem; left: 1rem; right: 1rem; margin: 0; text-align: center; font-size: .8rem; line-height: 1.5; color: var(--text-primary); overflow-wrap: anywhere; pointer-events: none; }
+.share_caption[hidden] { display: none; }
