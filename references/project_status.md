@@ -555,14 +555,14 @@ limitations. Automated software checks do not establish manual owner acceptance.
 ## 6. Design Decisions
 *   **Profanity Filter:** Implemented client-side for immediate feedback and user privacy. Unicode folding and a documented list improve coverage, but this is best-effort moderation rather than a guarantee.
 *   **Renderer Dependency:** An unchanged, licensed p5.js 1.7.0 build is served locally so generator boot is independent of cdnjs.
-*   **Browser Regression Check:** A small Playwright smoke script runs in CI without changing the site's vanilla runtime stack.
+*   **Browser Regression Check:** Playwright smoke scripts run locally for relevant changes; the unit suite is the only automated merge check. The site's vanilla runtime stack is unchanged.
 *   **Font Format:** Chosen `.woff2` for optimal web performance.
 *   **Global Access:** `ProfanityFilter` attached to `window` for p5.js compatibility.
 *   **Frontify Integration:** Chosen external iframe embedding as the initial integration strategy for simplicity and speed.
 *   **Export Consistency:** Introduced shared SVG bar pattern generator (`js/utils/barPattern.js`) as single source of truth for non-solid bar exports.
 
 ## 7. Known Issues / Notes
-*   The broader official-complete-vector alignment in the separate geometry work remains an integration dependency. These pattern changes retain current main's existing 250-unit wordmark/layout basis while unifying their header and downloads; they do not claim to resolve the separate complete-asset geometry audit.
+*   Official complete-vector geometry is integrated across preview, header and exports, with a 250-unit basis, 18-unit bar height and fixed 21-unit gap. See [geometry](bar_geometry.md) and [integration verification](integration_qa.md) for the measured coverage and remaining manual-review limits.
 *   October 27 brand-site review: the Pattern page excludes gradients and complex imagery as pattern elements. Existing gradient and Artemis artwork treatments need RPI owner review. Student-club and official-library approvals are separate, and free font use does not establish public redistribution rights. See the dated source checklist in references/rpi_brand_guidelines.md. No new permission or brand approval was inferred.
 
 *   The client-side text filter covers more offensive content and Unicode variants but cannot guarantee detection of every evasion or avoid every false positive. A formal owner-approved content policy is still needed.
