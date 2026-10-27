@@ -3396,6 +3396,7 @@ function setup() {
 
   setupLunarSplashdownCounter();
   setupShareLinks();
+  window.addEventListener('urlstateerror', () => Toast.show('The address could not update. Use Share to copy the current bar.', 'error'));
 
   // Add global keyboard event listener for more reliable shift detection
   document.addEventListener('keydown', function (event) {
@@ -3794,7 +3795,7 @@ function toggleMobileMenu() {
 
       mobileSidebarFocusFrame = requestAnimationFrame(() => {
         mobileSidebarFocusFrame = 0;
-        if (!appSidebar.classList.contains('active') || !isCompactLayoutViewport()) return;
+        if (!appSidebar.classList.contains('active') || !isCompactLayoutViewport() || appSidebar.contains(document.activeElement)) return;
         const firstFocusable = getSidebarFocusableElements()[0];
         if (firstFocusable) firstFocusable.focus({ preventScroll: true });
       });
@@ -4612,7 +4613,7 @@ async function ensureHeaderLogoAnimationController() {
   }
 
   headerLogoAnimationControllerPromise = (async () => {
-    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261027-motion-polish');
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261027-integration-final');
 
     if (!window.LogoAnimationOverlay
       || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {
@@ -6293,7 +6294,7 @@ function updateUrlParameters() {
   const newUrl = window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorUrl === 'function'
     ? window.GeneratorRoutes.buildGeneratorUrl(selectedStyle, params, window.location.pathname)
     : (params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname);
-  window.history.replaceState(window.history.state, '', newUrl + window.location.hash);
+  window.URLState.replace(newUrl + window.location.hash);
 }
 
 function applyUrlParameters() {
@@ -7822,10 +7823,6 @@ function touchEnded() {
 // Ensure custom dropdowns are initialized when DOM is ready
 document.addEventListener('DOMContentLoaded', setupCustomDropdowns);
 
-if (['localhost', '127.0.0.1'].includes(location.hostname) && location.port === '4311') {
-  document.title = `BAR-01 · Geometry · 4311 | ${document.title}`;
-}
-
 // Share links bridge the legacy p5 global state without coupling serialization to rendering.
 let sharePatternSeed = typeof crypto !== 'undefined' && crypto.getRandomValues
   ? crypto.getRandomValues(new Uint32Array(1))[0] : 1;
@@ -7844,8 +7841,6 @@ function setupShareLinks() {
       notes: currentStaffNotes, duration: currentNoteDuration }),
     restore: state => {
       stopAudio();
-      // Quantum links preserve phase/rate/reverse but follow its no-auto-start contract.
-      if (window.quantumControls) window.quantumControls.pause();
       sharePatternSeed = state.seed;
       currentStaffNotes = state.notes;
       currentNoteDuration = state.duration;
@@ -7860,6 +7855,8 @@ function setupShareLinks() {
       document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
         button.classList.toggle('active', Number(button.dataset.duration) === state.duration);
       });
+      window.quantumControls.pause();
+      window.quantumControls.sync();
       resetCirclePatternCache();
     },
     refresh: () => {
@@ -7882,16 +7879,16 @@ function setupShareLinks() {
       });
       resetAnimationClock();
       for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = DEFAULT_MOTION_ENABLED;
-      if (window.quantumControls && window.quantumModel) {
-        const query = new URLSearchParams(window.location.search);
-        document.getElementById('quantum-phase').value = window.quantumModel.normalizePhase(query.get('quantumPhase') || 0);
-        document.getElementById('quantum-speed-slider').value = window.quantumModel.normalizeSpeed(query.has('quantumSpeed') ? query.get('quantumSpeed') : 1);
-        document.getElementById('quantum-reverse-toggle').checked = query.get('quantumReverse') === 'true';
-        window.quantumControls.pause();
-      }
       applyUrlParameters();
+      const quantumQuery = new URLSearchParams(location.search);
+      document.getElementById('quantum-phase').value = quantumModel.normalizePhase(quantumQuery.get('quantumPhase') || 0);
+      document.getElementById('quantum-speed-slider').value = quantumModel.normalizeSpeed(quantumQuery.has('quantumSpeed') ? quantumQuery.get('quantumSpeed') : 1);
+      document.getElementById('quantum-reverse-toggle').checked = quantumQuery.get('quantumReverse') === 'true';
+      window.quantumControls.pause();
+      window.quantumControls.sync();
       syncMotionToggleState();
       syncAllCustomSelects();
     }
   });
+
 }

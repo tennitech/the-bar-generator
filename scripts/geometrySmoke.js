@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const { chromium, firefox, webkit } = require('playwright');
 const browserName = process.env.RPI_BROWSER || 'chromium';
-const baseUrl = process.env.RPI_SITE_URL || 'http://127.0.0.1:4311';
+const baseUrl = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
 const evidenceDirectory = process.env.RPI_GEOMETRY_EVIDENCE;
 const styles = ['solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles', 'numeric', 'morse',
   'circles-gradient', 'gradient', 'grid', 'lines', 'point-connect', 'neural-network',
@@ -165,6 +165,23 @@ async function main() {
       const pngWait = page.waitForEvent('download'); await page.locator('#save-png').click();
       const png = await fs.readFile(await (await pngWait).path());
       assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+      const pixels = await page.evaluate(async encoded => {
+        const image = new Image(); image.src = `data:image/png;base64,${encoded}`; await image.decode();
+        const g = RPI_LOGO_GEOMETRY, scale = image.width / (g.width + g.exportPadding * 2);
+        const header = buildHeaderPreviewSVG().replace('<svg ', `<svg width="${image.width}" height="${image.height}" `)
+          .replace(`viewBox="0 0 ${g.width} ${g.totalHeight}"`, `viewBox="-${g.exportPadding} -${g.exportPadding} ${image.width / scale} ${image.height / scale}"`);
+        const reference = new Image(); reference.src = `data:image/svg+xml,${encodeURIComponent(header)}`; await reference.decode();
+        const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
+        const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0);
+        const actual = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(reference, 0, 0);
+        const expected = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let difference = 0; for (let i = 0; i < actual.length; i++) difference += Math.abs(actual[i] - expected[i]);
+        return { difference, width: image.width, height: image.height };
+      }, png.toString('base64'));
+      assert.deepEqual([pixels.width, pixels.height], [1160, 762]);
+      assert.equal(pixels.difference, 0, `${style}: downloaded PNG differs from selected header vector content`);
+
       if (evidenceDirectory) await page.screenshot({ path: `${evidenceDirectory}/geometry-${style}.png` });
     }
     for (const viewport of [{ width: 375, height: 667 }, { width: 768, height: 1024 }]) {

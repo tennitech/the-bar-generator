@@ -16,6 +16,24 @@ async function main() {
     const context = await browser.newContext({ ...devices['iPhone 13'], reducedMotion: 'reduce' });
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
+    // Reproduce editing before the delayed sidebar-opening focus callback.
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto(`${baseUrl}/generator/ruler/`);
+    await page.waitForFunction(() => window.barShareController);
+    await page.evaluate(() => {
+      toggleMobileMenu();
+      document.getElementById('ruler-repeats-display').click();
+      const input = document.querySelector('.slider_value-input');
+      input.focus(); input.value = '12';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await page.waitForTimeout(150);
+    assert.equal(await page.locator('.slider_value-input').count(), 1, 'opening focus must retain a fast editor');
+    assert.equal(await page.evaluate(() => document.activeElement.classList.contains('slider_value-input')), true);
+    await page.locator('.slider_value-input').press('Enter');
+    assert.equal(await page.inputValue('#ruler-repeats-slider'), '12');
+    await page.locator('#mobile-controls-close').tap();
+
     for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 664 },
       { width: 844, height: 290 }, { width: 932, height: 360 }, { width: 1024, height: 768 }]) {
       await page.setViewportSize(viewport);

@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const { chromium } = require('playwright');
-const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4315';
+const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
 async function ready(page) { await page.waitForFunction(() => window.barShareController && window.quantumControls); }
 async function svg(page) {
   const waiting = page.waitForEvent('download'); await page.evaluate(() => saveSVG());

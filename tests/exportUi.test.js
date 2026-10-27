@@ -50,3 +50,14 @@ test('Cancel activation retains focus while abort propagates and ignores repeate
   ui.finish(job, 'cancelled', 'Export cancelled.');
   expect(document.activeElement.id).toBe('save-button');
 });
+
+
+test('pointer Cancel restores the trigger when native activation does not focus buttons', () => {
+  const { ui, elements, document } = fixture();
+  const job = ui.begin('gif');
+  document.activeElement = null;
+  elements['export-cancel'].listeners.click();
+  expect(document.activeElement.id).toBe('export-cancel');
+  ui.finish(job, 'cancelled', 'Export cancelled.');
+  expect(document.activeElement.id).toBe('save-button');
+});

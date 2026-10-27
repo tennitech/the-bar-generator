@@ -3,8 +3,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright');
-const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8765';
-const evidence = process.env.RPI_FIRST_PAINT_EVIDENCE || '/tmp/bar-generator-first-paint-evidence';
+const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
+const evidence = process.env.RPI_FIRST_PAINT_EVIDENCE || path.join(require('node:os').tmpdir(), 'rpi-first-paint-evidence');
 fs.mkdirSync(evidence, { recursive: true });
 const themes = ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray', 'lunar'];
 async function state(page) {
@@ -196,12 +196,12 @@ async function state(page) {
     const stale = await browser.newContext();
     await stale.route('**/generator/solid/', async route => {
       const response = await route.fetch();
-      await route.fulfill({ response, body: (await response.text()).replace('css/style.css?v=20261027-print-pass', 'css/style.css?v=stale-route-test') });
+      await route.fulfill({ response, body: (await response.text()).replace('css/style.css?v=20261027-integration-final', 'css/style.css?v=stale-route-test') });
     });
     const stalePage = await stale.newPage();
     await stalePage.goto(`${base}/generator/solid/`);
     await stalePage.locator('#p5-container canvas').waitFor();
-    assert.match(await stalePage.locator('link[rel=stylesheet][href*="css/style.css"]').getAttribute('href'), /20261027-print-pass/);
+    assert.match(await stalePage.locator('link[rel=stylesheet][href*="css/style.css"]').getAttribute('href'), /20261027-integration-final/);
     results.push({ kind: 'stale-route-css', recovered: true });
     await stale.close();
     // Keyboard semantics survive the early enhancement and later p5 setup.

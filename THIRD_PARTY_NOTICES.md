@@ -31,6 +31,6 @@ The looping GIF export vendors the upstream browser encoder distribution locally
 - License: MIT, copyright 2013–2023 Cole Bemis
 - Local paths: `third_party/feather`, `js/utils/featherIcons.js`
 
-Sharing uses an exact static share/copy/check subset of the same Feather glyph
-source already matched by existing toolbar icons. No runtime package/CDN is added.
+UI action controls use an exact static 19-icon subset of the same Feather source
+already matched by existing toolbar glyphs. No runtime package/CDN is added.
 See `third_party/feather/LICENSE` and `third_party/feather/notice.md` for source hashes and attribution.

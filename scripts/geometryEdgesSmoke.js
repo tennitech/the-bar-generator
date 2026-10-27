@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
-const baseUrl = process.env.RPI_SITE_URL || 'http://127.0.0.1:4311';
+const baseUrl = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
 const styles = ['solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles', 'numeric', 'morse',
   'circles-gradient', 'gradient', 'grid', 'lines', 'point-connect', 'neural-network',
   'triangle-grid', 'triangles', 'fibonacci-sequence', 'union', 'wave-quantum', 'runway', 'lunar'];

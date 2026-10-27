@@ -10,7 +10,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261027-print-pass" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261027-integration-final" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261027-print-pass" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261027-print-pass"></script>
   <script src="js/utils/generatorRoutes.js?v=20261027-motion-polish"></script>
@@ -18,15 +18,15 @@
   <script src="js/utils/customDropdowns.js?v=20261027-print-pass"></script>
   <script src="js/utils/parameterControls.js?v=20261027-print-pass"></script>
   <script src="js/utils/loopingGif.js?v=20261027-motion-polish"></script>
-  <script src="js/utils/featherIcons.js"></script>
-  <script src="js/utils/shareState.js"></script>
+  <script src="js/utils/featherIcons.js?v=20261027-integration-final"></script>
+  <script src="js/utils/shareState.js?v=20261027-integration-final"></script>
   <script src="js/utils/musicStyle.js"></script>
   <script src="js/utils/barPattern.js?v=20261027-quantum-motion"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20260930-audit-fixes"></script>
   <script src="js/utils/quantumModel.js"></script>
   <script src="js/utils/generatorParameters.js?v=20261027-print-pass"></script>
-  <script src="js/utils/generatorInitialState.js?v=20261027-print-pass"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261027-integration-final"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
 </head>
@@ -80,20 +80,8 @@
         <button id="save-button" class="save-button primary-button" aria-haspopup="dialog" aria-expanded="false"
           aria-controls="save-menu">
           <span id="save-button-label">Download Asset</span>
-          <svg class="icon-right icon-download" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <svg class="icon-right icon-book" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-            <path d="M8 7h6"></path>
-            <path d="M8 11h8"></path>
-          </svg>
+          <svg data-feather="download" class="icon-right icon-download" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <svg data-feather="book-open" class="icon-right icon-book" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         </button>
         <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Download asset">
           <div id="export-settings" class="export_settings">
@@ -124,27 +112,12 @@
       </div>
       <a class="header_icon-button" href="https://github.com/tennitech/the-bar-generator" target="_blank"
         rel="noopener noreferrer" aria-label="View project repository on GitHub" title="View project repository">
-        <svg class="header_icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-          fill="currentColor" aria-hidden="true">
-          <path
-            d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.41 7.86 10.94.58.11.79-.25.79-.56 0-.28-.01-1.2-.02-2.18-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.76 2.68 1.25 3.33.96.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.47.11-3.06 0 0 .97-.31 3.18 1.17.92-.26 1.91-.39 2.9-.4.98 0 1.97.14 2.9.4 2.21-1.49 3.18-1.17 3.18-1.17.63 1.59.24 2.77.12 3.06.74.8 1.18 1.82 1.18 3.07 0 4.41-2.7 5.38-5.27 5.66.41.35.78 1.04.78 2.1 0 1.52-.01 2.74-.01 3.11 0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
-        </svg>
+        <svg data-feather="github" class="header_icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
       </a>
       <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open design controls" aria-expanded="false"
         aria-controls="app-sidebar">
-        <svg class="menu-toggle_icon menu-toggle_icon-menu" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round"
-          stroke-linejoin="round" aria-hidden="true">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-        <svg class="menu-toggle_icon menu-toggle_icon-close" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round"
-          stroke-linejoin="round" aria-hidden="true">
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-        </svg>
+        <svg data-feather="menu" class="menu-toggle_icon menu-toggle_icon-menu" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg data-feather="x" class="menu-toggle_icon menu-toggle_icon-close" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
   </header>
@@ -794,10 +767,10 @@
           <div class="control">
             <label for="triangles-direction-select" class="control-label">DIRECTION</label>
             <select id="triangles-direction-select" data-url-parameter="trianglesDirection" class="control-select" aria-label="Triangle diagonal direction">
-              <option value="down-right" selected>Down right ↘</option>
-              <option value="up-right">Up right ↗</option>
-              <option value="up-left">Up left ↖</option>
-              <option value="down-left">Down left ↙</option>
+              <option value="down-right" selected>Down right</option>
+              <option value="up-right">Up right</option>
+              <option value="up-left">Up left</option>
+              <option value="down-left">Down left</option>
             </select>
           </div>
           <div class="control slider-control">
@@ -840,19 +813,12 @@
       <div class="workspace-controls zoom_controls" data-page-entrance role="group" aria-label="Preview zoom">
         <div class="zoom_controls-row">
         <button id="zoom-out-btn" class="workspace-btn" aria-label="Zoom out (-)" aria-keyshortcuts="-" data-tooltip="Zoom out (-)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
+          <svg data-feather="minus" class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
         <input type="text" id="zoom-level" class="zoom-level-input" value="100%" aria-label="Preview zoom" role="spinbutton" inputmode="decimal" aria-valuemin="100" aria-valuemax="400" aria-valuenow="100" aria-describedby="zoom-help"
           title="100% fits this viewport. Preview zoom does not change exports.">
         <button id="zoom-in-btn" class="workspace-btn" aria-label="Zoom in (+)" aria-keyshortcuts="= Shift+= Plus" data-tooltip="Zoom in (+)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
+          <svg data-feather="plus" class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
         <div class="workspace-divider"></div>
         <button id="zoom-reset-btn" class="workspace-btn zoom_controls-fit" aria-label="Fit logo to viewport (0)" aria-keyshortcuts="0" data-tooltip="Fit whole mark (0)">Fit</button>
@@ -871,11 +837,7 @@
           <h2 id="bug-report-title" class="report_dialog-title">Report a Problem</h2>
         </div>
         <button id="bug-report-close" class="report_dialog-close" type="button" aria-label="Close report dialog">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <svg data-feather="x" class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
@@ -920,17 +882,18 @@
   <script>BarShareState.prepareTrigger(); GeneratorInitialState.apply(document.body); setupCustomDropdowns(); ParameterControls.prepare(document);</script>
   <script src="third_party/gif.js/gif.js"></script>
   <script src="js/utils/quantumControls.js"></script>
-  <script src="js/utils/previewControls.js?v=20260417-morse-randomize"></script>
+  <script src="js/utils/previewControls.js?v=20261027-integration-final"></script>
   <script src="js/utils/viewportZoom.js?v=20261027-viewport-zoom"></script>
   <script src="js/utils/viewerTouch.js"></script>
   <script src="js/utils/headerMotionSurface.js"></script>
   <script src="js/utils/themeMotion.js"></script>
-  <script src="js/ui.js"></script>
+  <script src="js/ui.js?v=20261027-integration-final"></script>
   <script src="js/utils/logoGeometry.js"></script>
+  <script src="js/utils/urlState.js?v=20261027-integration-final"></script>
   <script src="js/utils/exportOptions.js"></script>
   <script src="js/utils/transparentGif.js"></script>
-  <script src="js/utils/exportUi.js"></script>
-  <script src="js/main.js?v=20261027-print-pass"></script>
+  <script src="js/utils/exportUi.js?v=20261027-integration-final"></script>
+  <script src="js/main.js?v=20261027-integration-final"></script>
   <script src="js/drawing.js?v=20261027-transparent-exports"></script>
   <script>
     if (typeof window.p5 !== 'function') {

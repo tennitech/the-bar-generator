@@ -38,7 +38,14 @@ async function main() {
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`${baseUrl}/generator/lines/`, { waitUntil: 'networkidle' });
     await page.locator('#p5-container canvas').waitFor();
-    await page.evaluate(() => noLoop());
+    await page.evaluate(() => {
+      noLoop();
+      const original = createPNGExportBlob;
+      createPNGExportBlob = (snapshot, signal) => {
+        window.__patternPNGSource = snapshot.svgSource;
+        return original(snapshot, signal);
+      };
+    });
     for (const colorMode of ['black', 'white']) for (const config of activeCases) {
       const { style, ...values } = config;
       await page.evaluate(({ style, values, colorMode }) => {
@@ -83,17 +90,25 @@ async function main() {
         // SVG is scalable; choose the same whole-pixel viewport and uniform
         // reference-unit scale as PNG. Stretching the fractional default SVG
         // height into a different rectangle compares different transforms.
-        const reference = doc.documentElement.cloneNode(true);
+        const referenceDocument = doc.cloneNode(true);
+        const reference = referenceDocument.documentElement;
         const box = doc.documentElement.viewBox.baseVal;
         reference.setAttribute('width', target.width);
         reference.setAttribute('height', target.height);
         reference.setAttribute('viewBox', `${box.x} ${box.y} ${target.width / PNG_EXPORT_SCALE} ${target.height / PNG_EXPORT_SCALE}`);
         const image = new Image();
-        image.src = 'data:image/svg+xml;base64,' + btoa(new XMLSerializer().serializeToString(reference));
+        // Preserve the downloaded XML declaration and standalone SVG resource.
+        // Compare the same complete document that PNG rasterization receives.
+        const referenceURL = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(referenceDocument)], { type: 'image/svg+xml' }));
+        image.src = referenceURL;
         await image.decode();
-        const ctx = target.getContext('2d', { willReadFrequently: true });
+        // Match the production canvas backend; WebKit's read-optimized backend
+        // uses different edge antialiasing from its default drawing surface.
+        const ctx = target.getContext('2d');
         ctx.drawImage(image, 0, 0);
+        URL.revokeObjectURL(referenceURL);
         const expectedPixels = ctx.getImageData(0, 0, target.width, target.height).data;
+        const expectedPNG = target.toDataURL('image/png').split(',')[1];
         ctx.clearRect(0, 0, target.width, target.height);
         ctx.drawImage(pngImage, 0, 0);
         const pngPixels = ctx.getImageData(0, 0, target.width, target.height).data;
@@ -169,18 +184,21 @@ async function main() {
           stablePixels++;
           if ((livePixels[(row * rect.w + col) * 4 + 3] > 127) !== expected) stableDifferences++;
         }
-        return { svgGeometry, headerGeometry, expectedGeometry, pixelDifferences, maxChannelDifference, maxAlphaDifference, exportMaskOverlap: alphaIntersection / alphaUnion, exportInteriorDifferences, firstOpaqueRGB,
+        return { capturedSourceMatches: window.__patternPNGSource === svg, expectedPNG, referenceSVG: new XMLSerializer().serializeToString(referenceDocument), svgGeometry, headerGeometry, expectedGeometry, pixelDifferences, maxChannelDifference, maxAlphaDifference, exportMaskOverlap: alphaIntersection / alphaUnion, exportInteriorDifferences, firstOpaqueRGB,
           previewInteriorAgreement: 1 - stableDifferences / stablePixels,
           pngWidth: target.width, pngHeight: target.height, barPixels, leftPixels, rightPixels,
           previewOverlap: intersection / union };
       }, { svg, png: png.toString('base64') });
       const label = `${browserName} ${style} ${JSON.stringify(values)} ${colorMode}`;
+      assert.equal(result.capturedSourceMatches, true, `${label}: PNG captures the exact downloaded SVG source`);
       assert.deepEqual(result.svgGeometry, result.expectedGeometry, `${label}: SVG selected geometry`);
       assert.deepEqual(result.headerGeometry, result.expectedGeometry, `${label}: header selected geometry`);
       if (evidence && result.pixelDifferences && (result.exportInteriorDifferences || result.exportMaskOverlap <= 0.999)) {
         await fs.writeFile(path.join(evidence, `${browserName}-raster-diagnostic.json`), JSON.stringify(result, null, 2));
         await fs.writeFile(path.join(evidence, `${browserName}-raster-diagnostic.svg`), svg);
         await fs.writeFile(path.join(evidence, `${browserName}-raster-diagnostic.png`), png);
+        await fs.writeFile(path.join(evidence, `${browserName}-raster-reference.png`), Buffer.from(result.expectedPNG, 'base64'));
+        await fs.writeFile(path.join(evidence, `${browserName}-raster-reference.svg`), result.referenceSVG);
         console.log(JSON.stringify({ pixelDifferences: result.pixelDifferences, maxChannelDifference: result.maxChannelDifference,
           maxAlphaDifference: result.maxAlphaDifference, exportMaskOverlap: result.exportMaskOverlap,
           exportInteriorDifferences: result.exportInteriorDifferences }));
@@ -195,7 +213,7 @@ async function main() {
       assert.ok(result.previewInteriorAgreement > 0.995,
         `${label}: preview interior agreement ${result.previewInteriorAgreement}, raw overlap ${result.previewOverlap}`);
       if (style === 'triangles') assert.equal(result.svgGeometry.length, values.trianglesCount || 14, `${label}: triangle count`);
-      results.push({ style, ...values, colorMode, ...result, svgGeometry: undefined, headerGeometry: undefined, expectedGeometry: undefined });
+      results.push({ style, ...values, colorMode, ...result, expectedPNG: undefined, referenceSVG: undefined, svgGeometry: undefined, headerGeometry: undefined, expectedGeometry: undefined });
       if (results.length % 10 === 0) console.log(`${browserName}: ${results.length} selected states verified`);
       if (evidence && (results.length <= 9 || (style === 'triangles' && values.trianglesCount === 28 && values.trianglesDirection === 'up-left' && values.trianglesVariant === 2))) {
         const name = `${browserName}-${results.length}-${style}`;

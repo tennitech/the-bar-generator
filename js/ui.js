@@ -23,14 +23,8 @@ class Toast {
         toast.className = `toast ${type}`;
 
         // Icon based on type
-        let iconSvg = '';
-        if (type === 'success') {
-            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-        } else if (type === 'error') {
-            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
-        } else {
-            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
-        }
+        const iconName = type === 'success' ? 'check' : type === 'error' ? 'x-circle' : 'info';
+        const iconSvg = window.FeatherIcons.getIconMarkup(iconName, 'toast_icon');
 
         toast.innerHTML = `
       <div class="toast-icon">${iconSvg}</div>
