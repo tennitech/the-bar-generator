@@ -25,6 +25,13 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 3. Completed Milestones
 
+- **[2026-10-27] Header and intro motion polish**:
+    - Kept official header letters in one persistent SVG and repaint only a supersampled moving bar. Pause/play retains the surfaces; explicit theme changes keep vector and raster colors aligned.
+    - Limited Ruler/Ticker/Waveform to 0.6/0.8/1.0 recurrences per display second, with family-specific units and calmer 0.3/0.4/0.3 defaults. Existing slow settings remain available. Controls, Reset/Randomize, legacy URL imports and export planning share finite-value, bound and step normalization. Quantum retains its own uniform 0.2×–1× time multiplier and static default.
+    - Logo-triggered intro controls keep the accepted GitHub/menu alignment and share the scrim/projection entrance and exit lifecycle, with disabled invisible/closing controls, CSS completion, interruption-safe focus and immediate reduced motion. User theme changes use one short ordered ASCII reveal; startup theme restoration stays immediate.
+    - `references/motion_rendering.md` records the rendering and rate rationale. Local scripts cover actual-size header stability, imported speeds, themes, frame-by-frame intro lifecycle and export regression. Physical-device, manual assistive-technology and formal brand approval remain separate checks. Future BAR-05 fragment sharing must call the exposed speed migration helper before strict manifest validation.
+
+
 - **[2026-10-27] Feature branch lifecycle policy**:
     - New feature requests use new branches. Before switching features, agents report unfinished or user-unconfirmed work and its saved branch. Only an explicit user statement establishes user testing.
     - Branch deletion needs an explicit user request and a fresh ahead/behind, merge, pull request, and unsaved-work report. Automatic deletion of merged branches is disabled. Contribution and handoff guides now match AGENTS.md.
@@ -43,7 +50,7 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 - **[2026-10-27] Small header ticker direction repair**:
     - Confirmed equal ticker geometry and phase in both previews. The tiny header could still show an apparent reverse direction because dense rows exceeded its spatial sampling limit.
-    - Unresolved header rows now use their exact mean coverage; resolved rows keep their moving geometry. Device pixel ratio and resize determine which rows can be shown. Main preview and export geometry remain unchanged.
+    - The original repair averaged unresolved rows. The later motion-polish entry supersedes that stationary header treatment with a supersampled moving bar and persistent vector letters. Main preview and export geometry remain unchanged by header sampling.
 
 
 - **[2026-10-27] Lightweight checks policy**:

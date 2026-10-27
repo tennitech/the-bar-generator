@@ -4655,7 +4655,7 @@ async function ensureHeaderLogoAnimationController() {
   }
 
   headerLogoAnimationControllerPromise = (async () => {
-    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20260930-audit-fixes');
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261027-motion-polish');
 
     if (!window.LogoAnimationOverlay
       || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {

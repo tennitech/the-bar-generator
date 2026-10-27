@@ -24,10 +24,14 @@ The earlier common maximum was 5, allowing 50 minor Ruler crossings/s, 25 Ticker
 
 BAR-05 must use `loopingGifUtils.normalizeMotionSpeedControls(value.controls)` before its strict manifest validation to migrate old v1 snapshots with excessive speeds. The helper changes only the three known speed IDs and leaves all unrelated fields to existing validation. The coordinator has a tested narrow patch; the Share serializer is not owned by this change.
 
-Quantum is separate. BAR-03 revision 2 uses one common 0.2×–1× multiplier, default/max 1×, against a 120-display-second recurrence, preserving all relative n² frequencies and fixed spatial/vertical scales. Its highest component rate remains 49/120 ≈ 0.4083 cycles/s at 1×. SPEED must not be relabeled as a single quantum cycles/s value. BAR-06 does not change the model, modes, controls, static default, reverse behavior, or paused share restoration. Read the current quantum contract/model at integration; the worker revised it during this task.
+Quantum is separate. BAR-03 revision 2 uses one common 0.2×–1× multiplier, default/max 1×, against a 120-display-second recurrence, preserving all relative n² frequencies and fixed spatial/vertical scales. Its highest component rate remains 49/120 ≈ 0.4083 cycles/s at 1×. SPEED must not be relabeled as a single quantum cycles/s value. BAR-06 does not change the model, modes, controls, static default, reverse behavior, or paused share restoration. See [the Quantum model](quantum_model.md) for its independent policy and scientific invariants; the merged model and controls are preserved.
 
 ## Intro transition lifecycle
 
 Entrance duration/easing and exit duration/easing are centralized CSS tokens. Scrim, projection and controls inherit one active pair. Controls remain disabled until the actual entrance transition begins. They become disabled again during closing; the overlay keeps background content inert and waits on its actual CSS transition promises before hiding, removing the frame and restoring focus. Reopening invalidates old completion callbacks. There is no guessed exit timeout. Reduced motion completes immediately through the same lifecycle.
 
-The shared status/science references need coordinator integration: replace the old small-header mean-fill paragraph and whole-mark canvas description with the policy above. This standalone note records the final behavior without competing edits to shared status documents.
+The shared status/science references reflect this policy. The pending BAR-05 Share UI is separate: existing canonical and legacy query imports already use bounded normalization, and fragment sharing must adopt the documented migration helper before its own strict validation.
+
+## Review evidence
+
+[Desktop](review-images/motion-desktop.png) and [mobile Quantum](review-images/motion-mobile.png) screenshots were generated locally from this app for review. They show existing repository-provided logo/font assets within the software UI; no third-party image, font or brand asset was added or relicensed. The outstanding underlying permission records in [asset licensing](asset_licensing.md) remain unchanged. These images are visual evidence, not formal brand approval.
