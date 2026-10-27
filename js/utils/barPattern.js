@@ -860,28 +860,28 @@ function createUnionPatternGeometry(options = {}) {
 }
 
 function createWaveQuantumPatternGeometry(options = {}) {
+  const model = typeof quantumModel !== 'undefined' ? quantumModel : require('./quantumModel');
   const barStartX = Number(options.barStartX || 0);
   const barY = Number(options.barY || 0);
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const thickness = Math.max(1.2, barHeight * 0.1);
+  const thickness = Math.min(barHeight, Math.max(0.6, barHeight * 0.075));
+  const amplitude = (barHeight - thickness) / 2;
   const centerY = barY + barHeight / 2;
-  const amplitude = barHeight * 0.48;
-  const cycles = 11;
-  const points = Math.max(220, Math.round(exactBarWidth * 1.2));
-  const phases = [0, Math.PI / 3, (2 * Math.PI) / 3];
-  const paths = phases.map((phase) => {
-    const pointsList = [];
-    for (let i = 0; i <= points; i++) {
-      const portion = i / points;
-      const x = barStartX + portion * exactBarWidth;
-      const y = centerY - Math.sin(portion * cycles * 2 * Math.PI + phase) * amplitude;
-      pointsList.push({ x, y });
-    }
-    return pointsList;
-  });
-
-  return { paths, thickness };
+  const phases = [0, Math.PI / 3, 2 * Math.PI / 3];
+  const points = 400;
+  // Sample the state once per position, then project it; avoid tripling trig work per frame.
+  const samples = Array.from({ length: points + 1 }, (_, i) => model.sample(i / points, options.quantumPhase));
+  const paths = phases.map(projection => samples.map((state, i) => {
+    const value = (state.re * Math.cos(projection) - state.im * Math.sin(projection)) / model.AMPLITUDE_BOUND;
+    return { x: barStartX + i / points * exactBarWidth, y: centerY - value * amplitude };
+  }));
+  // Vertical ribbons have exact full-domain endpoints, no cap overshoot, no per-frame fitting.
+  const polygons = paths.map(path => [
+    ...path.map(point => ({ x: point.x, y: point.y - thickness / 2 })),
+    ...path.slice().reverse().map(point => ({ x: point.x, y: point.y + thickness / 2 }))
+  ]);
+  return { paths, polygons, thickness };
 }
 
 function normalizeTrussFamily(family) {
@@ -1954,19 +1954,11 @@ function createBarPatternSVG(config) {
 
   if (currentShader === 22) {
     const geometry = createWaveQuantumPatternGeometry({
-      barStartX,
-      barY,
-      exactBarWidth,
-      barHeight
+      barStartX, barY, exactBarWidth, barHeight,
+      quantumPhase: values.quantumPhase
     });
-
-    for (let i = 0; i < geometry.paths.length; i++) {
-      const points = geometry.paths[i];
-      let pathData = '';
-      for (let j = 0; j < points.length; j++) {
-        pathData += `${j === 0 ? 'M' : ' L'} ${points[j].x} ${points[j].y}`;
-      }
-      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${geometry.thickness}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    for (const polygon of geometry.polygons) {
+      pattern += `\n    <polygon points="${polygon.map(point => `${point.x},${point.y}`).join(' ')}" fill="${fgColor}"/>`;
     }
     return pattern;
   }
