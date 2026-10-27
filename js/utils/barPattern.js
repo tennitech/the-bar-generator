@@ -706,7 +706,7 @@ function normalizeTrianglePatternDirection(value) {
   if (value === 'down') return 'down-right';
   return ['up-left', 'up-right', 'down-left', 'down-right'].includes(value)
     ? value
-    : 'up-left';
+    : 'down-right';
 }
 
 function normalizeTrianglesPatternSettings(options = {}) {

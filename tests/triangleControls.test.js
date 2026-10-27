@@ -16,14 +16,26 @@ const contains = (point, triangle) => {
 
 describe('triangle configurability', () => {
   test('retains defaults and normalizes invalid or out-of-range values', () => {
-    expect(normalizeTrianglesPatternSettings()).toEqual({ variant: 1, count: 14, direction: 'up-left' });
+    expect(normalizeTrianglesPatternSettings()).toEqual({ variant: 1, count: 14, direction: 'down-right' });
     expect(normalizeTrianglesPatternSettings({ variant: 9, count: 100, direction: 'up' }))
       .toEqual({ variant: 2, count: 28, direction: 'up-right' });
     expect(normalizeTrianglesPatternSettings({ count: -1, direction: 'sideways' }).count).toBe(6);
     expect(normalizeTrianglesPatternSettings({ count: 'bad', direction: 'sideways' }))
-      .toEqual({ variant: 1, count: 14, direction: 'up-left' });
+      .toEqual({ variant: 1, count: 14, direction: 'down-right' });
     expect(hasGeneratorQueryState('?trianglesCount=8')).toBe(true);
     expect(hasGeneratorQueryState('?trianglesDirection=up')).toBe(true);
+  });
+
+  test('uses the requested native option order and Down right default without changing explicit values', () => {
+    const fs = require('node:fs');
+    const html = fs.readFileSync(require('node:path').join(__dirname, '../generator/index.html'), 'utf8');
+    const select = html.match(/<select id="triangles-direction-select"[^>]*>([\s\S]*?)<\/select>/)[1];
+    expect(Array.from(select.matchAll(/<option value="([^"]+)"/g), m => m[1]))
+      .toEqual(['down-right', 'up-right', 'up-left', 'down-left']);
+    expect(select).toContain('<option value="down-right" selected>');
+    for (const direction of ['down-right', 'up-right', 'up-left', 'down-left']) {
+      expect(normalizeTrianglePatternDirection(direction)).toBe(direction);
+    }
   });
 
   test.each(['up-left', 'up-right', 'down-left', 'down-right'])('preserves exact painted width and complementarity for every count facing %s', direction => {

@@ -3787,7 +3787,7 @@ function updateTrianglesCountDisplay() {
 function getTrianglePatternControlValues() {
   const settings = normalizeTrianglesPatternSettings({
     variant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
-    direction: trianglesDirectionSelect ? trianglesDirectionSelect.value : 'up-left',
+    direction: trianglesDirectionSelect ? trianglesDirectionSelect.value : 'down-right',
     count: trianglesCountSlider ? trianglesCountSlider.value : 14
   });
   return {
@@ -6294,7 +6294,9 @@ function updateUrlParameters() {
     if (trianglesVariantSlider && parseInt(trianglesVariantSlider.value, 10) !== 1) {
       params.set('trianglesVariant', trianglesVariantSlider.value);
     }
-    if (trianglesDirectionSelect && trianglesDirectionSelect.value !== 'up-left') {
+    // Keep an explicit saved direction even when it equals the current default.
+    const hasSavedTriangleDirection = new URLSearchParams(window.location.search).has('trianglesDirection');
+    if (trianglesDirectionSelect && (trianglesDirectionSelect.value !== 'down-right' || hasSavedTriangleDirection)) {
       params.set('trianglesDirection', trianglesDirectionSelect.value);
     }
     if (trianglesCountSlider && Number(trianglesCountSlider.value) !== 14) {
