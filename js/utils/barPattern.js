@@ -883,16 +883,13 @@ function createWaveQuantumPatternGeometry(options = {}) {
   const thickness = Math.min(barHeight, Math.max(0.6, barHeight * 0.065));
   const amplitude = (barHeight - thickness) / 2;
   const centerY = barY + barHeight / 2;
-  const densityView = options.quantumView === 'density';
-  const phases = densityView ? [0] : [0, Math.PI / 3, 2 * Math.PI / 3];
+  const phases = [0, Math.PI / 3, 2 * Math.PI / 3];
   const points = 400;
-  const paths = phases.map(projection => Array.from({ length: points + 1 }, (_, i) => {
-    const portion = i / points;
-    const state = model.sample(portion, options.quantumPhase);
-    // Fixed theoretical bounds: |Re(exp(i*a)*psi)| <= sqrt(2), 0 <= rho <= 2.
-    const value = densityView ? state.density - 1
-      : (state.re * Math.cos(projection) - state.im * Math.sin(projection)) / Math.SQRT2;
-    return { x: barStartX + portion * exactBarWidth, y: centerY - value * amplitude };
+  // Sample the state once per position, then project it; avoid tripling trig work per frame.
+  const samples = Array.from({ length: points + 1 }, (_, i) => model.sample(i / points, options.quantumPhase));
+  const paths = phases.map(projection => samples.map((state, i) => {
+    const value = (state.re * Math.cos(projection) - state.im * Math.sin(projection)) / model.AMPLITUDE_BOUND;
+    return { x: barStartX + i / points * exactBarWidth, y: centerY - value * amplitude };
   }));
   // Vertical ribbons have exact full-domain endpoints, no cap overshoot, no per-frame fitting.
   const polygons = paths.map(path => [
@@ -1980,8 +1977,7 @@ function createBarPatternSVG(config) {
   if (currentShader === 22) {
     const geometry = createWaveQuantumPatternGeometry({
       barStartX, barY, exactBarWidth, barHeight,
-      quantumPhase: values.quantumPhase,
-      quantumView: values.quantumView
+      quantumPhase: values.quantumPhase
     });
     for (const polygon of geometry.polygons) {
       pattern += `\n    <polygon points="${polygon.map(point => `${point.x},${point.y}`).join(' ')}" fill="${fgColor}"/>`;

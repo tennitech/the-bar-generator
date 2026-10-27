@@ -1,27 +1,21 @@
-// Quantum-specific state bridge. The phase input is the complete deterministic snapshot.
+// Quantum-specific controls use the same switches and editable sliders as other motion bars.
 (function (root) {
   let lastTimestamp = null;
   let initialized = false;
-  let hasPlayed = false;
   const el = id => document.getElementById(id);
   function values() {
-    return {
-      quantumPhase: root.quantumModel.normalizePhase(el('quantum-phase')?.value || 0),
-      quantumView: el('quantum-view')?.value === 'density' ? 'density' : 'projections'
-    };
+    return { quantumPhase: root.quantumModel.normalizePhase(el('quantum-phase')?.value || 0) };
+  }
+  function updatePhaseLabel() {
+    const percentage = (values().quantumPhase * 100).toFixed(1);
+    el('quantum-phase-display').textContent = `${percentage}%`;
+    el('quantum-phase').setAttribute('aria-valuetext', `${percentage} percent of recurrence`);
   }
   function sync() {
     if (!initialized) return;
     el('quantum-group').style.display = el('style-select').value === 'wave-quantum' ? 'block' : 'none';
-    const playing = el('quantum-motion-toggle').checked;
-    root.renderPreviewButton(el('quantum-play-btn'), 'motion', { active: playing });
-    el('quantum-play-btn').setAttribute('aria-pressed', String(playing));
-    el('quantum-motion-state').textContent = playing ? 'PLAYING' : (hasPlayed ? 'PAUSED' : 'STATIC');
-    el('quantum-phase-display').textContent = `${(values().quantumPhase * 100).toFixed(1)}%`;
-    el('quantum-phase').setAttribute('aria-valuetext', `${(values().quantumPhase * 100).toFixed(1)} percent of recurrence`);
-    el('quantum-description').textContent = values().quantumView === 'density'
-      ? 'Probability density |ψ|² of two interfering states on a ring. Height shows density, not particle paths.'
-      : 'Three phase projections of one wavefunction on a ring. These curves are not particle paths or probabilities.';
+    el('quantum-speed-display').textContent = root.quantumModel.normalizeSpeed(el('quantum-speed-slider').value).toFixed(1);
+    updatePhaseLabel();
   }
   function pause() {
     el('quantum-motion-toggle').checked = false;
@@ -33,27 +27,32 @@
     initialized = true;
     const query = new URLSearchParams(root.location.search);
     el('quantum-phase').value = root.quantumModel.normalizePhase(query.get('quantumPhase') || 0);
-    el('quantum-view').value = query.get('quantumView') === 'density' ? 'density' : 'projections';
+    el('quantum-speed-slider').value = root.quantumModel.normalizeSpeed(query.has('quantumSpeed') ? query.get('quantumSpeed') : 1);
+    el('quantum-reverse-toggle').checked = query.get('quantumReverse') === 'true';
+    // Obsolete quantumView query/share fields are ignored; every snapshot uses projections.
     const commit = () => { root.updateUrlParameters(); root.requestUpdate(); };
-    // Reload/share restore never auto-starts motion. User can explicitly play even with reduced motion.
-    pause();
-    el('quantum-play-btn').addEventListener('click', () => {
-      const toggle = el('quantum-motion-toggle');
-      toggle.checked = !toggle.checked;
-      toggle.dispatchEvent(new Event('change', { bubbles: true }));
+    pause(); // Never auto-start shared/reloaded state, including with reduced motion.
+    el('quantum-motion-toggle').addEventListener('change', () => { lastTimestamp = null; commit(); });
+    el('quantum-reverse-toggle').addEventListener('change', () => { lastTimestamp = null; commit(); });
+    el('quantum-speed-slider').addEventListener('input', () => { lastTimestamp = null; sync(); commit(); });
+    el('quantum-phase').addEventListener('input', () => { pause(); commit(); });
+    root.registerSliderValueEditor({
+      slider: el('quantum-speed-slider'), display: el('quantum-speed-display'), refreshDisplay: sync,
+      commit: () => { lastTimestamp = null; sync(); commit(); }, ariaLabel: 'Set quantum motion speed'
     });
-    el('quantum-motion-toggle').addEventListener('change', () => {
-      hasPlayed = hasPlayed || el('quantum-motion-toggle').checked;
-      lastTimestamp = null;
-      sync();
-      commit();
+    root.registerSliderValueEditor({
+      slider: el('quantum-phase'), display: el('quantum-phase-display'), refreshDisplay: sync,
+      getEditorValue: () => (values().quantumPhase * 100).toFixed(1),
+      parseValue: value => {
+        const number = root.parseSliderNumericInput(value);
+        return number === null ? null : Math.max(0, Math.min(100, number)) / 100;
+      },
+      commit: () => { pause(); commit(); }, ariaLabel: 'Set quantum phase percent'
     });
-    el('quantum-phase').addEventListener('input', () => { hasPlayed = true; pause(); sync(); commit(); });
-    el('quantum-view').addEventListener('change', () => { sync(); commit(); });
+    el('quantum-phase-display').addEventListener('click', pause);
+    el('quantum-phase-display').addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') pause(); });
     el('style-select').addEventListener('change', () => { lastTimestamp = null; sync(); });
-    root.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => {
-      if (event.matches) pause();
-    });
+    root.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => { if (event.matches) pause(); });
     document.addEventListener('visibilitychange', () => { lastTimestamp = null; });
     sync();
   }
@@ -62,11 +61,10 @@
     const active = !suspended && el('style-select').value === 'wave-quantum' && el('quantum-motion-toggle').checked;
     if (!active) { lastTimestamp = null; return; }
     if (lastTimestamp !== null) {
-      el('quantum-phase').value = root.quantumModel.advancePhase(values().quantumPhase, timestamp - lastTimestamp);
-      // Update only the phase label here; no synthetic input events or URL churn per frame.
-      const percentage = (values().quantumPhase * 100).toFixed(1);
-      el('quantum-phase-display').textContent = `${percentage}%`;
-      el('quantum-phase').setAttribute('aria-valuetext', `${percentage} percent of recurrence`);
+      el('quantum-phase').value = root.quantumModel.advancePhase(values().quantumPhase, timestamp - lastTimestamp, {
+        speed: el('quantum-speed-slider').value, reverse: el('quantum-reverse-toggle').checked
+      });
+      updatePhaseLabel();
     }
     lastTimestamp = timestamp;
   }

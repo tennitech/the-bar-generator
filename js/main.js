@@ -3532,6 +3532,14 @@ function setup() {
         return;
       }
 
+      if (currentShader === 22) {
+        event.preventDefault();
+        const toggle = document.getElementById('quantum-motion-toggle');
+        toggle.checked = !toggle.checked;
+        toggle.dispatchEvent(new Event('change', { bubbles: true }));
+        return;
+      }
+
       // Motion-enabled styles use spacebar to toggle loop preview on and off.
       if (isAnimated) {
         event.preventDefault();
@@ -6405,7 +6413,9 @@ function updateUrlParameters() {
   if (selectedStyle === 'wave-quantum') {
     const quantum = window.quantumControls.values();
     if (quantum.quantumPhase) params.set('quantumPhase', String(quantum.quantumPhase));
-    if (quantum.quantumView !== 'projections') params.set('quantumView', quantum.quantumView);
+    const speed = document.getElementById('quantum-speed-slider').value;
+    if (Number(speed) !== 1) params.set('quantumSpeed', speed);
+    if (document.getElementById('quantum-reverse-toggle').checked) params.set('quantumReverse', 'true');
   }
 
   // Update URL without reloading the page

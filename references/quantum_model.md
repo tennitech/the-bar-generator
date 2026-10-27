@@ -1,40 +1,56 @@
-# Wave Quantum model and motion
+# Quantum: phase projections of a periodic wavefunction
 
-The former static motif was three offset sine curves without a specified quantum system. This implementation keeps a static option and uses a stylized graph of an analytic wavefunction. It does not depict literal particles or a measured dataset.
+The single visualization is a stylized graph of one analytic complex wavefunction. The curves are not particles, trajectories, probabilities or experimental measurements. The visible style is **Quantum**; `/generator/wave-quantum/` remains compatible.
 
-## Scientific basis
+## Sources and chosen construction
 
-[David Tong, University of Cambridge, Quantum Mechanics §2.1.1, A Particle on a Circle](https://www.damtp.cam.ac.uk/user/tong/qm/qmhtml/S2.html#S2.SS1.SSS1) derives periodic boundary conditions, integer momentum modes and energies proportional to n². Our bar unwraps a ring of circumference L into u=x/L from 0 to 1; its ends represent the same position. There are no hard walls. Integer modes are orthogonal over this domain.
+[David Tong, University of Cambridge, Quantum Mechanics §2.1.1, A Particle on a Circle](https://www.damtp.cam.ac.uk/user/tong/qm/qmhtml/S2.html#S2.SS1.SSS1) derives integer momentum modes, periodic boundaries and energies proportional to n². Negative integers describe momentum in the opposite direction. The bar unwraps one ring circumference L into u=x/L from 0 to 1; its ends represent the same position, not hard walls.
 
-[MIT 22.02, Chapter 6, Time Evolution in Quantum Mechanics, §§6.1.1–6.1.2, printed pages 84–85](https://ocw.mit.edu/courses/22-02-introduction-to-applied-nuclear-physics-spring-2012/b5106a499ae03e36b5a2e002355668f9_MIT22_02S12_lec_ch6.pdf) gives eigenstate phase evolution, superposition and its probability interference term. The implementation applies those rules to two ring eigenstates with equal weights:
+[MIT 22.02, Chapter 6, §§6.1.1–6.1.2, printed pages 84–85](https://ocw.mit.edu/courses/22-02-introduction-to-applied-nuclear-physics-spring-2012/b5106a499ae03e36b5a2e002355668f9_MIT22_02S12_lec_ch6.pdf) describes energy-eigenstate phase evolution and linear superposition. Applying those rules gives this app's equal-weight state:
 
 ```text
 u = x/L; E1 = hbar²(2pi/L)²/(2m); tau = E1*t/hbar = 2pi*phase
-psi(u,tau) = [exp(i(2pi*4u - 16tau)) + exp(i(2pi*7u - 49tau))]/sqrt(2)
-rho(u,tau) = |psi|² = 1 + cos(2pi*3u - 33tau)
-integral(rho du, 0..1) = 1
-physical density per unit x = rho/L
+N = {-4, 3, 7}
+psi(u,tau) = sum[exp(i(2pi*n*u - n²*tau)), n in N]/sqrt(3)
+i*dpsi/dtau = -(1/(2pi)²)*d²psi/du²
+integral(|psi|² du, 0..1) = 1
 ```
 
-The choices n = 4 and n = 7 are design choices, not inferred experimental values. The analytic state satisfies i∂psi/∂tau=−(1/(2pi)²)∂²psi/∂u². Unit norm is constant because each orthogonal component has squared weight 1/2. Interference changes density in position without changing the two energy probabilities. The entire state recurs after phase 1. Playback maps that recurrence to 120 display seconds; mass and circumference are unspecified, so this is not a physical time calibration.
+Distinct integer modes are orthogonal; each coefficient has squared magnitude 1/3, so total norm is one at every time. As an independent internal check:
 
-## What is drawn
+```text
+rho = |psi|²
+rho(u,phase) = 1 + (2/3)*[
+  cos(2pi*(7u + 7phase)) +
+  cos(2pi*(11u - 33phase)) +
+  cos(2pi*(4u - 40phase))]
+0 <= rho <= 3; physical density per unit x = rho/L
+```
 
-- **Phase projections**: three graphs Re(exp(iα)psi), α=0,π/3,2π/3. They are views of one complex amplitude under a fixed phase convention, not three particles, three independent states or probabilities. Such projections depend on phase convention and are not directly observable. The fixed theoretical bound√2 maps to the available bar height.
-- **Probability density**: a single graph of rho, using the fixed theoretical interval 0..2. Probability of an interval is the integral under rho; vertical position is a graph coordinate, not a particle trajectory.
+Density is a numerical invariant, not an offered view. The mode choices and equal weights are design choices, not a result attributed to the sources. Compared with the previous two co-propagating modes (4,7), the counter-propagating component and third energy produce multiple interference scales and richer shape evolution. All still obey linear free-particle evolution; no new force or nonlinear effect is implied.
 
-Both representations cover the entire fixed spatial domain. A thin, vertically thickened polygon follows each sampled graph. That cosmetic line width is not uncertainty or extra probability. Its positive thickness lets even a zero-density endpoint draw a graph line. All polygons have exact nominal left/right endpoints and stay in the caller's rectangle; no edge dots, stroke-cap overshoot, sampled-peak normalization or spatial rescaling are used. Time changes the state, never the domain. Small placements can lose fine detail; no new universal minimum logo size is claimed.
+## What is stylized
 
-## State and accessibility
+The bar draws three fixed projections Re(exp(iα)psi), α=0,π/3,2π/3. These are views of one amplitude under a chosen global phase convention, not three independent quantum states. Projections depend on that convention and are not directly observable. Their fixed theoretical bound √3 maps to the available bar height, without sampled-peak normalization or per-frame spatial fitting.
 
-Static is the default for every user. Play is explicit; Pause freezes the exact phase. Scrubbing Time also pauses. Switching views preserves time. Hidden documents, the logo overlay and inactive styles stop phase advancement without catch-up. A change to reduced motion pauses playback; a user may explicitly play afterwards. A shared/reloaded configuration restores a static snapshot and must never auto-start.
+A thin vertical ribbon follows each graph. That cosmetic line width is not uncertainty or additional probability. Exact full-domain endpoints and cap-free polygons keep real paint at both nominal horizontal edges and within caller bounds, up to the documented 1e-12 reference-unit floating tolerance. The fixed spatial sampling uses 400 intervals; linear interpolation between samples is a drawing approximation. The state is sampled once per position and then projected three times, avoiding redundant trigonometric evaluations.
 
-Stable IDs: `quantum-view` (projections|density), `quantum-phase` (finite 0..1), `quantum-motion-toggle` (boolean transport state). The visible native `quantum-play-btn` reuses existing motion preview icons, dimensions and focus styles. The phase range is keyboard accessible. `quantumControls.values()` supplies the exact phase/view to the main preview, header and SVG/PNG quantum renderers. BAR-05 must call `quantumControls.pause()` and `quantumControls.sync()` after restore. No additional share runtime field is required. Query URLs store phase/view at user edits or pause; they do not update on each motion frame. Reload while playing returns to the last URL snapshot; Copy Link integration captures the current phase control.
+Phase advances continuously from browser-frame timestamps. A complete state recurrence is 120 display seconds at speed 1.0. SPEED ranges from 0.2 to 1.0 and multiplies the same time parameter for every mode. Component frequencies at a fixed position are 16s/120, 9s/120 and 49s/120 cycles per second for multiplier s. The maximum remains 0.4083 Hz, unchanged from the previous design. REVERSE evaluates earlier times in the same reversible analytic solution; it is not a claim to reverse an experiment. Unspecified mass and circumference mean display seconds are not physical calibration. A delayed frame is capped at 50 ms, so a stalled device can play more slowly instead of catching up in a large jump.
 
-SVG and PNG remain static snapshots. Quantum is not added to supported GIF families. The existing global p5 state pattern remains; pure analytic math is isolated in `quantumModel.js`, with controller state in `quantumControls.js`. No framework or dependency was added.
+Fine projection detail can merge at tiny sizes. Slower motion cannot by itself prevent subpixel shimmer in the header. BAR-06 owns final miniature rendering policy and actual-size checks with BAR-01 geometry; a static fallback must disclose snapshot semantics rather than claim a live same-phase view. No universal minimum pattern size, flicker-free guarantee, or formal brand approval is claimed.
 
-## Integration and validation limits
+## Controls and migration
 
-This branch starts from 43944b5 as assigned. Its inherited general export constants differ between PNG and SVG; BAR-01 owns correction to official geometry and the common canonical raster pipeline. The quantum helper accepts caller dimensions and does not alter letter geometry. Keep its full-domain mapping unchanged during horizontal normalization. Proposed shared science/status additions are supplied separately to BAR-00 rather than editing shared references during parallel work.
+The single MOTION section reuses the other bars' LOOP and REVERSE switches, SPEED slider and editable value display. PHASE uses the same native/editable slider component and pauses on seek. Static is the default. LOOP explicitly starts or pauses playback; native Space works on its checkbox, and the desktop global Space shortcut works outside editors. Hidden documents, inactive styles and the logo overlay suspend time without catch-up. A change to reduced motion pauses playback; the user may explicitly restart it.
 
-Numerical tests verify norm, density bounds, periodic endpoints, the analytic interference formula, finite-difference Schrödinger residuals, recurrence, deterministic time steps, full-domain paint and confinement at 65 phases in each view (floating-point containment tolerance 1e-12 reference units). Browser evidence and remaining manual checks are recorded in the worker handoff; these are not formal RPI approval or owner acceptance.
+Stable control IDs: `quantum-phase` (finite 0..1), `quantum-motion-toggle` (boolean), `quantum-reverse-toggle` (boolean, default false), `quantum-speed-slider` (0.2..1, step 0.1, default 1). Query fields are `quantumPhase`, `quantumSpeed`, `quantumReverse`. Reload/share restore is always paused. `quantumControls.values()` returns the current exact phase for main/header/SVG/PNG; no extra share runtime object is needed. After setting controls, BAR-05 must call `quantumControls.pause()` and `quantumControls.sync()`.
+
+The density selector `quantum-view` and query `quantumView` were removed at the owner's request. Unknown legacy view fields are ignored, the phase is preserved, and the result uses the new single projection model. Share envelope v1 and the route remain unchanged; old two-mode links intentionally migrate to the new artwork rather than reproduce pixels. Fresh links omit the obsolete field. Shared restore must never auto-start even when an old snapshot captured LOOP=true.
+
+Shared control styles follow BAR-07's touch conventions: 2.75rem target floor, 3rem control rows, comfortable switch labels and native slider/editor targets, with visible keyboard focus. These changes apply to the shared components rather than a quantum-specific button. No new framework, library, font or asset was added. SVG/PNG are static snapshots; Quantum GIF export is not offered.
+
+## Tested guarantees and limits
+
+Numerical tests cover norm, an independent interference formula, bounds, periodic endpoints, Fourier coefficients and their n² phase evolution, recurrence, finite-difference Schrödinger residuals, speed/reverse steps, and fixed-scale polygon bounds at 65 phases. These checks give specific evidence for this chosen finite model, not 100% certainty about all software, displays or quantum systems.
+
+This branch starts from assigned baseline 43944b5. Its inherited general PNG/SVG placement differs; BAR-01 owns final official geometry and canonical raster integration. Quantum shapes agree at identical caller geometry; the branch alone cannot establish complete official-geometry export parity. Shared status/science changes are proposed to the coordinator separately. Physical-device, manual screen-reader, low-power/high-refresh and final combined-header acceptance remain distinct checks.

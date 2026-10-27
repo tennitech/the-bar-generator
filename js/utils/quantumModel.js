@@ -11,20 +11,28 @@
     const number = Number(value);
     return Number.isFinite(number) ? ((number % 1) + 1) % 1 : 0;
   }
+  const MODES = Object.freeze([-4, 3, 7]);
+  const AMPLITUDE_BOUND = Math.sqrt(MODES.length);
   function sample(position, phase = 0) {
-    // u=x/L, tau=E1*t/hbar. Here tau = 2*pi*phase, En=n^2*E1.
+    // u=x/L, tau=E1*t/hbar. Integer n has energy n²*E1, including negative momentum.
     const u = Number(position);
     const time = TAU * normalizePhase(phase);
-    const a = TAU * 4 * u - 16 * time;
-    const b = TAU * 7 * u - 49 * time;
-    const re = (Math.cos(a) + Math.cos(b)) / Math.SQRT2;
-    const im = (Math.sin(a) + Math.sin(b)) / Math.SQRT2;
+    let re = 0, im = 0;
+    for (const n of MODES) {
+      const angle = TAU * n * u - n * n * time;
+      re += Math.cos(angle) / AMPLITUDE_BOUND;
+      im += Math.sin(angle) / AMPLITUDE_BOUND;
+    }
     return { re, im, density: re * re + im * im };
   }
-  function advancePhase(phase, deltaMs) {
+  function normalizeSpeed(value) {
+    const speed = Number(value);
+    return Number.isFinite(speed) ? Math.max(0.2, Math.min(1, speed)) : 1;
+  }
+  function advancePhase(phase, deltaMs, options = {}) {
     // Cap a stalled frame; never catch up across background/overlay pauses.
     const delta = Math.max(0, Math.min(50, Number(deltaMs) || 0));
-    return normalizePhase(normalizePhase(phase) + delta / (PERIOD_SECONDS * 1000));
+    return normalizePhase(normalizePhase(phase) + (options.reverse ? -1 : 1) * normalizeSpeed(options.speed ?? 1) * delta / (PERIOD_SECONDS * 1000));
   }
-  return { sample, normalizePhase, advancePhase, PERIOD_SECONDS };
+  return { sample, normalizePhase, normalizeSpeed, advancePhase, PERIOD_SECONDS, MODES, AMPLITUDE_BOUND };
 });
