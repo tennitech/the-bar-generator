@@ -1,31 +1,86 @@
-# RPI Generative Logo
+# The Bar Generator
 
-A generative visual identity system for Rensselaer Polytechnic Institute that embodies the concept of measurement itself as a design tool. Rather than a static logo, this creates infinite variations of the RPI wordmark where the bottom bar transforms into live visualizations of data, patterns, and metrics.
+[![Checks](https://github.com/tennitech/the-bar-generator/actions/workflows/checks.yml/badge.svg)](https://github.com/tennitech/the-bar-generator/actions/workflows/checks.yml)
 
-## Core Concept
-Imagine a school so pragmatic, the visual identity system itself becomes a tool for measurement and discovery. True to RPI's ethos, this isn't just another logo—it's a flexible system that symbolizes the multitude of dimensions, domains, and real-world contexts of RPI's research and education impact.
+A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a pattern, adjust its controls, and export an SVG or PNG. Ruler, Ticker, and Waveform also support looping GIF exports.
 
-The world we measure: Music (scales, frequencies), Color (wavelengths, spectrums), Distance (nanometers to light-years), Volume (acoustics), Location (coordinates), Speed (milliseconds to centuries), Temperature (Kelvin, thermal), Pressure (atmospheric), Weight (molecular mass), Light (lumens, aperture), Power (watts, torque), Hardness (tensile strength), Energy (joules, kinetic), Academics (grades, rankings).
+**[Open the site](https://tennitech.github.io/the-bar-generator/)** · **[Report a bug](https://github.com/tennitech/the-bar-generator/issues/new/choose)** · **[Contribute](contributing.md)**
 
-## Generative Nature
-This logo system generates rather than displays. Each configuration is:
+## Requirements
 
-- **Parametrically driven** - Adjustable width, scale, and pattern density
-- **Data responsive** - Binary text encoding, measurement scales, mathematical ratios
-- **Infinitely variable** - No two outputs need be identical
-- **Context adaptive** - Different modes for different applications
-- **Real-time** - Live parameter adjustment with immediate visual feedback
+- Node.js 22 and npm for tests. The `.nvmrc` file selects Node.js 22 if you use nvm.
+- Python 3, or another static HTTP server, for local development.
+- A current browser. The generator uses WebGL when available and falls back to 2D canvas.
 
-## Tech Stack
-Vanilla JavaScript, WebGL (GLSL shaders), Web Audio API (AudioWorklet)
+The site uses HTML, CSS, JavaScript, p5.js, and Web Audio. There is no build step or application framework. npm installs test tools, not site runtime files.
 
-## Local Development
-Serve with any static web server: `python3 -m http.server` or `npx serve`
+## Quick start
 
-## Contribution and maintenance
+```sh
+git clone https://github.com/tennitech/the-bar-generator.git
+cd the-bar-generator
+npm ci --ignore-scripts --no-audit --no-fund
+python3 -m http.server 8000 --bind 127.0.0.1
+```
 
-See [contributing.md](contributing.md) for setup and pull requests, [code_of_conduct.md](code_of_conduct.md) for project conduct, and [security.md](security.md) for private vulnerability reports. Current access rules and the December transition steps are in [maintenance and handoff](references/maintenance_handoff.md).
+Open [localhost:8000](http://127.0.0.1:8000/). The root page is the bar picker. Open `/generator/solid/` for the generator or `/animation/` for the animation prototype. Check for an existing project server before starting another one. If port 8000 is in use by another project, choose another port.
 
-## License
+Serve the files over HTTP. Do not open HTML files with `file://`; routed pages and asset loading need HTTP. No environment variables or credentials are required for local use.
 
-Project software uses the [MIT license](LICENSE). Preserve [third-party notices](THIRD_PARTY_NOTICES.md). RPI trademarks and bundled asset permissions require separate review; see [asset licensing notes](references/asset_licensing.md).
+## Tests
+
+```sh
+# Unit tests
+npm test -- --runInBand
+
+# Install browser binaries once, then run browser checks
+npm run test:browser:install
+RPI_SITE_URL=http://127.0.0.1:8000 npm run test:browser
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=firefox npm run test:browser
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit npm run test:browser
+```
+
+Keep the local server running for browser checks. Chromium is the default browser; the default test URL is `http://127.0.0.1:8765`. On Linux, browser installation can also need system packages: `npx playwright install --with-deps chromium firefox webkit`.
+
+Browser checks cover the 21 selectable styles, SVG downloads, a PNG file signature, five viewport sizes, text filtering, reduced motion, 2D fallback, and renderer failure states. They do not establish visual accuracy or full accessibility compliance. Check changed UI, keyboard controls, touch behavior, and exports by hand. Playwright WebKit is not a test of the Safari app.
+
+## Project layout
+
+| Path | Purpose |
+| --- | --- |
+| `index.html`, `js/marqueeUi.js` | Bar picker and intro |
+| `generator/` | Generator shell and style routes |
+| `js/main.js`, `js/drawing.js` | p5.js preview, controls, and exports |
+| `js/utils/` | Shared patterns, routes, text filtering, and controls |
+| `css/` | Site styles and design tokens |
+| `animation/` | ASCII animation page |
+| `assets/` | Fonts, images, audio, and prototype shaders |
+| `third_party/` | Vendored runtime code and licenses |
+| `tests/`, `scripts/browserSmoke.js` | Unit tests and browser checks |
+| `references/` | Project status, brand rules, audit evidence, and handoff |
+
+## Contribution workflow
+
+Read [contributing.md](contributing.md) and [AGENTS.md](AGENTS.md) before editing. Fork the repo if you do not have write access. Create a short branch such as `fix/mobile-menu-focus`, then open a pull request into `main`. Use `feat/`, `fix/`, `docs/`, `test/`, or `chore/` followed by a lowercase description with hyphens. Codex branches use `codex/<type>-<description>`, such as `codex/fix-mobile-menu-focus`.
+
+`main` requires a pull request, passing Unit tests and Browser tests checks, and resolved review conversations. During primary development, a second approval is not required. Prefer squash merge for routine changes and delete the branch after merge. Use a merge commit when retaining a reviewed multi-commit history is useful. No permanent development branch is needed.
+
+## Automation and deployment
+
+The Checks workflow runs on pull requests into `main` and pushes to `main`. Unit tests run for every change. Browser tests run when runtime files, tests, dependencies, scripts, or workflow files change; documentation-only changes skip browser installation and execution. There is no scheduled run. Replaced runs are cancelled.
+
+The test jobs run only for public repos on standard Ubuntu runners, with no caches or artifact uploads. See the [maintenance guide](references/maintenance_handoff.md) for billing controls and the December handoff.
+
+GitHub Pages publishes the root of `main`. A merge to `main` can update the public site. Check the deployed site and affected exports after a merge. A repository transfer needs a separate Pages URL and embed check.
+
+## Project policies
+
+- [Code of conduct](code_of_conduct.md)
+- [Private security reports](security.md)
+- [Project status and known issues](references/project_status.md)
+- [Maintenance and December handoff](references/maintenance_handoff.md)
+- [Bar meaning and scientific assumptions](references/bar_science_notes.md)
+
+## License and brand assets
+
+Project software uses the [MIT license](LICENSE). Retain [third-party notices](THIRD_PARTY_NOTICES.md) and their license files. RPI trademark rights and bundled font, artwork, and audio permissions need separate review. See the [asset permission record](references/asset_licensing.md). The software license does not establish approval for every generated mark.

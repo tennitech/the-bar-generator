@@ -1,0 +1,25 @@
+name: Bug report
+description: Report a problem with the generator or site.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include the page, bar style, expected result, and actual result. Do not include private data.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and device
+      placeholder: Safari on iPhone, or Chrome on macOS
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Images or error messages

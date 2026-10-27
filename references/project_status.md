@@ -25,11 +25,18 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 3. Completed Milestones
 
+- **[2026-10-27] Audit integration and development conventions**:
+    - Integrated the September audit with the existing main-branch contribution setup. Kept both sets of status records and the verified billing restriction.
+    - Added a development README, issue forms, branch and commit naming guidance, Node.js version metadata, and reproducible Playwright test commands with a locked test dependency.
+    - Consolidated unit and three-engine browser checks into one public-repo-only workflow. Removed the older duplicate workflow. Browser execution skips documentation-only changes; both check names remain available for main protection.
+    - Branches use feat/, fix/, docs/, test/, or chore/ with a lowercase hyphenated description; Codex branches retain codex/<type>-<description>. Normal changes use short-lived branches and pull requests into main.
+
+
 - **[2026-10-27] Contribution and maintenance setup**:
     - Added a public-repository-only unit-test workflow for pull requests into main and pushes to main, with read-only permissions, no cache or artifacts, a ten-minute timeout, and cancellation of replaced runs.
     - Added contribution, conduct, private security reporting, asset permission, and December 2026 handoff guides. Aligned package license metadata with the existing MIT LICENSE; no copyright ownership transfer was made.
     - Configured main to require pull requests, passing Unit tests, and resolved conversations, with force pushes and deletion blocked. No second approval is required during primary development. Enabled merged-branch cleanup and private vulnerability reports.
-    - Open items: RPI successor organization and maintainers, software licensing authority, bundled asset permissions, and billing controls after any payment-method or ownership change. GitHub billing has no valid payment method and rejected a $0 budget on October 27; paid Actions overages are blocked under current GitHub rules. No payment method was added. Browser audit fixes remain on the separate audit branch.
+    - Open items: RPI successor organization and maintainers, software licensing authority, bundled asset permissions, and billing controls after any payment-method or ownership change. GitHub billing has no valid payment method and rejected a $0 budget on October 27; paid Actions overages are blocked under current GitHub rules. No payment method was added. Audit fixes are included in the October integration pull request.
 
 
 - **[2026-09-30] Audit Follow-up: Faster Startup, Text Safety, and Export Accuracy**:
@@ -475,6 +482,8 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 *   **Export Consistency:** Introduced shared SVG bar pattern generator (`js/utils/barPattern.js`) as single source of truth for non-solid bar exports.
 
 ## 7. Known Issues / Notes
+*   October 27 brand-site review: the Pattern page excludes gradients and complex imagery as pattern elements. Existing gradient and Artemis artwork treatments need RPI owner review. Student-club and official-library approvals are separate, and free font use does not establish public redistribution rights. See the dated source checklist in references/rpi_brand_guidelines.md. No new permission or brand approval was inferred.
+
 *   The client-side text filter covers more offensive content and Unicode variants but cannot guarantee detection of every evasion or avoid every false positive. A formal owner-approved content policy is still needed.
 *   Manual screen-reader, physical mobile-device, 200%/400% browser zoom, Safari application, low-power performance, and brand approval checks remain before claiming full accessibility or brand compliance. Firefox passed headless Linux CI but could not be launched locally on this Mac.
 *   `main.js` relies heavily on global variables (p5.js pattern). Future refactoring might consider modularizing this.
