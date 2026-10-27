@@ -101,6 +101,9 @@ let triangleGridVariantDisplay;
 let trianglesGroup;
 let trianglesVariantSlider;
 let trianglesVariantDisplay;
+let trianglesDirectionSelect;
+let trianglesCountSlider;
+let trianglesCountDisplay;
 let trussGroup;
 let trussFamilySelect;
 let trussSegmentsSlider;
@@ -724,8 +727,7 @@ const RESETTABLE_GROUP_STYLE_MAP = {
   'lines-group': 'lines',
   'point-connect-group': 'point-connect',
   'neural-network-group': 'neural-network',
-  'triangle-grid-group': 'triangle-grid',
-  'triangles-group': 'triangles'
+  'triangle-grid-group': 'triangle-grid'
 };
 const SURPRISEABLE_STYLE_SET = new Set(Object.values(RESETTABLE_GROUP_STYLE_MAP));
 
@@ -2585,6 +2587,9 @@ function setup() {
   trianglesGroup = document.getElementById('triangles-group');
   trianglesVariantSlider = document.getElementById('triangles-variant-slider');
   trianglesVariantDisplay = document.getElementById('triangles-variant-display');
+  trianglesDirectionSelect = document.getElementById('triangles-direction-select');
+  trianglesCountSlider = document.getElementById('triangles-count-slider');
+  trianglesCountDisplay = document.getElementById('triangles-count-display');
   trussGroup = document.getElementById('truss-group');
   trussFamilySelect = document.getElementById('truss-family-select');
   trussSegmentsSlider = document.getElementById('truss-segments-slider');
@@ -3159,6 +3164,21 @@ function setup() {
     updateTrianglesVariantDisplay();
   }
 
+  if (trianglesDirectionSelect) {
+    trianglesDirectionSelect.addEventListener('change', function () {
+      updateUrlParameters();
+      requestUpdate();
+    });
+  }
+  if (trianglesCountSlider) {
+    trianglesCountSlider.addEventListener('input', function () {
+      updateTrianglesCountDisplay();
+      updateUrlParameters();
+      requestUpdate();
+    });
+    updateTrianglesCountDisplay();
+  }
+
   // Setup truss sliders
   if (trussFamilySelect) {
     trussFamilySelect.addEventListener('change', function () {
@@ -3478,6 +3498,13 @@ function setup() {
       ariaLabel: 'Set triangle grid variant'
     },
     {
+      slider: trianglesCountSlider,
+      display: trianglesCountDisplay,
+      refreshDisplay: updateTrianglesCountDisplay,
+      commit: () => { updateTrianglesCountDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set triangle count'
+    },
+    {
       slider: trianglesVariantSlider,
       display: trianglesVariantDisplay,
       refreshDisplay: updateTrianglesVariantDisplay,
@@ -3761,6 +3788,27 @@ function updateTriangleGridVariantDisplay() {
 function updateTrianglesVariantDisplay() {
   if (!trianglesVariantSlider || !trianglesVariantDisplay) return;
   trianglesVariantDisplay.textContent = trianglesVariantSlider.value;
+}
+
+function updateTrianglesCountDisplay() {
+  if (!trianglesCountSlider || !trianglesCountDisplay) return;
+  const settings = normalizeTrianglesPatternSettings({ count: trianglesCountSlider.value });
+  trianglesCountSlider.value = String(settings.count);
+  trianglesCountDisplay.textContent = String(settings.count);
+}
+
+// Shared triangle state for the preview and canonical export collector.
+function getTrianglePatternControlValues() {
+  const settings = normalizeTrianglesPatternSettings({
+    variant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
+    direction: trianglesDirectionSelect ? trianglesDirectionSelect.value : 'down-right',
+    count: trianglesCountSlider ? trianglesCountSlider.value : 14
+  });
+  return {
+    trianglesVariant: settings.variant,
+    trianglesDirection: settings.direction,
+    trianglesCount: settings.count
+  };
 }
 
 function updateWaveformTypeDisplay() {
@@ -4409,7 +4457,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     pointConnectVariant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1,
     neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1,
     triangleGridVariant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2,
-    trianglesVariant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
+    ...getTrianglePatternControlValues(),
     morseText: morseInput ? sanitizeBarText(morseInput.value) : 'RPI',
     trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
     trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
@@ -6133,6 +6181,8 @@ function getUrlParameters() {
     neuralNetworkHiddenLayers: Math.max(1, Math.min(5, parseInt(params.get('neuralNetworkHiddenLayers')) || 1)),
     triangleGridVariant: Math.max(1, Math.min(3, parseInt(params.get('triangleGridVariant')) || 2)),
     trianglesVariant: Math.max(1, Math.min(2, parseInt(params.get('trianglesVariant')) || 1)),
+    trianglesDirection: normalizeTrianglePatternDirection(params.get('trianglesDirection')),
+    trianglesCount: normalizeTrianglesPatternSettings({ count: params.has('trianglesCount') ? params.get('trianglesCount') : undefined }).count,
 
     // Ruler parameters
     rulerRepeats: parseInt(params.get('rulerRepeats')) || 10,
@@ -6274,6 +6324,14 @@ function updateUrlParameters() {
   if (styleSelect && styleSelect.value === 'triangles') {
     if (trianglesVariantSlider && parseInt(trianglesVariantSlider.value, 10) !== 1) {
       params.set('trianglesVariant', trianglesVariantSlider.value);
+    }
+    // Keep an explicit saved direction even when it equals the current default.
+    const hasSavedTriangleDirection = new URLSearchParams(window.location.search).has('trianglesDirection');
+    if (trianglesDirectionSelect && (trianglesDirectionSelect.value !== 'down-right' || hasSavedTriangleDirection)) {
+      params.set('trianglesDirection', trianglesDirectionSelect.value);
+    }
+    if (trianglesCountSlider && Number(trianglesCountSlider.value) !== 14) {
+      params.set('trianglesCount', trianglesCountSlider.value);
     }
   }
 
@@ -6501,6 +6559,11 @@ function applyUrlParameters() {
   if (trianglesVariantSlider) {
     trianglesVariantSlider.value = params.trianglesVariant;
     updateTrianglesVariantDisplay();
+  }
+  if (trianglesDirectionSelect) trianglesDirectionSelect.value = params.trianglesDirection;
+  if (trianglesCountSlider) {
+    trianglesCountSlider.value = params.trianglesCount;
+    updateTrianglesCountDisplay();
   }
 
   // Apply truss parameters
@@ -7502,12 +7565,15 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
     resetShader();
     noStroke();
     fill(fgColor);
+    const triangleValues = getTrianglePatternControlValues();
     const geometry = createTrianglesPatternGeometry({
       barStartX,
       barY: 0,
       exactBarWidth,
       barHeight: rectHeight,
-      variant: trianglesVariantSlider ? trianglesVariantSlider.value : 1
+      variant: triangleValues.trianglesVariant,
+      count: triangleValues.trianglesCount,
+      direction: triangleValues.trianglesDirection
     });
 
     for (let i = 0; i < geometry.polygons.length; i++) {
