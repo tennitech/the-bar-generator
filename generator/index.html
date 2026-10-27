@@ -3,11 +3,11 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Explore RPI logo bar patterns and download a generated mark.">
   <title>The Bar Generator | RPI</title>
   <base href="../">
-  <link href="css/style.css?v=20261027-viewport-zoom" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261027-quantum-motion" rel="stylesheet" type="text/css" />
   <script src="third_party/p5/p5.min.js"></script>
 </head>
 
@@ -119,6 +119,10 @@
   <div class="app-layout">
     <!-- Sidebar Controls -->
     <aside id="app-sidebar" class="app-sidebar" role="region" aria-label="Design Controls">
+      <div class="mobile_controls-header">
+        <h2>Design controls</h2>
+        <button id="mobile-controls-close" type="button">Done</button>
+      </div>
       <div id="sidebar-scroll" class="sidebar-scroll">
         <div class="sidebar-content">
           <div class="control-group">
@@ -147,7 +151,7 @@
                   <option value="triangles">TRIANGLES</option>
                   <option value="fibonacci-sequence">FIBONACCI SEQUENCE</option>
                   <option value="union">UNION</option>
-                  <option value="wave-quantum">WAVE QUANTUM</option>
+                  <option value="wave-quantum">QUANTUM</option>
                 </optgroup>
                 <optgroup label="ORGANIZATIONS">
                   <option value="runway">RUNWAY - RPI FLYING CLUB</option>
@@ -326,6 +330,35 @@
                   aria-label="Play audio preview"></button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div id="quantum-group" class="control-group" style="display: none;">
+          <div class="runtime_section motion_section">
+            <div class="control-header">MOTION</div>
+            <div class="control control_row control_row-toggle">
+              <label for="quantum-motion-toggle" class="control-label control_row-label">LOOP</label>
+              <label class="switch">
+                <input type="checkbox" id="quantum-motion-toggle" aria-label="Loop quantum animation">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="control control_row control_row-toggle">
+              <label for="quantum-reverse-toggle" class="control-label control_row-label">REVERSE</label>
+              <label class="switch">
+                <input type="checkbox" id="quantum-reverse-toggle" aria-label="Reverse quantum animation">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="control slider-control runtime_speed-control">
+              <label for="quantum-speed-slider" class="control-label">SPEED <span id="quantum-speed-display">1.0</span></label>
+              <input id="quantum-speed-slider" type="range" min="0.2" max="1" step="0.1" value="1" class="control-slider" aria-label="Quantum motion speed">
+            </div>
+            <div class="control slider-control">
+              <label for="quantum-phase" class="control-label">PHASE <span id="quantum-phase-display">0.0%</span></label>
+              <input id="quantum-phase" type="range" min="0" max="1" step="any" value="0" class="control-slider" aria-label="Quantum phase as fraction of recurrence" aria-describedby="quantum-description">
+            </div>
+            <div id="quantum-description" class="control-hint">Three projections of one wavefunction on a ring. The curves show amplitude, not particle paths or probabilities.</div>
           </div>
         </div>
 
@@ -718,7 +751,22 @@
             <input type="range" id="triangles-variant-slider" min="1" max="2" value="1" class="control-slider"
               aria-label="Triangles Variant">
           </div>
+          <div class="control">
+            <label for="triangles-direction-select" class="control-label">DIRECTION</label>
+            <select id="triangles-direction-select" class="control-select" aria-label="Triangle diagonal direction">
+              <option value="down-right" selected>DOWN RIGHT ↘</option>
+              <option value="up-right">UP RIGHT ↗</option>
+              <option value="up-left">UP LEFT ↖</option>
+              <option value="down-left">DOWN LEFT ↙</option>
+            </select>
           </div>
+          <div class="control slider-control">
+            <label for="triangles-count-slider" class="control-label">TRIANGLES <span
+                id="triangles-count-display">14</span></label>
+            <input type="range" id="triangles-count-slider" min="6" max="28" step="1" value="14" class="control-slider"
+              aria-label="Triangle count">
+          </div>
+        </div>
 
         </div>
         <div class="sidebar-footer">
@@ -750,7 +798,7 @@
       <!-- Visual Workspace Actions -->
       <div class="workspace-controls zoom_controls" role="group" aria-label="Preview zoom">
         <div class="zoom_controls-row">
-        <button id="zoom-out-btn" class="workspace-btn" aria-label="Zoom Out" data-tooltip="Zoom out">
+        <button id="zoom-out-btn" class="workspace-btn" aria-label="Zoom out (-)" aria-keyshortcuts="-" data-tooltip="Zoom out (-)">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -758,7 +806,7 @@
         </button>
         <input type="text" id="zoom-level" class="zoom-level-input" value="100%" aria-label="Preview zoom" role="spinbutton" inputmode="decimal" aria-valuemin="100" aria-valuemax="400" aria-valuenow="100" aria-describedby="zoom-help"
           title="100% fits this viewport. Preview zoom does not change exports.">
-        <button id="zoom-in-btn" class="workspace-btn" aria-label="Zoom In" data-tooltip="Zoom in">
+        <button id="zoom-in-btn" class="workspace-btn" aria-label="Zoom in (+)" aria-keyshortcuts="= Shift+= Plus" data-tooltip="Zoom in (+)">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -766,7 +814,7 @@
           </svg>
         </button>
         <div class="workspace-divider"></div>
-        <button id="zoom-reset-btn" class="workspace-btn zoom_controls-fit" aria-label="Fit logo to viewport" data-tooltip="Fit whole mark (0)">Fit</button>
+        <button id="zoom-reset-btn" class="workspace-btn zoom_controls-fit" aria-label="Fit logo to viewport (0)" aria-keyshortcuts="0" data-tooltip="Fit whole mark (0)">Fit</button>
         </div>
         <p id="zoom-status" class="u-sr-only" aria-live="polite">Whole mark · preview only</p>
         <span id="zoom-help" class="u-sr-only">100 percent fits the full mark to this viewport. Enlarge to inspect the bar. Scroll or pinch over the preview to zoom. Drag while enlarged. Press 0 to fit. Export dimensions do not change.</span>
@@ -833,7 +881,9 @@
   <script src="js/utils/profanityFilter.js?v=20260930-audit-fixes"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/barPattern.js?v=20261027-motion-sampling"></script>
+  <script src="js/utils/quantumModel.js"></script>
+  <script src="js/utils/quantumControls.js"></script>
+  <script src="js/utils/barPattern.js?v=20261027-quantum-motion"></script>
   <script src="js/utils/loopingGif.js?v=20261027-motion-sampling"></script>
   <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
   <script src="js/utils/previewControls.js?v=20260417-morse-randomize"></script>
@@ -841,8 +891,8 @@
   <script src="js/utils/featherIcons.js"></script>
   <script src="js/utils/shareState.js"></script>
   <script src="js/ui.js"></script>
-  <script src="js/main.js?v=20261027-viewport-zoom"></script>
-  <script src="js/drawing.js?v=20261027-motion-sampling"></script>
+  <script src="js/main.js?v=20261027-quantum-motion"></script>
+  <script src="js/drawing.js?v=20261027-quantum-motion"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =
@@ -850,6 +900,7 @@
       document.getElementById('retry-generator').addEventListener('click', () => window.location.reload());
     }
   </script>
+  <script src="js/utils/mobileBrowser.js"></script>
 </body>
 
 </html>

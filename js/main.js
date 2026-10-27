@@ -101,6 +101,9 @@ let triangleGridVariantDisplay;
 let trianglesGroup;
 let trianglesVariantSlider;
 let trianglesVariantDisplay;
+let trianglesDirectionSelect;
+let trianglesCountSlider;
+let trianglesCountDisplay;
 let trussGroup;
 let trussFamilySelect;
 let trussSegmentsSlider;
@@ -668,7 +671,8 @@ function getRenderedResponsiveLogoScale() {
 let zoomInBtn, zoomOutBtn, zoomResetBtn, zoomLevelDisplay;
 
 function isCompactLayoutViewport(viewportWidth = window.innerWidth) {
-  return Math.max(0, Math.round(viewportWidth || 0)) <= COMPACT_LAYOUT_MAX_WIDTH;
+  return Math.max(0, Math.round(viewportWidth || 0)) <= COMPACT_LAYOUT_MAX_WIDTH
+    || (viewportWidth <= 1100 && window.matchMedia('(pointer: coarse)').matches);
 }
 
 function getWorkspaceDisplaySize() {
@@ -723,8 +727,7 @@ const RESETTABLE_GROUP_STYLE_MAP = {
   'lines-group': 'lines',
   'point-connect-group': 'point-connect',
   'neural-network-group': 'neural-network',
-  'triangle-grid-group': 'triangle-grid',
-  'triangles-group': 'triangles'
+  'triangle-grid-group': 'triangle-grid'
 };
 const SURPRISEABLE_STYLE_SET = new Set(Object.values(RESETTABLE_GROUP_STYLE_MAP));
 
@@ -2219,7 +2222,11 @@ function scheduleResponsiveCanvasResize(delay = RESPONSIVE_CANVAS_RESIZE_SETTLE_
 function syncResponsiveWorkspaceSizing() {
   responsiveWorkspaceSyncFrame = 0;
   const controls = document.querySelector('.workspace-controls');
-  if (controls) previewControlSpace = controls.offsetHeight + (parseFloat(getComputedStyle(controls).bottom) || 0) + 16;
+  if (controls) {
+    const controlsStyle = getComputedStyle(controls);
+    previewControlSpace = controlsStyle.display === 'none' || controlsStyle.position === 'static'
+      ? 0 : controls.offsetHeight + (parseFloat(controlsStyle.bottom) || 0) + 16;
+  }
   syncViewportHeightVar();
   syncResponsiveLayoutMode();
   syncSidebarToggleState();
@@ -2455,6 +2462,7 @@ function setup() {
 
   // Get control references
   styleSelect = document.getElementById('style-select');
+  window.quantumControls.setup();
   colorModeSelect = document.getElementById('color-mode-select');
   binaryInput = document.getElementById('binary-input');
   binaryGroup = document.getElementById('binary-group');
@@ -2579,6 +2587,9 @@ function setup() {
   trianglesGroup = document.getElementById('triangles-group');
   trianglesVariantSlider = document.getElementById('triangles-variant-slider');
   trianglesVariantDisplay = document.getElementById('triangles-variant-display');
+  trianglesDirectionSelect = document.getElementById('triangles-direction-select');
+  trianglesCountSlider = document.getElementById('triangles-count-slider');
+  trianglesCountDisplay = document.getElementById('triangles-count-display');
   trussGroup = document.getElementById('truss-group');
   trussFamilySelect = document.getElementById('truss-family-select');
   trussSegmentsSlider = document.getElementById('truss-segments-slider');
@@ -3153,6 +3164,21 @@ function setup() {
     updateTrianglesVariantDisplay();
   }
 
+  if (trianglesDirectionSelect) {
+    trianglesDirectionSelect.addEventListener('change', function () {
+      updateUrlParameters();
+      requestUpdate();
+    });
+  }
+  if (trianglesCountSlider) {
+    trianglesCountSlider.addEventListener('input', function () {
+      updateTrianglesCountDisplay();
+      updateUrlParameters();
+      requestUpdate();
+    });
+    updateTrianglesCountDisplay();
+  }
+
   // Setup truss sliders
   if (trussFamilySelect) {
     trussFamilySelect.addEventListener('change', function () {
@@ -3472,6 +3498,13 @@ function setup() {
       ariaLabel: 'Set triangle grid variant'
     },
     {
+      slider: trianglesCountSlider,
+      display: trianglesCountDisplay,
+      refreshDisplay: updateTrianglesCountDisplay,
+      commit: () => { updateTrianglesCountDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set triangle count'
+    },
+    {
       slider: trianglesVariantSlider,
       display: trianglesVariantDisplay,
       refreshDisplay: updateTrianglesVariantDisplay,
@@ -3529,6 +3562,14 @@ function setup() {
         } else {
           startAudio();
         }
+        return;
+      }
+
+      if (currentShader === 22) {
+        event.preventDefault();
+        const toggle = document.getElementById('quantum-motion-toggle');
+        toggle.checked = !toggle.checked;
+        toggle.dispatchEvent(new Event('change', { bubbles: true }));
         return;
       }
 
@@ -3748,6 +3789,27 @@ function updateTriangleGridVariantDisplay() {
 function updateTrianglesVariantDisplay() {
   if (!trianglesVariantSlider || !trianglesVariantDisplay) return;
   trianglesVariantDisplay.textContent = trianglesVariantSlider.value;
+}
+
+function updateTrianglesCountDisplay() {
+  if (!trianglesCountSlider || !trianglesCountDisplay) return;
+  const settings = normalizeTrianglesPatternSettings({ count: trianglesCountSlider.value });
+  trianglesCountSlider.value = String(settings.count);
+  trianglesCountDisplay.textContent = String(settings.count);
+}
+
+// Shared triangle state for the preview and canonical export collector.
+function getTrianglePatternControlValues() {
+  const settings = normalizeTrianglesPatternSettings({
+    variant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
+    direction: trianglesDirectionSelect ? trianglesDirectionSelect.value : 'down-right',
+    count: trianglesCountSlider ? trianglesCountSlider.value : 14
+  });
+  return {
+    trianglesVariant: settings.variant,
+    trianglesDirection: settings.direction,
+    trianglesCount: settings.count
+  };
 }
 
 function updateWaveformTypeDisplay() {
@@ -4104,7 +4166,7 @@ function handleStyleChange() {
   }
 
   if (selectedStyle === 'lunar' && typeof window.getLunarBarSVGSourceForColorMode !== 'function') {
-    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20260424-artemis-ii-bar-refresh')
+    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20261027-artemis-vector')
       .then(() => {
         if (styleSelect && styleSelect.value === 'lunar') {
           requestUpdate();
@@ -4203,6 +4265,10 @@ function handleStyleChange() {
       break;
   }
 
+  if (typeof syncLunarBarVectorPreviewVisibility === 'function') {
+    syncLunarBarVectorPreviewVisibility(selectedStyle === 'lunar');
+  }
+
   // Safely update UI elements only if they exist
   if (binaryGroup && rulerGroup && tickerGroup && waveformGroup && circlesGroup && numericGroup && morseGroup) {
     // Hide all groups first
@@ -4299,6 +4365,7 @@ function handleStyleChange() {
     stopAudio();
   }
 
+  window.quantumControls.sync();
   syncLunarPreviewVisibility(selectedStyle);
   console.log('Style changed to:', selectedStyle, 'currentShader:', currentShader);
   syncMissionControlSaveMenu();
@@ -4358,6 +4425,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
       : getAnimationNowMs() / 1000.0);
 
   return {
+    ...window.quantumControls.values(),
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
     rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
     tickerRepeats: tickerSlider ? tickerSlider.value : 34,
@@ -4390,7 +4458,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     pointConnectVariant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1,
     neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1,
     triangleGridVariant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2,
-    trianglesVariant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
+    ...getTrianglePatternControlValues(),
     morseText: morseInput ? sanitizeBarText(morseInput.value) : 'RPI',
     trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
     trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
@@ -4533,7 +4601,18 @@ function renderHeaderMotionPreview() {
   const style = getCurrentMotionStyle();
   const state = getCurrentLoopAnimationState();
   const values = getLoopRuntimeValues();
-  if (style === 'ruler' || style === 'ticker') {
+  if (currentShader === 22) {
+    const geometry = createWaveQuantumPatternGeometry({
+      barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH, barHeight: REFERENCE_BAR_HEIGHT,
+      ...window.quantumControls.values()
+    });
+    for (const polygon of geometry.polygons) {
+      ctx.beginPath();
+      polygon.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+      ctx.closePath();
+      ctx.fill();
+    }
+  } else if (style === 'ruler' || style === 'ticker') {
     const geometry = (style === 'ruler' ? createRulerPatternGeometry : createTickerPatternGeometry)({
       ...values, barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH,
       barHeight: REFERENCE_BAR_HEIGHT, loopOffsetX: state.loopOffsetX
@@ -4587,7 +4666,7 @@ function renderHeaderMotionPreview() {
 function updateHeaderBrandPreview(force = false) {
   if (!headerLogoPreview) return;
 
-  if (isMotionEnabledForStyle(getCurrentMotionStyle())) {
+  if (isMotionEnabledForStyle(getCurrentMotionStyle()) || (currentShader === 22 && document.getElementById('quantum-motion-toggle')?.checked)) {
     renderHeaderMotionPreview();
     return;
   }
@@ -6104,6 +6183,8 @@ function getUrlParameters() {
     neuralNetworkHiddenLayers: Math.max(1, Math.min(5, parseInt(params.get('neuralNetworkHiddenLayers')) || 1)),
     triangleGridVariant: Math.max(1, Math.min(3, parseInt(params.get('triangleGridVariant')) || 2)),
     trianglesVariant: Math.max(1, Math.min(2, parseInt(params.get('trianglesVariant')) || 1)),
+    trianglesDirection: normalizeTrianglePatternDirection(params.get('trianglesDirection')),
+    trianglesCount: normalizeTrianglesPatternSettings({ count: params.has('trianglesCount') ? params.get('trianglesCount') : undefined }).count,
 
     // Ruler parameters
     rulerRepeats: parseInt(params.get('rulerRepeats')) || 10,
@@ -6246,6 +6327,14 @@ function updateUrlParameters() {
   if (styleSelect && styleSelect.value === 'triangles') {
     if (trianglesVariantSlider && parseInt(trianglesVariantSlider.value, 10) !== 1) {
       params.set('trianglesVariant', trianglesVariantSlider.value);
+    }
+    // Keep an explicit saved direction even when it equals the current default.
+    const hasSavedTriangleDirection = new URLSearchParams(window.location.search).has('trianglesDirection');
+    if (trianglesDirectionSelect && (trianglesDirectionSelect.value !== 'down-right' || hasSavedTriangleDirection)) {
+      params.set('trianglesDirection', trianglesDirectionSelect.value);
+    }
+    if (trianglesCountSlider && Number(trianglesCountSlider.value) !== 14) {
+      params.set('trianglesCount', trianglesCountSlider.value);
     }
   }
 
@@ -6391,6 +6480,14 @@ function updateUrlParameters() {
     }
   }
 
+  if (selectedStyle === 'wave-quantum') {
+    const quantum = window.quantumControls.values();
+    if (quantum.quantumPhase) params.set('quantumPhase', String(quantum.quantumPhase));
+    const speed = document.getElementById('quantum-speed-slider').value;
+    if (Number(speed) !== 1) params.set('quantumSpeed', speed);
+    if (document.getElementById('quantum-reverse-toggle').checked) params.set('quantumReverse', 'true');
+  }
+
   // Update URL without reloading the page
   const newUrl = window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorUrl === 'function'
     ? window.GeneratorRoutes.buildGeneratorUrl(selectedStyle, params, window.location.pathname)
@@ -6465,6 +6562,11 @@ function applyUrlParameters() {
   if (trianglesVariantSlider) {
     trianglesVariantSlider.value = params.trianglesVariant;
     updateTrianglesVariantDisplay();
+  }
+  if (trianglesDirectionSelect) trianglesDirectionSelect.value = params.trianglesDirection;
+  if (trianglesCountSlider) {
+    trianglesCountSlider.value = params.trianglesCount;
+    updateTrianglesCountDisplay();
   }
 
   // Apply truss parameters
@@ -6784,7 +6886,8 @@ function resetAnimationClock(nextTimeSeconds = 0) {
 }
 
 function getViewportHeight() {
-  const visualViewportHeight = window.visualViewport && Number.isFinite(window.visualViewport.height)
+  const visualViewportHeight = window.visualViewport && window.visualViewport.scale === 1
+    && Number.isFinite(window.visualViewport.height)
     ? window.visualViewport.height
     : 0;
 
@@ -6832,6 +6935,7 @@ function setupViewportHeightSync() {
 
 function draw() {
   const currentTime = getAnimationNowMs();
+  window.quantumControls.tick(currentTime, document.hidden || document.body.classList.contains('has-logo-animation'));
   const currentMotionStyle = getCurrentMotionStyle();
   if (document.hidden || document.body.classList.contains('has-logo-animation')) {
     lastAnimationFrameTimestamp = 0;
@@ -6905,6 +7009,7 @@ function draw() {
   // Draw bottom bar
   drawBottomBar(currentWidth, responsiveLogoScale);
 
+  if (currentShader === 22) updateHeaderBrandPreview();
   if (isAnimated && isMotionEnabledForStyle(currentMotionStyle)) {
     updateHeaderBrandPreview();
   }
@@ -7463,12 +7568,15 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
     resetShader();
     noStroke();
     fill(fgColor);
+    const triangleValues = getTrianglePatternControlValues();
     const geometry = createTrianglesPatternGeometry({
       barStartX,
       barY: 0,
       exactBarWidth,
       barHeight: rectHeight,
-      variant: trianglesVariantSlider ? trianglesVariantSlider.value : 1
+      variant: triangleValues.trianglesVariant,
+      count: triangleValues.trianglesCount,
+      direction: triangleValues.trianglesDirection
     });
 
     for (let i = 0; i < geometry.polygons.length; i++) {
@@ -7521,28 +7629,17 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       endShape(CLOSE);
     }
   } else if (currentShader === 22) {
-    // Wave Quantum pattern
     resetShader();
-    noFill();
+    fill(fgColor);
+    noStroke();
     const geometry = createWaveQuantumPatternGeometry({
-      barStartX,
-      barY: 0,
-      exactBarWidth,
-      barHeight: rectHeight
+      barStartX, barY: 0, exactBarWidth, barHeight: rectHeight,
+      ...window.quantumControls.values()
     });
-
-    stroke(fgColor);
-    strokeWeight(geometry.thickness);
-    strokeCap(ROUND);
-    strokeJoin(ROUND);
-
-    for (let i = 0; i < geometry.paths.length; i++) {
+    for (const polygon of geometry.polygons) {
       beginShape();
-      for (let j = 0; j < geometry.paths[i].length; j++) {
-        const point = geometry.paths[i][j];
-        vertex(point.x, point.y);
-      }
-      endShape();
+      for (const point of polygon) vertex(point.x, point.y);
+      endShape(CLOSE);
     }
   } else if (currentShader === 11) {
     // Pulse / Centerline pattern

@@ -76,7 +76,9 @@ function getGeneratorHref(style = 'solid') {
 }
 
 function getViewportMetrics() {
-  const visualViewport = window.visualViewport;
+  const visualViewport = window.visualViewport && window.visualViewport.scale === 1
+    ? window.visualViewport
+    : null;
   const width = visualViewport && Number.isFinite(visualViewport.width) && visualViewport.width > 0
     ? visualViewport.width
     : window.innerWidth;

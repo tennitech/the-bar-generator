@@ -133,97 +133,55 @@ function drawSVGPathOnGraphics(pg, pathData) {
   pg.endShape(CLOSE);
 }
 
-const lunarBarImageCache = new Map();
-const lunarBarPendingColors = new Set();
+// Live Artemis artwork stays SVG in the DOM. It shares the p5 transform, but
+// never passes through a fixed-size image/texture before zooming.
+let lunarBarVectorPreview = null;
+let lunarBarVectorPreviewSource = '';
 
-function normalizeLunarBarColor(value) {
-  if (typeof value === 'string' && value.trim()) {
-    return value.trim();
-  }
-
-  return '#000000';
+function syncLunarBarVectorPreviewVisibility(isLunar) {
+  if (lunarBarVectorPreview) lunarBarVectorPreview.hidden = !isLunar;
 }
 
-function getLunarBarSVGSourceForTheme(colorMode) {
-  if (typeof window !== 'undefined' && typeof window.getLunarBarSVGSourceForColorMode === 'function') {
-    return window.getLunarBarSVGSourceForColorMode(colorMode) || '';
+function projectLunarBarPoint(renderer, x, y) {
+  if (renderer.uMVMatrix && renderer.uPMatrix) {
+    const multiply = (m, p) => [0, 1, 2, 3].map(row =>
+      m[row] * p[0] + m[row + 4] * p[1] + m[row + 8] * p[2] + m[row + 12] * p[3]);
+    const point = multiply(renderer.uPMatrix.mat4, multiply(renderer.uMVMatrix.mat4, [x, y, 0, 1]));
+    return [(point[0] / point[3] + 1) * renderer.width / 2,
+      (1 - point[1] / point[3]) * renderer.height / 2];
   }
-
-  return typeof window !== 'undefined' ? window.LUNAR_BAR_SVG_SOURCE : '';
-}
-
-function getLunarBarCacheKey(fgColor, colorMode) {
-  const normalizedColorMode = typeof colorMode === 'string' && colorMode.trim()
-    ? colorMode.trim().toLowerCase()
-    : 'default';
-  return `${normalizedColorMode}:${normalizeLunarBarColor(fgColor)}`;
-}
-
-function createColorizedLunarBarDataURI(fgColor, colorMode) {
-  const source = getLunarBarSVGSourceForTheme(colorMode);
-  if (!source) {
-    return '';
-  }
-
-  const color = normalizeLunarBarColor(fgColor);
-  const colorizedSource = source.replace(
-    /<svg\b([^>]*)>/i,
-    `<svg$1 fill="${color}" color="${color}">`
-  );
-
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(colorizedSource)}`;
-}
-
-function getLunarBarImage(fgColor, colorMode) {
-  const cacheKey = getLunarBarCacheKey(fgColor, colorMode);
-
-  if (lunarBarImageCache.has(cacheKey)) {
-    return lunarBarImageCache.get(cacheKey);
-  }
-
-  if (lunarBarPendingColors.has(cacheKey) || typeof loadImage !== 'function') {
-    return null;
-  }
-
-  const dataURI = createColorizedLunarBarDataURI(fgColor, colorMode);
-  if (!dataURI) {
-    return null;
-  }
-
-  lunarBarPendingColors.add(cacheKey);
-  loadImage(
-    dataURI,
-    (imageAsset) => {
-      lunarBarPendingColors.delete(cacheKey);
-      lunarBarImageCache.set(cacheKey, imageAsset);
-      if (typeof requestUpdate === 'function') {
-        requestUpdate();
-      }
-    },
-    (error) => {
-      lunarBarPendingColors.delete(cacheKey);
-      console.warn('Unable to load Lunar bar SVG:', error);
-    }
-  );
-
-  return null;
+  const point = new DOMPoint(x, y).matrixTransform(renderer.drawingContext.getTransform());
+  const density = renderer.canvas.width / renderer.width;
+  return [point.x / density, point.y / density];
 }
 
 function drawLunarBarPattern(target, barStartX, barY, exactBarWidth, barHeight, fgColor = '#000000', colorMode = currentColorMode) {
-  const surface = target || window;
-  const imageAsset = getLunarBarImage(fgColor, colorMode);
-
-  if (!imageAsset || !imageAsset.width || typeof surface.image !== 'function') {
+  if (typeof window.createLunarBarVectorFragment !== 'function') return;
+  if (target) {
+    window.drawLunarBarVector(target.drawingContext, barStartX, barY, exactBarWidth, barHeight, fgColor, colorMode);
     return;
   }
-
-  if (typeof surface.push === 'function') surface.push();
-  if (typeof surface.imageMode === 'function') {
-    const cornerMode = surface.CORNER || (typeof CORNER !== 'undefined' ? CORNER : undefined);
-    if (cornerMode !== undefined) surface.imageMode(cornerMode);
+  const renderer = window._renderer;
+  if (!renderer) return;
+  if (!lunarBarVectorPreview || !lunarBarVectorPreview.isConnected) {
+    lunarBarVectorPreview = document.createElement('div');
+    lunarBarVectorPreviewSource = '';
+    lunarBarVectorPreview.dataset.lunarVectorPreview = '';
+    lunarBarVectorPreview.setAttribute('aria-hidden', 'true');
+    Object.assign(lunarBarVectorPreview.style, { position: 'absolute', inset: '0', overflow: 'hidden', pointerEvents: 'none' });
+    renderer.canvas.parentElement.append(lunarBarVectorPreview);
   }
-  surface.image(imageAsset, barStartX, barY, exactBarWidth, barHeight);
-  if (typeof surface.pop === 'function') surface.pop();
+  lunarBarVectorPreview.hidden = currentShader !== 24;
+  const sourceKey = `${exactBarWidth}:${barHeight}:${fgColor}:${colorMode}`;
+  if (lunarBarVectorPreviewSource !== sourceKey) {
+    const source = window.createLunarBarVectorFragment(0, 0, exactBarWidth, barHeight, fgColor, colorMode);
+    lunarBarVectorPreview.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${exactBarWidth}" height="${barHeight}" style="position:absolute;transform-origin:0 0;overflow:hidden">${source}</svg>`;
+    lunarBarVectorPreviewSource = sourceKey;
+  }
+  const origin = projectLunarBarPoint(renderer, barStartX, barY);
+  const right = projectLunarBarPoint(renderer, barStartX + exactBarWidth, barY);
+  const bottom = projectLunarBarPoint(renderer, barStartX, barY + barHeight);
+  lunarBarVectorPreview.firstElementChild.style.transform = `matrix(${(right[0] - origin[0]) / exactBarWidth},${(right[1] - origin[1]) / exactBarWidth},${(bottom[0] - origin[0]) / barHeight},${(bottom[1] - origin[1]) / barHeight},${origin[0]},${origin[1]})`;
 }
 
 function drawMusicHeadOnGraphics(pg, shape, x, y, rx, ry, filled, fgColor) {
@@ -802,6 +760,18 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       }
       pg.endShape();
     }
+  } else if (currentShader === 22) {
+    const geometry = createWaveQuantumPatternGeometry({
+      barStartX, barY, exactBarWidth, barHeight: rectHeight,
+      ...window.quantumControls.values()
+    });
+    pg.noStroke();
+    pg.fill(fgColor);
+    for (const polygon of geometry.polygons) {
+      pg.beginShape();
+      for (const point of polygon) pg.vertex(point.x, point.y);
+      pg.endShape(pg.CLOSE);
+    }
   } else if (currentShader === 23) {
     // Neural network pattern
     const geometry = createNeuralNetworkPatternGeometry({
@@ -1156,7 +1126,77 @@ function generateStaticPackedCircles(barWidth, barHeight, density, sizeVariation
   return circles;
 }
 
+// These static families share the header's selected-state vector for both
+// download formats. Other export renderers retain their existing dispatch.
+function usesSharedStaticPatternExport() {
+  return [13, 16, 17, 19].includes(currentShader);
+}
+
+function buildSharedStaticPatternExportSVG() {
+  const doc = new DOMParser().parseFromString(buildHeaderPreviewSVG(), 'image/svg+xml');
+  const svg = doc.documentElement;
+  const width = SVG_EXPORT_WIDTH + SVG_EXPORT_PADDING * 2;
+  // Integer intrinsic dimensions prevent WebKit from letterboxing a fractional viewport.
+  const height = Math.ceil(SVG_EXPORT_TOTAL_HEIGHT + SVG_EXPORT_PADDING * 2);
+  const scheme = colors[currentColorMode];
+  svg.setAttribute('viewBox', `-${SVG_EXPORT_PADDING} -${SVG_EXPORT_PADDING} ${width} ${height}`);
+  svg.setAttribute('width', String(width));
+  svg.setAttribute('height', String(height));
+  svg.setAttribute('style', `color: ${scheme ? scheme.fg : '#000000'};`);
+  ['role', 'aria-hidden', 'focusable'].forEach(attribute => svg.removeAttribute(attribute));
+  return new XMLSerializer().serializeToString(svg);
+}
+
+function downloadSharedStaticPatternSVG() {
+  const blob = new Blob([buildSharedStaticPatternExportSVG()], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'RPI-logo.svg';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  hideSaveMenu();
+  Toast.show('SVG download started', 'success');
+}
+
+async function downloadSharedStaticPatternPNG() {
+  // Capture selected values before image decoding so later control changes
+  // cannot alter an export already requested by the user.
+  const markup = buildSharedStaticPatternExportSVG();
+  const url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml' }));
+  try {
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    const width = (SVG_EXPORT_WIDTH + SVG_EXPORT_PADDING * 2) * PNG_EXPORT_SCALE;
+    const height = Math.ceil(SVG_EXPORT_TOTAL_HEIGHT + SVG_EXPORT_PADDING * 2) * PNG_EXPORT_SCALE;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(width);
+    canvas.height = Math.ceil(height);
+    canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = 'RPI-logo.png';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    hideSaveMenu();
+    Toast.show('PNG download started', 'success');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 function savePNG() {
+  if (usesSharedStaticPatternExport()) {
+    downloadSharedStaticPatternPNG().catch(error => {
+      console.error('PNG save error:', error);
+      Toast.show('Save failed: ' + error.message, 'error');
+    });
+    return;
+  }
   console.log('Save PNG called');
 
   try {
@@ -1321,6 +1361,15 @@ function saveLoopingGIF() {
 }
 
 function saveSVG() {
+  if (usesSharedStaticPatternExport()) {
+    try {
+      downloadSharedStaticPatternSVG();
+    } catch (error) {
+      console.error('SVG save error:', error);
+      Toast.show('Save failed: ' + error.message, 'error');
+    }
+    return;
+  }
   try {
     Toast.show('Generating SVG...', 'info', 2000);
 
@@ -1366,6 +1415,7 @@ function saveSVG() {
         parseNumericString,
         generateStaticPackedCircles,
         values: {
+          ...window.quantumControls.values(),
           rulerRepeats: rulerRepeatsSlider.value,
           rulerUnits: rulerUnitsSlider.value,
           rulerSpeed: rulerSpeedSlider ? rulerSpeedSlider.value : 1,

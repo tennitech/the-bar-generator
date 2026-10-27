@@ -148,26 +148,22 @@ function createLinesPatternGeometry(options = {}) {
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
   const variant = clampPatternVariant(options.variant || 2, 2);
-  const fullBarCount = variant === 1 ? 20 : 24;
-  const barWidth = exactBarWidth / (2 * fullBarCount - 1);
-  const halfHeight = barHeight / 2;
+  // A sampled standing-wave envelope gives the strokes a deliberate rhythm.
+  // Density changes sampling, while every stroke remains resolvable at 250 units.
+  const count = variant === 1 ? 20 : 32;
+  const cellWidth = exactBarWidth / count;
+  const strokeWidth = cellWidth * 0.46;
+  // Anchor the painted end strokes to the exact edges, not inset cell centers.
+  const step = (exactBarWidth - strokeWidth) / (count - 1);
   const rects = [];
-
-  for (let i = 0; i < fullBarCount; i++) {
+  for (let i = 0; i < count; i++) {
+    const phase = i / (count - 1);
+    const height = barHeight * (0.35 + 0.65 * Math.abs(Math.cos(phase * Math.PI * 3)));
     rects.push({
-      x: barStartX + i * barWidth * 2,
-      y: barY,
-      width: barWidth,
-      height: barHeight
-    });
-  }
-
-  for (let i = 0; i < fullBarCount - 1; i++) {
-    rects.push({
-      x: barStartX + ((i * 2) + 1) * barWidth,
-      y: barY + halfHeight,
-      width: barWidth,
-      height: halfHeight
+      x: barStartX + i * step,
+      y: barY + (barHeight - height) / 2,
+      width: strokeWidth,
+      height
     });
   }
 
@@ -604,47 +600,32 @@ function createGradientPatternGeometry(options = {}) {
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
   const variant = clampPatternVariant(options.variant || 1, 2);
+  // Optical tone is encoded by area coverage, never opacity or new colors.
   const rects = [];
-  const addRect = (x, y, width, height) => {
-    rects.push({
-      x,
-      y,
-      width,
-      height,
-      radius: height / 2
-    });
-  };
-
-  if (variant === 1) {
-    const rowCount = 7;
-    const colCount = 8;
-    const gapY = barHeight * 0.05;
-    const rowHeight = (barHeight - gapY * (rowCount - 1)) / rowCount;
-    const cellWidth = exactBarWidth / colCount;
-
-    for (let row = 0; row < rowCount; row++) {
-      const y = barY + row * (rowHeight + gapY);
-      for (let col = 0; col < colCount; col++) {
-        const widthFactor = Math.max(0.25, 0.96 - col * 0.11);
-        const width = Math.max(rowHeight * 2.2, cellWidth * widthFactor);
-        addRect(barStartX + col * cellWidth, y, width, rowHeight);
-      }
-    }
-  } else {
-    const rowCount = 5;
-    const gapY = barHeight * 0.08;
-    const rowHeight = (barHeight - gapY * (rowCount - 1)) / rowCount;
-    const segments = [
-      { x: 0, width: exactBarWidth * 0.2 },
-      { x: exactBarWidth * 0.2, width: exactBarWidth * 0.4 },
-      { x: exactBarWidth * 0.6, width: exactBarWidth * 0.4 }
-    ];
-
-    for (let row = 0; row < rowCount; row++) {
-      const y = barY + row * (rowHeight + gapY);
-      for (let i = 0; i < segments.length; i++) {
-        const segment = segments[i];
-        addRect(barStartX + segment.x, y, segment.width, rowHeight);
+  const count = 24;
+  const cellWidth = exactBarWidth / count;
+  const widthAt = t => cellWidth * (variant === 1
+    ? 0.88 - 0.7 * t
+    : 0.2 + 0.68 * (1 - Math.abs(2 * t - 1)));
+  const firstWidth = widthAt(0);
+  const lastWidth = widthAt(1);
+  // Equally spaced centers span from the first painted left edge to the last
+  // painted right edge, retaining the area progression without end margins.
+  const centerSpan = exactBarWidth - (firstWidth + lastWidth) / 2;
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1);
+    const width = widthAt(t);
+    const x = barStartX + firstWidth / 2 + t * centerSpan - width / 2;
+    if (variant === 1) {
+      rects.push({ x, y: barY, width, height: barHeight, radius: 0 });
+    } else {
+      // Three aligned rows converge toward a central band of maximum coverage.
+      const height = barHeight / 4;
+      for (let row = 0; row < 3; row++) {
+        rects.push({
+          x, y: barY + row * barHeight * 0.375,
+          width, height, radius: 0
+        });
       }
     }
   }
@@ -660,47 +641,29 @@ function createCirclesGradientPatternGeometry(options = {}) {
   const variant = clampPatternVariant(options.variant || 1, 3);
   const circles = [];
   const rects = [];
-  const addCircleRow = (count, y, radius, offset = 0) => {
-    const spacing = exactBarWidth / Math.max(1, count - 1);
-    for (let i = 0; i < count; i++) {
-      circles.push({
-        cx: barStartX + i * spacing + offset,
-        cy: y,
-        r: radius
-      });
-    }
+  // Row spacing bounds each radius vertically. Horizontal centers interpolate
+  // between tangent end circles, so every row paints both exact bar edges.
+  const rows = variant === 2 ? 2 : 3;
+  const columns = variant === 2 ? 24 : 28;
+  const cellWidth = exactBarWidth / columns;
+  const cellHeight = barHeight / rows;
+  const maxRadius = Math.min(cellWidth, cellHeight) * 0.44;
+  const radiusAt = (t, row) => {
+    if (variant === 1) return maxRadius * [1, 0.72, 0.46][row];
+    if (variant === 2) return maxRadius * Math.sqrt(0.12 + 0.88 * t);
+    return maxRadius * Math.sqrt(0.16 + 0.84 * (1 - Math.abs(2 * t - 1)));
   };
-
-  if (variant === 1) {
-    addCircleRow(30, barY + barHeight * 0.2, barHeight * 0.19);
-    addCircleRow(31, barY + barHeight * 0.55, barHeight * 0.12, exactBarWidth / 60);
-    addCircleRow(30, barY + barHeight * 0.82, barHeight * 0.085);
-  } else if (variant === 2) {
-    rects.push({
-      x: barStartX,
-      y: barY + barHeight * 0.52,
-      width: exactBarWidth,
-      height: barHeight * 0.34
-    });
-    addCircleRow(30, barY + barHeight * 0.52, barHeight * 0.15);
-    addCircleRow(32, barY + barHeight * 0.28, barHeight * 0.1, exactBarWidth / 64);
-    addCircleRow(34, barY + barHeight * 0.06, barHeight * 0.055, exactBarWidth / 68);
-  } else {
-    const rows = 4;
-    const cols = 52;
-    for (let row = 0; row < rows; row++) {
-      const y = barY + barHeight * (0.08 + row * 0.24);
-      for (let col = 0; col < cols; col++) {
-        const xFraction = col / (cols - 1);
-        const sizeFactor = Math.pow(xFraction, 1.55);
-        const radius = barHeight * (0.015 + sizeFactor * (0.06 + row * 0.02));
-        const offset = row % 2 === 0 ? 0 : exactBarWidth / (cols * 2);
-        circles.push({
-          cx: barStartX + xFraction * exactBarWidth + offset,
-          cy: y,
-          r: radius
-        });
-      }
+  for (let row = 0; row < rows; row++) {
+    const leftRadius = radiusAt(0, row);
+    const rightRadius = radiusAt(1, row);
+    const centerSpan = exactBarWidth - leftRadius - rightRadius;
+    for (let col = 0; col < columns; col++) {
+      const t = col / (columns - 1);
+      circles.push({
+        cx: barStartX + leftRadius + t * centerSpan,
+        cy: barY + (row + 0.5) * cellHeight,
+        r: radiusAt(t, row)
+      });
     }
   }
 
@@ -737,35 +700,57 @@ function createGridPatternGeometry(options = {}) {
   return { lines, thickness };
 }
 
+function normalizeTrianglePatternDirection(value) {
+  // Preserve the orientation of links saved before four-way direction controls.
+  if (value === 'up') return 'up-right';
+  if (value === 'down') return 'down-right';
+  return ['up-left', 'up-right', 'down-left', 'down-right'].includes(value)
+    ? value
+    : 'down-right';
+}
+
+function normalizeTrianglesPatternSettings(options = {}) {
+  const parsedCount = Number(options.count);
+  return {
+    variant: clampPatternVariant(options.variant || 1, 2),
+    count: Number.isFinite(parsedCount) ? Math.max(6, Math.min(28, Math.round(parsedCount))) : 14,
+    direction: normalizeTrianglePatternDirection(options.direction)
+  };
+}
+
 function createTrianglesPatternGeometry(options = {}) {
   const barStartX = Number(options.barStartX || 0);
   const barY = Number(options.barY || 0);
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const variant = clampPatternVariant(options.variant || 1, 2);
+  const { variant, count, direction } = normalizeTrianglesPatternSettings(options);
   const polygons = [];
 
-  const addRow = (count, y, height) => {
-    const cellWidth = exactBarWidth / count;
-    for (let i = 0; i < count; i++) {
-      const x = barStartX + i * cellWidth;
-      polygons.push([
-        { x, y },
-        { x: x + cellWidth, y: y + height },
-        { x, y: y + height }
-      ]);
-    }
-  };
-
-  if (variant === 1) {
-    addRow(14, barY, barHeight);
-  } else {
-    addRow(15, barY, barHeight * 0.48);
-    addRow(30, barY + barHeight * 0.48, barHeight * 0.2);
-    addRow(60, barY + barHeight * 0.68, barHeight * 0.12);
-    addRow(120, barY + barHeight * 0.8, barHeight * 0.08);
+  const cellWidth = exactBarWidth / count;
+  for (let i = 0; i < count; i++) {
+    const x = barStartX + i * cellWidth;
+    // Both variants share the same diagonal and cell bounds. Variant 2 fills
+    // the complementary half of each cell; variant 1 keeps its original points.
+    polygons.push(variant === 1 ? [
+      { x, y: barY },
+      { x: x + cellWidth, y: barY + barHeight },
+      { x, y: barY + barHeight }
+    ] : [
+      { x, y: barY },
+      { x: x + cellWidth, y: barY },
+      { x: x + cellWidth, y: barY + barHeight }
+    ]);
   }
 
+  polygons.forEach((polygon, i) => polygon.forEach(point => {
+    if (direction.startsWith('up')) {
+      point.y = barY + barHeight - (point.y - barY);
+    }
+    if (direction.endsWith('left')) {
+      const cellStart = barStartX + i * cellWidth;
+      point.x = cellStart + cellWidth - (point.x - cellStart);
+    }
+  }));
   return { polygons };
 }
 
@@ -875,28 +860,28 @@ function createUnionPatternGeometry(options = {}) {
 }
 
 function createWaveQuantumPatternGeometry(options = {}) {
+  const model = typeof quantumModel !== 'undefined' ? quantumModel : require('./quantumModel');
   const barStartX = Number(options.barStartX || 0);
   const barY = Number(options.barY || 0);
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const thickness = Math.max(1.2, barHeight * 0.1);
+  const thickness = Math.min(barHeight, Math.max(0.6, barHeight * 0.075));
+  const amplitude = (barHeight - thickness) / 2;
   const centerY = barY + barHeight / 2;
-  const amplitude = barHeight * 0.48;
-  const cycles = 11;
-  const points = Math.max(220, Math.round(exactBarWidth * 1.2));
-  const phases = [0, Math.PI / 3, (2 * Math.PI) / 3];
-  const paths = phases.map((phase) => {
-    const pointsList = [];
-    for (let i = 0; i <= points; i++) {
-      const portion = i / points;
-      const x = barStartX + portion * exactBarWidth;
-      const y = centerY - Math.sin(portion * cycles * 2 * Math.PI + phase) * amplitude;
-      pointsList.push({ x, y });
-    }
-    return pointsList;
-  });
-
-  return { paths, thickness };
+  const phases = [0, Math.PI / 3, 2 * Math.PI / 3];
+  const points = 400;
+  // Sample the state once per position, then project it; avoid tripling trig work per frame.
+  const samples = Array.from({ length: points + 1 }, (_, i) => model.sample(i / points, options.quantumPhase));
+  const paths = phases.map(projection => samples.map((state, i) => {
+    const value = (state.re * Math.cos(projection) - state.im * Math.sin(projection)) / model.AMPLITUDE_BOUND;
+    return { x: barStartX + i / points * exactBarWidth, y: centerY - value * amplitude };
+  }));
+  // Vertical ribbons have exact full-domain endpoints, no cap overshoot, no per-frame fitting.
+  const polygons = paths.map(path => [
+    ...path.map(point => ({ x: point.x, y: point.y - thickness / 2 })),
+    ...path.slice().reverse().map(point => ({ x: point.x, y: point.y + thickness / 2 }))
+  ]);
+  return { paths, polygons, thickness };
 }
 
 function normalizeTrussFamily(family) {
@@ -1311,19 +1296,10 @@ function getLunarBarReferenceSize(colorMode) {
 }
 
 function createLunarBarPatternSVG(barStartX, barY, exactBarWidth, barHeight, fgColor, colorMode) {
-  const lunarSource = getLunarBarSVGSource(colorMode);
-  const lunarContentMatch = lunarSource.match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/i);
-  const lunarContent = lunarContentMatch ? lunarContentMatch[1].trim() : '';
-
-  if (!lunarContent) {
-    return '';
-  }
-
-  const { width: referenceWidth, height: referenceHeight } = getLunarBarReferenceSize(colorMode);
-  const scaleX = exactBarWidth / referenceWidth;
-  const scaleY = barHeight / referenceHeight;
-
-  return `\n    <g fill="${fgColor}" color="${fgColor}" transform="translate(${barStartX} ${barY}) scale(${scaleX} ${scaleY})">\n      ${lunarContent}\n    </g>`;
+  const asset = typeof window !== 'undefined' ? window : require('./lunarBarAsset');
+  return typeof asset.createLunarBarVectorFragment === 'function'
+    ? asset.createLunarBarVectorFragment(barStartX, barY, exactBarWidth, barHeight, fgColor, colorMode)
+    : '';
 }
 
 function ensureCirclePatternCoverageForSVG(circles, barWidth, barHeight) {
@@ -1929,7 +1905,9 @@ function createBarPatternSVG(config) {
       barY,
       exactBarWidth,
       barHeight,
-      variant: values.trianglesVariant
+      variant: values.trianglesVariant,
+      count: values.trianglesCount,
+      direction: values.trianglesDirection
     });
 
     for (let i = 0; i < geometry.polygons.length; i++) {
@@ -1976,19 +1954,11 @@ function createBarPatternSVG(config) {
 
   if (currentShader === 22) {
     const geometry = createWaveQuantumPatternGeometry({
-      barStartX,
-      barY,
-      exactBarWidth,
-      barHeight
+      barStartX, barY, exactBarWidth, barHeight,
+      quantumPhase: values.quantumPhase
     });
-
-    for (let i = 0; i < geometry.paths.length; i++) {
-      const points = geometry.paths[i];
-      let pathData = '';
-      for (let j = 0; j < points.length; j++) {
-        pathData += `${j === 0 ? 'M' : ' L'} ${points[j].x} ${points[j].y}`;
-      }
-      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${geometry.thickness}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    for (const polygon of geometry.polygons) {
+      pattern += `\n    <polygon points="${polygon.map(point => `${point.x},${point.y}`).join(' ')}" fill="${fgColor}"/>`;
     }
     return pattern;
   }
@@ -2104,6 +2074,8 @@ if (typeof window !== 'undefined') {
   window.createTriangleGridPatternGeometry = createTriangleGridPatternGeometry;
   window.createTrussPatternGeometry = createTrussPatternGeometry;
   window.createTrianglesPatternGeometry = createTrianglesPatternGeometry;
+  window.normalizeTrianglesPatternSettings = normalizeTrianglesPatternSettings;
+  window.normalizeTrianglePatternDirection = normalizeTrianglePatternDirection;
   window.createUnionPatternGeometry = createUnionPatternGeometry;
   window.createBarPatternSVG = createBarPatternSVG;
   window.createWaveQuantumPatternGeometry = createWaveQuantumPatternGeometry;
@@ -2135,6 +2107,8 @@ if (typeof module !== 'undefined' && module.exports) {
     mapWaveformToBarYFraction,
     normalizeWaveformEnvelopeCenter,
     normalizeWaveformEnvelopeWaves,
-    normalizeTrussFamily
+    normalizeTrussFamily,
+    normalizeTrianglesPatternSettings,
+    normalizeTrianglePatternDirection
   };
 }
