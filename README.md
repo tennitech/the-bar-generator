@@ -50,11 +50,14 @@ RPI_SITE_URL=http://127.0.0.1:8000 npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:motion
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/transparentGifSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/patternExportSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/firstPaintSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/sharedFirstPaintSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/pageEntranceSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=firefox npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit npm run test:browser
 ```
 
-Keep the local server running for browser checks. Chromium is the default browser; the default test URL is `http://127.0.0.1:8765`. On Linux, browser installation can also need system packages: `npx playwright install --with-deps chromium firefox webkit`.
+Keep the local server running for browser checks. Run the startup and entrance scripts one at a time; their screenshots and results are written to temporary evidence folders. Recorded-frame checks do not replace normal-speed visual review. Chromium is the default browser; the default test URL is `http://127.0.0.1:8765`. On Linux, browser installation can also need system packages: `npx playwright install --with-deps chromium firefox webkit`.
 
 Browser checks cover the 21 selectable styles, SVG downloads, a PNG file signature, five viewport sizes, text filtering, reduced motion, 2D fallback, and renderer failure states. They do not establish visual accuracy or full accessibility compliance. Check changed UI, keyboard controls, touch behavior, and exports by hand. Playwright WebKit is not a test of the Safari app.
 

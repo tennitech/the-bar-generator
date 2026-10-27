@@ -7,7 +7,7 @@ const { createHash } = require('node:crypto');
 const { chromium } = require('playwright');
 const { parseGif, decodeFrames } = require('../tests/helpers/gifDecoder');
 const site = process.env.RPI_SITE_URL || 'http://127.0.0.1:4311';
-const output = process.env.RPI_EXPORT_EVIDENCE || '/tmp/bar-generator-transparent-exports';
+const output = process.env.RPI_EXPORT_EVIDENCE || (process.env.RPI_EVIDENCE_DIR ? path.join(process.env.RPI_EVIDENCE_DIR, 'transparent-exports') : '/tmp/bar-generator-transparent-exports');
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 
 async function configure(page, family, size) {

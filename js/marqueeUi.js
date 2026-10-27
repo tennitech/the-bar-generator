@@ -217,6 +217,7 @@ function createAssetElement(path) {
   image.draggable = false;
   image.dataset.assetPath = path;
 
+  if (window.PageEntrance) window.PageEntrance.revealAsset(image);
   asset.append(image);
   return asset;
 }
@@ -591,6 +592,10 @@ function initMarqueeScene() {
     if (reducedMotion && reducedMotion.matches) return;
     const dt = Math.min(0.04, (now - lastTime) / 1000);
     lastTime = now;
+    if (window.PageEntrance?.isHoldingArtwork?.()) {
+      animationFrame = window.requestAnimationFrame(animateRows);
+      return;
+    }
 
     rowStates.forEach(state => {
       if (!state.slotWidth || !state.items.length) {

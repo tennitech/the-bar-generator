@@ -7,6 +7,8 @@
   <meta name="description" content="Experimental next-gen marquee interface for the RPI Bar Generator.">
   <title>RPI Bar Generator Marquee Experiment</title>
   <link href="css/marquee-ui.css" rel="stylesheet" type="text/css">
+  <link href="css/page-entrance.css?v=20261027-print-pass" rel="stylesheet" type="text/css">
+  <script src="js/utils/pageEntrance.js?v=20261027-print-pass"></script>
   <script src="js/utils/generatorRoutes.js?v=20261027-motion-polish"></script>
   <script>
     const legacyGeneratorUrl = window.GeneratorRoutes
@@ -24,20 +26,20 @@
     <main class="main-wrapper">
       <a class="marquee_skip-link" href="generator/solid/">Open the generator and choose a bar style</a>
       <section class="section_marquee_hero">
-        <div class="marquee_scene">
+        <div class="marquee_scene" data-entrance-plane="selector">
           <div class="marquee_stage" id="marquee-stage" data-marquee-stage></div>
         </div>
 
         <div id="startup-style-prompt" class="startup_prompt" aria-hidden="true" role="status" aria-live="polite"
           aria-atomic="true">
           <div class="startup_prompt_inner">
-            <p class="startup_prompt_text">Select a bar design below to open the generator</p>
+            <p class="startup_prompt_text">Select a bar design below to get started</p>
           </div>
         </div>
 
         <div class="padding-global hero_shell">
           <div class="container-large hero_layout">
-            <div class="hero_cluster">
+            <div class="hero_cluster" data-page-entrance>
               <div class="hero_copy">
                 <div class="hero_brand" role="img" aria-label="RPI logo"></div>
                 <h1 class="hero_title">
@@ -60,7 +62,7 @@
     </main>
   </div>
 
-  <script src="js/marqueeUi.js"></script>
+  <script src="js/marqueeUi.js?v=20261027-print-pass"></script>
   <script src="js/utils/mobileBrowser.js"></script>
 </body>
 
