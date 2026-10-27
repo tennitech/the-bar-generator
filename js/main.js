@@ -200,8 +200,8 @@ const DEFAULT_SAVE_MENU_COPY = {
     description: 'Best for slides, docs, and sharing'
   },
   svg: {
-    label: 'SVG',
-    description: 'Best for resizing without losing quality'
+    label: 'Download SVG',
+    description: 'Vector file · save for Finder or import'
   },
   gif: {
     label: 'GIF',

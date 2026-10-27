@@ -1,13 +1,13 @@
 # Clipboard menu review images
 
-Captured October 27, 2026 from the running clipboard feature worktree:
+Captured October 27, 2026 from the SVG/Finder follow-up worktree after removing the extra raster format:
 
-- `clipboard-desktop.png`: Chromium, 1440 × 900, Black ink/light UI; native SVG copy and JPEG download fallback, reached using the keyboard.
-- `clipboard-mobile.png`: Playwright WebKit, 390 × 844 touch context, White ink/dark UI; explicit SVG source text and JPEG download fallbacks.
+- `clipboard-desktop.png`: Chromium, 1440 × 900, Black ink/light UI; native SVG copy and Download SVG file recovery, reached using the keyboard.
+- `clipboard-mobile.png`: Playwright WebKit, 390 × 844 touch context, White ink/dark UI; explicit SVG source-text fallback and Download SVG file recovery.
 
 The existing toolbar retains 38 px desktop action heights, aligned at y=8.5 px,
-and its 10 px inter-control gaps. Copy rows measured 51 px high at desktop; all
-three met the 44 px minimum and stayed within the mobile viewport. Real keyboard
+and its 10 px inter-control gaps. Copy rows measured 51 px high at desktop; both
+actions met the 44 px minimum and stayed within the mobile viewport. Real keyboard
 Tab navigation produced a visible outline in both Black/White themes; Enter
 activated copying and Escape restored the export trigger. Touch tapping and
 reduced-motion operation passed the clipboard smoke script. Native desktop
