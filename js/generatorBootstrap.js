@@ -47,7 +47,7 @@
       .map(script => script.getAttribute('src'))
       .filter(src => src && !(window.GeneratorRoutes && src.startsWith('js/utils/generatorRoutes.js')));
     if (window.__RPI_GENERATOR_ROUTE_STYLE__ === 'lunar') {
-      const lunarSource = 'js/utils/lunarBarAsset.js?v=20260424-artemis-ii-bar-refresh';
+      const lunarSource = 'js/utils/lunarBarAsset.js?v=20261027-artemis-vector';
       const patternIndex = scriptSources.findIndex(src => src.startsWith('js/utils/barPattern.js'));
       scriptSources.splice(patternIndex < 0 ? scriptSources.length : patternIndex, 0, lunarSource);
     }
