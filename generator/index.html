@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Explore RPI logo bar patterns and download a generated mark.">
   <title>The Bar Generator | RPI</title>
   <base href="../">
@@ -119,6 +119,10 @@
   <div class="app-layout">
     <!-- Sidebar Controls -->
     <aside id="app-sidebar" class="app-sidebar" role="region" aria-label="Design Controls">
+      <div class="mobile_controls-header">
+        <h2>Design controls</h2>
+        <button id="mobile-controls-close" type="button">Done</button>
+      </div>
       <div id="sidebar-scroll" class="sidebar-scroll">
         <div class="sidebar-content">
           <div class="control-group">
@@ -848,6 +852,7 @@
       document.getElementById('retry-generator').addEventListener('click', () => window.location.reload());
     }
   </script>
+  <script src="js/utils/mobileBrowser.js"></script>
 </body>
 
 </html>
