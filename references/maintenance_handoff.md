@@ -10,7 +10,7 @@ GitHub Pages currently publishes the root of `main`. Merging a change to `main` 
 
 ## Tests and cost controls
 
-Checks runs fast unit tests on pushes to `main` and on pull requests opened, reopened, or updated against `main`. There is no schedule. Browser installation and browser smoke tests are manual local tools, not automated merge requirements. Contributors and reviewers are responsible for the relevant rendered-state, keyboard, accessibility, motion, and export checks.
+Checks runs fast unit tests only on ready pull requests opened, reopened, updated, or marked ready against `main`. Draft pull requests skip the job; converting a ready pull request to draft cancels its older run. Feature branch pushes without a ready pull request and pushes to main do not run the suite. Main remains protected by the required passing check and up-to-date branch rule. There is no schedule. Browser installation, browser smoke tests, and motion tests are manual local tools, not automated merge requirements. Contributors and reviewers are responsible for the relevant rendered-state, keyboard, accessibility, motion, and export checks.
 
 The older Site audit workflow was removed. Actions are pinned to reviewed commit IDs; update those IDs when reviewing action upgrades. The unit job uses a standard Ubuntu runner, read-only repository permissions, no saved checkout credentials, no cache, no artifact uploads, and a five-minute limit. A newer run cancels an older run for the same pull request or branch. The job is disabled for private repos.
 

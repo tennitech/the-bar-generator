@@ -45,6 +45,7 @@ npm test -- --runInBand
 # Install browser binaries once, then run browser checks
 npm run test:browser:install
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:browser
+RPI_SITE_URL=http://127.0.0.1:8000 npm run test:motion
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=firefox npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit npm run test:browser
 ```
@@ -52,6 +53,12 @@ RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit npm run test:browser
 Keep the local server running for browser checks. Chromium is the default browser; the default test URL is `http://127.0.0.1:8765`. On Linux, browser installation can also need system packages: `npx playwright install --with-deps chromium firefox webkit`.
 
 Browser checks cover the 21 selectable styles, SVG downloads, a PNG file signature, five viewport sizes, text filtering, reduced motion, 2D fallback, and renderer failure states. They do not establish visual accuracy or full accessibility compliance. Check changed UI, keyboard controls, touch behavior, and exports by hand. Playwright WebKit is not a test of the Safari app.
+
+## Preview zoom
+
+100% fits the complete mark to the available preview area. Enlarge up to 400% to inspect the bar. Use the − / + buttons, enter a percentage, or scroll over the preview. Drag while enlarged. Fit or the 0 key restores the full mark; + and − also work outside text controls. Native touch pinch zoom and browser keyboard zoom remain available.
+
+Zoom is relative to the current viewport and does not change downloads. The same 100% setting can be larger on a desktop than on a phone. Check the final placement size separately before using a complex bar pattern.
 
 ## Project layout
 
@@ -76,9 +83,9 @@ Read [contributing.md](contributing.md) and [AGENTS.md](AGENTS.md) before editin
 
 ## Automation and deployment
 
-The Checks workflow runs the fast unit tests on pull requests into `main` and pushes to `main`. It does not install browsers or run UI tests. There is no scheduled run. Replaced runs are cancelled and each job has a five-minute limit.
+The Checks workflow runs the fast unit tests only on ready pull requests targeting `main`. Feature branch pushes without a ready pull request and draft pull requests do not run tests. Marking a draft ready starts the check. Merging does not repeat the same tests. It does not install browsers or run UI tests. There is no scheduled run. Replaced runs are cancelled and each job has a five-minute limit.
 
-Contributors and reviewers perform the relevant browser, keyboard, accessibility, motion, and export checks. The browser scripts above are optional local tools for changes that need them; they are not merge requirements.
+Contributors and reviewers perform the relevant browser, keyboard, accessibility, motion, and export checks. The browser and motion scripts above are optional local tools for changes that need them; they are not merge requirements.
 
 The test jobs run only for public repos on standard Ubuntu runners, with no caches or artifact uploads. See the [maintenance guide](references/maintenance_handoff.md) for billing controls and the December handoff.
 

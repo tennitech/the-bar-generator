@@ -1,5 +1,7 @@
 const {
   applyWaveformEnvelope,
+  generateWaveValue,
+  getTickerHeaderSampling,
   createBarPatternSVG,
   createCirclesGradientPatternGeometry,
   createFibonacciPatternGeometry,
@@ -655,4 +657,27 @@ describe('createBarPatternSVG', () => {
     expect(firstScallopApex).toBeCloseTo(18 - firstScallopWidth / 2, 1);
     expect(waveQuantum.paths.length).toBe(3);
   });
+});
+
+// The live waveform, header, and SVG exports share this phase convention.
+test('waveform sine starts at the lower edge and wraps continuously', () => {
+  expect(generateWaveValue(0, 0)).toBeCloseTo(0);
+  expect(generateWaveValue(0.25, 0)).toBeCloseTo(0.5);
+  expect(generateWaveValue(0.5, 0)).toBeCloseTo(1);
+  expect(generateWaveValue(1, 0)).toBeCloseTo(generateWaveValue(0, 0));
+  expect(generateWaveValue(-0.25, 0)).toBeCloseTo(generateWaveValue(0.75, 0));
+});
+
+test('tiny ticker rows use exact coverage when display pixels cannot resolve them', () => {
+  const values = { tickerRepeats: 34, tickerRatio: 3, tickerWidthRatio: 2 };
+  const small = getTickerHeaderSampling({ ...values, pixelWidth: 60 });
+  expect(small.top).toEqual({ resolved: false, coverage: 0.5 });
+  expect(small.bottom.resolved).toBe(false);
+  expect(small.bottom.coverage).toBeCloseTo(1 / 3);
+  const retina = getTickerHeaderSampling({ ...values, pixelWidth: 120 });
+  expect(retina.top.resolved).toBe(false);
+  expect(retina.bottom.resolved).toBe(true);
+  const sparse = getTickerHeaderSampling({ tickerRepeats: 5, tickerRatio: 2, pixelWidth: 60 });
+  expect(sparse.top.resolved).toBe(true);
+  expect(sparse.bottom.resolved).toBe(true);
 });

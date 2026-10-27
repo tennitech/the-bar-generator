@@ -29,12 +29,33 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
     - New feature requests use new branches. Before switching features, agents report unfinished or user-unconfirmed work and its saved branch. Only an explicit user statement establishes user testing.
     - Branch deletion needs an explicit user request and a fresh ahead/behind, merge, pull request, and unsaved-work report. Automatic deletion of merged branches is disabled. Contribution and handoff guides now match AGENTS.md.
 
+- **[2026-10-27] PR-only fast checks**:
+    - Unit tests now run only on ready pull requests into main. Drafts skip execution, marking ready starts the check, and replaced runs are cancelled. Removed duplicate test execution after merge.
+    - Retained the required Unit tests status, strict main protection, Node.js 22, pinned actions, public-repo guard, read-only token, and no cache or artifact uploads. npm prefers any runner-local cached packages without adding a stored Actions cache. Pages deployment after merge is unchanged.
+
+- **[2026-10-27] Viewport-relative inspection zoom**:
+    - Added shared fit, percentage-step, pointer-anchor, and pan-bound calculations in js/utils/viewportZoom.js. The full official mark fits the actual canvas and control reservation, with no fixed large-screen scale cap.
+    - Made 100% the fitted baseline and 400% the inspection limit. Buttons use 100, 125, 150, 200, 250, 300, and 400 percent. The compact control shows one percentage and a separate Fit action. Percentages are relative to the viewport, not export dimensions.
+    - Added smooth bar-focused button zoom, pointer-focused scroll/desktop pinch zoom, direct bounded dragging while enlarged, keyboard controls, and reduced-motion behavior. Fit resets zoom and pan. Resize keeps the selected relative scale; the canvas tracks sidebar transitions.
+    - Replaced the old zoom hold loop, fixed 1.2 multiplier, size caps, and inertial pan model. Kept native touch pinch and browser keyboard zoom available. Safe-area inset contributes to the control reservation.
+    - Validation: local Chromium/WebKit checks covered five viewports, typed limits, bar anchoring, direct dragging, Fit recovery, and Lunar resize. SVG/PNG downloads matched byte-for-byte at Fit and 400%. Physical touch-device checks remain open.
+
+
+- **[2026-10-27] Small header ticker direction repair**:
+    - Confirmed equal ticker geometry and phase in both previews. The tiny header could still show an apparent reverse direction because dense rows exceeded its spatial sampling limit.
+    - Unresolved header rows now use their exact mean coverage; resolved rows keep their moving geometry. Device pixel ratio and resize determine which rows can be shown. Main preview and export geometry remain unchanged.
+
 
 - **[2026-10-27] Lightweight checks policy**:
     - At the owner's request, the fast unit suite is the only automated merge check. Removed browser installation and browser/motion execution from CI and removed Browser tests from main protection.
-    - Kept the optional local browser scripts. Contributors and reviewers perform the relevant UI, accessibility, motion, and export checks. The unit job has a five-minute limit and retains public-repo, read-only, no-cache, and no-artifact controls.
+    - Kept the optional local browser and motion scripts. Contributors and reviewers perform the relevant UI, accessibility, motion, and export checks. The unit job has a five-minute limit and retains public-repo, read-only, no-cache, and no-artifact controls.
 
 
+- **[2026-10-27] Live motion timing repair**:
+    - Replaced the 120 FPS ceiling with a browser-frame-driven render target. The header mark now reuses a canvas and draws with the preview on each frame instead of replacing SVG markup at about 8 FPS.
+    - Added continuous live phase integration for speed, direction, pause, and resume changes. Limited phase advance at dense/fast settings and after stalls to reduce apparent reversal. Reset frame timestamps after visibility changes and pause background rendering during the ASCII overlay.
+    - Cached fixed SVG letter commands and shared the waveform function between live preview, header, and exports, correcting a quarter-cycle SVG phase mismatch. Export loop planning is unchanged.
+    - Added unit and browser regression checks for cadence, header reuse, phase continuity, dense motion, and overlay recovery. See references/bar_science_notes.md for sampling limits. Physical high-refresh display checks remain open; synthetic frame-rate checks do not establish hardware performance.
 
 
 - **[2026-10-27] Audit integration and development conventions**:

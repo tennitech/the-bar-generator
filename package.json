@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "test:browser": "node scripts/browserSmoke.js",
-    "test:browser:install": "playwright install chromium firefox webkit"
+    "test:browser:install": "playwright install chromium firefox webkit",
+    "test:motion": "node scripts/motionSmoke.js"
   },
   "repository": {
     "type": "git",

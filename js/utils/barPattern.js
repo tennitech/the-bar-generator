@@ -14,11 +14,24 @@ function mapDigitToHeightPercent(digit) {
   }
 }
 
+// Three display pixels per repeat keep the tiny ticker away from its spatial
+// sampling boundary. Unresolved rows use their true mean ink coverage.
+function getTickerHeaderSampling(options = {}) {
+  const repeats = normalizeTickerWholeNumber(options.tickerRepeats, 34);
+  const ratio = normalizeTickerWholeNumber(options.tickerRatio, 2);
+  const widthRatio = normalizeTickerWholeNumber(options.tickerWidthRatio, 2);
+  const pixelWidth = Math.max(0, Number(options.pixelWidth) || 0);
+  return {
+    top: { resolved: pixelWidth / (repeats * ratio) >= 3, coverage: 0.5 },
+    bottom: { resolved: pixelWidth / repeats >= 3, coverage: Math.min(1, widthRatio / (2 * ratio)) }
+  };
+}
+
 function generateWaveValue(phase, type) {
   const normalizedPhase = phase - Math.floor(phase);
   const wrappedPhase = normalizedPhase < 0 ? normalizedPhase + 1 : normalizedPhase;
 
-  const sine = (Math.sin(phase * 2 * Math.PI) + 1) * 0.5;
+  const sine = (Math.sin(wrappedPhase * 2 * Math.PI - Math.PI / 2) + 1) * 0.5;
   const saw = wrappedPhase;
   const square = wrappedPhase > 0.5 ? 1.0 : 0.0;
   const pulse = wrappedPhase > 0.8 ? 1.0 : 0.0;
@@ -2102,6 +2115,8 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     applyWaveformEnvelope,
+    generateWaveValue,
+    getTickerHeaderSampling,
     createBarPatternSVG,
     createCirclesGradientPatternGeometry,
     createFibonacciPatternGeometry,
