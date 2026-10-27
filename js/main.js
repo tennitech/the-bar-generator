@@ -4103,7 +4103,7 @@ function handleStyleChange() {
   }
 
   if (selectedStyle === 'lunar' && typeof window.getLunarBarSVGSourceForColorMode !== 'function') {
-    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20260424-artemis-ii-bar-refresh')
+    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20261027-artemis-vector')
       .then(() => {
         if (styleSelect && styleSelect.value === 'lunar') {
           requestUpdate();
@@ -4200,6 +4200,10 @@ function handleStyleChange() {
     default:
       currentShader = 0;
       break;
+  }
+
+  if (typeof syncLunarBarVectorPreviewVisibility === 'function') {
+    syncLunarBarVectorPreviewVisibility(selectedStyle === 'lunar');
   }
 
   // Safely update UI elements only if they exist
