@@ -4,10 +4,10 @@ const { encodeState, decodeState } = require('../js/utils/shareState');
 const manifest = {
   'style-select': { options: ['solid', 'triangles'] },
   'triangles-variant-slider': { type: 'range', min: 1, max: 2, step: 1 },
-  'triangles-direction-select': { options: ['up-left', 'up-right', 'down-left', 'down-right'] },
+  'triangles-direction-select': { options: ['down-right', 'up-right', 'up-left', 'down-left'] },
   'triangles-count-slider': { type: 'range', min: 6, max: 28, step: 1 }
 };
-const cases = [1, 2].flatMap(variant => ['up-left', 'up-right', 'down-left', 'down-right'].flatMap(direction => [6, 14, 28].map(count => [variant, direction, count])));
+const cases = [1, 2].flatMap(variant => ['down-right', 'up-right', 'up-left', 'down-left'].flatMap(direction => [6, 14, 28].map(count => [variant, direction, count])));
 
 test.each(cases)('v1 shares triangle variant %s, direction %s, count %s', (variant, direction, count) => {
   const controls = { 'style-select': 'triangles', 'triangles-variant-slider': String(variant),
@@ -39,7 +39,7 @@ test.each(legacyCases)('migrates historical v1 variant%s direction %s to %s befo
   expect(decodeState(encodeState(restored, manifest), manifest).controls['triangles-direction-select']).toBe(expected);
 });
 
-test('old omitted inactive triangle direction remains Down right; explicit new default stays Up left', () => {
+test('old omitted direction remains Down right; explicit Up left stays preserved', () => {
   const old = { v: 1, controls: { 'style-select': 'solid' } };
   expect(decodeState('#bar=' + Buffer.from(JSON.stringify(old)).toString('base64url'), manifest).controls['triangles-direction-select']).toBe('down-right');
   const fresh = { v: 1, controls: { ...old.controls, 'triangles-direction-select': 'up-left' } };

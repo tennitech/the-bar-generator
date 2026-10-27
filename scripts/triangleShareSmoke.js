@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
 const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4315';
 const fixture = process.env.RPI_TRIANGLE_SHARE_FIXTURE === '1';
 const evidence = process.env.RPI_EVIDENCE_DIR;
-const controlsFixture = '<div class="control"><label for="triangles-direction-select" class="control-label">DIRECTION</label><div class="select-wrapper"><select id="triangles-direction-select" class="control-select"><option value="up-left" selected>UP LEFT ↖</option><option value="up-right">UP RIGHT ↗</option><option value="down-left">DOWN LEFT ↙</option><option value="down-right">DOWN RIGHT ↘</option></select></div></div><div class="control"><label for="triangles-count-slider" class="control-label">COUNT</label><input id="triangles-count-slider" class="control-slider" type="range" min="6" max="28" step="1" value="14"></div>';
+const controlsFixture = '<div class="control"><label for="triangles-direction-select" class="control-label">DIRECTION</label><div class="select-wrapper"><select id="triangles-direction-select" class="control-select"><option value="down-right" selected>DOWN RIGHT ↘</option><option value="up-right">UP RIGHT ↗</option><option value="up-left">UP LEFT ↖</option><option value="down-left">DOWN LEFT ↙</option></select></div></div><div class="control"><label for="triangles-count-slider" class="control-label">COUNT</label><input id="triangles-count-slider" class="control-slider" type="range" min="6" max="28" step="1" value="14"></div>';
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
@@ -26,10 +26,10 @@ const controlsFixture = '<div class="control"><label for="triangles-direction-se
     assert.equal(await page.locator('#triangles-direction-select').count(), 1, 'BAR-02 direction control present');
     assert.equal(await page.locator('#triangles-count-slider').count(), 1, 'BAR-02 count control present');
     const manifest = await page.evaluate(() => barShareController.manifest);
-    assert.deepEqual(manifest['triangles-direction-select'].options, ['up-left', 'up-right', 'down-left', 'down-right']);
+    assert.deepEqual(manifest['triangles-direction-select'].options, ['down-right', 'up-right', 'up-left', 'down-left']);
     assert.deepEqual([manifest['triangles-count-slider'].min, manifest['triangles-count-slider'].max, manifest['triangles-count-slider'].step], [6, 28, 1]);
-    assert.equal(await page.inputValue('#triangles-direction-select'), 'up-left', 'new unshared app default');
-    const directions = ['up-left', 'up-right', 'down-left', 'down-right'];
+    assert.equal(await page.inputValue('#triangles-direction-select'), 'down-right', 'new unshared app default');
+    const directions = ['down-right', 'up-right', 'up-left', 'down-left'];
     const cases = [1, 2].flatMap(variant => directions.map((direction, index) => [variant, direction, [6, 14, 28, 6][index]]));
     for (const [variant, direction, count] of cases) {
       await page.selectOption('#triangles-direction-select', direction, { force: true });
@@ -49,7 +49,7 @@ const controlsFixture = '<div class="control"><label for="triangles-direction-se
         const bytes = Uint8Array.from(atob(encoded), char => char.charCodeAt(0));
         return JSON.parse(new TextDecoder().decode(bytes)).controls['triangles-direction-select'];
       }, link);
-      assert.equal(savedDirection, direction, 'new links save explicit direction, including Up left');
+      assert.equal(savedDirection, direction, 'new links save explicit direction, including Down right');
       await page.goto(link); await page.waitForFunction(() => window.barShareController);
       for (let reload = 0; reload < 2; reload++) {
         assert.equal(await page.inputValue('#triangles-variant-slider'), String(variant));
