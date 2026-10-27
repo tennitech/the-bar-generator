@@ -28,11 +28,20 @@
   function normalizeState(value, manifest) {
     if (!isRecord(value) || value.v !== VERSION) throw new Error('This share link uses an unsupported version.');
     if (!isRecord(value.controls)) throw new Error('This share link has no valid controls.');
+    const sourceControls = { ...value.controls };
+    const triangleDirectionId = 'triangles-direction-select';
+    const triangleDirections = manifest[triangleDirectionId] && manifest[triangleDirectionId].options;
+    if (triangleDirections && triangleDirections.includes('up-left')) {
+      // Omission identifies historical v1 state; fresh captures always include every native control.
+      if (!Object.hasOwn(sourceControls, triangleDirectionId)) sourceControls[triangleDirectionId] = 'down-right';
+      else if (sourceControls[triangleDirectionId] === 'up') sourceControls[triangleDirectionId] = 'up-right';
+      else if (sourceControls[triangleDirectionId] === 'down') sourceControls[triangleDirectionId] = 'down-right';
+    }
     const controls = {};
     for (const id of Object.keys(manifest).sort()) {
-      if (!Object.hasOwn(value.controls, id)) continue;
+      if (!Object.hasOwn(sourceControls, id)) continue;
       const spec = manifest[id];
-      const raw = value.controls[id];
+      const raw = sourceControls[id];
       if (spec.type === 'checkbox') {
         if (typeof raw !== 'boolean') throw new Error('This share link has an invalid toggle.');
         controls[id] = raw;
