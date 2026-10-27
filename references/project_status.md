@@ -1,6 +1,6 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-04-28
+**Last Updated:** 2026-10-27
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## 1. Project Overview
@@ -22,6 +22,13 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   `references/` - Documentation and guidelines.
 
 ## 3. Completed Milestones
+
+- **[2026-10-27] Contribution and maintenance setup**:
+    - Added a public-repository-only unit-test workflow for pull requests into main and pushes to main, with read-only permissions, no cache or artifacts, a ten-minute timeout, and cancellation of replaced runs.
+    - Added contribution, conduct, private security reporting, asset permission, and December 2026 handoff guides. Aligned package license metadata with the existing MIT LICENSE; no copyright ownership transfer was made.
+    - Configured main to require pull requests, passing Unit tests, and resolved conversations, with force pushes and deletion blocked. No second approval is required during primary development. Enabled merged-branch cleanup and private vulnerability reports.
+    - Open items: RPI successor organization and maintainers, software licensing authority, bundled asset permissions, and owner-level billing stop controls. Browser audit fixes remain on the separate audit branch.
+
 
 - **[2026-04-28] Header Logo Animation Now Uses The Active Bar Design In An Overlay**:
     - Reworked the generator header logo trigger so it passes the current bar-only SVG and full RPI lockup SVG into the existing full-screen ASCII animation overlay through same-origin session storage.
