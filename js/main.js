@@ -3787,7 +3787,7 @@ function updateTrianglesCountDisplay() {
 function getTrianglePatternControlValues() {
   const settings = normalizeTrianglesPatternSettings({
     variant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
-    direction: trianglesDirectionSelect ? trianglesDirectionSelect.value : 'down',
+    direction: trianglesDirectionSelect ? trianglesDirectionSelect.value : 'up-left',
     count: trianglesCountSlider ? trianglesCountSlider.value : 14
   });
   return {
@@ -6150,7 +6150,7 @@ function getUrlParameters() {
     neuralNetworkHiddenLayers: Math.max(1, Math.min(5, parseInt(params.get('neuralNetworkHiddenLayers')) || 1)),
     triangleGridVariant: Math.max(1, Math.min(3, parseInt(params.get('triangleGridVariant')) || 2)),
     trianglesVariant: Math.max(1, Math.min(2, parseInt(params.get('trianglesVariant')) || 1)),
-    trianglesDirection: params.get('trianglesDirection') === 'up' ? 'up' : 'down',
+    trianglesDirection: normalizeTrianglePatternDirection(params.get('trianglesDirection')),
     trianglesCount: normalizeTrianglesPatternSettings({ count: params.has('trianglesCount') ? params.get('trianglesCount') : undefined }).count,
 
     // Ruler parameters
@@ -6294,7 +6294,7 @@ function updateUrlParameters() {
     if (trianglesVariantSlider && parseInt(trianglesVariantSlider.value, 10) !== 1) {
       params.set('trianglesVariant', trianglesVariantSlider.value);
     }
-    if (trianglesDirectionSelect && trianglesDirectionSelect.value !== 'down') {
+    if (trianglesDirectionSelect && trianglesDirectionSelect.value !== 'up-left') {
       params.set('trianglesDirection', trianglesDirectionSelect.value);
     }
     if (trianglesCountSlider && Number(trianglesCountSlider.value) !== 14) {

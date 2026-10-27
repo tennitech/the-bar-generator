@@ -700,12 +700,21 @@ function createGridPatternGeometry(options = {}) {
   return { lines, thickness };
 }
 
+function normalizeTrianglePatternDirection(value) {
+  // Preserve the orientation of links saved before four-way direction controls.
+  if (value === 'up') return 'up-right';
+  if (value === 'down') return 'down-right';
+  return ['up-left', 'up-right', 'down-left', 'down-right'].includes(value)
+    ? value
+    : 'up-left';
+}
+
 function normalizeTrianglesPatternSettings(options = {}) {
   const parsedCount = Number(options.count);
   return {
     variant: clampPatternVariant(options.variant || 1, 2),
     count: Number.isFinite(parsedCount) ? Math.max(6, Math.min(28, Math.round(parsedCount))) : 14,
-    direction: options.direction === 'up' ? 'up' : 'down'
+    direction: normalizeTrianglePatternDirection(options.direction)
   };
 }
 
@@ -733,11 +742,15 @@ function createTrianglesPatternGeometry(options = {}) {
     ]);
   }
 
-  if (direction === 'up') {
-    polygons.forEach(polygon => polygon.forEach(point => {
+  polygons.forEach((polygon, i) => polygon.forEach(point => {
+    if (direction.startsWith('up')) {
       point.y = barY + barHeight - (point.y - barY);
-    }));
-  }
+    }
+    if (direction.endsWith('left')) {
+      const cellStart = barStartX + i * cellWidth;
+      point.x = cellStart + cellWidth - (point.x - cellStart);
+    }
+  }));
   return { polygons };
 }
 
@@ -2079,6 +2092,7 @@ if (typeof window !== 'undefined') {
   window.createTrussPatternGeometry = createTrussPatternGeometry;
   window.createTrianglesPatternGeometry = createTrianglesPatternGeometry;
   window.normalizeTrianglesPatternSettings = normalizeTrianglesPatternSettings;
+  window.normalizeTrianglePatternDirection = normalizeTrianglePatternDirection;
   window.createUnionPatternGeometry = createUnionPatternGeometry;
   window.createBarPatternSVG = createBarPatternSVG;
   window.createWaveQuantumPatternGeometry = createWaveQuantumPatternGeometry;
@@ -2111,6 +2125,7 @@ if (typeof module !== 'undefined' && module.exports) {
     normalizeWaveformEnvelopeCenter,
     normalizeWaveformEnvelopeWaves,
     normalizeTrussFamily,
-    normalizeTrianglesPatternSettings
+    normalizeTrianglesPatternSettings,
+    normalizeTrianglePatternDirection
   };
 }

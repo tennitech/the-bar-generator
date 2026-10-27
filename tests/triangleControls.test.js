@@ -1,5 +1,6 @@
 const {
   normalizeTrianglesPatternSettings,
+  normalizeTrianglePatternDirection,
   createTrianglesPatternGeometry,
   createBarPatternSVG
 } = require('../js/utils/barPattern');
@@ -15,17 +16,17 @@ const contains = (point, triangle) => {
 
 describe('triangle configurability', () => {
   test('retains defaults and normalizes invalid or out-of-range values', () => {
-    expect(normalizeTrianglesPatternSettings()).toEqual({ variant: 1, count: 14, direction: 'down' });
+    expect(normalizeTrianglesPatternSettings()).toEqual({ variant: 1, count: 14, direction: 'up-left' });
     expect(normalizeTrianglesPatternSettings({ variant: 9, count: 100, direction: 'up' }))
-      .toEqual({ variant: 2, count: 28, direction: 'up' });
+      .toEqual({ variant: 2, count: 28, direction: 'up-right' });
     expect(normalizeTrianglesPatternSettings({ count: -1, direction: 'sideways' }).count).toBe(6);
     expect(normalizeTrianglesPatternSettings({ count: 'bad', direction: 'sideways' }))
-      .toEqual({ variant: 1, count: 14, direction: 'down' });
+      .toEqual({ variant: 1, count: 14, direction: 'up-left' });
     expect(hasGeneratorQueryState('?trianglesCount=8')).toBe(true);
     expect(hasGeneratorQueryState('?trianglesDirection=up')).toBe(true);
   });
 
-  test.each(['down', 'up'])('preserves exact painted width and complementarity for every count facing %s', direction => {
+  test.each(['up-left', 'up-right', 'down-left', 'down-right'])('preserves exact painted width and complementarity for every count facing %s', direction => {
     for (let count = 6; count <= 28; count++) {
       const bounds = { count, direction, barStartX: -20, barY: 132.4885, exactBarWidth: 250, barHeight: 18 };
       const a = createTrianglesPatternGeometry({ ...bounds, variant: 1 }).polygons;
@@ -47,17 +48,40 @@ describe('triangle configurability', () => {
     }
   });
 
+  test('explicitly migrates legacy direction values and preserves their geometry', () => {
+    expect(normalizeTrianglePatternDirection('up')).toBe('up-right');
+    expect(normalizeTrianglePatternDirection('down')).toBe('down-right');
+    for (const count of [6, 14, 28]) for (const variant of [1, 2]) {
+      for (const [oldValue, newValue] of [['up', 'up-right'], ['down', 'down-right']]) {
+        expect(createTrianglesPatternGeometry({ count, variant, direction: oldValue }))
+          .toEqual(createTrianglesPatternGeometry({ count, variant, direction: newValue }));
+      }
+    }
+  });
+
+  test('left directions reflect right directions within each cell without changing spacing', () => {
+    const options = { count: 9, variant: 1, barStartX: -20, exactBarWidth: 250 };
+    for (const vertical of ['up', 'down']) {
+      const right = createTrianglesPatternGeometry({ ...options, direction: vertical + '-right' }).polygons;
+      const left = createTrianglesPatternGeometry({ ...options, direction: vertical + '-left' }).polygons;
+      right.forEach((polygon, i) => polygon.forEach((point, j) => {
+        expect(left[i][j].y).toBe(point.y);
+        expect(left[i][j].x + point.x).toBeCloseTo(2 * (options.barStartX + i * 250 / 9) + 250 / 9);
+      }));
+    }
+  });
+
   test('direction is an exact vertical reflection with no density or spacing changes', () => {
     const options = { count: 9, variant: 2, barY: 132.4885 };
-    const down = createTrianglesPatternGeometry({ ...options, direction: 'down' }).polygons;
-    const up = createTrianglesPatternGeometry({ ...options, direction: 'up' }).polygons;
+    const down = createTrianglesPatternGeometry({ ...options, direction: 'down-right' }).polygons;
+    const up = createTrianglesPatternGeometry({ ...options, direction: 'up-right' }).polygons;
     down.forEach((p, i) => p.forEach((point, j) => {
       expect(up[i][j].x).toBe(point.x);
       expect(up[i][j].y + point.y).toBeCloseTo(2 * options.barY + 18);
     }));
   });
 
-  test.each(['down', 'up'])('SVG serializes the same selected preview geometry facing %s', direction => {
+  test.each(['up-left', 'up-right', 'down-left', 'down-right'])('SVG serializes the same selected preview geometry facing %s', direction => {
     for (const count of [6, 14, 28]) for (const variant of [1, 2]) {
       const geometry = createTrianglesPatternGeometry({ count, direction, variant, barY: 132.4885 }).polygons;
       const svg = createBarPatternSVG({ currentShader: 19, barStartX: 0, barY: 132.4885,
