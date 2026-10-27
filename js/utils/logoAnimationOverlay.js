@@ -16,7 +16,6 @@
   const REPLAY_ID = 'logo-animation-replay';
   const READY_SCRIM_DELAY_MS = 140;
   const OPEN_SCRIM_FALLBACK_MS = 1200;
-  const EXIT_TRANSITION_MS = 760;
 
   function appendChild(parent, child) {
     if (!parent || !child) {
@@ -44,7 +43,7 @@
     const button = documentRef.createElement('button');
     button.id = id;
     button.type = 'button';
-    button.className = 'logo_animation_button';
+    button.className = 'header_icon-button logo_animation_button';
     button.setAttribute('aria-label', ariaLabel);
     button.setAttribute('title', ariaLabel);
     button.innerHTML = createButtonIconMarkup(iconType);
@@ -59,11 +58,13 @@
     frameEl.referrerPolicy = 'same-origin';
     frameEl.style.position = 'absolute';
     frameEl.style.inset = '0';
-    frameEl.style.width = '100vw';
-    frameEl.style.height = '100vh';
+    frameEl.style.width = '100%';
+    frameEl.style.height = '100%';
+    frameEl.tabIndex = -1;
     frameEl.style.border = '0';
     frameEl.style.display = 'block';
     frameEl.style.background = 'transparent';
+    frameEl.style.colorScheme = 'dark';
     frameEl.setAttribute('allowtransparency', 'true');
     frameEl.setAttribute('allowfullscreen', '');
     frameEl.src = src;
@@ -76,6 +77,7 @@
     overlayEl.className = 'logo_animation_overlay';
     overlayEl.hidden = true;
     overlayEl.setAttribute('aria-hidden', 'true');
+    overlayEl.tabIndex = -1;
     overlayEl.setAttribute('role', 'dialog');
     overlayEl.setAttribute('aria-modal', 'true');
     overlayEl.setAttribute('aria-labelledby', TITLE_ID);
@@ -155,8 +157,70 @@
     let messageHandler = null;
     let activeStateKey = '';
     let openTimer = 0;
-    let closeTimer = 0;
+    let lifecycleGeneration = 0;
     let activeOpenParts = null;
+    let resizeObserver = null;
+    let backgroundState = [];
+    const motionPreference = windowRef && windowRef.matchMedia
+      ? windowRef.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    function handleMotionPreference() {
+      if (isOpen) { mountFrame(); startScrimFade(0); }
+    }
+    if (motionPreference && motionPreference.addEventListener) {
+      motionPreference.addEventListener('change', handleMotionPreference);
+    }
+
+    // Measure the actual shared toolbar controls, including a future Share slot.
+    function alignControls() {
+      if (!overlayParts || !documentRef.querySelector) return;
+      const pairs = [
+        [overlayParts.replayEl, documentRef.querySelector('.header-actions a[aria-label*="GitHub"]')],
+        [overlayParts.closeEl, documentRef.querySelector('#mobile-menu-toggle')]
+      ];
+      pairs.forEach(([button, anchor]) => {
+        if (!anchor) return;
+        const rect = anchor.getBoundingClientRect();
+        Object.assign(button.style, {
+          position: 'fixed', left: `${rect.left}px`, top: `${rect.top}px`,
+          width: `${rect.width}px`, height: `${rect.height}px`
+        });
+      });
+    }
+
+    function setBackgroundInert(inert) {
+      if (inert && documentRef.querySelectorAll && !backgroundState.length) {
+        backgroundState = Array.from(documentRef.querySelectorAll('.app-header, .app-layout'))
+          .map(element => ({ element, inert: element.inert }));
+        backgroundState.forEach(({ element }) => { element.inert = true; });
+      } else if (!inert) {
+        backgroundState.forEach(({ element, inert: previous }) => { element.inert = previous; });
+        backgroundState = [];
+      }
+    }
+
+    function setChromeAvailable(available) {
+      if (!overlayParts) return;
+      overlayParts.closeEl.disabled = !available;
+      overlayParts.replayEl.disabled = !available;
+    }
+
+    function activateChrome() {
+      if (!isOpen) return;
+      setChromeAvailable(true);
+      if (overlayParts.closeEl.focus) overlayParts.closeEl.focus();
+    }
+
+    function settleClose(generation) {
+      if (isOpen || generation !== lifecycleGeneration) return;
+      const parts = overlayParts;
+      destroyFrame();
+      parts.overlayEl.hidden = true;
+      parts.overlayEl.setAttribute('aria-hidden', 'true');
+      parts.overlayEl.classList.remove('is-closing');
+      setBackgroundInert(false);
+      documentRef.body.classList.remove('has-logo-animation');
+      if (triggerEl.isConnected !== false && triggerEl.focus) triggerEl.focus();
+    }
 
     function schedule(callback, delay = 0) {
       if (windowRef && typeof windowRef.setTimeout === 'function') {
@@ -239,6 +303,10 @@
       }
 
       cancelScheduled(openTimer);
+      if (activeOpenParts.overlayEl.classList.contains('is-open')) {
+        if (activeOpenParts.closeEl.disabled) activateChrome();
+        return;
+      }
       openTimer = schedule(() => {
         openTimer = 0;
         if (!isOpen
@@ -249,6 +317,9 @@
         }
 
         activeOpenParts.overlayEl.classList.add('is-open');
+        const animations = activeOpenParts.overlayEl.getAnimations
+          ? activeOpenParts.overlayEl.getAnimations() : [];
+        if (!animations.length) activateChrome();
       }, delay);
     }
 
@@ -263,8 +334,23 @@
         throw new Error('Animation overlay did not provide the required elements.');
       }
 
+      overlayParts.overlayEl.addEventListener('transitionstart', event => {
+        if (event.target === overlayParts.overlayEl && event.propertyName === 'background-color') activateChrome();
+      });
       overlayParts.closeEl.addEventListener('click', close);
       overlayParts.replayEl.addEventListener('click', replay);
+
+      if (windowRef && windowRef.addEventListener) {
+        windowRef.addEventListener('resize', alignControls);
+        if (windowRef.visualViewport) windowRef.visualViewport.addEventListener('resize', alignControls);
+        if (windowRef.ResizeObserver && documentRef.querySelector) {
+          resizeObserver = new windowRef.ResizeObserver(alignControls);
+          const header = documentRef.querySelector('.app-header');
+          const actions = documentRef.querySelector('.header-actions');
+          if (header) resizeObserver.observe(header);
+          if (actions) resizeObserver.observe(actions);
+        }
+      }
 
       messageHandler = (event) => {
         if (!isOpen || !frameEl) {
@@ -279,7 +365,12 @@
           return;
         }
 
+        if (event && event.source && event.source !== frameEl.contentWindow) return;
         const data = event ? event.data : null;
+        if (data && data.type === 'rpi-logo-animation-close') {
+          close();
+          return;
+        }
         if (data && data.type === 'rpi-logo-animation-ready') {
           startScrimFade(READY_SCRIM_DELAY_MS);
           return;
@@ -297,6 +388,19 @@
       }
 
       escapeHandler = (event) => {
+        if (event.key === 'Tab' && overlayParts && !overlayParts.overlayEl.hidden
+          && (!isOpen || overlayParts.closeEl.disabled)) {
+          event.preventDefault();
+          if (overlayParts.overlayEl.focus) overlayParts.overlayEl.focus();
+          return;
+        }
+        if (isOpen && event.key === 'Tab') {
+          const buttons = [overlayParts.replayEl, overlayParts.closeEl].filter(button => !button.hidden);
+          const index = buttons.indexOf(documentRef.activeElement);
+          event.preventDefault();
+          buttons[(index + (event.shiftKey ? -1 : 1) + buttons.length) % buttons.length].focus();
+          return;
+        }
         if (!isOpen || event.key !== 'Escape') {
           return;
         }
@@ -351,7 +455,7 @@
     function setOpenState(nextIsOpen) {
       const parts = ensureOverlayParts();
       isOpen = nextIsOpen;
-      parts.overlayEl.setAttribute('aria-hidden', String(!nextIsOpen));
+      parts.overlayEl.setAttribute('aria-hidden', 'false');
       triggerEl.setAttribute('aria-expanded', String(nextIsOpen));
 
       if (parts.overlayEl.classList && typeof parts.overlayEl.classList.toggle === 'function') {
@@ -371,60 +475,38 @@
 
     function open() {
       const parts = ensureOverlayParts();
+      const wasVisible = !parts.overlayEl.hidden;
+      lifecycleGeneration++;
       cancelScheduled(openTimer);
-      cancelScheduled(closeTimer);
       openTimer = 0;
-      closeTimer = 0;
       mountFrame();
       activeOpenParts = parts;
+      setChromeAvailable(false);
       setOpenState(true);
-
-      if (parts.overlayEl.classList && typeof parts.overlayEl.classList.remove === 'function') {
-        parts.overlayEl.classList.remove('is-closing');
-      }
-
-      startScrimFade(frameEl && frameEl.className === 'logo_animation_static' ? 0 : OPEN_SCRIM_FALLBACK_MS);
-
-      if (typeof parts.closeEl.focus === 'function') {
-        parts.closeEl.focus();
-      }
-
+      alignControls();
+      setBackgroundInert(true);
+      parts.overlayEl.classList.remove('is-closing');
+      if (parts.overlayEl.focus) parts.overlayEl.focus();
+      startScrimFade(wasVisible || frameEl.className === 'logo_animation_static' ? 0 : OPEN_SCRIM_FALLBACK_MS);
       return Promise.resolve(true);
     }
 
     function close() {
-      if (!isOpen) {
-        return;
-      }
-
+      if (!isOpen) return;
       const parts = ensureOverlayParts();
+      const generation = ++lifecycleGeneration;
       cancelScheduled(openTimer);
-      cancelScheduled(closeTimer);
       openTimer = 0;
+      setChromeAvailable(false);
+      if (parts.overlayEl.focus) parts.overlayEl.focus();
       setOpenState(false);
       activeOpenParts = null;
-
-      if (typeof triggerEl.focus === 'function') {
-        triggerEl.focus();
-      }
-
-      closeTimer = schedule(() => {
-        closeTimer = 0;
-        if (isOpen) {
-          return;
-        }
-
-        destroyFrame();
-        parts.overlayEl.hidden = true;
-        if (parts.overlayEl.classList && typeof parts.overlayEl.classList.remove === 'function') {
-          parts.overlayEl.classList.remove('is-closing');
-        }
-
-        if (documentRef.body && documentRef.body.classList && typeof documentRef.body.classList.remove === 'function') {
-          documentRef.body.classList.remove('has-logo-animation');
-        }
-      }, windowRef && windowRef.matchMedia
-        && windowRef.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : EXIT_TRANSITION_MS);
+      // CSS owns the duration, easing and interruption/reversal. Await its real
+      // transition promises instead of guessing a cleanup timeout in JavaScript.
+      const animations = parts.overlayEl.getAnimations ? parts.overlayEl.getAnimations() : [];
+      if (!animations.length) settleClose(generation);
+      else Promise.allSettled(animations.map(animation => animation.finished))
+        .then(() => settleClose(generation));
     }
 
     function replay() {
@@ -438,11 +520,21 @@
 
     function destroy() {
       close();
+      lifecycleGeneration++;
       cancelScheduled(openTimer);
-      cancelScheduled(closeTimer);
       openTimer = 0;
-      closeTimer = 0;
       destroyFrame();
+      setBackgroundInert(false);
+      if (overlayParts) overlayParts.overlayEl.hidden = true;
+      if (documentRef.body && documentRef.body.classList) documentRef.body.classList.remove('has-logo-animation');
+      if (resizeObserver) resizeObserver.disconnect();
+      if (motionPreference && motionPreference.removeEventListener) {
+        motionPreference.removeEventListener('change', handleMotionPreference);
+      }
+      if (windowRef && windowRef.removeEventListener) {
+        windowRef.removeEventListener('resize', alignControls);
+        if (windowRef.visualViewport) windowRef.visualViewport.removeEventListener('resize', alignControls);
+      }
 
       if (escapeHandler) {
         documentRef.removeEventListener('keydown', escapeHandler);
