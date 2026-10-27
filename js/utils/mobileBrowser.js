@@ -31,21 +31,30 @@
     document.head.append(themeColor);
   }
 
+  const sidebar = document.getElementById('app-sidebar');
+  const canvasSurface = document.querySelector('.logo-container');
+  const touchLayout = window.matchMedia('(pointer: coarse) and (max-width: 1100px)');
+
   function syncBrowserSurface() {
+    const visibleSurface = sidebar && touchLayout.matches && sidebar.classList.contains('active')
+      ? sidebar : (touchLayout.matches ? (canvasSurface || body) : body);
     const background = body.classList.contains('has-logo-animation')
       ? 'rgb(0, 0, 0)'
-      : getComputedStyle(body).backgroundColor;
+      : getComputedStyle(visibleSurface).backgroundColor;
     const channels = background.match(/[\d.]+/g);
     const dark = channels && channels.length >= 3
       && (Number(channels[0]) * 0.2126 + Number(channels[1]) * 0.7152
         + Number(channels[2]) * 0.0722) < 128;
-    root.style.backgroundColor = background;
+    if (root.style.backgroundColor !== background) root.style.backgroundColor = background;
+    if (canvasSurface) body.style.setProperty('--browser-surface', background);
     root.style.colorScheme = dark ? 'dark' : 'light';
-    themeColor.content = background;
+    if (themeColor.content !== background) themeColor.content = background;
   }
 
   syncBrowserSurface();
-  new MutationObserver(syncBrowserSurface).observe(body, {
-    attributes: true, attributeFilter: ['class']
-  });
+  const observer = new MutationObserver(syncBrowserSurface);
+  observer.observe(body, { attributes: true, attributeFilter: ['class'] });
+  if (sidebar) observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+  touchLayout.addEventListener('change', syncBrowserSurface);
+  window.addEventListener('resize', syncBrowserSurface, { passive: true });
 })();

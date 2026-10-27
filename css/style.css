@@ -3606,7 +3606,8 @@ input:checked + .slider:before {
 .zoom_controls .workspace-divider { margin-inline: 0.25rem; }
 .zoom_controls .workspace-btn:disabled { opacity: 0.3; cursor: default; }
 .zoom_controls .workspace-btn:focus-visible { outline: 2px solid var(--accent-color); outline-offset: -2px; }
-.canvas-viewport.is-pan-active { cursor: grab; touch-action: pinch-zoom; }
+.canvas-viewport { touch-action: none; }
+.canvas-viewport.is-pan-active { cursor: grab; touch-action: none; }
 .canvas-viewport.is-dragging { cursor: grabbing; }
 
 @media (pointer: coarse) {
@@ -3839,6 +3840,23 @@ body { min-height: 0; }
 @media (pointer: coarse) and (max-width: 1100px) {
   /* The scroll fade belongs below the fixed sheet heading. */
   .app-sidebar::before { top: 3.5625rem; }
+}
+
+/* Native pickers use natural labels; the established web controls keep caps. */
+.custom-select-trigger, .custom-option, .custom-option-group-label { text-transform: uppercase; }
+
+@media (pointer: coarse) and (max-width: 1100px) {
+  body { background-color: var(--browser-surface, var(--bg-canvas)); }
+  #header-logo-preview { color: var(--preview-foreground, currentColor); }
+  .control-select { text-transform: none; }
+  /* Reserve and redraw the preview in the same frame as the sheet state.
+     Moving a focused sheet while its canvas changes size causes scroll jumps. */
+  .app-sidebar {
+    transition: none;
+    transform: none;
+    visibility: hidden;
+  }
+  .app-sidebar.active { transform: none; visibility: visible; }
 }
 
 /* Match BAR-07 shared control dimensions; every preview transport gets the same touch floor. */
