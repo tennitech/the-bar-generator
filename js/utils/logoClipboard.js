@@ -14,55 +14,46 @@
   }
   function mode(format) {
     if (!['svg', 'png'].includes(format)) return 'unavailable';
-    if (native(`image/${format === 'svg' ? 'svg+xml' : format}`)) return 'image';
-    return format === 'svg' ? 'source' : 'unavailable';
+    return native(`image/${format === 'svg' ? 'svg+xml' : format}`) ? 'image' : 'unavailable';
   }
   function sync(credits = false) {
     const group = document.getElementById('clipboard-actions');
     if (!group) return;
     group.hidden = credits;
     for (const format of ['svg', 'png']) {
-      const button = document.getElementById(`copy-${format}`), action = mode(format);
-      const label = action === 'source' ? 'Copy SVG source (text)' : `Copy ${format.toUpperCase()}`;
-      const description = format === 'svg' ? (action === 'source' ? 'Code text · download SVG for Finder' : 'For SVG apps · download SVG for Finder')
-          : action === 'unavailable' ? 'Copy unavailable · use PNG download above' : 'Transparent · selected raster size';
+      const button = document.getElementById(`copy-${format}`), unavailable = mode(format) === 'unavailable';
+      const label = unavailable ? `${format.toUpperCase()} copy unavailable` : `Copy ${format.toUpperCase()}`;
+      const description = unavailable ? `Use ${format.toUpperCase()} download` : format === 'svg' ? 'Vector format' : 'Transparent · selected raster size';
       button.querySelector('.option-label').innerHTML = root.FeatherIcons.getIconMarkup('copy', 'export_copy-icon') + label;
       button.querySelector('.option-desc').textContent = description;
       button.setAttribute('aria-label', `${label}: ${description}`);
+      button.setAttribute('aria-disabled', String(unavailable));
+      button.disabled = unavailable || Boolean(root.logoExportUI?.isBusy());
     }
   }
   async function copy(format) {
     if (!['svg', 'png'].includes(format)) return null;
-    const action = mode(format);
     const job = root.logoExportUI.begin(format);
     if (!job) return null;
     job.triggerId = `copy-${format}`;
     try {
       if (!root.isSecureContext) throw new Error('Copy needs HTTPS or localhost. Use the download actions.');
-      if (action === 'unavailable' || !root.navigator?.clipboard) throw new Error('Image copy is unavailable here. Use the download actions.');
+      if (mode(format) === 'unavailable') throw new Error(`${format.toUpperCase()} clipboard copying is unavailable in this browser. Use the ${format.toUpperCase()} download.`);
       const snapshot = captureLogoExportSnapshot();
-      const mime = action === 'source' ? 'text/plain' : `image/${format === 'svg' ? 'svg+xml' : format}`;
-      let write;
-      // Invoke write synchronously before any await. Do not hide a clipboard
-      // write behind an async permission query, timer, or raster decode.
-      if (action === 'source') {
-        if (!root.navigator.clipboard.writeText) throw new Error('Text copy is unavailable. Download SVG instead.');
-        write = root.navigator.clipboard.writeText(snapshot.svgSource);
-      } else {
-        const payload = format === 'svg' ? Promise.resolve(new Blob([snapshot.svgSource], { type: mime }))
-          : createRasterExportBlob(snapshot, job.controller.signal);
-        payload.catch(() => {}); // A browser may reject write before consuming the promise.
-        write = root.navigator.clipboard.write([new root.ClipboardItem({ [mime]: payload })]);
-      }
+      const mime = `image/${format === 'svg' ? 'svg+xml' : format}`;
+      // Invoke write synchronously before any await. Never substitute source
+      // text, HTML or raster data for an SVG clipboard request.
+      const payload = format === 'svg' ? Promise.resolve(new Blob([snapshot.svgSource], { type: mime }))
+        : createRasterExportBlob(snapshot, job.controller.signal);
+      payload.catch(() => {}); // A browser may reject write before consuming the promise.
+      const write = root.navigator.clipboard.write([new root.ClipboardItem({ [mime]: payload })]);
       // Dispatched platform writes cannot be reliably cancelled.
       document.getElementById('export-cancel').hidden = true;
       const status = document.getElementById('export-message');
       status.tabIndex = -1; status.focus({ preventScroll: true });
-      root.logoExportUI.message(job, `Preparing and copying ${format.toUpperCase()}${action === 'source' ? ' source text' : ''}…`);
+      root.logoExportUI.message(job, `Preparing and copying ${format.toUpperCase()}…`);
       await write;
-      const message = action === 'source' ? 'SVG source text copied. For a Finder file, use Download SVG.'
-        : format === 'svg' ? 'SVG data copied for compatible apps. For Finder, use Download SVG.'
-          : `${format.toUpperCase()} image copied. Paste into a compatible app.`;
+      const message = `${format.toUpperCase()} copied.`;
       root.logoExportUI.finish(job, 'started', message);
       Toast.show(message, 'success');
       return { mime, width: format === 'svg' ? null : snapshot.dimensions.width, height: format === 'svg' ? null : snapshot.dimensions.height };

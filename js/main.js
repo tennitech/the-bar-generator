@@ -201,7 +201,7 @@ const DEFAULT_SAVE_MENU_COPY = {
   },
   svg: {
     label: 'Download SVG',
-    description: 'Vector file · save for Finder or import'
+    description: 'Scalable vector file'
   },
   gif: {
     label: 'GIF',
