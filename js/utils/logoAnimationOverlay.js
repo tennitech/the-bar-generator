@@ -44,7 +44,7 @@
     const button = documentRef.createElement('button');
     button.id = id;
     button.type = 'button';
-    button.className = 'logo_animation_button';
+    button.className = 'header_icon-button logo_animation_button';
     button.setAttribute('aria-label', ariaLabel);
     button.setAttribute('title', ariaLabel);
     button.innerHTML = createButtonIconMarkup(iconType);
@@ -59,11 +59,13 @@
     frameEl.referrerPolicy = 'same-origin';
     frameEl.style.position = 'absolute';
     frameEl.style.inset = '0';
-    frameEl.style.width = '100vw';
-    frameEl.style.height = '100vh';
+    frameEl.style.width = '100%';
+    frameEl.style.height = '100%';
+    frameEl.tabIndex = -1;
     frameEl.style.border = '0';
     frameEl.style.display = 'block';
     frameEl.style.background = 'transparent';
+    frameEl.style.colorScheme = 'dark';
     frameEl.setAttribute('allowtransparency', 'true');
     frameEl.setAttribute('allowfullscreen', '');
     frameEl.src = src;
@@ -157,6 +159,44 @@
     let openTimer = 0;
     let closeTimer = 0;
     let activeOpenParts = null;
+    let resizeObserver = null;
+    let backgroundState = [];
+    const motionPreference = windowRef && windowRef.matchMedia
+      ? windowRef.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    function handleMotionPreference() {
+      if (isOpen) { mountFrame(); startScrimFade(0); }
+    }
+    if (motionPreference && motionPreference.addEventListener) {
+      motionPreference.addEventListener('change', handleMotionPreference);
+    }
+
+    // Measure the actual shared toolbar controls, including a future Share slot.
+    function alignControls() {
+      if (!overlayParts || !documentRef.querySelector) return;
+      const pairs = [
+        [overlayParts.replayEl, documentRef.querySelector('.header-actions a[aria-label*="GitHub"]')],
+        [overlayParts.closeEl, documentRef.querySelector('#mobile-menu-toggle')]
+      ];
+      pairs.forEach(([button, anchor]) => {
+        if (!anchor) return;
+        const rect = anchor.getBoundingClientRect();
+        Object.assign(button.style, {
+          position: 'fixed', left: `${rect.left}px`, top: `${rect.top}px`,
+          width: `${rect.width}px`, height: `${rect.height}px`
+        });
+      });
+    }
+
+    function setBackgroundInert(inert) {
+      if (inert && documentRef.querySelectorAll && !backgroundState.length) {
+        backgroundState = Array.from(documentRef.querySelectorAll('.app-header, .app-layout'))
+          .map(element => ({ element, inert: element.inert }));
+        backgroundState.forEach(({ element }) => { element.inert = true; });
+      } else if (!inert) {
+        backgroundState.forEach(({ element, inert: previous }) => { element.inert = previous; });
+        backgroundState = [];
+      }
+    }
 
     function schedule(callback, delay = 0) {
       if (windowRef && typeof windowRef.setTimeout === 'function') {
@@ -266,6 +306,18 @@
       overlayParts.closeEl.addEventListener('click', close);
       overlayParts.replayEl.addEventListener('click', replay);
 
+      if (windowRef && windowRef.addEventListener) {
+        windowRef.addEventListener('resize', alignControls);
+        if (windowRef.visualViewport) windowRef.visualViewport.addEventListener('resize', alignControls);
+        if (windowRef.ResizeObserver && documentRef.querySelector) {
+          resizeObserver = new windowRef.ResizeObserver(alignControls);
+          const header = documentRef.querySelector('.app-header');
+          const actions = documentRef.querySelector('.header-actions');
+          if (header) resizeObserver.observe(header);
+          if (actions) resizeObserver.observe(actions);
+        }
+      }
+
       messageHandler = (event) => {
         if (!isOpen || !frameEl) {
           return;
@@ -279,7 +331,12 @@
           return;
         }
 
+        if (event && event.source && event.source !== frameEl.contentWindow) return;
         const data = event ? event.data : null;
+        if (data && data.type === 'rpi-logo-animation-close') {
+          close();
+          return;
+        }
         if (data && data.type === 'rpi-logo-animation-ready') {
           startScrimFade(READY_SCRIM_DELAY_MS);
           return;
@@ -297,6 +354,13 @@
       }
 
       escapeHandler = (event) => {
+        if (isOpen && event.key === 'Tab') {
+          const buttons = [overlayParts.replayEl, overlayParts.closeEl].filter(button => !button.hidden);
+          const index = buttons.indexOf(documentRef.activeElement);
+          event.preventDefault();
+          buttons[(index + (event.shiftKey ? -1 : 1) + buttons.length) % buttons.length].focus();
+          return;
+        }
         if (!isOpen || event.key !== 'Escape') {
           return;
         }
@@ -378,6 +442,8 @@
       mountFrame();
       activeOpenParts = parts;
       setOpenState(true);
+      alignControls();
+      setBackgroundInert(true);
 
       if (parts.overlayEl.classList && typeof parts.overlayEl.classList.remove === 'function') {
         parts.overlayEl.classList.remove('is-closing');
@@ -403,6 +469,7 @@
       openTimer = 0;
       setOpenState(false);
       activeOpenParts = null;
+      setBackgroundInert(false);
 
       if (typeof triggerEl.focus === 'function') {
         triggerEl.focus();
@@ -443,6 +510,17 @@
       openTimer = 0;
       closeTimer = 0;
       destroyFrame();
+      setBackgroundInert(false);
+      if (overlayParts) overlayParts.overlayEl.hidden = true;
+      if (documentRef.body && documentRef.body.classList) documentRef.body.classList.remove('has-logo-animation');
+      if (resizeObserver) resizeObserver.disconnect();
+      if (motionPreference && motionPreference.removeEventListener) {
+        motionPreference.removeEventListener('change', handleMotionPreference);
+      }
+      if (windowRef && windowRef.removeEventListener) {
+        windowRef.removeEventListener('resize', alignControls);
+        if (windowRef.visualViewport) windowRef.visualViewport.removeEventListener('resize', alignControls);
+      }
 
       if (escapeHandler) {
         documentRef.removeEventListener('keydown', escapeHandler);

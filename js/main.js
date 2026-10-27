@@ -2986,10 +2986,7 @@ function setup() {
   });
 
   // Setup color mode selector
-  colorModeSelect.addEventListener('change', function () {
-    handleColorModeChange();
-    updateUrlParameters();
-  });
+  colorModeSelect.addEventListener('change', handleColorModeChange);
 
   // Setup binary input with real-time updates
   binaryInput.addEventListener('input', function () {
@@ -4327,7 +4324,14 @@ function handleStyleChange() {
 
 function handleColorModeChange() {
   const selectedColorMode = colorModeSelect ? colorModeSelect.value : DEFAULT_COLOR_MODE;
-  applyColorMode(selectedColorMode);
+  const update = () => {
+    applyColorMode(selectedColorMode);
+    // Commit the canvas before the theme snapshot, without waiting for a frame.
+    redraw();
+    updateUrlParameters();
+  };
+  if (window.ThemeMotion) window.ThemeMotion.run(update);
+  else update();
 }
 
 function applyColorMode(colorMode) {
@@ -4688,6 +4692,7 @@ async function ensureHeaderLogoAnimationController() {
 }
 
 async function openHeaderLogoAnimation() {
+  if (window.ThemeMotion) window.ThemeMotion.cancel();
   if (headerLogoAnimationLoadPromise) {
     return headerLogoAnimationLoadPromise;
   }

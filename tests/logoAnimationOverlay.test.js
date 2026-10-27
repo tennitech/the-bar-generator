@@ -311,4 +311,35 @@ describe('logo animation overlay controller', () => {
 
     expect(overlayEl.hidden).toBe(true);
   });
+  test('reopening during the exit keeps the replacement frame alive', async () => {
+    const { controller, overlayEl, stageEl } = createController();
+    await controller.open();
+    controller.close();
+    await controller.open();
+    const frame = controller.getFrame();
+    finishCloseTransition();
+    expect(controller.isOpen()).toBe(true);
+    expect(overlayEl.hidden).toBe(false);
+    expect(stageEl.lastChild).toBe(frame);
+  });
+
+  test('destroy during exit clears modal state immediately', async () => {
+    const { controller, overlayEl, documentRef } = createController();
+    await controller.open();
+    controller.close();
+    controller.destroy();
+    expect(overlayEl.hidden).toBe(true);
+    expect(documentRef.body.classList.contains('has-logo-animation')).toBe(false);
+    expect(controller.getFrame()).toBe(null);
+  });
+
+  test('completion from a different frame cannot dismiss the intro', async () => {
+    const { controller, windowRef } = createController();
+    await controller.open();
+    windowRef.dispatch('message', {
+      source: {}, data: { type: 'rpi-logo-animation-complete' }
+    });
+    expect(controller.isOpen()).toBe(true);
+  });
+
 });
