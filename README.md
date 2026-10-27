@@ -63,9 +63,9 @@ Browser checks cover the 21 selectable styles, SVG downloads, a PNG file signatu
 
 ## Clipboard copies
 
-Open **Download Asset** for the copy actions. The browser's native MIME support controls the labels: **Copy SVG** writes a vector image, **Copy SVG source (text)** writes explicitly labeled code text. No format is silently substituted. Copy PNG preserves alpha and uses the selected raster size. Copies capture the current pattern, phase, color, title, and size before asynchronous work. A paste target must accept the copied type; SVG source text is not a pasted vector image. Use **Download SVG** and import the resulting `.svg` file when paste produces text or a clipping. Copy SVG places vector data on the clipboard for compatible apps; it does not copy a file reference. For Finder, use **Download SVG** to save the actual `.svg` file.
+Open **Download Asset** for **Copy SVG** and **Copy PNG**. Copy SVG writes only native `image/svg+xml` vector content. If the browser cannot copy that format, the action reports **SVG copy unavailable** and **Download SVG** remains available. There is no source-text fallback or silent PNG substitution. Copy PNG preserves alpha and uses the selected raster size. Copies capture the current pattern, phase, color, title, and size before asynchronous work. Receiving apps must accept the copied format; browser support alone does not guarantee destination-app paste acceptance.
 
-Copy requires HTTPS or localhost and a user click. If a browser blocks it, focus the page and retry or use a download. No persistent permissions or clipboard reading are requested by the app. See [clipboard support, fallback behavior, and verification limits](references/clipboard_exports.md).
+Copy requires HTTPS or localhost and a user click. If a browser blocks it, focus the page and retry or use a download. No persistent permissions or clipboard reading are requested by the app. See [clipboard support and verification limits](references/clipboard_exports.md).
 
 ```sh
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/clipboardSmoke.js

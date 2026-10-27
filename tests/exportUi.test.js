@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-function fixture() {
+function fixture(clipboard) {
   const document = { readyState: 'complete', addEventListener() {}, activeElement: null };
   const ids = ['save-menu', 'save-button', 'save-png', 'save-svg', 'save-loop-gif', 'export-size-select',
     'export-progress', 'export-message', 'export-meter', 'export-cancel', 'copy-png', 'copy-svg'];
@@ -22,7 +22,7 @@ function fixture() {
   }]));
   elements['save-menu'].contains = element => element && !['save-menu', 'save-button'].includes(element.id);
   document.getElementById = id => elements[id];
-  const context = { document, AbortController, performance };
+  const context = { document, AbortController, performance, logoClipboard: clipboard };
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/exportUi'), 'utf8'), context);
   return { ui: context.logoExportUI, elements, document };
 }
@@ -74,4 +74,18 @@ test('copies exclude concurrent downloads and restore the actual retry control',
   expect(document.activeElement.id).toBe('copy-png');
   expect(elements['copy-svg'].disabled).toBe(false);
   expect(elements['save-png'].disabled).toBe(false);
+});
+
+
+test('completion preserves unsupported copy state and focuses an enabled recovery control', () => {
+  let elements;
+  const clipboard = { sync: jest.fn(() => { if (elements) elements['copy-svg'].disabled = true; }) };
+  const state = fixture(clipboard); elements = state.elements;
+  elements['copy-svg'].focus();
+  const job = state.ui.begin('svg'); job.triggerId = 'copy-svg';
+  state.ui.finish(job, 'error', 'SVG copy unavailable');
+  expect(clipboard.sync).toHaveBeenCalled();
+  expect(elements['copy-svg'].disabled).toBe(true);
+  expect(elements['save-svg'].disabled).toBe(false);
+  expect(state.document.activeElement.id).toBe('save-button');
 });

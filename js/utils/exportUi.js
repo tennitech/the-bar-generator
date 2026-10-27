@@ -49,12 +49,15 @@
     const focusWasInMenu = byId('save-menu')?.contains(document.activeElement);
     active = null;
     controls().forEach(control => { control.disabled = false; });
+    root.logoClipboard?.sync(Boolean(byId('clipboard-actions')?.hidden));
     byId('save-button')?.removeAttribute('aria-busy');
     byId('export-message').textContent = text;
     byId('export-cancel').hidden = true;
     byId('export-meter').value = outcome === 'started' ? 1 : 0;
     if (outcome === 'error' && focusWasInMenu) {
-      byId(job.triggerId || (job.format === 'gif' ? 'save-loop-gif' : `save-${job.format}`))?.focus();
+      const retry = byId(job.triggerId || (job.format === 'gif' ? 'save-loop-gif' : `save-${job.format}`));
+      if (retry && !retry.disabled) retry.focus();
+      else byId('save-button')?.focus();
     } else {
       if (focusWasInMenu) byId('save-button')?.focus();
       if (typeof hideSaveMenu === 'function') hideSaveMenu();
