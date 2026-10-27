@@ -700,15 +700,23 @@ function createGridPatternGeometry(options = {}) {
   return { lines, thickness };
 }
 
+function normalizeTrianglesPatternSettings(options = {}) {
+  const parsedCount = Number(options.count);
+  return {
+    variant: clampPatternVariant(options.variant || 1, 2),
+    count: Number.isFinite(parsedCount) ? Math.max(6, Math.min(28, Math.round(parsedCount))) : 14,
+    direction: options.direction === 'up' ? 'up' : 'down'
+  };
+}
+
 function createTrianglesPatternGeometry(options = {}) {
   const barStartX = Number(options.barStartX || 0);
   const barY = Number(options.barY || 0);
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const variant = clampPatternVariant(options.variant || 1, 2);
+  const { variant, count, direction } = normalizeTrianglesPatternSettings(options);
   const polygons = [];
 
-  const count = 14;
   const cellWidth = exactBarWidth / count;
   for (let i = 0; i < count; i++) {
     const x = barStartX + i * cellWidth;
@@ -725,6 +733,11 @@ function createTrianglesPatternGeometry(options = {}) {
     ]);
   }
 
+  if (direction === 'up') {
+    polygons.forEach(polygon => polygon.forEach(point => {
+      point.y = barY + barHeight - (point.y - barY);
+    }));
+  }
   return { polygons };
 }
 
@@ -1888,7 +1901,9 @@ function createBarPatternSVG(config) {
       barY,
       exactBarWidth,
       barHeight,
-      variant: values.trianglesVariant
+      variant: values.trianglesVariant,
+      count: values.trianglesCount,
+      direction: values.trianglesDirection
     });
 
     for (let i = 0; i < geometry.polygons.length; i++) {
@@ -2063,6 +2078,7 @@ if (typeof window !== 'undefined') {
   window.createTriangleGridPatternGeometry = createTriangleGridPatternGeometry;
   window.createTrussPatternGeometry = createTrussPatternGeometry;
   window.createTrianglesPatternGeometry = createTrianglesPatternGeometry;
+  window.normalizeTrianglesPatternSettings = normalizeTrianglesPatternSettings;
   window.createUnionPatternGeometry = createUnionPatternGeometry;
   window.createBarPatternSVG = createBarPatternSVG;
   window.createWaveQuantumPatternGeometry = createWaveQuantumPatternGeometry;
@@ -2094,6 +2110,7 @@ if (typeof module !== 'undefined' && module.exports) {
     mapWaveformToBarYFraction,
     normalizeWaveformEnvelopeCenter,
     normalizeWaveformEnvelopeWaves,
-    normalizeTrussFamily
+    normalizeTrussFamily,
+    normalizeTrianglesPatternSettings
   };
 }

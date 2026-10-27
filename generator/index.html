@@ -718,7 +718,20 @@
             <input type="range" id="triangles-variant-slider" min="1" max="2" value="1" class="control-slider"
               aria-label="Triangles Variant">
           </div>
+          <div class="control">
+            <label for="triangles-direction-select" class="control-label">DIRECTION</label>
+            <select id="triangles-direction-select" class="control-select" aria-label="Triangle diagonal direction">
+              <option value="down">DOWN RIGHT ↘</option>
+              <option value="up">UP RIGHT ↗</option>
+            </select>
           </div>
+          <div class="control slider-control">
+            <label for="triangles-count-slider" class="control-label">TRIANGLES <span
+                id="triangles-count-display">14</span></label>
+            <input type="range" id="triangles-count-slider" min="6" max="28" step="1" value="14" class="control-slider"
+              aria-label="Triangle count">
+          </div>
+        </div>
 
         </div>
         <div class="sidebar-footer">
