@@ -16,6 +16,8 @@ This file remains the canonical agent policy. `references/AGENTS.md` and older l
 
 ## Feature Branches, User Testing, And Deletion
 
+Scope: These rules apply only to this repository. They do not change global Codex instructions or rules for other projects.
+
 - Create a new branch whenever the user requests work on a new feature. Use the naming convention in `contributing.md`. Start from current `main` unless the feature needs unmerged work; explain that dependency. Clarifications and repairs to the same feature stay on its existing branch.
 - Before switching to a new feature, preserve the current work and tell the user where it is saved. Example: "The motion feature still awaits your testing. It is saved in `codex/fix-animation-timing`." State whether the branch is local, pushed to GitHub, or linked to an open pull request. Verify the save state before reporting it.
 - Omit that unfinished-feature note only when the earlier feature is complete AND the user has explicitly told you that they tested it. Automated checks, source inspection, a merge, silence, or approval without an explicit testing statement do not establish user testing. Keep unconfirmed work available on its branch.
