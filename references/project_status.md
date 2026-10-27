@@ -23,6 +23,12 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 *   `scripts/` - Browser smoke regression script.
 *   `third_party/` - Local licensed browser dependencies.
 
+## Backlog coordination — October 27, 2026
+
+- Owner requirement: every bar's painted artwork must reach the exact nominal left and right edges without overflowing the bar rectangle, while preserving official dimensions and letter-to-bar spacing. Containment alone is insufficient. Applies across styles, variants, animation phases, previews, and exports; see [bar coordination](bar_coordination.md).
+- Triangle variant 2 remains rejected by the owner pending improved overlap. BAR-02 is iterating; no feature acceptance or merge is implied.
+- BAR-02 local preview connection resets were reproduced under parallel cold loads and resolved in its development server by increasing the connection backlog. Repository runtime code was unchanged. See the coordination record for evidence and integration boundaries.
+
 ## 3. Completed Milestones
 
 - **[2026-10-27] Feature branch lifecycle policy**:
