@@ -29,6 +29,13 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
     - Unit tests now run only on ready pull requests into main. Drafts skip execution, marking ready starts the check, and replaced runs are cancelled. Removed duplicate test execution after merge.
     - Retained the required Unit tests status, strict main protection, Node.js 22, pinned actions, public-repo guard, read-only token, and no cache or artifact uploads. npm prefers any runner-local cached packages without adding a stored Actions cache. Pages deployment after merge is unchanged.
 
+- **[2026-10-27] Viewport-relative inspection zoom**:
+    - Added shared fit, percentage-step, pointer-anchor, and pan-bound calculations in js/utils/viewportZoom.js. The full official mark fits the actual canvas and control reservation, with no fixed large-screen scale cap.
+    - Made 100% the fitted baseline and 400% the inspection limit. Buttons use 100, 125, 150, 200, 250, 300, and 400 percent. The compact control shows one percentage and a separate Fit action. Percentages are relative to the viewport, not export dimensions.
+    - Added smooth bar-focused button zoom, pointer-focused scroll/desktop pinch zoom, direct bounded dragging while enlarged, keyboard controls, and reduced-motion behavior. Fit resets zoom and pan. Resize keeps the selected relative scale; the canvas tracks sidebar transitions.
+    - Replaced the old zoom hold loop, fixed 1.2 multiplier, size caps, and inertial pan model. Kept native touch pinch and browser keyboard zoom available. Safe-area inset contributes to the control reservation.
+    - Validation: local Chromium/WebKit checks covered five viewports, typed limits, bar anchoring, direct dragging, Fit recovery, and Lunar resize. SVG/PNG downloads matched byte-for-byte at Fit and 400%. Physical touch-device checks remain open.
+
 
 - **[2026-10-27] Small header ticker direction repair**:
     - Confirmed equal ticker geometry and phase in both previews. The tiny header could still show an apparent reverse direction because dense rows exceeded its spatial sampling limit.

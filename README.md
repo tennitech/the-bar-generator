@@ -54,6 +54,12 @@ Keep the local server running for browser checks. Chromium is the default browse
 
 Browser checks cover the 21 selectable styles, SVG downloads, a PNG file signature, five viewport sizes, text filtering, reduced motion, 2D fallback, and renderer failure states. They do not establish visual accuracy or full accessibility compliance. Check changed UI, keyboard controls, touch behavior, and exports by hand. Playwright WebKit is not a test of the Safari app.
 
+## Preview zoom
+
+100% fits the complete mark to the available preview area. Enlarge up to 400% to inspect the bar. Use the − / + buttons, enter a percentage, or scroll over the preview. Drag while enlarged. Fit or the 0 key restores the full mark; + and − also work outside text controls. Native touch pinch zoom and browser keyboard zoom remain available.
+
+Zoom is relative to the current viewport and does not change downloads. The same 100% setting can be larger on a desktop than on a phone. Check the final placement size separately before using a complex bar pattern.
+
 ## Project layout
 
 | Path | Purpose |

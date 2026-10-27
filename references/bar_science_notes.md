@@ -36,3 +36,11 @@ Waveform preview, header, and SVG output now use the same waveform function, inc
 ### Small header ticker sampling
 
 The header and main ticker use the same phase, direction, and geometry. The header can still show spatial aliasing when a row has fewer than three device pixels per repeat. Only that unresolved header row is drawn at its exact mean coverage: one half for the top row, and min(1, width ratio / (2 × count ratio)) for the bottom row. Resolved rows keep the original moving geometry. This prevents a false reverse pattern at the small display size; a dense row can therefore look stationary. It does not change the main preview, selected repeat counts, or exports. The threshold uses CSS width × device pixel ratio and is recalculated on resize or pixel-ratio changes.
+
+## Viewport-relative inspection zoom
+
+The preview uses the complete 250 × 150.911-unit mark bounds, including its bar, to calculate a uniform fitted scale from the actual canvas size. Padding and the zoom control area are excluded. The letterforms, bar proportions, and spacing are unchanged. There is no separate wide-screen size cap.
+
+100% means the fitted baseline for the current viewport. 400% means four times that fitted scale. Values below 100% are not offered because this control is for inspecting detail; Fit already shows the complete mark. The same percentage can produce a different CSS-pixel width after a viewport resize. It is not a print size, DPI, export scale, or guarantee that a complex pattern is legible at its final placement size.
+
+Button zoom keeps the bar as the inspection focus. Pointer zoom uses the pointer location, subject to the view's pan bounds. Fit recenters the full mark; native touch pinch and browser keyboard zoom remain separate from preview zoom. Preview zoom and pan do not enter the SVG, PNG, or GIF export transforms. Local SVG/PNG comparison at 100% and 400% produced identical files for Solid.
