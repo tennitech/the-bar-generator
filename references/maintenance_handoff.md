@@ -6,7 +6,7 @@ The repo is public and owned by tennitech. Kaden is the current administrator; d
 
 Use branches and pull requests for all changes to `main`. The main ruleset requires the Unit tests check and resolved review conversations. It blocks force pushes and deletion. It requires no second approval while Kaden is the primary developer. No account is a required code owner today, so work does not depend on a personal approval.
 
-GitHub Pages currently publishes the root of `main`. Merging a change to `main` can update the public site. Check the live site after a merge. Auto-merge is off; merged feature branches are deleted automatically.
+GitHub Pages currently publishes the root of `main`. Merging a change to `main` can update the public site. Check the live site after a merge. Auto-merge and automatic deletion of merged branches are off. Delete a branch only on an explicit user request, after reporting its current ahead/behind counts, merge status, unmerged commits, open pull requests, and unsaved changes. Follow the feature-switch and explicit user-testing rules in AGENTS.md.
 
 ## Tests and cost controls
 

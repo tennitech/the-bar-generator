@@ -35,7 +35,7 @@ Today, the project owner can merge a pull request after checks pass without a se
 
 ## Branch and commit names
 
-Use one short-lived branch per change. Start from the latest `main`:
+Use a separate branch for each new feature or change. Related fixes stay on that feature branch. When switching features, state the saved branch for any feature that is not complete and explicitly confirmed as tested by the user. Automated checks do not establish user testing. Start from the latest `main`:
 
 ```sh
 git switch main
@@ -53,7 +53,7 @@ Use `<type>/<short-description>` with lowercase words and hyphens:
 | `test` | Test coverage | `test/svg-export` |
 | `chore` | Dependencies or repository upkeep | `chore/update-playwright` |
 
-Codex-created branches use `codex/<type>-<short-description>` to retain the agent branch prefix, for example `codex/docs-local-setup`. The old audit branch name is historical. Avoid personal names, `testing`, and permanent `dev` branches. Delete a branch after merge.
+Codex-created branches use `codex/<type>-<short-description>` to retain the agent branch prefix, for example `codex/docs-local-setup`. The old audit branch name is historical. Avoid personal names, `testing`, and permanent `dev` branches. Retain branches after merge unless the user explicitly requests deletion. Before deleting, report fresh ahead/behind counts, merge status, unmerged work, open pull requests, and unsaved changes.
 
 Use a direct commit message. Prefer `fix: restore mobile menu focus` or `docs: explain local setup`. Use the same form for the pull request title. This is a writing convention; no commit-message tool is required.
 

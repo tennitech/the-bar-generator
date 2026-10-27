@@ -79,7 +79,7 @@ Zoom is relative to the current viewport and does not change downloads. The same
 
 Read [contributing.md](contributing.md) and [AGENTS.md](AGENTS.md) before editing. Fork the repo if you do not have write access. Create a short branch such as `fix/mobile-menu-focus`, then open a pull request into `main`. Use `feat/`, `fix/`, `docs/`, `test/`, or `chore/` followed by a lowercase description with hyphens. Codex branches use `codex/<type>-<description>`, such as `codex/fix-mobile-menu-focus`.
 
-`main` requires a pull request, the passing Unit tests check, and resolved review conversations. During primary development, a second approval is not required. Prefer squash merge for routine changes and delete the branch after merge. Use a merge commit when retaining a reviewed multi-commit history is useful. No permanent development branch is needed.
+`main` requires a pull request, the passing Unit tests check, and resolved review conversations. During primary development, a second approval is not required. Prefer squash merge for routine changes. Retain branches unless the user explicitly requests deletion; first report ahead/behind counts, merge status, and unmerged or unsaved work. Use a merge commit when retaining a reviewed multi-commit history is useful. No permanent development branch is needed.
 
 ## Automation and deployment
 
