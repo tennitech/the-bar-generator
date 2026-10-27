@@ -1,6 +1,6 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-09-30
+**Last Updated:** 2026-10-27
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## 1. Project Overview
@@ -24,6 +24,13 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 *   `third_party/` - Local licensed browser dependencies.
 
 ## 3. Completed Milestones
+
+- **[2026-10-27] Contribution and maintenance setup**:
+    - Added a public-repository-only unit-test workflow for pull requests into main and pushes to main, with read-only permissions, no cache or artifacts, a ten-minute timeout, and cancellation of replaced runs.
+    - Added contribution, conduct, private security reporting, asset permission, and December 2026 handoff guides. Aligned package license metadata with the existing MIT LICENSE; no copyright ownership transfer was made.
+    - Configured main to require pull requests, passing Unit tests, and resolved conversations, with force pushes and deletion blocked. No second approval is required during primary development. Enabled merged-branch cleanup and private vulnerability reports.
+    - Open items: RPI successor organization and maintainers, software licensing authority, bundled asset permissions, and owner-level billing stop controls. Browser audit fixes remain on the separate audit branch.
+
 
 - **[2026-09-30] Audit Follow-up: Faster Startup, Text Safety, and Export Accuracy**:
     - Replaced the p5 CDN script with a locally licensed copy and added retry states for missing renderer files. Removed unused serial shader loading, allowed generator dependencies to download concurrently in execution order, and delayed the large Artemis II artwork script until that style is selected.
