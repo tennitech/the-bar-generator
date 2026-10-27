@@ -3898,9 +3898,8 @@ body { min-height: 0; }
   mix-blend-mode: normal;
   animation: theme-reveal var(--duration-theme-scan) steps(24, end) both;
 }
-/* Reuse the stable pre-change glyph snapshot in both browser engines. */
-::view-transition-old(theme-scan) { animation: none; mix-blend-mode: normal; }
-::view-transition-new(theme-scan) { display: none; }
+/* The glyph field is identical in both snapshots; retain both for browser parity. */
+::view-transition-old(theme-scan), ::view-transition-new(theme-scan) { animation: none; mix-blend-mode: normal; }
 @keyframes theme-reveal {
   from { clip-path: polygon(0 0,100% 0,100% 100%,0 100%,0 75%,0 75%,0 50%,0 50%,0 25%,0 25%); }
   to { clip-path: polygon(100% 0,100% 0,100% 100%,100% 100%,100% 75%,100% 75%,100% 50%,100% 50%,100% 25%,100% 25%); }
