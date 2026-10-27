@@ -450,7 +450,7 @@ function createNeuralNetworkPatternGeometry(options = {}) {
   const layerCount = layerNodeCounts.length;
   const maxNodes = Math.max(...layerNodeCounts);
   const coreRadius = Math.max(thickness * 1.35, Math.min(barHeight * 0.12, (barHeight * 0.92) / (maxNodes * 1.8)));
-  const sideInset = Math.max(coreRadius * 0.9, exactBarWidth * 0.012);
+  const sideInset = coreRadius; // Keep endpoint circles circular and tangent to the nominal edges.
   const verticalInset = Math.max(coreRadius * 0.7, barHeight * 0.015);
   const left = barStartX + sideInset;
   const right = barStartX + exactBarWidth - sideInset;
@@ -1575,13 +1575,13 @@ function createBarPatternSVG(config) {
 
     const basePoints = Math.max(300, exactBarWidth * 3);
     const frequencyMultiplier = Math.max(1, frequency / 10);
-    const points = Math.ceil(basePoints * frequencyMultiplier);
+    const points = Number.isFinite(values.waveformPoints) ? values.waveformPoints : Math.ceil(basePoints * frequencyMultiplier);
 
     let pathData = `M ${barStartX} ${barY + barHeight}`;
     for (let i = 0; i <= points; i++) {
       const xPortion = i / points;
       const x = xPortion * exactBarWidth;
-      const phase = (xPortion * frequency) - (time * speed);
+      const phase = Math.round(((xPortion * frequency) - (time * speed)) * 1000000) / 1000000;
       let wave = generateWaveValue(phase, waveType);
       wave = applyWaveformEnvelope(wave, {
         applyEnvelope,

@@ -64,7 +64,8 @@ async function main() {
       const png = await download(page, 'png');
       const result = await page.evaluate(async ({ svg, png }) => {
         const parse = markup => new DOMParser().parseFromString(markup, 'image/svg+xml');
-        const shapes = node => Array.from(node.querySelectorAll('path,rect,circle,polygon,line')).slice(3)
+        const shapes = node => Array.from(node.querySelectorAll('path,rect,circle,polygon,line'))
+          .filter(shape => !shape.closest('defs,clipPath,mask')).slice(3)
           .map(shape => [shape.tagName, ...Array.from(shape.attributes)
             .filter(a => a.name !== 'fill').map(a => [a.name, a.value])]);
         const doc = parse(svg);
@@ -73,18 +74,25 @@ async function main() {
         const svgGeometry = shapes(doc);
         const headerGeometry = shapes(header);
         const expectedGeometry = shapes(expected);
-        const image = new Image();
-        image.src = 'data:image/svg+xml;base64,' + btoa(svg);
-        await image.decode();
         const pngImage = new Image();
         pngImage.src = 'data:image/png;base64,' + png;
         await pngImage.decode();
         const target = document.createElement('canvas');
         target.width = pngImage.naturalWidth;
         target.height = pngImage.naturalHeight;
-        const ctx = target.getContext('2d', { willReadFrequently: true });
+        // SVG is scalable; choose the same whole-pixel viewport and uniform
+        // reference-unit scale as PNG. Stretching the fractional default SVG
+        // height into a different rectangle compares different transforms.
+        const reference = doc.documentElement.cloneNode(true);
         const box = doc.documentElement.viewBox.baseVal;
-        ctx.drawImage(image, 0, 0, box.width * PNG_EXPORT_SCALE, box.height * PNG_EXPORT_SCALE);
+        reference.setAttribute('width', target.width);
+        reference.setAttribute('height', target.height);
+        reference.setAttribute('viewBox', `${box.x} ${box.y} ${target.width / PNG_EXPORT_SCALE} ${target.height / PNG_EXPORT_SCALE}`);
+        const image = new Image();
+        image.src = 'data:image/svg+xml;base64,' + btoa(new XMLSerializer().serializeToString(reference));
+        await image.decode();
+        const ctx = target.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(image, 0, 0);
         const expectedPixels = ctx.getImageData(0, 0, target.width, target.height).data;
         ctx.clearRect(0, 0, target.width, target.height);
         ctx.drawImage(pngImage, 0, 0);
