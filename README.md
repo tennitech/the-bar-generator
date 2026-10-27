@@ -73,11 +73,13 @@ Browser checks cover the 21 selectable styles, SVG downloads, a PNG file signatu
 
 Read [contributing.md](contributing.md) and [AGENTS.md](AGENTS.md) before editing. Fork the repo if you do not have write access. Create a short branch such as `fix/mobile-menu-focus`, then open a pull request into `main`. Use `feat/`, `fix/`, `docs/`, `test/`, or `chore/` followed by a lowercase description with hyphens. Codex branches use `codex/<type>-<description>`, such as `codex/fix-mobile-menu-focus`.
 
-`main` requires a pull request, passing Unit tests and Browser tests checks, and resolved review conversations. During primary development, a second approval is not required. Prefer squash merge for routine changes and delete the branch after merge. Use a merge commit when retaining a reviewed multi-commit history is useful. No permanent development branch is needed.
+`main` requires a pull request, the passing Unit tests check, and resolved review conversations. During primary development, a second approval is not required. Prefer squash merge for routine changes and delete the branch after merge. Use a merge commit when retaining a reviewed multi-commit history is useful. No permanent development branch is needed.
 
 ## Automation and deployment
 
-The Checks workflow runs on pull requests into `main` and pushes to `main`. Unit tests run for every change. Browser tests run when runtime files, tests, dependencies, scripts, or workflow files change; documentation-only changes skip browser installation and execution. There is no scheduled run. Replaced runs are cancelled.
+The Checks workflow runs the fast unit tests on pull requests into `main` and pushes to `main`. It does not install browsers or run UI tests. There is no scheduled run. Replaced runs are cancelled and each job has a five-minute limit.
+
+Contributors and reviewers perform the relevant browser, keyboard, accessibility, motion, and export checks. The browser and motion scripts above are optional local tools for changes that need them; they are not merge requirements.
 
 The test jobs run only for public repos on standard Ubuntu runners, with no caches or artifact uploads. See the [maintenance guide](references/maintenance_handoff.md) for billing controls and the December handoff.
 

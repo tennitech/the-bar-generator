@@ -20,7 +20,7 @@ jobs:
     # Do not run this job if repository visibility changes to private.
     if: github.event.repository.private == false
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -31,56 +31,3 @@ jobs:
           # Deliberately omit dependency caching and artifact uploads.
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm test -- --runInBand
-
-  browser-tests:
-    name: Browser tests
-    if: github.event.repository.private == false
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      RPI_SITE_URL: http://127.0.0.1:8765
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - name: Check changed files
-        id: changes
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          HEAD_SHA: ${{ github.sha }}
-        run: |
-          node <<'JS'
-          const fs = require('node:fs');
-          const { execFileSync } = require('node:child_process');
-          const base = process.env.BASE_SHA;
-          let required = true;
-          if (base && !/^0+$/.test(base)) {
-            const files = execFileSync('git', ['diff', '--name-only', base, process.env.HEAD_SHA], { encoding: 'utf8' }).trim().split('\n');
-            required = files.some(file => /^(?:assets|third_party|js|css|generator|animation|scripts|tests)\//.test(file)
-              || /\.(?:html|js|css)$/.test(file)
-              || /^package(?:-lock)?\.json$/.test(file) || file === '.nvmrc'
-              || file.startsWith('.github/workflows/'));
-          }
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `required=${required}\n`);
-          JS
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        if: steps.changes.outputs.required == 'true'
-        with:
-          node-version: '22'
-      - if: steps.changes.outputs.required == 'true'
-        run: npm ci --ignore-scripts --no-audit --no-fund
-      - if: steps.changes.outputs.required == 'true'
-        run: npx playwright install --with-deps chromium firefox webkit
-      - name: Browser smoke checks
-        if: steps.changes.outputs.required == 'true'
-        run: |
-          python3 -m http.server 8765 --bind 127.0.0.1 &
-          server_pid=$!
-          trap 'kill "$server_pid"' EXIT
-          npm run test:browser
-          npm run test:motion
-          RPI_BROWSER=firefox MOZ_WEBRENDER=1 LIBGL_ALWAYS_SOFTWARE=1 npm run test:browser
-          RPI_BROWSER=firefox MOZ_WEBRENDER=1 LIBGL_ALWAYS_SOFTWARE=1 npm run test:motion
-          RPI_BROWSER=webkit npm run test:browser
-          RPI_BROWSER=webkit npm run test:motion

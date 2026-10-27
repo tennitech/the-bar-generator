@@ -4,13 +4,15 @@
 
 The repo is public and owned by tennitech. Kaden is the current administrator; d-kote has write access. These are the roles checked on October 27, 2026, not a permanent assignment.
 
-Use branches and pull requests for all changes to `main`. The main ruleset requires the Unit tests and Browser tests checks and resolved review conversations. It blocks force pushes and deletion. It requires no second approval while Kaden is the primary developer. No account is a required code owner today, so work does not depend on a personal approval.
+Use branches and pull requests for all changes to `main`. The main ruleset requires the Unit tests check and resolved review conversations. It blocks force pushes and deletion. It requires no second approval while Kaden is the primary developer. No account is a required code owner today, so work does not depend on a personal approval.
 
 GitHub Pages currently publishes the root of `main`. Merging a change to `main` can update the public site. Check the live site after a merge. Auto-merge is off; merged feature branches are deleted automatically.
 
 ## Tests and cost controls
 
-Checks runs on pushes to `main` and on pull requests opened, reopened, or updated against `main`. There is no schedule. The older Site audit workflow was removed; its browser checks now run in Checks. Documentation-only changes skip browser installation and execution. Actions are pinned to reviewed commit IDs; update those IDs when reviewing action upgrades. The test jobs use a standard Ubuntu runner, read-only repository permissions, no saved checkout credentials, no cache, no artifact uploads, and a ten-minute unit-test limit. Browser tests have a fifteen-minute limit. A newer run cancels an older run for the same pull request or branch. The job is disabled for private repos.
+Checks runs fast unit tests on pushes to `main` and on pull requests opened, reopened, or updated against `main`. There is no schedule. Browser installation, browser smoke tests, and motion tests are manual local tools, not automated merge requirements. Contributors and reviewers are responsible for the relevant rendered-state, keyboard, accessibility, motion, and export checks.
+
+The older Site audit workflow was removed. Actions are pinned to reviewed commit IDs; update those IDs when reviewing action upgrades. The unit job uses a standard Ubuntu runner, read-only repository permissions, no saved checkout credentials, no cache, no artifact uploads, and a five-minute limit. A newer run cancels an older run for the same pull request or branch. The job is disabled for private repos.
 
 Standard runner compute is free for public repos under current GitHub pricing. This is not a guarantee of future pricing. Do not add paid runners, stored artifacts, caches, private-repo execution, or paid services without checking cost and owner approval. GitHub Pages has its own deployment process.
 

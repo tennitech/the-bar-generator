@@ -25,6 +25,11 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 3. Completed Milestones
 
+- **[2026-10-27] Lightweight checks policy**:
+    - At the owner's request, the fast unit suite is the only automated merge check. Removed browser installation and browser/motion execution from CI and removed Browser tests from main protection.
+    - Kept the optional local browser and motion scripts. Contributors and reviewers perform the relevant UI, accessibility, motion, and export checks. The unit job has a five-minute limit and retains public-repo, read-only, no-cache, and no-artifact controls.
+
+
 - **[2026-10-27] Live motion timing repair**:
     - Replaced the 120 FPS ceiling with a browser-frame-driven render target. The header mark now reuses a canvas and draws with the preview on each frame instead of replacing SVG markup at about 8 FPS.
     - Added continuous live phase integration for speed, direction, pause, and resume changes. Limited phase advance at dense/fast settings and after stalls to reduce apparent reversal. Reset frame timestamps after visibility changes and pause background rendering during the ASCII overlay.
