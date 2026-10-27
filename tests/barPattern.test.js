@@ -589,7 +589,7 @@ describe('createBarPatternSVG', () => {
     expect(neuralNetwork).toContain('<circle');
     expect(fibonacci).toContain('<rect');
     expect(union).toContain('<polygon');
-    expect(waveQuantum).toContain('<path d="');
+    expect(waveQuantum).toContain('<polygon');
     expect(lunar).toContain('fill="#000000"');
     expect(lunar).toContain('<path');
     expect(lunar).not.toContain('<image href=');
