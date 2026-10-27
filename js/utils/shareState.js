@@ -28,7 +28,9 @@
   function normalizeState(value, manifest) {
     if (!isRecord(value) || value.v !== VERSION) throw new Error('This share link uses an unsupported version.');
     if (!isRecord(value.controls)) throw new Error('This share link has no valid controls.');
-    const sourceControls = { ...value.controls };
+    const sourceControls = scope.loopingGifUtils && typeof scope.loopingGifUtils.normalizeMotionSpeedControls === 'function'
+      ? scope.loopingGifUtils.normalizeMotionSpeedControls(value.controls)
+      : { ...value.controls };
     const triangleDirectionId = 'triangles-direction-select';
     const triangleDirections = manifest[triangleDirectionId] && manifest[triangleDirectionId].options;
     if (triangleDirections && triangleDirections.includes('up-left')) {
