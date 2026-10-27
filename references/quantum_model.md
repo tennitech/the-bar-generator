@@ -16,7 +16,7 @@ i*dpsi/dtau = -(1/(2pi)²)*d²psi/du²
 integral(|psi|² du, 0..1) = 1
 ```
 
-Distinct integer modes are orthogonal; each coefficient has squared magnitude 1/3, so total norm is one at every time. As an independent internal check:
+The physical wavefunction is Ψ(x,t)=ψ(x/L,τ)/√L, so ∫₀ᴸ|Ψ|²dx=1. Distinct integer modes are orthogonal; each coefficient has squared magnitude 1/3, so total norm is one at every time. As an independent internal check:
 
 ```text
 rho = |psi|²
@@ -35,7 +35,7 @@ The bar draws three fixed projections Re(exp(iα)psi), α=0,π/3,2π/3. These ar
 
 A thin vertical ribbon follows each graph: 1.35 reference units at the nominal 18-unit bar height (a modest 15.4% increase from 1.17). Fixed interior padding keeps the entire ribbon within the bar without clipping. That cosmetic line width is not uncertainty or additional probability. Exact full-domain endpoints and cap-free polygons keep real paint at both nominal horizontal edges and within caller bounds, up to the documented 1e-12 reference-unit floating tolerance. The fixed spatial sampling uses 400 intervals; linear interpolation between samples is a drawing approximation. The state is sampled once per position and then projected three times, avoiding redundant trigonometric evaluations.
 
-Phase advances continuously from browser-frame timestamps. A complete state recurrence is 120 display seconds at speed 1.0. SPEED ranges from 0.2 to 1.0 and multiplies the same time parameter for every mode. Component frequencies at a fixed position are 16s/120, 9s/120 and 49s/120 cycles per second for multiplier s. The maximum remains 0.4083 Hz, unchanged from the previous design. REVERSE evaluates earlier times in the same reversible analytic solution; it is not a claim to reverse an experiment. Unspecified mass and circumference mean display seconds are not physical calibration. A delayed frame is capped at 50 ms, so a stalled device can play more slowly instead of catching up in a large jump.
+Phase advances continuously from browser-frame timestamps. The nominal playback recurrence is 120 display seconds at speed 1.0 under normal frame delivery. SPEED ranges from 0.2 to 1.0 and multiplies the same time parameter for every mode. Component frequencies at a fixed position are 16s/120, 9s/120 and 49s/120 cycles per second for multiplier s. The maximum remains 0.4083 Hz, unchanged from the previous design. REVERSE evaluates earlier times in the same reversible analytic solution; it is not a claim to reverse an experiment. Unspecified mass and circumference mean display seconds are not physical calibration. A delayed frame is capped at 50 ms, so a stalled device can play more slowly instead of catching up in a large jump.
 
 Fine projection detail can merge at tiny sizes. Slower motion cannot by itself prevent subpixel shimmer in the header. BAR-06 owns final miniature rendering policy and actual-size checks with BAR-01 geometry; a static fallback must disclose snapshot semantics rather than claim a live same-phase view. No universal minimum pattern size, flicker-free guarantee, or formal brand approval is claimed.
 
@@ -51,6 +51,6 @@ Shared control styles follow BAR-07's touch conventions: 2.75rem target floor, 3
 
 ## Tested guarantees and limits
 
-Numerical tests cover norm, an independent interference formula, bounds, periodic endpoints, Fourier coefficients and their n² phase evolution, recurrence, finite-difference Schrödinger residuals, speed/reverse steps, and fixed-scale polygon bounds at 65 phases. These checks give specific evidence for this chosen finite model, not 100% certainty about all software, displays or quantum systems.
+Numerical tests cover norm, an independent interference formula, bounds, independently expected endpoints of all three projections, Fourier coefficients and their n² phase evolution, unwrapped analytic recurrence, finite-difference Schrödinger residuals, speed/reverse steps, and fixed-scale polygon bounds at 65 phases. These checks give specific evidence for this chosen finite model, not 100% certainty about all software, displays or quantum systems.
 
 This branch starts from assigned baseline 43944b5. Its inherited general PNG/SVG placement differs; BAR-01 owns final official geometry and canonical raster integration. Quantum shapes agree at identical caller geometry; the branch alone cannot establish complete official-geometry export parity. Shared status/science changes are proposed to the coordinator separately. Physical-device, manual screen-reader, low-power/high-refresh and final combined-header acceptance remain distinct checks.

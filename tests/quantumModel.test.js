@@ -93,3 +93,58 @@ test('speed and reverse change only phase rate, with bounded stalls and determin
   expect(model.sample(.413, .37).re).toBeCloseTo(model.sample(.413, 1.37).re, 12);
   expect(model.sample(.413, .37).im).toBeCloseTo(model.sample(.413, 1.37).im, 12);
 });
+
+// Hardcoded analytic reference deliberately does not call normalizePhase or use model.MODES.
+function unwrappedAnalyticState(position, phase) {
+  let re = 0, im = 0;
+  for (const n of [-4, 3, 7]) {
+    const angle = 2 * Math.PI * (n * position - n * n * phase);
+    re += Math.cos(angle) / Math.sqrt(3);
+    im += Math.sin(angle) / Math.sqrt(3);
+  }
+  return { re, im };
+}
+
+test('all projection endpoints and ribbon edges match independent non-dyadic analytic samples', () => {
+  for (const phase of [.013, .137, .371, .683, .997]) {
+    for (const barHeight of [18, 36]) {
+      const geometry = createWaveQuantumPatternGeometry({ barStartX: 3, barY: 9, exactBarWidth: 250, barHeight, quantumPhase: phase });
+      for (const [projectionIndex, alpha] of [0, Math.PI / 3, 2 * Math.PI / 3].entries()) {
+        const path = geometry.paths[projectionIndex];
+        for (const [position, index] of [[0, 0], [1, path.length - 1]]) {
+          const state = unwrappedAnalyticState(position, phase);
+          const projection = (state.re * Math.cos(alpha) - state.im * Math.sin(alpha)) / Math.sqrt(3);
+          const expectedY = 9 + barHeight / 2 - (barHeight - geometry.thickness) / 2 * projection;
+          expect(path[index].x).toBe(3 + position * 250);
+          expect(path[index].y).toBeCloseTo(expectedY, 10);
+          const edge = geometry.polygons[projectionIndex].filter(point => point.x === path[index].x);
+          expect(edge).toHaveLength(2);
+          expect(Math.min(...edge.map(point => point.y))).toBeCloseTo(expectedY - geometry.thickness / 2, 10);
+          expect(Math.max(...edge.map(point => point.y))).toBeCloseTo(expectedY + geometry.thickness / 2, 10);
+        }
+      }
+    }
+  }
+});
+
+test('full state recurrence agrees with an unwrapped analytic reference rather than only modulo wrapping', () => {
+  for (const position of [.037, .173, .431, .887]) {
+    for (const phase of [.013, .137, .371, .683]) {
+      const initial = unwrappedAnalyticState(position, phase);
+      const recurring = unwrappedAnalyticState(position, phase + 1);
+      expect(recurring.re).toBeCloseTo(initial.re, 11);
+      expect(recurring.im).toBeCloseTo(initial.im, 11);
+      expect(model.sample(position, phase).re).toBeCloseTo(initial.re, 11);
+      expect(model.sample(position, phase).im).toBeCloseTo(initial.im, 11);
+      expect(model.sample(position, phase + 1).re).toBeCloseTo(recurring.re, 11);
+      expect(model.sample(position, phase + 1).im).toBeCloseTo(recurring.im, 11);
+    }
+  }
+  // A recurrence of only the fastest component is not a recurrence of the whole state.
+  const initial = unwrappedAnalyticState(.173, .137);
+  const partial = unwrappedAnalyticState(.173, .137 + 1 / 49);
+  expect(Math.hypot(initial.re - partial.re, initial.im - partial.im)).toBeGreaterThan(.1);
+  let phase = 0;
+  for (let frame = 0; frame < 7200; frame++) phase = model.advancePhase(phase, 1000 / 60);
+  expect(Math.min(phase, 1 - phase)).toBeLessThan(1e-10);
+});
