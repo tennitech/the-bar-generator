@@ -31,7 +31,7 @@
       : null;
 
     if (legacyGeneratorUrl) {
-      window.location.replace(legacyGeneratorUrl);
+      window.location.replace(legacyGeneratorUrl + window.location.hash);
       return;
     }
 
