@@ -1,10 +1,11 @@
 (function (root) {
   let active = null, nextId = 0, lastProgressAt = 0;
   const byId = id => document.getElementById(id);
-  const controls = () => ['save-png', 'save-svg', 'save-loop-gif', 'export-size-select'].map(byId).filter(Boolean);
+  const controls = () => ['save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'copy-svg', 'copy-png', 'copy-jpeg'].map(byId).filter(Boolean);
   function size() { return byId('export-size-select')?.value === 'large' ? 'large' : 'standard'; }
   function sync(credits = false) {
     if (byId('export-settings')) byId('export-settings').hidden = credits;
+    root.logoClipboard?.sync(credits);
     if (credits || !root.RPI_LOGO_GEOMETRY || !root.logoExportOptions) return;
     const dimensions = root.logoExportOptions.dimensions(size(), root.RPI_LOGO_GEOMETRY);
     for (const format of ['png', 'gif']) {
@@ -53,7 +54,7 @@
     byId('export-cancel').hidden = true;
     byId('export-meter').value = outcome === 'started' ? 1 : 0;
     if (outcome === 'error' && focusWasInMenu) {
-      byId(job.format === 'gif' ? 'save-loop-gif' : `save-${job.format}`)?.focus();
+      byId(job.triggerId || (job.format === 'gif' ? 'save-loop-gif' : `save-${job.format}`))?.focus();
     } else {
       if (focusWasInMenu) byId('save-button')?.focus();
       if (typeof hideSaveMenu === 'function') hideSaveMenu();

@@ -57,6 +57,12 @@ Physical Safari/keyboards, screen readers, continuous-motion judgment,
 high-refresh/low-power performance and formal RPI/asset approval remain separate
 limitations. Automated software checks do not establish manual owner acceptance.
 
+## Clipboard actions — October 27, 2026
+
+The existing asset menu now offers capability-detected SVG/PNG/JPEG copy actions using the same frozen state, official vector geometry and Standard/Large raster renderer as downloads. Unsupported native SVG becomes explicitly labeled SVG source text; unsupported JPEG becomes explicitly labeled JPEG download. JPEG uses a named black/white matte chosen for maximum mark contrast. PNG keeps smooth transparency. Clipboard writes start inside user activation with promise-backed ClipboardItem data; dispatched platform writes have no misleading Cancel control. Busy exclusion, accessible status, keyboard/touch controls and retry reuse the export UI. No runtime dependency, persistent permission request, or clipboard read is added.
+
+Local verification passed 298 unit tests in 29 suites, Chromium/WebKit complete browser smoke and aggregate integration, request-time PNG/SVG snapshot checks, and all six transparent GIF family/size cases per engine. Clipboard-specific tests checked native Chromium MIME/content, frozen pixel hashes, encoding failures, denial/retry and touch/keyboard behavior. See [clipboard validation and browser limits](clipboard_exports.md) and [review images](review-images/clipboard-validation.md). Chromium real clipboard MIME/content readback and WebKit adapter checks are distinct; physical Safari, mobile hardware, native-app paste acceptance and formal approval remain unverified.
+
 ## 3. Completed Milestones
 
 - **[2026-10-27] Header and intro motion polish**:

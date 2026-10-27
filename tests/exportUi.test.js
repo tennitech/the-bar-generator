@@ -4,7 +4,7 @@ const vm = require('node:vm');
 function fixture() {
   const document = { readyState: 'complete', addEventListener() {}, activeElement: null };
   const ids = ['save-menu', 'save-button', 'save-png', 'save-svg', 'save-loop-gif', 'export-size-select',
-    'export-progress', 'export-message', 'export-meter', 'export-cancel'];
+    'export-progress', 'export-message', 'export-meter', 'export-cancel', 'copy-png', 'copy-svg', 'copy-jpeg'];
   const elements = Object.fromEntries(ids.map(id => [id, {
     id, textContent: '', value: 0, listeners: {},
     addEventListener(type, callback) { this.listeners[type] = callback; },
@@ -60,4 +60,18 @@ test('pointer Cancel restores the trigger when native activation does not focus 
   expect(document.activeElement.id).toBe('export-cancel');
   ui.finish(job, 'cancelled', 'Export cancelled.');
   expect(document.activeElement.id).toBe('save-button');
+});
+
+
+test('copies exclude concurrent downloads and restore the actual retry control', () => {
+  const { ui, elements, document } = fixture();
+  elements['copy-png'].focus();
+  const job = ui.begin('png'); job.triggerId = 'copy-png';
+  expect(elements['save-svg'].disabled).toBe(true);
+  expect(elements['copy-jpeg'].disabled).toBe(true);
+  expect(ui.begin('svg')).toBe(null);
+  ui.finish(job, 'error', 'Copy was blocked.');
+  expect(document.activeElement.id).toBe('copy-png');
+  expect(elements['copy-svg'].disabled).toBe(false);
+  expect(elements['save-png'].disabled).toBe(false);
 });

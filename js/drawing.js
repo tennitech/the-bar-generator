@@ -1160,7 +1160,7 @@ function awaitExportTask(promise, signal) {
   });
 }
 
-async function createPNGExportBlob(snapshot, signal) {
+async function createRasterExportBlob(snapshot, signal, mime = 'image/png', background = null) {
   const { dimensions, geometry } = snapshot;
   const xml = new DOMParser().parseFromString(snapshot.svgSource, 'image/svg+xml');
   if (xml.querySelector('parsererror')) throw new Error('The selected SVG could not be rendered.');
@@ -1176,11 +1176,15 @@ async function createPNGExportBlob(snapshot, signal) {
     await awaitExportTask(image.decode(), signal);
     throwIfExportCancelled(signal);
     canvas.width = dimensions.width; canvas.height = dimensions.height;
-    canvas.getContext('2d').drawImage(image, 0, 0);
+    const ctx = canvas.getContext('2d');
+    if (background) { ctx.fillStyle = background; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+    ctx.drawImage(image, 0, 0);
     return await awaitExportTask(new Promise((resolve, reject) => canvas.toBlob(blob =>
-      blob ? resolve(blob) : reject(new Error('PNG encoding failed. Try again.')), 'image/png')), signal);
+      blob && blob.type === mime ? resolve(blob) : reject(new Error('Image encoding failed. Try again.')), mime, 0.95)), signal);
   } finally { URL.revokeObjectURL(url); image.src = ''; canvas.width = 0; canvas.height = 0; }
 }
+
+function createPNGExportBlob(snapshot, signal) { return createRasterExportBlob(snapshot, signal); }
 
 function createCapturedGifRenderer(snapshot, framePlan) {
   const canvas = document.createElement('canvas');
@@ -1223,20 +1227,24 @@ function startLogoDownload(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-async function runLogoExport(format) {
+async function runLogoExport(format, triggerId) {
   const job = window.logoExportUI.begin(format);
   if (!job) return null;
+  if (triggerId) job.triggerId = triggerId;
   const started = performance.now();
   let renderer;
   try {
     // Everything used by asynchronous work is captured before yielding to input.
     const snapshot = captureLogoExportSnapshot();
-    const filename = window.logoExportOptions.filename(snapshot, format);
+    let filename = window.logoExportOptions.filename(snapshot, format);
+    if (format === 'jpeg') filename = filename.replace('-clear-',
+      `-${window.logoClipboard.background(snapshot.foreground) === '#000000' ? 'black' : 'white'}-background-`);
     await new Promise(resolve => setTimeout(resolve, 0));
     throwIfExportCancelled(job.controller.signal);
     let blob, metrics = {};
     if (format === 'svg') blob = new Blob([snapshot.svgSource], { type: 'image/svg+xml' });
-    else if (format === 'png') blob = await createPNGExportBlob(snapshot, job.controller.signal);
+    else if (format === 'png' || format === 'jpeg') blob = await createRasterExportBlob(snapshot, job.controller.signal,
+      format === 'jpeg' ? 'image/jpeg' : 'image/png', format === 'jpeg' ? window.logoClipboard.background(snapshot.foreground) : null);
     else {
       if (!window.loopingGifUtils.isLoopingGifEligibleStyle(snapshot.family)) throw new Error('This pattern does not have a looping GIF.');
       const plan = window.loopingGifUtils.getLoopingGifFramePlan(snapshot.family, snapshot.values, { barWidth: snapshot.geometry.width });
