@@ -19,7 +19,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
         write: async items => { window.__testClipboard = await Promise.all(items.map(async item => {
           const data = {}; for (const type of item.types) data[type] = await item.getType(type); return data;
         })); },
-        writeText: async text => { window.__testSource = text; window.__testClipboard = [{ 'text/plain': new Blob([text], { type: 'text/plain' }) }]; }
+        writeText: async () => { throw new Error('SVG must never use the source-text clipboard.'); }
       } });
     });
     const errors = []; page.on('pageerror', e => errors.push(e.message));
@@ -47,6 +47,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
       return { types, type: blob.type, width: c.width, height: c.height, corner: [...data.slice(0, 4)], partial, ink, firstInk, pixelHash: hash };
     }, { engine, format });
     assert.deepEqual(await page.locator('#clipboard-actions button').evaluateAll(nodes => nodes.map(node => node.id)), ['copy-svg', 'copy-png']);
+    await open(); assert.doesNotMatch(await page.locator('#save-menu').innerText(), /Finder/);
     const caps = await page.evaluate(() => ({ svg: logoClipboard.native('image/svg+xml') }));
     for (const size of ['standard', 'large']) for (const theme of ['black', 'white', 'red']) {
       await set('export-size-select', size); await set('color-mode-select', theme); await open();
@@ -60,12 +61,16 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
     if (caps.svg) {
       await page.evaluate(() => { window.__expectedSVG = captureLogoExportSnapshot().svgSource; });
       await open(); await page.locator('#copy-svg').click(); await page.waitForFunction(() => !logoExportUI.isBusy());
-      assert.match(await page.locator('#export-message').innerText(), /For Finder, use Download SVG/);
+      assert.match(await page.locator('#export-message').innerText(), /SVG copied/);
       const result = await read('svg'); assert.deepEqual(result.types, ['image/svg+xml'], 'native SVG has no plain-text or HTML alternative');
       const parity = await page.evaluate(source => {
         const parse = text => new DOMParser().parseFromString(text, 'image/svg+xml');
         const paths = doc => [...doc.querySelectorAll('path, polygon, rect')].map(e => [e.tagName, ...[...e.attributes].map(a => `${a.name}=${a.value}`).sort()]);
-        return JSON.stringify(paths(parse(source))) === JSON.stringify(paths(parse(window.__expectedSVG)));
+        const doc = parse(source), expected = parse(window.__expectedSVG);
+        if (doc.querySelector('parsererror') || doc.documentElement.namespaceURI !== 'http://www.w3.org/2000/svg') return false;
+        if (doc.querySelector('image, script, foreignObject, [href], [style]')) return false;
+        if (doc.documentElement.getAttribute('viewBox') !== '-20 -20 290 190.4885') return false;
+        return JSON.stringify(paths(doc)) === JSON.stringify(paths(expected));
       }, result.source); assert(parity, 'native SVG preserves the selected vector geometry'); assert(result.source.includes('<path'));
       assert(!result.source.includes('<image')); assert(result.source.includes('polygon')); results.push({ nativeSVG: result.type });
       if (engine === 'chromium') {
@@ -83,20 +88,21 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
         } finally { await receiver.close(); await page.bringToFront(); }
       }
     }
-    // Force the explicit source fallback, while retaining the real Chromium text write.
+    // Unsupported SVG must leave our existing clipboard payload untouched.
+    const beforeUnsupported = await page.evaluate(async engine => engine === 'webkit' ? Object.keys(window.__testClipboard[0]) : (await navigator.clipboard.read())[0].types, engine);
     await page.evaluate(() => {
       const original = ClipboardItem.supports.bind(ClipboardItem);
       ClipboardItem.supports = mime => mime === 'image/svg+xml' ? false : original(mime);
       logoClipboard.sync();
     });
-    await open(); assert.match(await page.locator('#copy-svg').innerText(), /Copy SVG source \(text\)/);
-    await page.locator('#copy-svg').click(); await page.waitForFunction(() => !logoExportUI.isBusy());
-    assert.match(await page.locator('#export-message').innerText(), /SVG source text copied.*Finder file/);
-    const source = await page.evaluate(async engine => engine === 'webkit' ? window.__testSource : navigator.clipboard.readText(), engine);
-    assert(source.includes('<svg')); assert(source.includes('<polygon'));
-    const sourceTypes = await page.evaluate(async engine => engine === 'webkit' ? Object.keys(window.__testClipboard[0]) : (await navigator.clipboard.read())[0].types, engine);
-    assert.deepEqual(sourceTypes, ['text/plain'], 'source action explicitly copies text, not an SVG image');
-    results.push({ sourceFallback: true, types: sourceTypes });
+    await open();
+    assert.match(await page.locator('#copy-svg').innerText(), /SVG copy unavailable/);
+    assert.equal(await page.locator('#copy-svg').isDisabled(), true);
+    await page.evaluate(() => logoClipboard.copy('svg')); await page.waitForFunction(() => !logoExportUI.isBusy());
+    assert.match(await page.locator('#export-message').innerText(), /SVG clipboard copying is unavailable/);
+    const afterUnsupported = await page.evaluate(async engine => engine === 'webkit' ? Object.keys(window.__testClipboard[0]) : (await navigator.clipboard.read())[0].types, engine);
+    assert.deepEqual(afterUnsupported, beforeUnsupported);
+    results.push({ unsupportedSVG: 'no write or format substitution', types: afterUnsupported });
     // File recovery is a genuine vector download, not a clipboard file promise.
     await open();
     assert.match(await page.locator('#save-svg').innerText(), /Download SVG/);
@@ -134,26 +140,32 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
     await page.evaluate(() => { HTMLCanvasElement.prototype.toBlob = window.__toBlob; });
     // Insecure and missing image-write APIs recover without requesting permissions.
     await page.evaluate(() => { Object.defineProperty(window, 'isSecureContext', { value: false, configurable: true }); });
-    await open(); await page.locator('#copy-png').click(); await page.waitForFunction(() => !logoExportUI.isBusy());
+    await open(); await page.evaluate(() => logoClipboard.sync());
+    assert.equal(await page.locator('#copy-png').isDisabled(), true);
+    await page.evaluate(() => logoClipboard.copy('png')); await page.waitForFunction(() => !logoExportUI.isBusy());
     assert.match(await page.locator('#export-message').innerText(), /HTTPS/);
     await page.evaluate(() => { Object.defineProperty(window, 'isSecureContext', { value: true, configurable: true }); navigator.clipboard.write = undefined; logoClipboard.sync(); });
-    await open(); await page.locator('#copy-png').click(); await page.waitForFunction(() => !logoExportUI.isBusy());
+    await open(); assert.equal(await page.locator('#copy-png').isDisabled(), true);
+    await page.evaluate(() => logoClipboard.copy('png')); await page.waitForFunction(() => !logoExportUI.isBusy());
     assert.match(await page.locator('#export-message').innerText(), /unavailable/);
+    assert.equal(await page.locator('#copy-svg').isDisabled(), true);
+    assert.equal(await page.locator('#copy-png').isDisabled(), true);
     await page.evaluate(() => { navigator.clipboard.write = window.__write; ClipboardItem.supports = window.__originalSupports; logoClipboard.sync(); document.getElementById('toast-container').replaceChildren(); document.getElementById('export-progress').hidden = true; });
     await page.setViewportSize({ width: 390, height: 844 }); await open();
     await page.locator('#copy-png').tap(); await page.waitForFunction(() => !logoExportUI.isBusy());
-    assert.match(await page.locator('#export-message').innerText(), /PNG image copied/); await open();
-    await page.locator('#copy-svg').focus(); await page.keyboard.press('Enter'); await page.waitForFunction(() => !logoExportUI.isBusy());
+    assert.match(await page.locator('#export-message').innerText(), /PNG copied/); await open();
+    if (caps.svg) { await page.locator('#copy-svg').focus(); await page.keyboard.press('Enter'); await page.waitForFunction(() => !logoExportUI.isBusy()); }
+    else assert.equal(await page.locator('#copy-svg').isDisabled(), true);
     await open();
     await page.evaluate(() => { document.getElementById('toast-container').replaceChildren(); document.getElementById('export-progress').hidden = true; });
     for (const id of ['copy-svg', 'copy-png']) {
       const box = await page.locator(`#${id}`).boundingBox(); assert(box.height >= 44); assert(box.x >= 0); assert(box.x + box.width <= 390);
     }
-    await fs.mkdir('/tmp/bar-clipboard-evidence', { recursive: true });
-    await page.screenshot({ path: `/tmp/bar-clipboard-evidence/${engine}-mobile.png` });
+    await fs.mkdir('/tmp/bar-native-svg-evidence', { recursive: true });
+    await page.screenshot({ path: `/tmp/bar-native-svg-evidence/${engine}-mobile.png` });
     await page.setViewportSize({ width: 1440, height: 900 }); await page.waitForTimeout(350); await open();
-    await page.screenshot({ path: `/tmp/bar-clipboard-evidence/${engine}-desktop.png` });
-    await fs.writeFile(`/tmp/bar-clipboard-evidence/${engine}-results.json`, JSON.stringify({ engine, caps, results }, null, 2));
+    await page.screenshot({ path: `/tmp/bar-native-svg-evidence/${engine}-desktop.png` });
+    await fs.writeFile(`/tmp/bar-native-svg-evidence/${engine}-results.json`, JSON.stringify({ engine, caps, results }, null, 2));
     assert.deepEqual(errors, []); console.log(JSON.stringify({ engine, clipboard: engine === 'chromium' ? 'native headless isolated' : 'test adapter', caps, results }, null, 2));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

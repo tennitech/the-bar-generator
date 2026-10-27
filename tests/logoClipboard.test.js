@@ -7,12 +7,12 @@ function fixture({ secure = true, supports, write = () => {} } = {}) {
 }
 test('SVG requires positive capability evidence; older Safari can attempt PNG', () => {
   const api = fixture();
-  expect(api.mode('svg')).toBe('source'); expect(api.mode('png')).toBe('image');
+  expect(api.mode('svg')).toBe('unavailable'); expect(api.mode('png')).toBe('image');
 });
 test('native detection respects secure contexts, explicit rejection and unsupported errors', () => {
   expect(fixture({ secure: false, supports: () => true }).native('image/png')).toBe(false);
   expect(fixture({ supports: () => false }).mode('png')).toBe('unavailable');
-  expect(fixture({ supports: () => { throw Error(); } }).mode('svg')).toBe('source');
+  expect(fixture({ supports: () => { throw Error(); } }).mode('svg')).toBe('unavailable');
   expect(fixture({ supports: type => type === 'image/svg+xml' }).mode('svg')).toBe('image');
 });
 test('unsupported copy requests cannot enter an image or export path', async () => {
