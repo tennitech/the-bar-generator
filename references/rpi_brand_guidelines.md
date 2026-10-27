@@ -1,3 +1,30 @@
+# Source record and contributor checks
+
+Verified on October 27, 2026, through the RPI brand site in the Codex in-app browser. The review covered Home, Logo System, The Bar, Color, Typography, Pattern, Naming Conventions, Design Principles, Voice and Tone, and the font library. The existing reference text below is retained; use the clarifications here when reading it.
+
+## Official sources
+
+- [Logo System](https://brand.rpi.edu/document/4#/-/logo-system): official letterforms, fixed geometry, clear space, approved combinations, and lockups. The page showed July 21, 2026 as its modification date.
+- [The Bar](https://brand.rpi.edu/document/4#/-/the-bar): 500 × 36 px design area and student-club rules. The page showed March 31, 2026 as its modification date.
+- [Color](https://brand.rpi.edu/document/4#/-/color), [Typography](https://brand.rpi.edu/document/4#/-/typography), and [Pattern](https://brand.rpi.edu/document/4#/-/pattern): each showed October 22, 2026 as its modification date.
+- [Naming](https://brand.rpi.edu/document/4#/-/naming-conventions), [Design Principles](https://brand.rpi.edu/document/4#/-/design-principles), [Voice and Tone](https://brand.rpi.edu/document/4#/-/voice-tone), and [Fonts](https://brand.rpi.edu/document/13).
+
+## Checks before a brand-related change
+
+1. Use the official vectors. Do not redraw the lettering from a font. Keep size, spacing, and proportions fixed. Use the dimensioned drawing for the 500 × 36 px bar area; do not infer new dimensions from descriptive prose.
+2. Keep at least 10 px digital clear space or 0.25 in print clear space on all sides. The 60 px digital and 0.75 in print minimum widths apply to the logo with a solid bar. Complex patterns need a larger size; the source gives no universal numerical minimum for each pattern.
+3. Record the pattern's mathematical, scientific, or data system. Use primitive geometry and approved colors. The Pattern page excludes photography, gradients, and complex imagery as pattern elements. Existing gradient and artwork treatments need owner review against this rule; their presence in the app is not approval.
+4. Keep student-club bars as vectors, preferably SVG, with no imagery or visible alphanumeric characters. Encoded text is distinct from literal visible letters. Student Union approval is required for internal club use; formal brand approval is required for official library inclusion. Only black and white club versions enter that library. Keep this project's stricter color controls unless the owner approves a change.
+5. Use the primary logo separately beside a student organization or project name. Do not create a new institutional lockup for it.
+6. Default to black and white when unsure. Primary combinations are black on white, white on black, and white on red. Other listed combinations have limited use. Check each actual color pair for contrast; do not communicate state through color alone.
+7. Use RPIGeist for general UI and body text and RPIGeistMono for technical alignment. The site describes the RPI fonts as free to use and downloadable. That statement does not establish public redistribution rights. Replica is commercial and needs a paid license. See references/asset_licensing.md before adding or distributing fonts.
+8. Check density, viewing distance, readability, and interference in small or moving patterns. Check reduced motion and animated exports. These are required review tasks, not claims that the app has passed them.
+9. Use RPI in general references and Rensselaer Polytechnic Institute in formal references. Use specific evidence and a curious, humble, genuine, resilient, offbeat, and relatable voice. The site's sample stories are illustrations, not evidence of actual achievements.
+
+Brand-site access is not a copyright license or project approval. Confirm asset rights and approvals with the RPI sponsor. AGENTS.md remains the repository's canonical agent policy; record and resolve any policy conflict rather than silently widening app behavior.
+
+---
+
 # About Our Brand
 
 ## Overview

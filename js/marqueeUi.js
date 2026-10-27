@@ -16,7 +16,7 @@ const BASE_SPEEDS = [62, 66, 64, 68, 65, 69, 63, 67, 64, 68];
 const HERO_CLUSTER_WIDTH = 960;
 const HERO_CLUSTER_HEIGHT = 330;
 const MOBILE_HERO_BREAKPOINT = 550;
-const HERO_MIN_SCALE = 0.5;
+const HERO_MIN_SCALE = 0.4;
 const HERO_COMPACT_CREDIT_SCALE = 0.76;
 const HERO_BASE_MAX_SCALE = 1;
 const LARGE_DESKTOP_BREAKPOINT = 1920;
@@ -56,12 +56,23 @@ function toAssetUrl(path) {
   return encodeURI(path);
 }
 
-function getGeneratorHref() {
+function getMarqueeBarStyle(path) {
+  const name = String(path || '').split('/').pop() || '';
+  if (name.startsWith('Style=Triangle Grid')) return { value: 'triangle-grid', label: 'Triangle Grid' };
+  if (name.startsWith('Style=Point Connect')) return { value: 'point-connect', label: 'Point Connect' };
+  if (name.startsWith('Style=Ruler')) return { value: 'ruler', label: 'Ruler' };
+  if (name.startsWith('Style=Ticker')) return { value: 'ticker', label: 'Ticker' };
+  if (name.startsWith('Style=Grid')) return { value: 'grid', label: 'Grid' };
+  if (name.startsWith('Style=Lines')) return { value: 'lines', label: 'Lines' };
+  return { value: 'solid', label: 'Solid' };
+}
+
+function getGeneratorHref(style = 'solid') {
   if (window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorPath === 'function') {
-    return window.GeneratorRoutes.buildGeneratorPath('solid', window.location.pathname);
+    return window.GeneratorRoutes.buildGeneratorPath(style, window.location.pathname);
   }
 
-  return 'generator/solid/';
+  return `generator/${style}/`;
 }
 
 function getViewportMetrics() {
@@ -128,6 +139,10 @@ function clamp(value, min, max) {
 }
 
 function getEdgeCaseRowLiftPx(viewportWidth, viewportHeight) {
+  if (viewportWidth < MOBILE_HERO_BREAKPOINT && viewportHeight < ROW_EDGE_CASE_MIN_HEIGHT) {
+    return clamp((ROW_EDGE_CASE_MIN_HEIGHT - viewportHeight) * 0.7, 0, 92);
+  }
+
   if (viewportHeight < ROW_EDGE_CASE_MIN_HEIGHT) {
     return 0;
   }
@@ -183,10 +198,13 @@ function wrap(value, length) {
 
 function createAssetElement(path) {
   const asset = document.createElement('a');
+  const style = getMarqueeBarStyle(path);
   asset.className = 'bar_asset_wrap';
   asset.style.setProperty('--asset-width', 'var(--marquee-asset-width)');
-  asset.href = getGeneratorHref();
-  asset.setAttribute('aria-label', 'Open the generator');
+  asset.href = getGeneratorHref(style.value);
+  asset.setAttribute('aria-label', `Open ${style.label} in the generator`);
+  asset.tabIndex = -1;
+  asset.setAttribute('aria-hidden', 'true');
 
   const image = document.createElement('img');
   image.className = 'bar_asset';
@@ -531,13 +549,15 @@ function initMarqueeScene() {
     }, { once: true });
   }
 
-  preloadAssets().finally(() => {
+  const syncInitialLayout = () => {
     syncViewportHeightVar();
     const metrics = syncMarqueeSizing(root);
     syncHeroScale(root, metrics);
     syncRowMeasurements(rowStates, true);
     syncRowVerticalLayout(rowStates, stage);
-  });
+  };
+  syncInitialLayout();
+  preloadAssets().finally(syncInitialLayout);
 
   let resizeFrame = 0;
   function handleResize() {
@@ -561,8 +581,12 @@ function initMarqueeScene() {
     window.visualViewport.addEventListener('scroll', handleResize, { passive: true });
   }
 
+  const reducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  let animationFrame = 0;
   let lastTime = performance.now();
   function animateRows(now) {
+    animationFrame = 0;
+    if (reducedMotion && reducedMotion.matches) return;
     const dt = Math.min(0.04, (now - lastTime) / 1000);
     lastTime = now;
 
@@ -577,10 +601,29 @@ function initMarqueeScene() {
       updateRowLayout(state);
     });
 
-    window.requestAnimationFrame(animateRows);
+    animationFrame = window.requestAnimationFrame(animateRows);
   }
 
-  window.requestAnimationFrame(animateRows);
+  function syncMotionPreference() {
+    if (reducedMotion && reducedMotion.matches) {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+      return;
+    }
+    if (!animationFrame) {
+      lastTime = performance.now();
+      animationFrame = window.requestAnimationFrame(animateRows);
+    }
+  }
+
+  if (reducedMotion) {
+    if (typeof reducedMotion.addEventListener === 'function') {
+      reducedMotion.addEventListener('change', syncMotionPreference);
+    } else if (typeof reducedMotion.addListener === 'function') {
+      reducedMotion.addListener(syncMotionPreference);
+    }
+  }
+  syncMotionPreference();
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -588,6 +631,7 @@ if (typeof module !== 'undefined' && module.exports) {
     computeRowTopPositions,
     getEdgeCaseRowLiftPx,
     getNarrowPortraitHeroScaleCap,
+    getMarqueeBarStyle,
     getResponsiveMarqueeMetrics,
     getRowStepPx,
     resolveCssLengthToPx

@@ -17,3 +17,9 @@ An open-source software license does not itself grant rights to use RPI trademar
 Keep this table open until the sponsor supplies evidence. Do not claim that all bundled assets have been cleared for unrestricted open-source reuse. If an asset cannot be distributed, replace it or remove it with sponsor approval.
 
 Source references: [RPI intellectual property policy](https://doso.rpi.edu/policies/academic/technology-commercialization-and-intellectual-property) and [Open Source Initiative FAQ](https://opensource.org/faq).
+
+## Brand-site review: October 27, 2026
+
+The official [Typography page](https://brand.rpi.edu/document/4#/-/typography) says RPI Geist and Mono are free to use and downloadable. Replica requires a paid license. The [font library](https://brand.rpi.edu/document/13) was inspected, but no font license files were downloaded or audited. Public redistribution terms remain unverified. These findings do not close the asset-permission items above.
+
+The [Bar rules](https://brand.rpi.edu/document/4#/-/the-bar) distinguish Student Union approval for internal club use from formal brand approval for the official library. Record the applicable approval, not just the asset source. See the dated source checklist in rpi_brand_guidelines.md.

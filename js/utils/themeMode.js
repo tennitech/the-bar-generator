@@ -65,6 +65,9 @@
       : null;
     if (triggerLabel) {
       triggerLabel.textContent = resolvedLabel;
+      if (triggerLabel.dataset && triggerLabel.dataset.label && typeof triggerLabel.setAttribute === 'function') {
+        triggerLabel.setAttribute('aria-label', `${triggerLabel.dataset.label}: ${resolvedLabel}`);
+      }
     }
 
     const customOptions = typeof wrapperElement.querySelectorAll === 'function'
@@ -72,8 +75,12 @@
       : [];
     if (customOptions && typeof customOptions.forEach === 'function') {
       customOptions.forEach(option => {
+        const isSelected = Boolean(option && option.dataset && option.dataset.value === selectElement.value);
         if (option && option.classList && typeof option.classList.toggle === 'function') {
-          option.classList.toggle('selected', option.dataset && option.dataset.value === selectElement.value);
+          option.classList.toggle('selected', isSelected);
+        }
+        if (option && typeof option.setAttribute === 'function') {
+          option.setAttribute('aria-selected', String(isSelected));
         }
       });
     }

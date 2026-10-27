@@ -59,4 +59,19 @@ describe('Profanity Filter', () => {
         expect(hasProfanity('f u c k')).toBe(true);
         expect(sanitizeText('f u c k')).toBe('*******');
     });
+
+    test('normalizes full-width, accented, and mixed-script evasion', () => {
+        expect(sanitizeText('ｆｕｃｋ')).toBe('****');
+        expect(sanitizeText('shít')).toBe('****');
+        expect(sanitizeText('fυck')).toBe('****');
+        expect(sanitizeText('s\u200bh\u200bi\u200bt')).toBe('*******');
+    });
+
+    test('blocks hateful slurs while preserving unrelated words', () => {
+        expect(hasProfanity('nigga')).toBe(true);
+        expect(hasProfanity('faggot')).toBe(true);
+        expect(sanitizeText('nigga')).toBe('*****');
+        expect(hasProfanity('classroom assistant')).toBe(false);
+        expect(hasProfanity('Dickson County')).toBe(false);
+    });
 });

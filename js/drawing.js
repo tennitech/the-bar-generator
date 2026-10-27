@@ -268,6 +268,7 @@ const SVG_EXPORT_BAR_HEIGHT = typeof REFERENCE_BAR_HEIGHT === 'number' ? REFEREN
 const SVG_EXPORT_TOTAL_HEIGHT = typeof REFERENCE_TOTAL_HEIGHT === 'number'
   ? REFERENCE_TOTAL_HEIGHT
   : SVG_EXPORT_BAR_Y + SVG_EXPORT_BAR_HEIGHT;
+const SVG_EXPORT_PADDING = 20;
 
 function createExportGraphicsBuffer(scale) {
   const graphics = createGraphics(
@@ -1322,7 +1323,7 @@ function saveSVG() {
     const fgColor = colorScheme ? colorScheme.fg : '#000000';
 
     let svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${currentWidth}" height="${logoHeight}" viewBox="0 0 ${currentWidth} ${logoHeight}" xmlns="http://www.w3.org/2000/svg">
+<svg width="${currentWidth + SVG_EXPORT_PADDING * 2}" height="${logoHeight + SVG_EXPORT_PADDING * 2}" viewBox="-${SVG_EXPORT_PADDING} -${SVG_EXPORT_PADDING} ${currentWidth + SVG_EXPORT_PADDING * 2} ${logoHeight + SVG_EXPORT_PADDING * 2}" xmlns="http://www.w3.org/2000/svg">
   <path d="${paths.r}" fill="${fgColor}"/>
   <path d="${paths.p}" fill="${fgColor}"/>
   <path d="${paths.i}" fill="${fgColor}"/>`;

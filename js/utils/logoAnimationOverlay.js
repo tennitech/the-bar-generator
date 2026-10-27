@@ -331,7 +331,19 @@
     function mountFrame() {
       const parts = ensureOverlayParts();
       destroyFrame();
-      frameEl = createAnimationFrame(documentRef, getFrameSrc());
+      const reducedMotion = !!(windowRef && windowRef.matchMedia
+        && windowRef.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      if (reducedMotion) {
+        const state = getAnimationState ? getAnimationState() : null;
+        frameEl = documentRef.createElement('div');
+        frameEl.className = 'logo_animation_static';
+        frameEl.setAttribute('role', 'img');
+        frameEl.setAttribute('aria-label', 'RPI logo with the selected bar');
+        frameEl.innerHTML = state && state.finalLogoSvg ? state.finalLogoSvg : triggerEl.innerHTML;
+      } else {
+        frameEl = createAnimationFrame(documentRef, getFrameSrc());
+      }
+      parts.replayEl.hidden = reducedMotion;
       appendChild(parts.stageEl, frameEl);
       return frameEl;
     }
@@ -371,7 +383,7 @@
         parts.overlayEl.classList.remove('is-closing');
       }
 
-      startScrimFade(OPEN_SCRIM_FALLBACK_MS);
+      startScrimFade(frameEl && frameEl.className === 'logo_animation_static' ? 0 : OPEN_SCRIM_FALLBACK_MS);
 
       if (typeof parts.closeEl.focus === 'function') {
         parts.closeEl.focus();
@@ -411,7 +423,8 @@
         if (documentRef.body && documentRef.body.classList && typeof documentRef.body.classList.remove === 'function') {
           documentRef.body.classList.remove('has-logo-animation');
         }
-      }, EXIT_TRANSITION_MS);
+      }, windowRef && windowRef.matchMedia
+        && windowRef.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : EXIT_TRANSITION_MS);
     }
 
     function replay() {

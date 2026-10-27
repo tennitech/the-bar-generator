@@ -4,13 +4,13 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## 1. Project Overview
-A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows students and faculty to generate unique, brand-compliant RPI "Bar" logos and lockups. The tool strictly adheres to branding patterns while ensuring safety and stability.
+A web-based **Design Tool** intended for RPI's central Brand Hub. It lets students and faculty explore RPI bar patterns using configured brand assets and geometry. Secondary colors and proposed club or mission lockups still need owner approval before being described as brand-compliant.
 
 ## 2. Architecture & Tech Stack
 *   **Core:** Vanilla HTML5, CSS3, JavaScript (ES6+).
-*   **Rendering:** p5.js (WebGL mode) for 2D/3D graphics and shaders.
+*   **Rendering:** p5.js 1.7.0 for the live canvas, using WebGL when available and 2D canvas otherwise, served from `third_party/p5/`.
 *   **Integration:** Designed to embed within the **Frontify** ecosystem.
-*   **Shaders:** GLSL fragment shaders for pattern generation.
+*   **Shaders:** `assets/shaders/` contains prototype GLSL files; the production generator no longer fetches or compiles them at startup.
 *   **Audio:** Web Audio API with AudioWorklet (`pulse-worklet.js`) for audio-reactive features.
 *   **Fonts:** Official `RPIGeist` family (WOFF2) served locally.
 
@@ -20,15 +20,37 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
 *   `js/` - Logic (`main.js`, `drawing.js`, `pulse-worklet.js`).
     *   `utils/` - Helper modules (`profanityFilter.js`).
 *   `references/` - Documentation and guidelines.
+*   `scripts/` - Browser smoke regression script.
+*   `third_party/` - Local licensed browser dependencies.
 
 ## 3. Completed Milestones
+
+- **[2026-10-27] Audit integration and development conventions**:
+    - Integrated the September audit with the existing main-branch contribution setup. Kept both sets of status records and the verified billing restriction.
+    - Added a development README, issue forms, branch and commit naming guidance, Node.js version metadata, and reproducible Playwright test commands with a locked test dependency. Root AGENTS.md now gives a required reading path, actionable brand intent, solid-bar size qualifications, and completion checks.
+    - Consolidated unit and three-engine browser checks into one public-repo-only workflow. Removed the older duplicate workflow. Browser execution skips documentation-only changes; both check names remain available for main protection.
+    - Branches use feat/, fix/, docs/, test/, or chore/ with a lowercase hyphenated description; Codex branches retain codex/<type>-<description>. Normal changes use short-lived branches and pull requests into main.
+
 
 - **[2026-10-27] Contribution and maintenance setup**:
     - Added a public-repository-only unit-test workflow for pull requests into main and pushes to main, with read-only permissions, no cache or artifacts, a ten-minute timeout, and cancellation of replaced runs.
     - Added contribution, conduct, private security reporting, asset permission, and December 2026 handoff guides. Aligned package license metadata with the existing MIT LICENSE; no copyright ownership transfer was made.
     - Configured main to require pull requests, passing Unit tests, and resolved conversations, with force pushes and deletion blocked. No second approval is required during primary development. Enabled merged-branch cleanup and private vulnerability reports.
-    - Open items: RPI successor organization and maintainers, software licensing authority, bundled asset permissions, and owner-level billing stop controls. Browser audit fixes remain on the separate audit branch.
+    - Open items: RPI successor organization and maintainers, software licensing authority, bundled asset permissions, and billing controls after any payment-method or ownership change. GitHub billing has no valid payment method and rejected a $0 budget on October 27; paid Actions overages are blocked under current GitHub rules. No payment method was added. Audit fixes are included in the October integration pull request.
 
+
+- **[2026-09-30] Audit Follow-up: Faster Startup, Text Safety, and Export Accuracy**:
+    - Replaced the p5 CDN script with a locally licensed copy and added retry states for missing renderer files. Removed unused serial shader loading, allowed generator dependencies to download concurrently in execution order, and delayed the large Artemis II artwork script until that style is selected.
+    - Added Unicode-aware, best-effort profanity and hateful-slur filtering across live Binary/Morse rendering, URL sharing, and exports. Binary now encodes UTF-8, and Morse spacing/comma handling is corrected.
+    - Corrected Fibonacci segment values, added SVG clear space, improved ultrawide preview scale, and preserved native mobile pinch zoom. The header animation becomes a static mark under reduced motion.
+    - Added a 2D canvas fallback when a browser cannot create a WebGL context, preserving the generator rather than leaving it blank.
+    - Added a browser smoke script and CI workflow for style routes, exports, responsive layouts, text safety, reduced motion, 2D fallback, and renderer recovery. Local Chromium/WebKit and Linux CI Chromium/Firefox/WebKit sweeps passed. See `references/site_audit_2026-09-29.md` and `references/bar_science_notes.md`.
+
+- **[2026-09-29] Full Site Audit and Accessibility/Navigation Repairs**:
+    - Audited the current `main` intro, all generator route shells, all 21 selectable bar styles, exports, responsive layouts, and automated accessibility states on a separate audit branch. Detailed evidence and remaining work are in `references/site_audit_2026-09-29.md`.
+    - Corrected intro bar links so the visible bar family opens its matching generator style, improved the first paint and short-phone layout, and updated production metadata and repository links.
+    - Restored browser zoom, added a generator heading and preview name, improved header contrast and logo minimum size, made custom selectors keyboard accessible, and kept the closed mobile sidebar out of the focus order.
+    - Honored reduced-motion preferences for the intro and the default state of animated Ruler, Ticker, and Waveform bars.
 
 - **[2026-04-28] Header Logo Animation Now Uses The Active Bar Design In An Overlay**:
     - Reworked the generator header logo trigger so it passes the current bar-only SVG and full RPI lockup SVG into the existing full-screen ASCII animation overlay through same-origin session storage.
@@ -451,13 +473,19 @@ A web-based **Design Tool** integrated with RPI's central Brand Hub. It allows s
     - Created Frontify integration strategy document.
 
 ## 6. Design Decisions
-*   **Profanity Filter:** Implemented client-side for immediate feedback and user privacy.
+*   **Profanity Filter:** Implemented client-side for immediate feedback and user privacy. Unicode folding and a documented list improve coverage, but this is best-effort moderation rather than a guarantee.
+*   **Renderer Dependency:** An unchanged, licensed p5.js 1.7.0 build is served locally so generator boot is independent of cdnjs.
+*   **Browser Regression Check:** A small Playwright smoke script runs in CI without changing the site's vanilla runtime stack.
 *   **Font Format:** Chosen `.woff2` for optimal web performance.
 *   **Global Access:** `ProfanityFilter` attached to `window` for p5.js compatibility.
 *   **Frontify Integration:** Chosen external iframe embedding as the initial integration strategy for simplicity and speed.
 *   **Export Consistency:** Introduced shared SVG bar pattern generator (`js/utils/barPattern.js`) as single source of truth for non-solid bar exports.
 
 ## 7. Known Issues / Notes
+*   October 27 brand-site review: the Pattern page excludes gradients and complex imagery as pattern elements. Existing gradient and Artemis artwork treatments need RPI owner review. Student-club and official-library approvals are separate, and free font use does not establish public redistribution rights. See the dated source checklist in references/rpi_brand_guidelines.md. No new permission or brand approval was inferred.
+
+*   The client-side text filter covers more offensive content and Unicode variants but cannot guarantee detection of every evasion or avoid every false positive. A formal owner-approved content policy is still needed.
+*   Manual screen-reader, physical mobile-device, 200%/400% browser zoom, Safari application, low-power performance, and brand approval checks remain before claiming full accessibility or brand compliance. Firefox passed headless Linux CI but could not be launched locally on this Mac.
 *   `main.js` relies heavily on global variables (p5.js pattern). Future refactoring might consider modularizing this.
 *   Previously identified issue where ticker width ratio display failed to update has been resolved (2026-02-17).
 *   Previously identified SVG export drift between `main.js` and `drawing.js` has been addressed by shared utility (2026-02-17).
