@@ -10,7 +10,7 @@ Use the complete official logo vector as a consistent source. See bar_science_no
 
 ## Owner review state
 
-Triangle variant 2 is rejected and requires iteration: the owner reports that its triangles do not overlap nicely. Earlier screenshots, passing tests, QA readiness, and a queued preview do not establish acceptance. BAR-02 has resumed this work. Retain its feature branch. Do not merge an unaccepted implementation as part of the documentation update.
+Earlier Triangle variant 2 overlap designs were rejected and superseded. The owner then requested exact complementary variants, direction/count controls, and the final Down right default/order, and authorized publication after verification. PR #30 merged as f01ee45570aa116d6b4865729dc96bd65d666546 after exact-head CI, 50-state Chromium export verification, targeted WebKit checks, and aggregate smoke. This is publication authorization, not a claim of manual testing or institutional brand approval. Retain the local and remote feature branches and worktree for later manual review.
 
 ## Worker boundaries and integration
 
@@ -25,3 +25,7 @@ Canonical local URLs use http://127.0.0.1 and assigned ports: baseline 4310, geo
 The BAR-02 development server exhausted its default connection backlog under parallel cold bootstrap requests. Raising its local backlog from 5 to 128 changed the same 24-load Chromium probe from 22 canvas failures and 128 failed requests to zero failures. This was a development-server change, not product code. A successful HTTP response or one browser load does not exclude intermittent connection failures.
 
 Parent-targeted open_in_codex requests have returned queued. Parent visibility remains unverified; the worker has no supported parent-tab inventory or close operation. Do not claim that a queued preview is visible or accepted.
+
+## Verified publication follow-up
+
+PR #30 is deployed. Local main contains the remote merge and preserves the earlier unpublished documentation commit bf230849c62d11cc114d9a6fa1f7a93d92c7bb63. The scoped BAR-02 header/SVG/PNG gap is repaired for its four families; the broader BAR-01 official-complete-vector integration remains separate. Under the owner’s latest resource policy, local test servers are temporary and must close with the leased test slice; retaining a branch does not imply leaving a preview server running.
