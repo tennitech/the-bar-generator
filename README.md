@@ -2,9 +2,9 @@
 
 [![Checks](https://github.com/tennitech/the-bar-generator/actions/workflows/checks.yml/badge.svg)](https://github.com/tennitech/the-bar-generator/actions/workflows/checks.yml)
 
-A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a pattern, adjust its controls, and export an SVG or PNG. Ruler, Ticker, and Waveform also support looping GIF exports.
+A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a pattern, adjust its controls, and export an SVG or PNG. The asset menu also copies SVG and PNG images where supported and provides JPEG copying or an explicit JPEG download fallback. Ruler, Ticker, and Waveform also support looping GIF exports.
 
-PNG and GIF share Standard (1000 px logo) and Large (2000 px logo) choices. Their complete transparent canvases are 1160 × 762 and 2320 × 1524 px, including padding. SVG remains vector. GIF uses binary transparency; PNG preserves smooth partial alpha. See [export sizes, timing, and measured cost](references/transparent_gif_exports.md).
+Raster PNG, JPEG, and GIF actions share Standard (1000 px logo) and Large (2000 px logo) choices. Their complete canvases are 1160 × 762 and 2320 × 1524 px, including padding. SVG remains vector. JPEG uses an opaque black or white background selected for mark contrast and named in the menu; PNG retains transparency. GIF uses binary transparency; PNG preserves smooth partial alpha. See [export sizes, timing, and measured cost](references/transparent_gif_exports.md).
 
 **[Open the site](https://tennitech.github.io/the-bar-generator/)** · **[Report a bug](https://github.com/tennitech/the-bar-generator/issues/new/choose)** · **[Contribute](contributing.md)**
 
@@ -60,6 +60,19 @@ RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit npm run test:browser
 Keep the local server running for browser checks. Run the startup and entrance scripts one at a time; their screenshots and results are written to temporary evidence folders. Recorded-frame checks do not replace normal-speed visual review. Chromium is the default browser; the default test URL is `http://127.0.0.1:8765`. On Linux, browser installation can also need system packages: `npx playwright install --with-deps chromium firefox webkit`.
 
 Browser checks cover the 21 selectable styles, SVG downloads, a PNG file signature, five viewport sizes, text filtering, reduced motion, 2D fallback, and renderer failure states. They do not establish visual accuracy or full accessibility compliance. Check changed UI, keyboard controls, touch behavior, and exports by hand. Playwright WebKit is not a test of the Safari app.
+
+## Clipboard copies
+
+Open **Download Asset** for the copy actions. The browser's native MIME support controls the labels: **Copy SVG** writes a vector image, **Copy SVG source** writes explicitly labeled text, and **Download JPEG** appears when direct JPEG copying is unavailable. No format is silently substituted. Copy PNG preserves alpha and uses the selected raster size. Copies capture the current pattern, phase, color, title, and size before asynchronous work. A paste target must accept the copied type; SVG source text is not a pasted vector image. Use SVG download for vector import when needed.
+
+Copy requires HTTPS or localhost and a user click. If a browser blocks it, focus the page and retry or use a download. No persistent permissions or clipboard reading are requested by the app. See [clipboard support, fallback behavior, and verification limits](references/clipboard_exports.md).
+
+```sh
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/clipboardSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit node scripts/clipboardSmoke.js
+```
+
+These checks use Chromium's isolated headless clipboard for real MIME readback. WebKit uses a test adapter to avoid the system pasteboard; it validates encoded payloads and UI, not native Safari paste acceptance.
 
 ## Preview zoom
 

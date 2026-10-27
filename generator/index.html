@@ -10,7 +10,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261027-integration-final" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261027-clipboard" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261027-print-pass" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261027-print-pass"></script>
   <script src="js/utils/generatorRoutes.js?v=20261027-motion-polish"></script>
@@ -83,9 +83,9 @@
           <svg data-feather="download" class="icon-right icon-download" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <svg data-feather="book-open" class="icon-right icon-book" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         </button>
-        <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Download asset">
+        <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Export asset">
           <div id="export-settings" class="export_settings">
-            <label for="export-size-select" class="export_size-label">PNG / GIF size</label>
+            <label for="export-size-select" class="export_size-label">Raster size</label>
             <select id="export-size-select" class="export_size-select">
               <option value="standard">Standard · 1000 px logo</option>
               <option value="large">Large · 2000 px logo</option>
@@ -103,6 +103,11 @@
             <span class="option-label">GIF</span>
             <span class="option-desc">Best for animated slides and screens</span>
           </button>
+          <div id="clipboard-actions" class="export_copy-actions" role="group" aria-label="Copy asset">
+            <button id="copy-svg" class="save-option" type="button"><span class="option-label">Copy SVG</span><span class="option-desc">Vector image</span></button>
+            <button id="copy-png" class="save-option" type="button"><span class="option-label">Copy PNG</span><span class="option-desc">Transparent image</span></button>
+            <button id="copy-jpeg" class="save-option" type="button"><span class="option-label">Copy JPEG</span><span class="option-desc">Opaque image</span></button>
+          </div>
           <div id="export-progress" class="export_progress" hidden>
             <p id="export-message" class="export_message" role="status" aria-live="polite" aria-atomic="true"></p>
             <progress id="export-meter" class="export_meter" max="1" aria-label="Export preparation progress"></progress>
@@ -892,9 +897,10 @@
   <script src="js/utils/urlState.js?v=20261027-integration-final"></script>
   <script src="js/utils/exportOptions.js"></script>
   <script src="js/utils/transparentGif.js"></script>
-  <script src="js/utils/exportUi.js?v=20261027-integration-final"></script>
+  <script src="js/utils/exportUi.js?v=20261027-clipboard"></script>
   <script src="js/main.js?v=20261027-integration-final"></script>
-  <script src="js/drawing.js?v=20261027-transparent-exports"></script>
+  <script src="js/utils/logoClipboard.js"></script>
+  <script src="js/drawing.js?v=20261027-clipboard"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

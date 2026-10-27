@@ -40,3 +40,11 @@ They reuse existing configured identity/font assets and the licensed Feather
 glyphs. No external image or replacement artwork was added; the underlying
 permission questions above remain unchanged. See integration-validation.md in
 the same review-images directory for capture conditions and limitations.
+
+## Clipboard review screenshots
+
+`references/review-images/clipboard-desktop.png` and `clipboard-mobile.png` were
+captured from this repository's application on October 27, 2026. They reuse the
+existing identity/font assets and licensed Feather glyphs, with no external
+artwork. Existing permission questions remain open. Capture conditions and
+limits are recorded in `review-images/clipboard-validation.md`.
