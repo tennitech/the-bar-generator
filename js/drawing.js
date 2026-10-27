@@ -221,26 +221,23 @@ function drawMusicHeadOnGraphics(pg, shape, x, y, rx, ry, filled, fgColor) {
   pg.endShape(CLOSE);
 }
 
-const EXPORT_REFERENCE_WIDTH = 250;
-const EXPORT_REFERENCE_HEIGHT = 151;
-const EXPORT_BAR_Y = 134;
-const EXPORT_BAR_HEIGHT = 18;
-const EXPORT_PADDING = 20;
+const EXPORT_REFERENCE_WIDTH = RPI_LOGO_GEOMETRY.width;
+const EXPORT_REFERENCE_HEIGHT = RPI_LOGO_GEOMETRY.totalHeight;
+const EXPORT_BAR_Y = RPI_LOGO_GEOMETRY.barY;
+const EXPORT_BAR_HEIGHT = RPI_LOGO_GEOMETRY.barHeight;
+const EXPORT_PADDING = RPI_LOGO_GEOMETRY.exportPadding;
 const PNG_EXPORT_SCALE = 4;
-const LOOP_GIF_EXPORT_SCALE = 1.25;
 const LOOP_GIF_WORKER_PATH = 'third_party/gif.js/gif.worker.js';
-const SVG_EXPORT_WIDTH = typeof REFERENCE_WIDTH === 'number' ? REFERENCE_WIDTH : 250;
-const SVG_EXPORT_BAR_Y = typeof REFERENCE_BAR_Y === 'number' ? REFERENCE_BAR_Y : 132.911;
-const SVG_EXPORT_BAR_HEIGHT = typeof REFERENCE_BAR_HEIGHT === 'number' ? REFERENCE_BAR_HEIGHT : 18;
-const SVG_EXPORT_TOTAL_HEIGHT = typeof REFERENCE_TOTAL_HEIGHT === 'number'
-  ? REFERENCE_TOTAL_HEIGHT
-  : SVG_EXPORT_BAR_Y + SVG_EXPORT_BAR_HEIGHT;
-const SVG_EXPORT_PADDING = 20;
+const SVG_EXPORT_WIDTH = EXPORT_REFERENCE_WIDTH;
+const SVG_EXPORT_BAR_Y = EXPORT_BAR_Y;
+const SVG_EXPORT_BAR_HEIGHT = EXPORT_BAR_HEIGHT;
+const SVG_EXPORT_TOTAL_HEIGHT = EXPORT_REFERENCE_HEIGHT;
+const SVG_EXPORT_PADDING = EXPORT_PADDING;
 
 function createExportGraphicsBuffer(scale) {
   const graphics = createGraphics(
-    Math.ceil(EXPORT_REFERENCE_WIDTH * scale) + EXPORT_PADDING * 2,
-    Math.ceil(EXPORT_REFERENCE_HEIGHT * scale) + EXPORT_PADDING * 2
+    Math.ceil((EXPORT_REFERENCE_WIDTH + EXPORT_PADDING * 2) * scale),
+    Math.ceil((EXPORT_REFERENCE_HEIGHT + EXPORT_PADDING * 2) * scale)
   );
 
   if (typeof graphics.pixelDensity === 'function') {
@@ -251,7 +248,7 @@ function createExportGraphicsBuffer(scale) {
 }
 
 function drawLoopingRulerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX) {
-  const rulerGeometry = createRulerPatternGeometry({
+  const rulerGeometry = createBoundedTickGeometry({ shader: 1,
     barStartX,
     barY,
     exactBarWidth,
@@ -268,7 +265,7 @@ function drawLoopingRulerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, r
 }
 
 function drawLoopingTickerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX) {
-  const tickerGeometry = createTickerPatternGeometry({
+  const tickerGeometry = createBoundedTickGeometry({ shader: 2,
     barStartX,
     barY,
     exactBarWidth,
@@ -299,41 +296,39 @@ function drawExportLogoFrame(pg, options = {}) {
   }
 
   pg.push();
-  pg.translate(EXPORT_PADDING, EXPORT_PADDING);
   pg.scale(scale);
+  pg.translate(EXPORT_PADDING, EXPORT_PADDING);
   pg.fill(fgColor);
   pg.noStroke();
   drawSVGPathOnGraphics(pg, paths.r);
   drawSVGPathOnGraphics(pg, paths.p);
   drawSVGPathOnGraphics(pg, paths.i);
 
-  if (currentShader === 0) {
-    const cornerSize = 1.5;
-    pg.beginShape();
-    pg.vertex(cornerSize, EXPORT_BAR_Y);
-    pg.vertex(EXPORT_REFERENCE_WIDTH - cornerSize, EXPORT_BAR_Y);
-    pg.vertex(EXPORT_REFERENCE_WIDTH, EXPORT_BAR_Y + cornerSize);
-    pg.vertex(EXPORT_REFERENCE_WIDTH, EXPORT_BAR_Y + EXPORT_BAR_HEIGHT - cornerSize);
-    pg.vertex(EXPORT_REFERENCE_WIDTH - cornerSize, EXPORT_BAR_Y + EXPORT_BAR_HEIGHT);
-    pg.vertex(cornerSize, EXPORT_BAR_Y + EXPORT_BAR_HEIGHT);
-    pg.vertex(0, EXPORT_BAR_Y + EXPORT_BAR_HEIGHT - cornerSize);
-    pg.vertex(0, EXPORT_BAR_Y + cornerSize);
-    pg.endShape(pg.CLOSE);
-  } else {
-    drawBarPatternOnGraphics(
-      pg,
-      0,
-      EXPORT_BAR_Y,
-      EXPORT_REFERENCE_WIDTH,
-      EXPORT_BAR_HEIGHT,
-      patternOptions
-    );
-  }
+  // Clip centered strokes as well as fills to the official design rectangle.
+  const ctx = pg.drawingContext;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, EXPORT_BAR_Y, EXPORT_REFERENCE_WIDTH, EXPORT_BAR_HEIGHT);
+  ctx.clip();
+  drawBarPatternOnGraphics(pg, 0, EXPORT_BAR_Y, EXPORT_REFERENCE_WIDTH, EXPORT_BAR_HEIGHT, patternOptions);
+  ctx.restore();
 
   pg.pop();
 }
 
 function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, options = {}) {
+  if (![1, 2, 4, 22].includes(currentShader)) {
+    if (currentShader === 24 && typeof syncLunarBarVectorPreviewVisibility === 'function') {
+      const scheme = colors[currentColorMode];
+      drawLunarBarPattern(pg, barStartX, barY, exactBarWidth, rectHeight,
+        scheme ? scheme.fg : '#000000', currentColorMode);
+    } else {
+      drawCanonicalBarPattern(pg, barStartX, barY, exactBarWidth, rectHeight);
+    }
+    return;
+  }
+
+  pg.push();
   // Get current foreground color
   const colorScheme = colors[currentColorMode];
   const fgColor = colorScheme ? colorScheme.fg : '#000000';
@@ -356,7 +351,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     // Solid bar
     pg.rect(barStartX, barY, exactBarWidth, rectHeight);
   } else if (currentShader === 1) {
-    const rulerGeometry = createRulerPatternGeometry({
+    const rulerGeometry = createBoundedTickGeometry({ shader: 1,
       barStartX,
       barY,
       exactBarWidth,
@@ -371,7 +366,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       pg.rect(rect.x, rect.y, rect.width, rect.height);
     }
   } else if (currentShader === 2) {
-    const tickerGeometry = createTickerPatternGeometry({
+    const tickerGeometry = createBoundedTickGeometry({ shader: 2,
       barStartX,
       barY,
       exactBarWidth,
@@ -486,6 +481,9 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     pg.vertex(barStartX + exactBarWidth, barY + rectHeight);
 
     pg.endShape(pg.CLOSE);
+    const axis = createWaveformBaselineGeometry(barStartX, barY, exactBarWidth, rectHeight);
+    pg.rect(axis.x, axis.y, axis.width, axis.height);
+
   } else if (currentShader === 5) {
     // Circles pattern
     const density = parseInt(circlesDensitySlider.value);
@@ -800,6 +798,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       pg.circle(node.x, node.y, node.r * 2);
     }
   }
+  pg.pop();
 }
 
 function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, sizeVariation) {
@@ -1126,370 +1125,148 @@ function generateStaticPackedCircles(barWidth, barHeight, density, sizeVariation
   return circles;
 }
 
-// These static families share the header's selected-state vector for both
-// download formats. Other export renderers retain their existing dispatch.
-function usesSharedStaticPatternExport() {
-  return [13, 16, 17, 19].includes(currentShader);
+function escapeExportXML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[char]);
 }
 
-function buildSharedStaticPatternExportSVG() {
-  const doc = new DOMParser().parseFromString(buildHeaderPreviewSVG(), 'image/svg+xml');
-  const svg = doc.documentElement;
-  const width = SVG_EXPORT_WIDTH + SVG_EXPORT_PADDING * 2;
-  // Integer intrinsic dimensions prevent WebKit from letterboxing a fractional viewport.
-  const height = Math.ceil(SVG_EXPORT_TOTAL_HEIGHT + SVG_EXPORT_PADDING * 2);
-  const scheme = colors[currentColorMode];
-  svg.setAttribute('viewBox', `-${SVG_EXPORT_PADDING} -${SVG_EXPORT_PADDING} ${width} ${height}`);
-  svg.setAttribute('width', String(width));
-  svg.setAttribute('height', String(height));
-  svg.setAttribute('style', `color: ${scheme ? scheme.fg : '#000000'};`);
-  ['role', 'aria-hidden', 'focusable'].forEach(attribute => svg.removeAttribute(attribute));
-  return new XMLSerializer().serializeToString(svg);
+function captureLogoExportSnapshot() {
+  const foreground = colors[currentColorMode] ? colors[currentColorMode].fg : '#000000';
+  const values = JSON.parse(JSON.stringify({ ...getCurrentBarPatternValues(REFERENCE_WIDTH), ...getLoopRuntimeValues() }));
+  const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
+  const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground });
+  if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
+  const rawTitle = document.getElementById('share-name')?.value || '';
+  const safeName = typeof sanitizeBarText === 'function' ? sanitizeBarText(rawTitle) : rawTitle;
+  const title = Array.from(String(safeName).normalize('NFC').replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, '').trim()).slice(0, 80).join('');
+  const geometry = RPI_LOGO_GEOMETRY;
+  const dimensions = window.logoExportOptions.dimensions(window.logoExportUI.size(), geometry);
+  const inkName = ({ '#ffffff': 'white', '#000000': 'black', '#d6001c': 'red' })[foreground.toLowerCase()] || currentColorMode;
+  const rgb = [0, 2, 4].map(offset => parseInt(foreground.replace('#', '').slice(offset, offset + 2), 16));
+  const svgSource = `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="${geometry.width + geometry.exportPadding * 2}" height="${geometry.totalHeight + geometry.exportPadding * 2}" viewBox="-${geometry.exportPadding} -${geometry.exportPadding} ${geometry.width + geometry.exportPadding * 2} ${geometry.totalHeight + geometry.exportPadding * 2}" xmlns="http://www.w3.org/2000/svg"><title>${escapeExportXML(title || `RPI ${family} logo`)}</title>${Object.values(geometry.paths).map(path => `<path d="${path}" fill="${foreground}"/>`).join('')}${barMarkup}</svg>`;
+  return Object.freeze({ family, currentShader, colorMode: currentColorMode, foreground, rgb, inkName, title,
+    values: Object.freeze(values), geometry, dimensions: Object.freeze(dimensions), svgSource });
 }
 
-function downloadSharedStaticPatternSVG() {
-  const blob = new Blob([buildSharedStaticPatternExportSVG()], { type: 'image/svg+xml' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'RPI-logo.svg';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-  hideSaveMenu();
-  Toast.show('SVG download started', 'success');
+function throwIfExportCancelled(signal) {
+  if (signal.aborted) throw new DOMException('Export cancelled.', 'AbortError');
 }
 
-async function downloadSharedStaticPatternPNG() {
-  // Capture selected values before image decoding so later control changes
-  // cannot alter an export already requested by the user.
-  const markup = buildSharedStaticPatternExportSVG();
-  const url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml' }));
+function awaitExportTask(promise, signal) {
+  return new Promise((resolve, reject) => {
+    const abort = () => reject(new DOMException('Export cancelled.', 'AbortError'));
+    if (signal.aborted) return abort();
+    signal.addEventListener('abort', abort, { once: true });
+    promise.then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
+  });
+}
+
+async function createPNGExportBlob(snapshot, signal) {
+  const { dimensions, geometry } = snapshot;
+  const xml = new DOMParser().parseFromString(snapshot.svgSource, 'image/svg+xml');
+  if (xml.querySelector('parsererror')) throw new Error('The selected SVG could not be rendered.');
+  const root = xml.documentElement;
+  root.setAttribute('width', dimensions.width);
+  root.setAttribute('height', dimensions.height);
+  // Whole-pixel viewport plus uniform scale: do not stretch the official mark.
+  root.setAttribute('viewBox', `-${geometry.exportPadding} -${geometry.exportPadding} ${dimensions.width / dimensions.scale} ${dimensions.height / dimensions.scale}`);
+  const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(xml)], { type: 'image/svg+xml' }));
+  const image = new Image(), canvas = document.createElement('canvas');
   try {
-    const image = new Image();
     image.src = url;
-    await image.decode();
-    const width = (SVG_EXPORT_WIDTH + SVG_EXPORT_PADDING * 2) * PNG_EXPORT_SCALE;
-    const height = Math.ceil(SVG_EXPORT_TOTAL_HEIGHT + SVG_EXPORT_PADDING * 2) * PNG_EXPORT_SCALE;
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.ceil(width);
-    canvas.height = Math.ceil(height);
-    canvas.getContext('2d').drawImage(image, 0, 0, width, height);
-    const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = 'RPI-logo.png';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    hideSaveMenu();
-    Toast.show('PNG download started', 'success');
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+    await awaitExportTask(image.decode(), signal);
+    throwIfExportCancelled(signal);
+    canvas.width = dimensions.width; canvas.height = dimensions.height;
+    canvas.getContext('2d').drawImage(image, 0, 0);
+    return await awaitExportTask(new Promise((resolve, reject) => canvas.toBlob(blob =>
+      blob ? resolve(blob) : reject(new Error('PNG encoding failed. Try again.')), 'image/png')), signal);
+  } finally { URL.revokeObjectURL(url); image.src = ''; canvas.width = 0; canvas.height = 0; }
 }
 
-function savePNG() {
-  if (usesSharedStaticPatternExport()) {
-    downloadSharedStaticPatternPNG().catch(error => {
-      console.error('PNG save error:', error);
-      Toast.show('Save failed: ' + error.message, 'error');
-    });
-    return;
-  }
-  console.log('Save PNG called');
-
-  try {
-    Toast.show('Generating PNG...', 'info', 2000);
-
-    setTimeout(() => {
-      const exportGraphics = createExportGraphicsBuffer(PNG_EXPORT_SCALE);
-      drawExportLogoFrame(exportGraphics);
-
-      // Get the graphics buffer canvas and export it
-      const exportCanvas = exportGraphics.canvas;
-
-      // Create download link
-      const link = document.createElement('a');
-      link.download = 'RPI-logo.png';
-      link.href = exportCanvas.toDataURL('image/png');
-
-      // Trigger download
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      console.log('Transparent PNG save completed successfully');
-      Toast.show('PNG download started', 'success');
-
-      // Clean up graphics buffer to prevent memory leaks
-      exportGraphics.remove();
-
-      // Hide save menu
-      if (saveMenu) saveMenu.classList.add('hidden');
-
-    }, 100);
-
-  } catch (error) {
-    console.error('PNG save error:', error);
-    console.error('Error stack:', error.stack);
-    Toast.show('Save failed: ' + error.message, 'error');
-  }
-}
-
-function saveLoopingGIF() {
-  let exportGraphics = null;
-
-  try {
-    const selectedStyle = typeof normalizeStyleValue === 'function'
-      ? normalizeStyleValue(styleSelect ? styleSelect.value : 'solid')
-      : (styleSelect ? styleSelect.value : 'solid');
-
-    if (!window.loopingGifUtils || !window.loopingGifUtils.isLoopingGifEligibleStyle(selectedStyle)) {
-      Toast.show('Looping GIF is only available for ruler, ticker, and waveform.', 'warning');
-      return;
-    }
-
-    if (typeof GIF === 'undefined') {
-      Toast.show('GIF export is not available right now.', 'error');
-      return;
-    }
-
-    if (saveLoopGifButton && saveLoopGifButton.disabled) {
-      Toast.show('GIF export already in progress.', 'info');
-      return;
-    }
-
-    const framePlan = window.loopingGifUtils.getLoopingGifFramePlan(selectedStyle, {
-      rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
-      rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
-      rulerSpeed: normalizeLoopSpeed('ruler', rulerSpeedSlider ? rulerSpeedSlider.value : undefined),
-      rulerReverse: rulerReverseToggle ? rulerReverseToggle.checked : false,
-      tickerRepeats: tickerSlider ? tickerSlider.value : 34,
-      tickerSpeed: normalizeLoopSpeed('ticker', tickerSpeedSlider ? tickerSpeedSlider.value : undefined),
-      tickerReverse: tickerReverseToggle ? tickerReverseToggle.checked : false,
-      waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
-      waveformReverse: waveformReverseToggle ? waveformReverseToggle.checked : false
-    }, {
-      barWidth: EXPORT_REFERENCE_WIDTH
-    });
-
-    if (!framePlan) {
-      Toast.show('Could not build a looping GIF for this style.', 'error');
-      return;
-    }
-
-    exportGraphics = createExportGraphicsBuffer(LOOP_GIF_EXPORT_SCALE);
-    const colorScheme = colors[currentColorMode];
-    const bgColor = colorScheme ? colorScheme.bg : '#ffffff';
-    const gif = new GIF({
-      workers: 2,
-      quality: 10,
-      repeat: 0,
-      width: exportGraphics.width,
-      height: exportGraphics.height,
-      background: bgColor,
-      workerScript: LOOP_GIF_WORKER_PATH
-    });
-
-    if (saveLoopGifButton) {
-      saveLoopGifButton.disabled = true;
-    }
-    if (saveMenu) {
-      saveMenu.classList.add('hidden');
-    }
-    Toast.show('Rendering looping GIF...', 'info', 2500);
-
-    const finalizeExport = () => {
-      if (saveLoopGifButton) {
-        saveLoopGifButton.disabled = false;
-      }
-      if (exportGraphics) {
-        exportGraphics.remove();
-        exportGraphics = null;
-      }
-    };
-
-    gif.on('finished', (blob) => {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `RPI-logo-${selectedStyle}-loop.gif`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      finalizeExport();
-      Toast.show('Looping GIF download started', 'success');
-    });
-
-    gif.on('abort', () => {
-      finalizeExport();
-      Toast.show('GIF export was cancelled.', 'warning');
-    });
-
-    for (let frameIndex = 0; frameIndex < framePlan.frameCount; frameIndex++) {
-      const progress = frameIndex / framePlan.frameCount;
-      const patternOptions = selectedStyle === 'waveform'
-        ? { timeSeconds: framePlan.getTimeSeconds(progress) }
-        : { loopOffsetX: framePlan.getLoopOffsetX(progress) };
-
-      drawExportLogoFrame(exportGraphics, {
-        scale: LOOP_GIF_EXPORT_SCALE,
-        backgroundColor: bgColor,
-        patternOptions
-      });
-
-      gif.addFrame(exportGraphics.canvas, {
-        copy: true,
-        delay: framePlan.frameDelayMs
-      });
-    }
-
-    gif.render();
-  } catch (error) {
-    console.error('Loop GIF save error:', error);
-    if (saveLoopGifButton) {
-      saveLoopGifButton.disabled = false;
-    }
-    if (exportGraphics) {
-      exportGraphics.remove();
-    }
-    Toast.show('GIF export failed: ' + error.message, 'error');
-  }
-}
-
-function saveSVG() {
-  if (usesSharedStaticPatternExport()) {
-    try {
-      downloadSharedStaticPatternSVG();
-    } catch (error) {
-      console.error('SVG save error:', error);
-      Toast.show('Save failed: ' + error.message, 'error');
-    }
-    return;
-  }
-  try {
-    Toast.show('Generating SVG...', 'info', 2000);
-
-    const currentWidth = SVG_EXPORT_WIDTH;
-    const logoHeight = SVG_EXPORT_TOTAL_HEIGHT;
-
-    // Get current colors
-    const colorScheme = colors[currentColorMode];
-    const fgColor = colorScheme ? colorScheme.fg : '#000000';
-
-    let svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${currentWidth + SVG_EXPORT_PADDING * 2}" height="${logoHeight + SVG_EXPORT_PADDING * 2}" viewBox="-${SVG_EXPORT_PADDING} -${SVG_EXPORT_PADDING} ${currentWidth + SVG_EXPORT_PADDING * 2} ${logoHeight + SVG_EXPORT_PADDING * 2}" xmlns="http://www.w3.org/2000/svg">
-  <path d="${paths.r}" fill="${fgColor}"/>
-  <path d="${paths.p}" fill="${fgColor}"/>
-  <path d="${paths.i}" fill="${fgColor}"/>`;
-
-    // Add the bar using exact 250px reference calculations
-    const barY = SVG_EXPORT_BAR_Y;
-    const barHeight = SVG_EXPORT_BAR_HEIGHT;
-    const exactBarWidth = SVG_EXPORT_WIDTH;
-    const barStartX = 0; // Exact X position from 250px reference
-    const currentMotionStyle = typeof getCurrentMotionStyle === 'function' ? getCurrentMotionStyle() : null;
-    const loopAnimationState = typeof getLoopAnimationStateForStyle === 'function'
-      ? getLoopAnimationStateForStyle(currentMotionStyle, exactBarWidth)
-      : null;
-
-    if (currentShader === 0) {
-      // Solid bar with corner details on all four corners
-      const cornerSize = 1.5;
-      const pathData = `M ${barStartX + cornerSize} ${barY} L ${barStartX + exactBarWidth - cornerSize} ${barY} L ${barStartX + exactBarWidth} ${barY + cornerSize} L ${barStartX + exactBarWidth} ${barY + barHeight - cornerSize} L ${barStartX + exactBarWidth - cornerSize} ${barY + barHeight} L ${barStartX + cornerSize} ${barY + barHeight} L ${barStartX} ${barY + barHeight - cornerSize} L ${barStartX} ${barY + cornerSize} Z`;
-      svgContent += `\n  <path d="${pathData}" fill="${fgColor}"/>`;
+function createCapturedGifRenderer(snapshot, framePlan) {
+  const canvas = document.createElement('canvas');
+  const { dimensions: dimensions, geometry, foreground } = snapshot;
+  canvas.width = dimensions.width; canvas.height = dimensions.height;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const letters = Object.values(geometry.paths).map(path => new Path2D(path));
+  const renderFrame = (index, progress) => {
+    const values = { ...snapshot.values,
+      loopOffsetX: Number(snapshot.values.loopOffsetX || 0) + framePlan.getLoopOffsetX(progress),
+      timeSeconds: Number(snapshot.values.timeSeconds || 0) + (snapshot.family === 'waveform' ? framePlan.getTimeSeconds(progress) : 0) };
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save(); ctx.scale(dimensions.scale, dimensions.scale); ctx.translate(geometry.exportPadding, geometry.exportPadding);
+    ctx.fillStyle = foreground; letters.forEach(path => ctx.fill(path));
+    ctx.beginPath(); ctx.rect(0, geometry.barY, geometry.width, geometry.barHeight); ctx.clip();
+    if (snapshot.currentShader === 1 || snapshot.currentShader === 2) {
+      const pattern = createBoundedTickGeometry({ ...values, shader: snapshot.currentShader,
+        barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight });
+      pattern.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
     } else {
-      svgContent += createBarPatternSVG({
-        currentShader,
-        currentColorMode,
-        barStartX,
-        barY,
-        exactBarWidth,
-        barHeight,
-        fgColor,
-        textToBinary,
-        textToMorse,
-        parseNumericString,
-        generateStaticPackedCircles,
-        values: {
-          ...window.quantumControls.values(),
-          rulerRepeats: rulerRepeatsSlider.value,
-          rulerUnits: rulerUnitsSlider.value,
-          rulerSpeed: normalizeLoopSpeed('ruler', rulerSpeedSlider ? rulerSpeedSlider.value : undefined),
-          tickerRepeats: tickerSlider.value,
-          tickerRatio: tickerRatioSlider.value,
-          tickerWidthRatio: tickerWidthRatioSlider.value,
-          tickerSpeed: normalizeLoopSpeed('ticker', tickerSpeedSlider ? tickerSpeedSlider.value : undefined),
-          loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
-          binaryText: binaryInput.value || 'RPI',
-          waveformType: waveformTypeSlider.value,
-          waveformFrequency: waveformFrequencySlider.value,
-          waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider.value),
-          waveformEnvelope: waveformEnvelopeToggle ? waveformEnvelopeToggle.checked : false,
-          waveformEnvelopeType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
-          waveformEnvelopeWaves: waveformEnvelopeWavesSlider
-            ? (typeof normalizeWaveformEnvelopeWaves === 'function'
-              ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
-              : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
-            : 1,
-          waveformEnvelopeCenter: waveformEnvelopeCenterSlider ? waveformEnvelopeCenterSlider.value : 0,
-          waveformEnvelopeBipolar: waveformEnvelopeBipolarToggle ? waveformEnvelopeBipolarToggle.checked : false,
-          timeSeconds: loopAnimationState
-            ? loopAnimationState.timeSeconds
-            : (typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0),
-          circlesFill: circlesFillSelect ? circlesFillSelect.value : 'stroke',
-          circlesDensity: circlesDensitySlider.value,
-          circlesSizeVariation: circlesSizeVariationSlider.value,
-          numericValue: numericInput ? numericInput.value : '',
-          numericMode: numericModeSelect ? numericModeSelect.value : 'dotmatrix',
-          neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1,
-          morseText: typeof morseInput !== 'undefined' && morseInput ? morseInput.value : 'RPI',
-          trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
-          trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
-          trussThickness: trussThicknessSlider ? trussThicknessSlider.value : 2,
-          staffText: 'RPI',
-          staffThickness: 1,
-          staffNotes: typeof currentStaffNotes !== 'undefined' ? currentStaffNotes : [],
-          staffNoteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'circle',
-          pulseText: pulseInput ? pulseInput.value : 'RPI',
-          pulseIntensity: pulseIntensitySlider ? pulseIntensitySlider.value : 5,
-          graphText: graphInput ? graphInput.value : 'RPI',
-          graphText2: graphInput2 ? graphInput2.value : '',
-          graphText3: graphInput3 ? graphInput3.value : '',
-          graphText4: graphInput4 ? graphInput4.value : '',
-          graphText5: graphInput5 ? graphInput5.value : '',
-          graphMulti: graphMultiToggle ? graphMultiToggle.checked : false,
-          graphScale: graphScaleSlider ? graphScaleSlider.value : 10
-        }
-      });
+      const markup = createBarPatternSVG({ currentShader: 4, currentColorMode: snapshot.colorMode,
+        barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,
+        fgColor: foreground, values });
+      const path = markup.match(/<path\s+d="([^"]+)"/);
+      if (!path) throw new Error('The waveform could not be rendered.');
+      ctx.fill(new Path2D(path[1]));
+      const axis = createWaveformBaselineGeometry(0, geometry.barY, geometry.width, geometry.barHeight);
+      ctx.fillRect(axis.x, axis.y, axis.width, axis.height);
     }
-
-    svgContent += `\n</svg>`;
-
-    // Download SVG
-    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'RPI-logo.svg';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    // Hide save menu
-    if (saveMenu) saveMenu.classList.add('hidden');
-
-    Toast.show('SVG download started', 'success');
-
-  } catch (error) {
-    console.error('SVG save error:', error);
-    Toast.show('Save failed: ' + error.message, 'error');
-  }
+    ctx.restore();
+    return ctx.getImageData(0, 0, canvas.width, canvas.height);
+  };
+  return { renderFrame, release: () => { canvas.width = 0; canvas.height = 0; } };
 }
+
+function startLogoDownload(blob, filename) {
+  const url = URL.createObjectURL(blob), link = document.createElement('a');
+  link.href = url; link.download = filename;
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function runLogoExport(format) {
+  const job = window.logoExportUI.begin(format);
+  if (!job) return null;
+  const started = performance.now();
+  let renderer;
+  try {
+    // Everything used by asynchronous work is captured before yielding to input.
+    const snapshot = captureLogoExportSnapshot();
+    const filename = window.logoExportOptions.filename(snapshot, format);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    throwIfExportCancelled(job.controller.signal);
+    let blob, metrics = {};
+    if (format === 'svg') blob = new Blob([snapshot.svgSource], { type: 'image/svg+xml' });
+    else if (format === 'png') blob = await createPNGExportBlob(snapshot, job.controller.signal);
+    else {
+      if (!window.loopingGifUtils.isLoopingGifEligibleStyle(snapshot.family)) throw new Error('This pattern does not have a looping GIF.');
+      const plan = window.loopingGifUtils.getLoopingGifFramePlan(snapshot.family, snapshot.values, { barWidth: snapshot.geometry.width });
+      renderer = createCapturedGifRenderer(snapshot, plan);
+      const result = await window.transparentGifUtils.encode({ ...snapshot.dimensions, frameCount: plan.frameCount,
+        periodSeconds: plan.periodSeconds, foreground: snapshot.rgb, workerScript: LOOP_GIF_WORKER_PATH,
+        renderFrame: renderer.renderFrame, signal: job.controller.signal,
+        onProgress: progress => window.logoExportUI.report(job, progress) });
+      blob = result.blob; metrics = result.metrics;
+    }
+    throwIfExportCancelled(job.controller.signal);
+    window.logoExportUI.message(job, 'Starting download…');
+    startLogoDownload(blob, filename);
+    window.logoExportUI.finish(job, 'started', `${format.toUpperCase()} download started.`);
+    Toast.show(`${format.toUpperCase()} download started`, 'success');
+    return { filename, metrics: { ...metrics, bytes: blob.size, width: format === 'svg' ? null : snapshot.dimensions.width,
+      height: format === 'svg' ? null : snapshot.dimensions.height, elapsedMs: performance.now() - started } };
+  } catch (error) {
+    const cancelled = error.name === 'AbortError' || job.controller.signal.aborted;
+    const message = cancelled ? 'Export cancelled.' : `Export failed: ${error.message}`;
+    window.logoExportUI.finish(job, cancelled ? 'cancelled' : 'error', message);
+    Toast.show(message, cancelled ? 'info' : 'error');
+    if (!cancelled) console.error('Logo export error:', error);
+    return null;
+  } finally { if (renderer) renderer.release(); }
+}
+
+function savePNG() { return runLogoExport('png'); }
+function saveSVG() { return runLogoExport('svg'); }
+function saveLoopingGIF() { return runLogoExport('gif'); }
 
 function createNumericTexture(digits) {
   if (!digits || digits.length === 0) return null;
@@ -1521,4 +1298,98 @@ function createNumericTexture(digits) {
 
   textureGraphics.updatePixels();
   return textureGraphics;
+}
+
+// A small cache of high-resolution static SVG snapshots keeps WebGL/2D preview,
+// header, and PNG variants identical without duplicating every pattern renderer.
+const canonicalBarImages = new Map();
+const readyCanonicalBarImages = new Map();
+function getCanonicalBarImage(pixelWidth = 1000) {
+  // 250:18 simplifies to125:9. Integer raster dimensions prevent SVG engines
+  // from letterboxing a fractional intrinsic height (visible in WebKit at zoom).
+  pixelWidth = Math.ceil(Math.max(1000, pixelWidth) / 125) * 125;
+  const fgColor = colors[currentColorMode] ? colors[currentColorMode].fg : '#000000';
+  const markup = buildCurrentBarPatternSVGFragment({ barStartX: 0, barY: 0,
+    exactBarWidth: REFERENCE_WIDTH, barHeight: REFERENCE_BAR_HEIGHT, fgColor });
+  const key = `${pixelWidth}:${markup}`;
+  if (canonicalBarImages.has(key)) return canonicalBarImages.get(key);
+  const entry = { image: null, ready: null, markup };
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${pixelWidth}" height="${pixelWidth * REFERENCE_BAR_HEIGHT / REFERENCE_WIDTH}" viewBox="0 0 ${REFERENCE_WIDTH} ${REFERENCE_BAR_HEIGHT}">${markup}</svg>`;
+  entry.ready = new Promise((resolve, reject) => {
+    loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`, image => {
+      entry.image = image;
+      const previous = readyCanonicalBarImages.get(markup);
+      if (!previous || image.width >= previous.width) readyCanonicalBarImages.set(markup, image);
+      if (readyCanonicalBarImages.size > 8) readyCanonicalBarImages.delete(readyCanonicalBarImages.keys().next().value);
+      resolve(image);
+      requestUpdate();
+    }, error => reject(new Error('Unable to render the selected bar SVG.', { cause: error })));
+  });
+  // Preview failures are reported; savePNG also awaits and handles the rejection.
+  entry.ready.catch(error => console.error(error));
+  canonicalBarImages.set(key, entry);
+  if (canonicalBarImages.size > 8) canonicalBarImages.delete(canonicalBarImages.keys().next().value);
+  return entry;
+}
+
+function drawCanonicalBarPattern(target, x, y, width, height) {
+  const pixelWidth = target === window
+    ? REFERENCE_WIDTH * getRenderedResponsiveLogoScale() * zoomLevel * (window.devicePixelRatio || 1)
+    : 1000;
+  const entry = getCanonicalBarImage(pixelWidth);
+  // Keep the same pattern visible while a sharper zoom snapshot is decoding.
+  const image = entry.image || readyCanonicalBarImages.get(entry.markup);
+  if (!image) return;
+  target.push();
+  target.imageMode(CORNER);
+  target.image(image, x, y, width, height);
+  target.pop();
+}
+
+// Packing is randomized; one selected set must be reused by header, preview and exports.
+const canonicalCircleGeometry = new Map();
+function getCachedBarCircleGeometry(width, height, density, variation) {
+  const seed = typeof sharePatternSeed === 'number' ? sharePatternSeed : 0;
+  const key = [width, height, density, variation, seed].join(':');
+  if (!canonicalCircleGeometry.has(key)) {
+    canonicalCircleGeometry.set(key, generateStaticPackedCircles(width, height, density, variation));
+    if (canonicalCircleGeometry.size > 8) canonicalCircleGeometry.delete(canonicalCircleGeometry.keys().next().value);
+  }
+  return canonicalCircleGeometry.get(key);
+}
+
+function requirePaintedBarForExport() {
+  if (!buildCurrentBarPatternSVGFragment().trim()) {
+    throw new Error('The input produces no visible bar. Enter supported data or adjust the controls; use Height Encoding for zero-only numbers.');
+  }
+}
+
+// Fixed reference marks define the spatial domain; interior tick positions/widths
+// are untouched. Marker width is at most one reference unit and one normal tick.
+function createBoundedTickGeometry(options) {
+  const geometry = (options.shader === 1 ? createRulerPatternGeometry : createTickerPatternGeometry)(options);
+  const x = Number(options.barStartX || 0), y = Number(options.barY || 0);
+  const width = Number(options.exactBarWidth || REFERENCE_WIDTH);
+  const height = Number(options.barHeight || REFERENCE_BAR_HEIGHT);
+  const markerWidth = Math.min(height / 18, options.shader === 1 ? geometry.tickWidth : geometry.topTickWidth);
+  const markers = [];
+  for (const edgeX of [x, x + width - markerWidth]) {
+    if (options.shader === 1) markers.push({ x: edgeX, y, width: markerWidth, height, isBoundary: true });
+    else for (const row of ['top', 'bottom']) markers.push({ x: edgeX,
+      y: y + (row === 'top' ? 0 : height / 2), width: markerWidth, height: height / 2, row, isBoundary: true });
+  }
+  return { ...geometry, rects: geometry.rects.concat(markers) };
+}
+
+// A visible zero reference line keeps the waveform's domain fixed even when
+// its data starts/ends at zero. It is an axis, not an invented signal sample.
+function createWaveformBaselineGeometry(x, y, width, height) {
+  const thickness = height / 18;
+  return { x, y: y + height - thickness, width, height: thickness };
+}
+
+// Reference bounds do not replace empty encoded cells or alter digit spacing.
+function createEncodedBarBoundaryGeometry(x, y, width, height, cells) {
+  const markerWidth = Math.min(height / 18, width / Math.max(1, cells) / 4);
+  return [x, x + width - markerWidth].map(edgeX => ({ x: edgeX, y, width: markerWidth, height }));
 }

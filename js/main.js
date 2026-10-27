@@ -1,18 +1,11 @@
-// Fixed logo paths (updated to match new 250px reference SVG exactly)
-const paths = {
-  r: "M213.54 30.4413C213.535 30.3153 213.529 30.1893 213.524 30.0688C213.025 19.6551 209.147 12.0188 202.644 7.0447C202.491 6.92966 202.338 6.81462 202.184 6.71054C196.032 2.20215 187.629 0 177.583 0H117.692L116.125 1.5667V110.185L117.692 111.751H132.406L133.972 110.185V66.3605L135.533 64.7938H177.583C186.775 64.7938 194.948 62.6902 201.182 58.39C201.472 58.1928 201.751 57.9956 202.031 57.7874C207.942 53.3941 211.946 46.9136 213.179 38.2584C213.222 37.9516 213.261 37.6393 213.299 37.3216C213.337 37.0094 213.37 36.6917 213.398 36.3739C213.42 36.1493 213.441 35.9247 213.452 35.7001C213.54 34.6264 213.578 33.5254 213.578 32.3969C213.578 31.7341 213.567 31.0822 213.54 30.4413ZM135.533 48.5186L133.972 46.9519V17.8419L135.539 16.2752H176.487C190.522 16.2752 195.737 20.6466 195.737 32.3969C195.737 44.1472 190.522 48.5186 176.487 48.5186H135.533Z",
-  p: "M250.042 110.185L248.475 111.751H233.761L232.195 110.185V1.5667L233.767 0H248.481L250.047 1.5667V110.185H250.042Z",
-  i: "M86.2053 111.751L83.2307 110.102L55.0903 66.3276L52.0335 64.7992H19.4559L17.8892 66.366V110.19L16.328 111.757H1.61407L0.0473633 110.19V1.5667L1.61407 0H60.4094C84.6769 0 97.5009 11.2025 97.5009 32.3969C97.5009 48.5186 89.6126 59.02 74.6631 62.8491V64.3993L95.9342 97.8151V110.091L94.2743 111.751H86.2053ZM60.4094 48.5186C74.444 48.5186 79.6591 44.1472 79.6591 32.3969C79.6591 20.6466 74.444 16.2752 60.4094 16.2752H19.4614L17.8892 17.8419V46.9519L19.4559 48.5186H60.4094Z",
-  bar: "M247.851 129.855L249.406 131.411V146.018L247.851 147.573H2.00064L0.445312 146.018V131.411L2.00064 129.855H247.856H247.851Z"
-};
-
-// Layout constants
-const REFERENCE_WIDTH = 250;
-const REFERENCE_LOGO_HEIGHT = 111.76;
-const REFERENCE_BAR_Y = 132.911;
-const REFERENCE_BAR_HEIGHT = 18;
-const REFERENCE_TOTAL_HEIGHT = REFERENCE_BAR_Y + REFERENCE_BAR_HEIGHT;
-const LOGO_VERTICAL_OFFSET = -REFERENCE_TOTAL_HEIGHT / 2; // Center the complete official mark
+// p5.js retains its existing global state; official geometry is shared with exports.
+const paths = RPI_LOGO_GEOMETRY.paths;
+const REFERENCE_WIDTH = RPI_LOGO_GEOMETRY.width;
+const REFERENCE_LOGO_HEIGHT = RPI_LOGO_GEOMETRY.letterHeight;
+const REFERENCE_BAR_Y = RPI_LOGO_GEOMETRY.barY;
+const REFERENCE_BAR_HEIGHT = RPI_LOGO_GEOMETRY.barHeight;
+const REFERENCE_TOTAL_HEIGHT = RPI_LOGO_GEOMETRY.totalHeight;
+const LOGO_VERTICAL_OFFSET = -REFERENCE_TOTAL_HEIGHT / 2;
 
 // Global variables
 let styleSelect;
@@ -4080,6 +4073,7 @@ function syncMissionControlSaveMenu() {
   } else {
     updateLoopingGifSaveOption();
   }
+  if (window.logoExportUI) window.logoExportUI.sync(missionControlActive);
 }
 
 function handleSavePngClick(event) {
@@ -4124,6 +4118,9 @@ function toggleSaveMenu(e) {
     const isExpanded = !saveMenu.classList.contains('hidden');
     if (saveButton) saveButton.setAttribute('aria-expanded', isExpanded);
     if (isExpanded) {
+      // Clamp the now-visible popup before the first paint, including the wider
+      // size/progress controls on narrow screens. Recheck after layout settles.
+      positionSaveMenu();
       requestAnimationFrame(positionSaveMenu);
     } else {
       hideSaveMenu();
@@ -4456,6 +4453,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
     loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
     binaryText: binaryInput ? sanitizeBarText(binaryInput.value || 'RPI') : 'RPI',
+    waveformPoints: getWaveformRenderPointCount(exactBarWidth, waveformFrequencySlider ? Number(waveformFrequencySlider.value) : 24),
     waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
     waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
     waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
@@ -4481,7 +4479,9 @@ function getCurrentBarPatternValues(exactBarWidth) {
     pointConnectVariant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1,
     neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1,
     triangleGridVariant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2,
-    ...getTrianglePatternControlValues(),
+    ...(typeof getTrianglePatternControlValues === 'function'
+      ? getTrianglePatternControlValues()
+      : { trianglesVariant: trianglesVariantSlider ? trianglesVariantSlider.value : 1 }),
     morseText: morseInput ? sanitizeBarText(morseInput.value) : 'RPI',
     trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
     trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
@@ -4510,30 +4510,42 @@ function buildCurrentBarPatternSVGFragment({
   fgColor = 'currentColor'
 } = {}) {
   if (currentShader === 0) {
-    const cornerSize = 1.5;
-    const pathData = `M ${barStartX + cornerSize} ${barY} L ${barStartX + exactBarWidth - cornerSize} ${barY} L ${barStartX + exactBarWidth} ${barY + cornerSize} L ${barStartX + exactBarWidth} ${barY + barHeight - cornerSize} L ${barStartX + exactBarWidth - cornerSize} ${barY + barHeight} L ${barStartX + cornerSize} ${barY + barHeight} L ${barStartX} ${barY + barHeight - cornerSize} L ${barStartX} ${barY + cornerSize} Z`;
-    return `\n  <path d="${pathData}" fill="${fgColor}"/>`;
+    // Preserve the supplied official solid path, including its rounded source coordinates.
+    return `<path d="${RPI_LOGO_GEOMETRY.barPath}" fill="${fgColor}" transform="translate(${barStartX} ${barY}) scale(${exactBarWidth / REFERENCE_WIDTH} ${barHeight / REFERENCE_BAR_HEIGHT}) translate(0 -${REFERENCE_BAR_Y})"/>`;
   }
 
   if (typeof createBarPatternSVG !== 'function') {
     return '';
   }
 
-  return createBarPatternSVG({
-    currentShader,
-    currentColorMode,
-    barStartX,
-    barY,
-    exactBarWidth,
-    barHeight,
-    fgColor,
-    textToBinary,
-    textToMorse,
-    parseNumericString,
-    generateGridCircles,
-    generateStaticPackedCircles,
-    values: getCurrentBarPatternValues(exactBarWidth)
-  });
+  const values = getCurrentBarPatternValues(exactBarWidth);
+  let markup;
+  if (currentShader === 1 || currentShader === 2) {
+    const geometry = createBoundedTickGeometry({ ...values, shader: currentShader,
+      barStartX, barY, exactBarWidth, barHeight });
+    markup = geometry.rects.map(rect => `<rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" fill="${fgColor}"/>`).join('');
+  } else {
+    markup = createBarPatternSVG({
+      currentShader, currentColorMode, barStartX, barY, exactBarWidth, barHeight, fgColor,
+      textToBinary, textToMorse, parseNumericString, generateGridCircles,
+      generateStaticPackedCircles: getCachedBarCircleGeometry, values
+    });
+  }
+  if (currentShader === 6 && markup.trim()) {
+    const digits = parseNumericString(values.numericValue || '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679');
+    for (const marker of createEncodedBarBoundaryGeometry(barStartX, barY, exactBarWidth, barHeight, digits.length)) {
+      markup += `<rect x="${marker.x}" y="${marker.y}" width="${marker.width}" height="${marker.height}" fill="${fgColor}"/>`;
+    }
+  }
+  if (currentShader === 4) {
+    const axis = createWaveformBaselineGeometry(barStartX, barY, exactBarWidth, barHeight);
+    markup += `<rect x="${axis.x}" y="${axis.y}" width="${axis.width}" height="${axis.height}" fill="${fgColor}"/>`;
+  }
+  if (!markup.trim()) return '';
+  // Data/reference geometry and nested artwork viewports retain their fixed domains.
+  const fittedMarkup = [1, 2, 3, 4, 6, 7, 12, 22, 23, 24].includes(currentShader)
+    ? markup : fitBarSVGToEdges(markup, barStartX, barY, exactBarWidth, barHeight);
+  return clipBarSVG(fittedMarkup, barStartX, barY, exactBarWidth, barHeight);
 }
 
 function buildCurrentBarOnlySVG() {
@@ -4637,7 +4649,7 @@ function renderHeaderMotionPreview() {
       ctx.fill();
     }
   } else if (style === 'ruler' || style === 'ticker') {
-    const geometry = (style === 'ruler' ? createRulerPatternGeometry : createTickerPatternGeometry)({
+    const geometry = createBoundedTickGeometry({ shader: style === 'ruler' ? 1 : 2,
       ...values, barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH,
       barHeight: REFERENCE_BAR_HEIGHT, loopOffsetX: state.loopOffsetX
     });
@@ -4652,7 +4664,8 @@ function renderHeaderMotionPreview() {
     ctx.moveTo(0, REFERENCE_BAR_HEIGHT);
     for (let i = 0; i <= points; i++) {
       const xPortion = i / points;
-      let wave = generateWaveformValue(xPortion * frequency - state.timeSeconds * speed, type);
+      const phase = Math.round((xPortion * frequency - state.timeSeconds * speed) * 1000000) / 1000000;
+      let wave = generateWaveformValue(phase, type);
       if (typeof applyWaveformEnvelope === 'function') wave = applyWaveformEnvelope(wave, { ...envelope, xPortion });
       const fraction = typeof mapWaveformToBarYFraction === 'function'
         ? mapWaveformToBarYFraction(wave, envelope.envCenter) : 1 - Math.max(0, Math.min(1, wave));
@@ -4661,6 +4674,9 @@ function renderHeaderMotionPreview() {
     ctx.lineTo(REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT);
     ctx.closePath();
     ctx.fill();
+    const axis = createWaveformBaselineGeometry(0, 0, REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT);
+    ctx.fillRect(axis.x, axis.y, axis.width, axis.height);
+
   }
   ctx.restore();
   headerMotionSurface.commit();
@@ -7022,6 +7038,27 @@ function draw() {
 }
 
 function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsiveLogoScale()) {
+  // Static preview and raster exports consume the same clipped SVG as the header.
+  // Motion keeps its immediate shared geometry, avoiding asynchronous frame lag.
+  if (![1, 2, 4, 22].includes(currentShader)) {
+    push();
+    if (!liveCanvasUsesWebGL) translate(width / 2, height / 2);
+    translate(0, -getPreviewFitLayout().controlSpace / 2);
+    scale(responsiveLogoScale);
+    translate(panOffset.x, panOffset.y);
+    scale(zoomLevel);
+    translate(-currentWidth / 2, LOGO_VERTICAL_OFFSET + REFERENCE_BAR_Y);
+    if (currentShader === 24 && typeof syncLunarBarVectorPreviewVisibility === 'function') {
+      const scheme = colors[currentColorMode];
+      drawLunarBarPattern(null, 0, 0, REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT,
+        scheme ? scheme.fg : '#000000', currentColorMode);
+    } else {
+      drawCanonicalBarPattern(window, 0, 0, REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT);
+    }
+    pop();
+    return;
+  }
+
 
   // Use the exact same coordinate system and positioning as the logo
   push();
@@ -7052,6 +7089,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
   const currentMotionStyle = getCurrentMotionStyle();
   const loopAnimationState = getCurrentLoopAnimationState(exactBarWidth);
 
+
   // Always draw the bar - solid, ruler, binary, or ticker
   if (currentShader === 0) {
     // Solid mode - draw with current foreground color and corner details
@@ -7061,7 +7099,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
     rectMode(CORNER);
 
     // Draw rectangle with 45-degree corner cuts on all four corners
-    const cornerSize = 1.5;
+    const cornerSize = RPI_LOGO_GEOMETRY.cornerSize;
 
     beginShape();
     // Start from top-left corner (cut)
@@ -7080,7 +7118,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
     resetShader();
     fill(fgColor);
     noStroke();
-    const rulerGeometry = createRulerPatternGeometry({
+    const rulerGeometry = createBoundedTickGeometry({ shader: 1,
       barStartX,
       barY: 0,
       exactBarWidth,
@@ -7101,7 +7139,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
     fill(fgColor);
     noStroke();
 
-    const tickerGeometry = createTickerPatternGeometry({
+    const tickerGeometry = createBoundedTickGeometry({ shader: 2,
       barStartX,
       barY: 0,
       exactBarWidth,
@@ -7217,6 +7255,9 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
     vertex(barStartX + exactBarWidth, rectHeight);
 
     endShape(CLOSE);
+    const axis = createWaveformBaselineGeometry(barStartX, 0, exactBarWidth, rectHeight);
+    rect(axis.x, axis.y, axis.width, axis.height);
+
   } else if (currentShader === 5) {
     // Circles mode - draw circle patterns within the bar area
     resetShader();
@@ -8226,6 +8267,9 @@ function setupCustomDropdowns() {
 // Ensure custom dropdowns are initialized when DOM is ready
 document.addEventListener('DOMContentLoaded', setupCustomDropdowns);
 
+if (['localhost', '127.0.0.1'].includes(location.hostname) && location.port === '4311') {
+  document.title = `BAR-01 · Geometry · 4311 | ${document.title}`;
+}
 
 // Share links bridge the legacy p5 global state without coupling serialization to rendering.
 let sharePatternSeed = typeof crypto !== 'undefined' && crypto.getRandomValues
