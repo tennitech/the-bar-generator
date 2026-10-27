@@ -45,7 +45,7 @@ The preview uses the complete 250 × 150.911-unit mark bounds, including its bar
 
 100% means the fitted baseline for the current viewport. 400% means four times that fitted scale. Values below 100% are not offered because this control is for inspecting detail; Fit already shows the complete mark. The same percentage can produce a different CSS-pixel width after a viewport resize. It is not a print size, DPI, export scale, or guarantee that a complex pattern is legible at its final placement size.
 
-Button zoom keeps the bar as the inspection focus. Pointer zoom uses the pointer location, subject to the view's pan bounds. Fit recenters the full mark; native touch pinch and browser keyboard zoom remain separate from preview zoom. Preview zoom and pan do not enter the SVG, PNG, or GIF export transforms. Local SVG/PNG comparison at 100% and 400% produced identical files for Solid.
+Button zoom keeps the bar as the inspection focus. Pointer zoom uses the pointer location, subject to the view's pan bounds. Fit recenters the full mark; touch pinch over the artwork zooms the viewer around the two-finger centroid, while native page pinch remains available outside the viewer. Browser keyboard zoom remains available. Touch panning and pinch are clamped to the same inspection bounds; cancellation, layout resize, and orientation changes clear gesture state. Preview zoom and pan do not enter the SVG, PNG, or GIF export transforms. Local SVG/PNG comparison at 100% and 400% produced identical files for Solid.
 
 ## Configurable geometric patterns: October 27, 2026
 

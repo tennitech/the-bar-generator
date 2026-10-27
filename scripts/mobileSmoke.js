@@ -122,7 +122,7 @@ async function main() {
     });
     assert.equal(cancelState.dragging, false);
     assert.equal(cancelState.pointer, null);
-    assert.ok(cancelState.touchAction.includes('pinch-zoom'));
+    assert.equal(cancelState.touchAction, 'none', 'viewer owns touch pinch; page outside stays zoomable');
     await page.locator('#zoom-reset-btn').tap();
     await page.locator('#save-button').tap();
     const downloadPromise = page.waitForEvent('download');
