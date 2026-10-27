@@ -3953,3 +3953,23 @@ body { min-height: 0; }
 .header_motion-stage { position: relative; display: block; width: 100%; height: 100%; }
 .header_motion-stage .header_motion-letters { display: block; width: 100%; height: 100%; }
 .header_motion-stage .header_motion-canvas { position: absolute; display: block; }
+
+/* Export choices and progress stay inside the existing anchored popover. */
+.export_menu { width: 17rem; min-width: 0; max-height: calc(100dvh - 5rem); overflow-y: auto; }
+.export_settings { padding: 0.5rem 0.75rem 0.75rem; border-bottom: 1px solid var(--border-color); }
+.export_size-label { display: block; font-family: 'RPIGeistMono', monospace; font-size: 0.625rem; color: var(--text-secondary); margin-bottom: 0.375rem; }
+.export_size-select { width: 100%; min-height: 2.25rem; padding: 0.375rem; color: var(--text-primary); background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: var(--control-radius); font: inherit; font-size: 0.75rem; }
+.export_progress { padding: 0.75rem; border-top: 1px solid var(--border-color); }
+.export_message { margin: 0 0 0.5rem; font-size: 0.75rem; line-height: 1.4; color: var(--text-primary); overflow-wrap: anywhere; }
+.export_meter { display: block; width: 100%; height: 0.5rem; accent-color: var(--accent-color); }
+.export_cancel { min-height: 2.25rem; width: 100%; margin-top: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--control-radius); background: transparent; color: var(--text-primary); font: inherit; font-size: 0.75rem; cursor: pointer; }
+.export_cancel:hover { background: var(--menu-option-hover-bg); color: var(--menu-option-hover-text); }
+.export_size-select:focus-visible, .export_cancel:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+.export_menu [hidden] { display: none !important; }
+.export_menu button:disabled, .export_menu select:disabled { opacity: 0.5; cursor: default; }
+.save-button { position: relative; }
+.save-button[aria-busy="true"] .icon-right { visibility: hidden; }
+.save-button[aria-busy="true"]::after { content: ''; position: absolute; right: 0.75rem; width: 0.875rem; height: 0.875rem; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: exportSpin 0.8s linear infinite; }
+@keyframes exportSpin { to { transform: rotate(360deg); } }
+@media (max-width: 56.25rem) { .export_size-select, .export_cancel { min-height: 2.75rem; } }
+@media (prefers-reduced-motion: reduce) { .save-button[aria-busy="true"]::after { animation: none; } }

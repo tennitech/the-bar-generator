@@ -4,6 +4,8 @@
 
 A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a pattern, adjust its controls, and export an SVG or PNG. Ruler, Ticker, and Waveform also support looping GIF exports.
 
+PNG and GIF share Standard (1000 px logo) and Large (2000 px logo) choices. Their complete transparent canvases are 1160 × 762 and 2320 × 1524 px, including padding. SVG remains vector. GIF uses binary transparency; PNG preserves smooth partial alpha. See [export sizes, timing, and measured cost](references/transparent_gif_exports.md).
+
 **[Open the site](https://tennitech.github.io/the-bar-generator/)** · **[Report a bug](https://github.com/tennitech/the-bar-generator/issues/new/choose)** · **[Contribute](contributing.md)**
 
 ## Project intent and reading map
@@ -46,6 +48,7 @@ npm test -- --runInBand
 npm run test:browser:install
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:motion
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/transparentGifSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/patternExportSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=firefox npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit npm run test:browser
