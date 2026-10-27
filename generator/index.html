@@ -96,8 +96,8 @@
             <span class="option-desc">Best for slides, docs, and sharing</span>
           </button>
           <button id="save-svg" class="save-option">
-            <span class="option-label">SVG</span>
-            <span class="option-desc">Best for resizing without losing quality</span>
+            <span class="option-label">Download SVG</span>
+            <span class="option-desc">Vector file · save for Finder or import</span>
           </button>
           <button id="save-loop-gif" class="save-option" hidden>
             <span class="option-label">GIF</span>
@@ -106,7 +106,6 @@
           <div id="clipboard-actions" class="export_copy-actions" role="group" aria-label="Copy asset">
             <button id="copy-svg" class="save-option" type="button"><span class="option-label">Copy SVG</span><span class="option-desc">Vector image</span></button>
             <button id="copy-png" class="save-option" type="button"><span class="option-label">Copy PNG</span><span class="option-desc">Transparent image</span></button>
-            <button id="copy-jpeg" class="save-option" type="button"><span class="option-label">Copy JPEG</span><span class="option-desc">Opaque image</span></button>
           </div>
           <div id="export-progress" class="export_progress" hidden>
             <p id="export-message" class="export_message" role="status" aria-live="polite" aria-atomic="true"></p>
@@ -897,10 +896,10 @@
   <script src="js/utils/urlState.js?v=20261027-integration-final"></script>
   <script src="js/utils/exportOptions.js"></script>
   <script src="js/utils/transparentGif.js"></script>
-  <script src="js/utils/exportUi.js?v=20261027-clipboard"></script>
-  <script src="js/main.js?v=20261027-integration-final"></script>
-  <script src="js/utils/logoClipboard.js"></script>
-  <script src="js/drawing.js?v=20261027-clipboard"></script>
+  <script src="js/utils/exportUi.js?v=20261027-svg-interop"></script>
+  <script src="js/main.js?v=20261027-svg-interop"></script>
+  <script src="js/utils/logoClipboard.js?v=20261027-svg-interop"></script>
+  <script src="js/drawing.js?v=20261027-ruler-natural-edges"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

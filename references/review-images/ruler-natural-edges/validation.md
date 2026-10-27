@@ -20,3 +20,5 @@ Validation performed:
 ![Six natural ruler phases](phases.png)
 
 Full temporary evidence is at `/tmp/rpi-ruler-geometry`, `/tmp/rpi-ruler-visual-chromium`, `/tmp/rpi-ruler-visual-webkit`, `/tmp/rpi-ruler-exports` and `/tmp/rpi-ruler-exports-webkit`. These local paths are review artifacts, not permanent hosted URLs. Continuous physical-display motion, hardware Safari, owner testing and institutional approval remain unverified.
+
+Final integration with BAR11 (`1a5e59a`) retained JPEG removal and SVG/Finder guidance. The combined suite passed 298 tests in 30 suites (BAR11 removed four obsolete JPEG tests), Chromium clipboard checks and the 1,296-case Ruler matrix. Route-shell and drawing-script cache versions were advanced for the release.

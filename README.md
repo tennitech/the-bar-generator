@@ -2,9 +2,9 @@
 
 [![Checks](https://github.com/tennitech/the-bar-generator/actions/workflows/checks.yml/badge.svg)](https://github.com/tennitech/the-bar-generator/actions/workflows/checks.yml)
 
-A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a pattern, adjust its controls, and export an SVG or PNG. The asset menu also copies SVG and PNG images where supported and provides JPEG copying or an explicit JPEG download fallback. Ruler, Ticker, and Waveform also support looping GIF exports.
+A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a pattern, adjust its controls, and export an SVG or PNG. The asset menu also copies SVG and PNG images where supported. Ruler, Ticker, and Waveform also support looping GIF exports.
 
-Raster PNG, JPEG, and GIF actions share Standard (1000 px logo) and Large (2000 px logo) choices. Their complete canvases are 1160 × 762 and 2320 × 1524 px, including padding. SVG remains vector. JPEG uses an opaque black or white background selected for mark contrast and named in the menu; PNG retains transparency. GIF uses binary transparency; PNG preserves smooth partial alpha. See [export sizes, timing, and measured cost](references/transparent_gif_exports.md).
+PNG and GIF exports share Standard (1000 px logo) and Large (2000 px logo) choices. Their complete canvases are 1160 × 762 and 2320 × 1524 px, including padding. SVG remains vector. GIF uses binary transparency; PNG preserves smooth partial alpha. See [export sizes, timing, and measured cost](references/transparent_gif_exports.md).
 
 **[Open the site](https://tennitech.github.io/the-bar-generator/)** · **[Report a bug](https://github.com/tennitech/the-bar-generator/issues/new/choose)** · **[Contribute](contributing.md)**
 
@@ -63,7 +63,7 @@ Browser checks cover the 21 selectable styles, SVG downloads, a PNG file signatu
 
 ## Clipboard copies
 
-Open **Download Asset** for the copy actions. The browser's native MIME support controls the labels: **Copy SVG** writes a vector image, **Copy SVG source** writes explicitly labeled text, and **Download JPEG** appears when direct JPEG copying is unavailable. No format is silently substituted. Copy PNG preserves alpha and uses the selected raster size. Copies capture the current pattern, phase, color, title, and size before asynchronous work. A paste target must accept the copied type; SVG source text is not a pasted vector image. Use SVG download for vector import when needed.
+Open **Download Asset** for the copy actions. The browser's native MIME support controls the labels: **Copy SVG** writes a vector image, **Copy SVG source (text)** writes explicitly labeled code text. No format is silently substituted. Copy PNG preserves alpha and uses the selected raster size. Copies capture the current pattern, phase, color, title, and size before asynchronous work. A paste target must accept the copied type; SVG source text is not a pasted vector image. Use **Download SVG** and import the resulting `.svg` file when paste produces text or a clipping. Copy SVG places vector data on the clipboard for compatible apps; it does not copy a file reference. For Finder, use **Download SVG** to save the actual `.svg` file.
 
 Copy requires HTTPS or localhost and a user click. If a browser blocks it, focus the page and retry or use a download. No persistent permissions or clipboard reading are requested by the app. See [clipboard support, fallback behavior, and verification limits](references/clipboard_exports.md).
 

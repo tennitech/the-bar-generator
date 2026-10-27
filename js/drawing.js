@@ -1160,7 +1160,7 @@ function awaitExportTask(promise, signal) {
   });
 }
 
-async function createRasterExportBlob(snapshot, signal, mime = 'image/png', background = null) {
+async function createRasterExportBlob(snapshot, signal) {
   const { dimensions, geometry } = snapshot;
   const xml = new DOMParser().parseFromString(snapshot.svgSource, 'image/svg+xml');
   if (xml.querySelector('parsererror')) throw new Error('The selected SVG could not be rendered.');
@@ -1177,10 +1177,9 @@ async function createRasterExportBlob(snapshot, signal, mime = 'image/png', back
     throwIfExportCancelled(signal);
     canvas.width = dimensions.width; canvas.height = dimensions.height;
     const ctx = canvas.getContext('2d');
-    if (background) { ctx.fillStyle = background; ctx.fillRect(0, 0, canvas.width, canvas.height); }
     ctx.drawImage(image, 0, 0);
     return await awaitExportTask(new Promise((resolve, reject) => canvas.toBlob(blob =>
-      blob && blob.type === mime ? resolve(blob) : reject(new Error('Image encoding failed. Try again.')), mime, 0.95)), signal);
+      blob && blob.type === 'image/png' ? resolve(blob) : reject(new Error('PNG encoding failed. Try again.')), 'image/png')), signal);
   } finally { URL.revokeObjectURL(url); image.src = ''; canvas.width = 0; canvas.height = 0; }
 }
 
@@ -1227,24 +1226,21 @@ function startLogoDownload(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-async function runLogoExport(format, triggerId) {
+async function runLogoExport(format) {
+  if (!['png', 'svg', 'gif'].includes(format)) return null;
   const job = window.logoExportUI.begin(format);
   if (!job) return null;
-  if (triggerId) job.triggerId = triggerId;
   const started = performance.now();
   let renderer;
   try {
     // Everything used by asynchronous work is captured before yielding to input.
     const snapshot = captureLogoExportSnapshot();
-    let filename = window.logoExportOptions.filename(snapshot, format);
-    if (format === 'jpeg') filename = filename.replace('-clear-',
-      `-${window.logoClipboard.background(snapshot.foreground) === '#000000' ? 'black' : 'white'}-background-`);
+    const filename = window.logoExportOptions.filename(snapshot, format);
     await new Promise(resolve => setTimeout(resolve, 0));
     throwIfExportCancelled(job.controller.signal);
     let blob, metrics = {};
     if (format === 'svg') blob = new Blob([snapshot.svgSource], { type: 'image/svg+xml' });
-    else if (format === 'png' || format === 'jpeg') blob = await createRasterExportBlob(snapshot, job.controller.signal,
-      format === 'jpeg' ? 'image/jpeg' : 'image/png', format === 'jpeg' ? window.logoClipboard.background(snapshot.foreground) : null);
+    else if (format === 'png') blob = await createRasterExportBlob(snapshot, job.controller.signal);
     else {
       if (!window.loopingGifUtils.isLoopingGifEligibleStyle(snapshot.family)) throw new Error('This pattern does not have a looping GIF.');
       const plan = window.loopingGifUtils.getLoopingGifFramePlan(snapshot.family, snapshot.values, { barWidth: snapshot.geometry.width });

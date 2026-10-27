@@ -12,39 +12,28 @@
         ? root.ClipboardItem.supports(mime) : mime === 'image/png';
     } catch (_) { return false; }
   }
-  function background(ink) {
-    const rgb = ink.replace('#', '').match(/../g).map(value => {
-      const s = parseInt(value, 16) / 255;
-      return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-    });
-    const luminance = rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
-    return (luminance + 0.05) / 0.05 > 1.05 / (luminance + 0.05) ? '#000000' : '#ffffff';
-  }
   function mode(format) {
+    if (!['svg', 'png'].includes(format)) return 'unavailable';
     if (native(`image/${format === 'svg' ? 'svg+xml' : format}`)) return 'image';
-    return format === 'svg' ? 'source' : format === 'jpeg' ? 'download' : 'unavailable';
+    return format === 'svg' ? 'source' : 'unavailable';
   }
   function sync(credits = false) {
     const group = document.getElementById('clipboard-actions');
     if (!group) return;
     group.hidden = credits;
-    const ink = typeof colors !== 'undefined' && typeof currentColorMode !== 'undefined'
-      ? colors[currentColorMode]?.fg || '#000000' : '#000000';
-    const matte = background(ink) === '#000000' ? 'Black' : 'White';
-    for (const format of ['svg', 'png', 'jpeg']) {
+    for (const format of ['svg', 'png']) {
       const button = document.getElementById(`copy-${format}`), action = mode(format);
-      const label = action === 'source' ? 'Copy SVG source' : action === 'download' ? 'Download JPEG' : `Copy ${format.toUpperCase()}`;
-      const description = format === 'jpeg' ? `${matte} background${action === 'download' ? ' · direct copy unavailable' : ''}`
-        : format === 'svg' ? (action === 'source' ? 'Text fallback · download SVG for vector import' : 'Editable vector · compatible apps')
+      const label = action === 'source' ? 'Copy SVG source (text)' : `Copy ${format.toUpperCase()}`;
+      const description = format === 'svg' ? (action === 'source' ? 'Code text · download SVG for Finder' : 'For SVG apps · download SVG for Finder')
           : action === 'unavailable' ? 'Copy unavailable · use PNG download above' : 'Transparent · selected raster size';
-      button.querySelector('.option-label').innerHTML = root.FeatherIcons.getIconMarkup(action === 'download' ? 'download' : 'copy', 'export_copy-icon') + label;
+      button.querySelector('.option-label').innerHTML = root.FeatherIcons.getIconMarkup('copy', 'export_copy-icon') + label;
       button.querySelector('.option-desc').textContent = description;
       button.setAttribute('aria-label', `${label}: ${description}`);
     }
   }
   async function copy(format) {
+    if (!['svg', 'png'].includes(format)) return null;
     const action = mode(format);
-    if (action === 'download') return runLogoExport('jpeg', 'copy-jpeg');
     const job = root.logoExportUI.begin(format);
     if (!job) return null;
     job.triggerId = `copy-${format}`;
@@ -61,7 +50,7 @@
         write = root.navigator.clipboard.writeText(snapshot.svgSource);
       } else {
         const payload = format === 'svg' ? Promise.resolve(new Blob([snapshot.svgSource], { type: mime }))
-          : createRasterExportBlob(snapshot, job.controller.signal, mime, format === 'jpeg' ? background(snapshot.foreground) : null);
+          : createRasterExportBlob(snapshot, job.controller.signal);
         payload.catch(() => {}); // A browser may reject write before consuming the promise.
         write = root.navigator.clipboard.write([new root.ClipboardItem({ [mime]: payload })]);
       }
@@ -71,7 +60,9 @@
       status.tabIndex = -1; status.focus({ preventScroll: true });
       root.logoExportUI.message(job, `Preparing and copying ${format.toUpperCase()}${action === 'source' ? ' source text' : ''}…`);
       await write;
-      const message = action === 'source' ? 'SVG source text copied. Download SVG to import a vector image.' : `${format.toUpperCase()} image copied. Paste into a compatible app.`;
+      const message = action === 'source' ? 'SVG source text copied. For a Finder file, use Download SVG.'
+        : format === 'svg' ? 'SVG data copied for compatible apps. For Finder, use Download SVG.'
+          : `${format.toUpperCase()} image copied. Paste into a compatible app.`;
       root.logoExportUI.finish(job, 'started', message);
       Toast.show(message, 'success');
       return { mime, width: format === 'svg' ? null : snapshot.dimensions.width, height: format === 'svg' ? null : snapshot.dimensions.height };
@@ -85,12 +76,12 @@
     }
   }
   function init() {
-    for (const format of ['svg', 'png', 'jpeg']) document.getElementById(`copy-${format}`)?.addEventListener('click', () => copy(format));
+    for (const format of ['svg', 'png']) document.getElementById(`copy-${format}`)?.addEventListener('click', () => copy(format));
     sync();
   }
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
   }
-  return { native, background, mode, sync, copy };
+  return { native, mode, sync, copy };
 });
