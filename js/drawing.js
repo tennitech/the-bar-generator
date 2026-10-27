@@ -760,6 +760,18 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       }
       pg.endShape();
     }
+  } else if (currentShader === 22) {
+    const geometry = createWaveQuantumPatternGeometry({
+      barStartX, barY, exactBarWidth, barHeight: rectHeight,
+      ...window.quantumControls.values()
+    });
+    pg.noStroke();
+    pg.fill(fgColor);
+    for (const polygon of geometry.polygons) {
+      pg.beginShape();
+      for (const point of polygon) pg.vertex(point.x, point.y);
+      pg.endShape(pg.CLOSE);
+    }
   } else if (currentShader === 23) {
     // Neural network pattern
     const geometry = createNeuralNetworkPatternGeometry({
@@ -1324,6 +1336,7 @@ function saveSVG() {
         parseNumericString,
         generateStaticPackedCircles,
         values: {
+          ...window.quantumControls.values(),
           rulerRepeats: rulerRepeatsSlider.value,
           rulerUnits: rulerUnitsSlider.value,
           rulerSpeed: rulerSpeedSlider ? rulerSpeedSlider.value : 1,

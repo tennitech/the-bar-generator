@@ -2467,6 +2467,7 @@ function setup() {
 
   // Get control references
   styleSelect = document.getElementById('style-select');
+  window.quantumControls.setup();
   colorModeSelect = document.getElementById('color-mode-select');
   binaryInput = document.getElementById('binary-input');
   binaryGroup = document.getElementById('binary-group');
@@ -3543,6 +3544,14 @@ function setup() {
         return;
       }
 
+      if (currentShader === 22) {
+        event.preventDefault();
+        const toggle = document.getElementById('quantum-motion-toggle');
+        toggle.checked = !toggle.checked;
+        toggle.dispatchEvent(new Event('change', { bubbles: true }));
+        return;
+      }
+
       // Motion-enabled styles use spacebar to toggle loop preview on and off.
       if (isAnimated) {
         event.preventDefault();
@@ -4323,6 +4332,7 @@ function handleStyleChange() {
     stopAudio();
   }
 
+  window.quantumControls.sync();
   syncLunarPreviewVisibility(selectedStyle);
   console.log('Style changed to:', selectedStyle, 'currentShader:', currentShader);
   syncMissionControlSaveMenu();
@@ -4383,6 +4393,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
       : getAnimationNowMs() / 1000.0);
 
   return {
+    ...window.quantumControls.values(),
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
     rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
     tickerRepeats: tickerSlider ? tickerSlider.value : 34,
@@ -4558,7 +4569,18 @@ function renderHeaderMotionPreview() {
   const style = getCurrentMotionStyle();
   const state = getCurrentLoopAnimationState();
   const values = getLoopRuntimeValues();
-  if (style === 'ruler' || style === 'ticker') {
+  if (currentShader === 22) {
+    const geometry = createWaveQuantumPatternGeometry({
+      barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH, barHeight: REFERENCE_BAR_HEIGHT,
+      ...window.quantumControls.values()
+    });
+    for (const polygon of geometry.polygons) {
+      ctx.beginPath();
+      polygon.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+      ctx.closePath();
+      ctx.fill();
+    }
+  } else if (style === 'ruler' || style === 'ticker') {
     const geometry = (style === 'ruler' ? createRulerPatternGeometry : createTickerPatternGeometry)({
       ...values, barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH,
       barHeight: REFERENCE_BAR_HEIGHT, loopOffsetX: state.loopOffsetX
@@ -4612,7 +4634,7 @@ function renderHeaderMotionPreview() {
 function updateHeaderBrandPreview(force = false) {
   if (!headerLogoPreview) return;
 
-  if (isMotionEnabledForStyle(getCurrentMotionStyle())) {
+  if (isMotionEnabledForStyle(getCurrentMotionStyle()) || (currentShader === 22 && document.getElementById('quantum-motion-toggle')?.checked)) {
     renderHeaderMotionPreview();
     return;
   }
@@ -6414,6 +6436,14 @@ function updateUrlParameters() {
     }
   }
 
+  if (selectedStyle === 'wave-quantum') {
+    const quantum = window.quantumControls.values();
+    if (quantum.quantumPhase) params.set('quantumPhase', String(quantum.quantumPhase));
+    const speed = document.getElementById('quantum-speed-slider').value;
+    if (Number(speed) !== 1) params.set('quantumSpeed', speed);
+    if (document.getElementById('quantum-reverse-toggle').checked) params.set('quantumReverse', 'true');
+  }
+
   // Update URL without reloading the page
   const newUrl = window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorUrl === 'function'
     ? window.GeneratorRoutes.buildGeneratorUrl(selectedStyle, params, window.location.pathname)
@@ -6857,6 +6887,7 @@ function setupViewportHeightSync() {
 
 function draw() {
   const currentTime = getAnimationNowMs();
+  window.quantumControls.tick(currentTime, document.hidden || document.body.classList.contains('has-logo-animation'));
   const currentMotionStyle = getCurrentMotionStyle();
   if (document.hidden || document.body.classList.contains('has-logo-animation')) {
     lastAnimationFrameTimestamp = 0;
@@ -6930,6 +6961,7 @@ function draw() {
   // Draw bottom bar
   drawBottomBar(currentWidth, responsiveLogoScale);
 
+  if (currentShader === 22) updateHeaderBrandPreview();
   if (isAnimated && isMotionEnabledForStyle(currentMotionStyle)) {
     updateHeaderBrandPreview();
   }
@@ -7546,28 +7578,17 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       endShape(CLOSE);
     }
   } else if (currentShader === 22) {
-    // Wave Quantum pattern
     resetShader();
-    noFill();
+    fill(fgColor);
+    noStroke();
     const geometry = createWaveQuantumPatternGeometry({
-      barStartX,
-      barY: 0,
-      exactBarWidth,
-      barHeight: rectHeight
+      barStartX, barY: 0, exactBarWidth, barHeight: rectHeight,
+      ...window.quantumControls.values()
     });
-
-    stroke(fgColor);
-    strokeWeight(geometry.thickness);
-    strokeCap(ROUND);
-    strokeJoin(ROUND);
-
-    for (let i = 0; i < geometry.paths.length; i++) {
+    for (const polygon of geometry.polygons) {
       beginShape();
-      for (let j = 0; j < geometry.paths[i].length; j++) {
-        const point = geometry.paths[i][j];
-        vertex(point.x, point.y);
-      }
-      endShape();
+      for (const point of polygon) vertex(point.x, point.y);
+      endShape(CLOSE);
     }
   } else if (currentShader === 11) {
     // Pulse / Centerline pattern
