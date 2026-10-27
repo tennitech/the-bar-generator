@@ -183,8 +183,10 @@ async function main() {
         assert.equal(digest(alpha), oracle.expected[index], `Exact painted coverage and no ghosts: frame ${index}`);
         const barTop = Math.floor((132.4885 + 20) * scale), barBottom = Math.ceil((150.4885 + 20) * scale);
         const column = x => { for (let y = barTop; y < barBottom; y++) if (alpha[y * gif.width + x]) return true; return false; };
-        assert.ok(column(20 * scale), 'Left nominal bar edge paints');
-        assert.ok(column(270 * scale - 1), 'Right nominal bar edge paints');
+        if (family !== 'ruler') {
+          assert.ok(column(20 * scale), 'Left nominal bar edge paints');
+          assert.ok(column(270 * scale - 1), 'Right nominal bar edge paints');
+        }
         assert.equal(column(20 * scale - 1), false); assert.equal(column(270 * scale), false);
         if (index === 0) await compositeEvidence(page, gif, rgba, path.join(output, `${family}-${size}-backgrounds.png`));
         duration += frame.delayMs; index++;

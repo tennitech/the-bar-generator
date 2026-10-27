@@ -57,6 +57,12 @@ Physical Safari/keyboards, screen readers, continuous-motion judgment,
 high-refresh/low-power performance and formal RPI/asset approval remain separate
 limitations. Automated software checks do not establish manual owner acceptance.
 
+## Ruler natural edges — October 27, 2026
+
+The owner corrected the earlier painted-edge interpretation for Ruler: remove the artificial fixed end marks and accept natural whitespace inside its unchanged 250 × 18 viewport. Ruler now uses its original clipped tick geometry in preview, header, SVG, PNG and GIF. Placement remains y = 132.4885 with the fixed 21-unit gap; no phase-dependent stretching or shifting is introduced. Other bar families and the calm speed limits are unchanged. The canonical policy, geometry/science notes and narrow edge checks record this explicit Ruler exception. The ruler control hint now describes ticks moving through a fixed frame.
+
+Verification passed 302 unit tests in 30 suites, 86 Chromium geometry/control-range cases, 31 Chromium rendered family/variant and actual SVG/PNG parity cases, and 1,296 Ruler phase/reverse/speed/theme/viewport cases each in Chromium and WebKit. Focused live Ruler header checks passed at DPR 1/2/3 with stable letter pixels and pause/play DOM. Standard/Large Ruler GIFs passed 40 decoded-frame coverage hashes per size and engine, transparency/disposal/overflow checks, PNG alpha and SVG checks. Native Chromium first/last-frame decoding and WebKit first-frame decoding are separate evidence. Desktop/mobile/theme and sampled-phase screenshots were visually inspected; see [review evidence](review-images/ruler-natural-edges/validation.md). This does not establish owner testing, physical-display motion judgment, native Safari behavior or formal RPI approval.
+
 ## Clipboard actions — October 27, 2026
 
 The existing asset menu now offers capability-detected SVG/PNG/JPEG copy actions using the same frozen state, official vector geometry and Standard/Large raster renderer as downloads. Unsupported native SVG becomes explicitly labeled SVG source text; unsupported JPEG becomes explicitly labeled JPEG download. JPEG uses a named black/white matte chosen for maximum mark contrast. PNG keeps smooth transparency. Clipboard writes start inside user activation with promise-backed ClipboardItem data; dispatched platform writes have no misleading Cancel control. Busy exclusion, accessible status, keyboard/touch controls and retry reuse the export UI. No runtime dependency, persistent permission request, or clipboard read is added.

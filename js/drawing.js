@@ -1372,18 +1372,18 @@ function requirePaintedBarForExport() {
   }
 }
 
-// Fixed reference marks define the spatial domain; interior tick positions/widths
-// are untouched. Marker width is at most one reference unit and one normal tick.
+// Ruler uses only its natural repeating ticks, including whitespace at the edges.
+// Ticker retains fixed references; neither family changes coordinates per frame.
 function createBoundedTickGeometry(options) {
   const geometry = (options.shader === 1 ? createRulerPatternGeometry : createTickerPatternGeometry)(options);
+  if (options.shader === 1) return geometry;
   const x = Number(options.barStartX || 0), y = Number(options.barY || 0);
   const width = Number(options.exactBarWidth || REFERENCE_WIDTH);
   const height = Number(options.barHeight || REFERENCE_BAR_HEIGHT);
-  const markerWidth = Math.min(height / 18, options.shader === 1 ? geometry.tickWidth : geometry.topTickWidth);
+  const markerWidth = Math.min(height / 18, geometry.topTickWidth);
   const markers = [];
   for (const edgeX of [x, x + width - markerWidth]) {
-    if (options.shader === 1) markers.push({ x: edgeX, y, width: markerWidth, height, isBoundary: true });
-    else for (const row of ['top', 'bottom']) markers.push({ x: edgeX,
+    for (const row of ['top', 'bottom']) markers.push({ x: edgeX,
       y: y + (row === 'top' ? 0 : height / 2), width: markerWidth, height: height / 2, row, isBoundary: true });
   }
   return { ...geometry, rects: geometry.rects.concat(markers) };
