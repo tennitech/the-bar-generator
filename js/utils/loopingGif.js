@@ -14,9 +14,10 @@
   const MIN_CAPTURE_FRAMES = 24;
   const MAX_CAPTURE_FRAMES = 72;
   const MIN_GIF_FRAME_DELAY_MS = 20;
-  const DEFAULT_LIVE_RENDER_FPS = 120;
+  // p5 still uses requestAnimationFrame; this ceiling avoids skipping fast displays.
+  const DEFAULT_LIVE_RENDER_FPS = 1000;
   const MIN_LIVE_RENDER_FPS = 60;
-  const MAX_LIVE_RENDER_FPS = 120;
+  const MAX_LIVE_RENDER_FPS = 1000;
   const MAX_LIVE_FRAME_DELTA_MS = 1000 / 20;
   const MIN_LOOP_SPEED = 0.2;
   const MAX_LOOP_SPEED = 5;
@@ -152,6 +153,20 @@
     return Math.min(numericValue, MAX_LIVE_FRAME_DELTA_MS);
   }
 
+  function advanceLiveLoopPhase(phase, style, values = {}, deltaMs = 0) {
+    const normalizedStyle = normalizeLoopingGifStyle(style);
+    const subdivisions = normalizedStyle === 'ruler'
+      ? Math.max(1, Number(values.rulerUnits) || 4)
+      : normalizedStyle === 'ticker' ? Math.max(1, Number(values.tickerRatio) || 2) : 1;
+    // Keep each frame below a quarter of the smallest repeating tick interval.
+    // A delayed frame slows the preview instead of sampling an apparent reversal.
+    const step = Math.min(getLoopSpeed(normalizedStyle, values)
+      * clampLiveAnimationDeltaMs(deltaMs) / 1000, 0.25 / subdivisions);
+    const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
+    const current = Number.isFinite(phase) ? phase : 0;
+    return ((current + step * direction) % 1 + 1) % 1;
+  }
+
   function isLoopingGifEligibleStyle(style) {
     return LOOPING_GIF_STYLE_SET.has(normalizeLoopingGifStyle(style));
   }
@@ -241,7 +256,9 @@
 
     const elapsedSeconds = Math.max(0, Number(options.elapsedSeconds) || 0);
     const periodSeconds = Math.max(0.0001, Number(framePlan.periodSeconds) || 1);
-    const progress = ((elapsedSeconds / periodSeconds) % 1 + 1) % 1;
+    const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
+    const cycles = Number.isFinite(options.phase) ? options.phase * direction : elapsedSeconds / periodSeconds;
+    const progress = ((cycles % 1) + 1) % 1;
 
     return {
       ...framePlan,
@@ -256,6 +273,7 @@
   }
 
   return {
+    advanceLiveLoopPhase,
     DEFAULT_CAPTURE_FPS,
     DEFAULT_LIVE_RENDER_FPS,
     MIN_GIF_FRAME_DELAY_MS,

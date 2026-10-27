@@ -45,6 +45,7 @@ npm test -- --runInBand
 # Install browser binaries once, then run browser checks
 npm run test:browser:install
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:browser
+RPI_SITE_URL=http://127.0.0.1:8000 npm run test:motion
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=firefox npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit npm run test:browser
 ```
@@ -78,7 +79,7 @@ Read [contributing.md](contributing.md) and [AGENTS.md](AGENTS.md) before editin
 
 The Checks workflow runs the fast unit tests on pull requests into `main` and pushes to `main`. It does not install browsers or run UI tests. There is no scheduled run. Replaced runs are cancelled and each job has a five-minute limit.
 
-Contributors and reviewers perform the relevant browser, keyboard, accessibility, motion, and export checks. The browser scripts above are optional local tools for changes that need them; they are not merge requirements.
+Contributors and reviewers perform the relevant browser, keyboard, accessibility, motion, and export checks. The browser and motion scripts above are optional local tools for changes that need them; they are not merge requirements.
 
 The test jobs run only for public repos on standard Ubuntu runners, with no caches or artifact uploads. See the [maintenance guide](references/maintenance_handoff.md) for billing controls and the December handoff.
 

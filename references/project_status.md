@@ -25,11 +25,21 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 3. Completed Milestones
 
+- **[2026-10-27] Small header ticker direction repair**:
+    - Confirmed equal ticker geometry and phase in both previews. The tiny header could still show an apparent reverse direction because dense rows exceeded its spatial sampling limit.
+    - Unresolved header rows now use their exact mean coverage; resolved rows keep their moving geometry. Device pixel ratio and resize determine which rows can be shown. Main preview and export geometry remain unchanged.
+
+
 - **[2026-10-27] Lightweight checks policy**:
     - At the owner's request, the fast unit suite is the only automated merge check. Removed browser installation and browser/motion execution from CI and removed Browser tests from main protection.
-    - Kept the optional local browser scripts. Contributors and reviewers perform the relevant UI, accessibility, motion, and export checks. The unit job has a five-minute limit and retains public-repo, read-only, no-cache, and no-artifact controls.
+    - Kept the optional local browser and motion scripts. Contributors and reviewers perform the relevant UI, accessibility, motion, and export checks. The unit job has a five-minute limit and retains public-repo, read-only, no-cache, and no-artifact controls.
 
 
+- **[2026-10-27] Live motion timing repair**:
+    - Replaced the 120 FPS ceiling with a browser-frame-driven render target. The header mark now reuses a canvas and draws with the preview on each frame instead of replacing SVG markup at about 8 FPS.
+    - Added continuous live phase integration for speed, direction, pause, and resume changes. Limited phase advance at dense/fast settings and after stalls to reduce apparent reversal. Reset frame timestamps after visibility changes and pause background rendering during the ASCII overlay.
+    - Cached fixed SVG letter commands and shared the waveform function between live preview, header, and exports, correcting a quarter-cycle SVG phase mismatch. Export loop planning is unchanged.
+    - Added unit and browser regression checks for cadence, header reuse, phase continuity, dense motion, and overlay recovery. See references/bar_science_notes.md for sampling limits. Physical high-refresh display checks remain open; synthetic frame-rate checks do not establish hardware performance.
 
 
 - **[2026-10-27] Audit integration and development conventions**:
