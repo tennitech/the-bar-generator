@@ -1,10 +1,9 @@
 name: Checks
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 permissions:
   contents: read
@@ -18,7 +17,7 @@ jobs:
     name: Unit tests
     # Standard runners are free for public repos under current GitHub pricing.
     # Do not run this job if repository visibility changes to private.
-    if: github.event.repository.private == false
+    if: github.event.repository.private == false && github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -29,5 +28,5 @@ jobs:
         with:
           node-version: '22'
           # Deliberately omit dependency caching and artifact uploads.
-      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund --prefer-offline
       - run: npm test -- --runInBand
