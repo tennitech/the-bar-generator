@@ -69,7 +69,7 @@ async function main() {
     }
     for (const viewport of [{ width: 390, height: 664 }, { width: 844, height: 290 }]) {
       await page.setViewportSize(viewport);
-      for (const style of ['solid', 'ruler', 'lunar']) {
+      for (const style of ['solid', 'ruler', 'wave-quantum', 'lunar']) {
       await page.goto(`${base}/generator/${style}/`);
       await page.locator('#p5-container canvas').waitFor();
       const themes = style === 'lunar' ? ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray', 'lunar']
