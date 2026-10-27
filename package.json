@@ -8,7 +8,9 @@
     "test:browser": "node scripts/browserSmoke.js",
     "test:browser:install": "playwright install chromium firefox webkit",
     "test:motion": "node scripts/motionSmoke.js",
-    "test:mobile": "node scripts/mobileSmoke.js"
+    "test:mobile": "node scripts/mobileSmoke.js",
+    "test:touch": "node scripts/viewerTouchSmoke.js",
+    "test:mobile-theme": "node scripts/mobileThemeSmoke.js"
   },
   "repository": {
     "type": "git",
