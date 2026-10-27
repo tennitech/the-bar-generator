@@ -1,5 +1,6 @@
 const {
   applyWaveformEnvelope,
+  generateWaveValue,
   createBarPatternSVG,
   createCirclesGradientPatternGeometry,
   createFibonacciPatternGeometry,
@@ -655,4 +656,13 @@ describe('createBarPatternSVG', () => {
     expect(firstScallopApex).toBeCloseTo(18 - firstScallopWidth / 2, 1);
     expect(waveQuantum.paths.length).toBe(3);
   });
+});
+
+// The live waveform, header, and SVG exports share this phase convention.
+test('waveform sine starts at the lower edge and wraps continuously', () => {
+  expect(generateWaveValue(0, 0)).toBeCloseTo(0);
+  expect(generateWaveValue(0.25, 0)).toBeCloseTo(0.5);
+  expect(generateWaveValue(0.5, 0)).toBeCloseTo(1);
+  expect(generateWaveValue(1, 0)).toBeCloseTo(generateWaveValue(0, 0));
+  expect(generateWaveValue(-0.25, 0)).toBeCloseTo(generateWaveValue(0.75, 0));
 });

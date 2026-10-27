@@ -361,7 +361,7 @@ const normalizeLoopSpeed = loopingGifUtils && typeof loopingGifUtils.normalizeLo
 const getPreferredLiveRenderFps = loopingGifUtils && typeof loopingGifUtils.getPreferredLiveRenderFps === 'function'
   ? loopingGifUtils.getPreferredLiveRenderFps
   : function fallbackGetPreferredLiveRenderFps() {
-    return 120;
+    return 1000;
   };
 const clampLiveAnimationDeltaMs = loopingGifUtils && typeof loopingGifUtils.clampLiveAnimationDeltaMs === 'function'
   ? loopingGifUtils.clampLiveAnimationDeltaMs
@@ -632,7 +632,12 @@ let isPanDragging = false;
 let isPanningMode = false;
 let isAnimated = false;
 let lastHeaderPreviewMarkup = '';
-let lastHeaderPreviewUpdateTime = 0;
+let headerMotionCanvas = null;
+let headerMotionContext = null;
+let headerMotionColorMode = null;
+let headerMotionColor = null;
+let headerLetterPaths = null;
+let liveMotionPhase = 0;
 const RESPONSIVE_CANVAS_RESIZE_SETTLE_MS = 120;
 const WAVEFORM_RENDER_MIN_POINTS = 240;
 const WAVEFORM_RENDER_MAX_POINTS = 1200;
@@ -1189,7 +1194,8 @@ function getLoopAnimationStateForStyle(style, barWidth = REFERENCE_WIDTH, elapse
   if (getLoopingAnimationState) {
     return getLoopingAnimationState(normalizedStyle, getLoopRuntimeValues(), {
       barWidth,
-      elapsedSeconds
+      elapsedSeconds,
+      ...(elapsedSecondsOverride === null ? { phase: liveMotionPhase } : {})
     });
   }
 
@@ -1234,7 +1240,7 @@ function setMotionEnabledForStyle(style, enabled, options = {}) {
   }
 
   MOTION_ENABLED_BY_STYLE[normalizedStyle] = !!enabled;
-  if (options.resetPhase !== false) {
+  if (options.resetPhase === true) {
     resetAnimationClock();
   }
 
@@ -1283,25 +1289,7 @@ function getWaveformRenderPointCount(barWidth, frequency) {
 }
 
 function generateWaveformValue(phase, type) {
-  const normalizedPhase = phase - Math.floor(phase);
-  const wrappedPhase = normalizedPhase < 0 ? normalizedPhase + 1 : normalizedPhase;
-
-  const sine = (Math.sin(wrappedPhase * 2 * Math.PI - Math.PI / 2) + 1) * 0.5;
-  const saw = wrappedPhase;
-  const square = wrappedPhase > 0.5 ? 1.0 : 0.0;
-  const pulse = wrappedPhase > 0.8 ? 1.0 : 0.0;
-
-  if (type < 1.0) {
-    return sine + (saw - sine) * type;
-  }
-
-  if (type < 2.0) {
-    const mix = type - 1.0;
-    return saw + (square - saw) * mix;
-  }
-
-  const mix = type - 2.0;
-  return square + (pulse - square) * mix;
+  return generateWaveValue(phase, type);
 }
 
 function getWaveformEnvelopeSettings() {
@@ -2792,7 +2780,6 @@ function setup() {
   }
   if (rulerReverseToggle) {
     rulerReverseToggle.addEventListener('change', function () {
-      resetAnimationClock();
       updateUrlParameters();
       requestUpdate();
     });
@@ -2838,7 +2825,6 @@ function setup() {
   }
   if (tickerReverseToggle) {
     tickerReverseToggle.addEventListener('change', function () {
-      resetAnimationClock();
       updateUrlParameters();
       requestUpdate();
     });
@@ -2870,7 +2856,6 @@ function setup() {
   }
   if (waveformReverseToggle) {
     waveformReverseToggle.addEventListener('change', function () {
-      resetAnimationClock();
       updateUrlParameters();
       requestUpdate();
     });
@@ -3708,6 +3693,7 @@ function setup() {
   };
 
   document.addEventListener('visibilitychange', function () {
+    lastAnimationFrameTimestamp = 0;
     if (document.hidden) {
       handleDocumentAudioDeactivation();
     }
@@ -4613,15 +4599,82 @@ function buildHeaderLogoAnimationState() {
   };
 }
 
+// Keep the moving header mark on the same frame and phase as the main canvas.
+// Reuse its canvas and paths instead of replacing a full SVG tree every frame.
+function renderHeaderMotionPreview() {
+  if (!headerMotionCanvas || headerMotionCanvas.parentNode !== headerLogoPreview) {
+    headerMotionCanvas = document.createElement('canvas');
+    headerMotionCanvas.className = 'header_motion-canvas';
+    headerMotionCanvas.setAttribute('aria-hidden', 'true');
+    headerMotionCanvas.width = REFERENCE_WIDTH * 2;
+    headerMotionCanvas.height = Math.ceil(REFERENCE_TOTAL_HEIGHT * 2);
+    headerMotionContext = headerMotionCanvas.getContext('2d');
+    headerLogoPreview.replaceChildren(headerMotionCanvas);
+    headerMotionColorMode = null;
+    lastHeaderPreviewMarkup = '';
+  }
+  const ctx = headerMotionContext;
+  if (!ctx) return;
+  if (!headerLetterPaths) headerLetterPaths = [paths.r, paths.p, paths.i].map(path => new Path2D(path));
+  if (headerMotionColorMode !== currentColorMode) {
+    headerMotionColor = getComputedStyle(headerLogoPreview).color;
+    headerMotionColorMode = currentColorMode;
+  }
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
+  ctx.clearRect(0, 0, REFERENCE_WIDTH, REFERENCE_TOTAL_HEIGHT);
+  ctx.fillStyle = headerMotionColor;
+  headerLetterPaths.forEach(path => ctx.fill(path));
+  ctx.save();
+  ctx.translate(0, REFERENCE_BAR_Y);
+  ctx.beginPath();
+  ctx.rect(0, 0, REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT);
+  ctx.clip();
+  const style = getCurrentMotionStyle();
+  const state = getCurrentLoopAnimationState();
+  const values = getLoopRuntimeValues();
+  if (style === 'ruler' || style === 'ticker') {
+    const geometry = (style === 'ruler' ? createRulerPatternGeometry : createTickerPatternGeometry)({
+      ...values, barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH,
+      barHeight: REFERENCE_BAR_HEIGHT, loopOffsetX: state.loopOffsetX
+    });
+    geometry.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
+  } else if (style === 'waveform') {
+    const frequency = Number(waveformFrequencySlider.value);
+    const type = Number(waveformTypeSlider.value);
+    const speed = Number(waveformSpeedSlider.value);
+    const envelope = getWaveformEnvelopeSettings();
+    const points = getWaveformRenderPointCount(REFERENCE_WIDTH, frequency);
+    ctx.beginPath();
+    ctx.moveTo(0, REFERENCE_BAR_HEIGHT);
+    for (let i = 0; i <= points; i++) {
+      const xPortion = i / points;
+      let wave = generateWaveformValue(xPortion * frequency - state.timeSeconds * speed, type);
+      if (typeof applyWaveformEnvelope === 'function') wave = applyWaveformEnvelope(wave, { ...envelope, xPortion });
+      const fraction = typeof mapWaveformToBarYFraction === 'function'
+        ? mapWaveformToBarYFraction(wave, envelope.envCenter) : 1 - Math.max(0, Math.min(1, wave));
+      ctx.lineTo(xPortion * REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT * fraction);
+    }
+    ctx.lineTo(REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function updateHeaderBrandPreview(force = false) {
   if (!headerLogoPreview) return;
 
+  if (isMotionEnabledForStyle(getCurrentMotionStyle())) {
+    renderHeaderMotionPreview();
+    return;
+  }
+  headerMotionCanvas = null;
+  headerMotionContext = null;
   const markup = buildHeaderPreviewSVG();
-  if (!force && markup === lastHeaderPreviewMarkup) return;
+  if (!force && markup === lastHeaderPreviewMarkup && headerLogoPreview.querySelector('svg')) return;
 
   headerLogoPreview.innerHTML = markup;
   lastHeaderPreviewMarkup = markup;
-  lastHeaderPreviewUpdateTime = getAnimationNowMs();
 }
 
 function loadExternalScriptOnce(src) {
@@ -6800,6 +6853,7 @@ function getAnimationNowMs() {
 function resetAnimationClock(nextTimeSeconds = 0) {
   const normalizedTime = Number(nextTimeSeconds);
   window.animationTime = Number.isFinite(normalizedTime) ? Math.max(0, normalizedTime) : 0;
+  liveMotionPhase = 0;
   lastAnimationFrameTimestamp = 0;
 }
 
@@ -6853,6 +6907,10 @@ function setupViewportHeightSync() {
 function draw() {
   const currentTime = getAnimationNowMs();
   const currentMotionStyle = getCurrentMotionStyle();
+  if (document.hidden || document.body.classList.contains('has-logo-animation')) {
+    lastAnimationFrameTimestamp = 0;
+    return;
+  }
 
   if (isMotionEnabledForStyle(currentMotionStyle)) {
     if (typeof window.animationTime === 'undefined') {
@@ -6864,6 +6922,9 @@ function draw() {
       const deltaTime = clampLiveAnimationDeltaMs(currentTime - lastAnimationFrameTimestamp);
       lastAnimationFrameTimestamp = currentTime;
       window.animationTime += deltaTime / 1000.0;
+      liveMotionPhase = loopingGifUtils.advanceLiveLoopPhase(
+        liveMotionPhase, currentMotionStyle, getLoopRuntimeValues(), deltaTime
+      );
     }
   } else {
     lastAnimationFrameTimestamp = currentTime;
@@ -6917,8 +6978,8 @@ function draw() {
   // Draw bottom bar
   drawBottomBar(currentWidth, responsiveLogoScale);
 
-  if (isAnimated && isMotionEnabledForStyle(currentMotionStyle) && currentTime - lastHeaderPreviewUpdateTime >= 120) {
-    updateHeaderBrandPreview(true);
+  if (isAnimated && isMotionEnabledForStyle(currentMotionStyle)) {
+    updateHeaderBrandPreview();
   }
 }
 

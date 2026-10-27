@@ -45,6 +45,7 @@ npm test -- --runInBand
 # Install browser binaries once, then run browser checks
 npm run test:browser:install
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:browser
+RPI_SITE_URL=http://127.0.0.1:8000 npm run test:motion
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=firefox npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit npm run test:browser
 ```

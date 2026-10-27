@@ -18,7 +18,7 @@ function generateWaveValue(phase, type) {
   const normalizedPhase = phase - Math.floor(phase);
   const wrappedPhase = normalizedPhase < 0 ? normalizedPhase + 1 : normalizedPhase;
 
-  const sine = (Math.sin(phase * 2 * Math.PI) + 1) * 0.5;
+  const sine = (Math.sin(wrappedPhase * 2 * Math.PI - Math.PI / 2) + 1) * 0.5;
   const saw = wrappedPhase;
   const square = wrappedPhase > 0.5 ? 1.0 : 0.0;
   const pulse = wrappedPhase > 0.8 ? 1.0 : 0.0;
@@ -2102,6 +2102,7 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     applyWaveformEnvelope,
+    generateWaveValue,
     createBarPatternSVG,
     createCirclesGradientPatternGeometry,
     createFibonacciPatternGeometry,

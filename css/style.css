@@ -3552,3 +3552,10 @@ input:checked + .slider:before {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Match the existing header SVG footprint while retaining one live canvas. */
+.header_motion-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}

@@ -1,4 +1,5 @@
 const {
+  advanceLiveLoopPhase,
   clampLiveAnimationDeltaMs,
   getPreferredLiveRenderFps,
   getLoopingAnimationState,
@@ -7,10 +8,10 @@ const {
 } = require('../js/utils/loopingGif');
 
 describe('loopingGif utils', () => {
-  test('targets a high-refresh live render cap without exceeding 120 fps', () => {
-    expect(getPreferredLiveRenderFps()).toBe(120);
+  test('allows display-driven rendering above 120 Hz', () => {
+    expect(getPreferredLiveRenderFps()).toBe(1000);
     expect(getPreferredLiveRenderFps(90)).toBe(90);
-    expect(getPreferredLiveRenderFps(240)).toBe(120);
+    expect(getPreferredLiveRenderFps(240)).toBe(240);
     expect(getPreferredLiveRenderFps(20)).toBe(60);
   });
 
@@ -18,6 +19,46 @@ describe('loopingGif utils', () => {
     expect(clampLiveAnimationDeltaMs(-5)).toBe(0);
     expect(clampLiveAnimationDeltaMs(16.67)).toBeCloseTo(16.67);
     expect(clampLiveAnimationDeltaMs(500)).toBeCloseTo(50);
+  });
+
+  test('keeps speed consistent across 60, 120, 144 and 240 Hz frames', () => {
+    for (const hz of [60, 120, 144, 240]) {
+      let phase = 0;
+      for (let frame = 0; frame < hz / 2; frame++) {
+        phase = advanceLiveLoopPhase(phase, 'ruler', { rulerSpeed: 1, rulerUnits: 4 }, 1000 / hz);
+      }
+      expect(phase).toBeCloseTo(0.5, 9);
+    }
+  });
+
+  test('speed changes preserve current phase instead of rescaling elapsed time', () => {
+    let phase = advanceLiveLoopPhase(0.3, 'waveform', { waveformSpeed: 1 }, 10);
+    phase = advanceLiveLoopPhase(phase, 'waveform', { waveformSpeed: 5 }, 10);
+    expect(phase).toBeCloseTo(0.36);
+    const state = getLoopingAnimationState('waveform', { waveformSpeed: 5 }, { phase });
+    expect(state.timeSeconds * 5).toBeCloseTo(phase);
+  });
+
+  test('bounds fast dense tick motion even after a delayed frame', () => {
+    for (const style of ['ruler', 'ticker']) {
+      const values = { rulerSpeed: 5, rulerUnits: 10, tickerSpeed: 5, tickerRatio: 5 };
+      const subdivisions = style === 'ruler' ? 10 : 5;
+      const next = advanceLiveLoopPhase(0.4, style, values, 500);
+      expect(Math.abs(next - 0.4)).toBeLessThanOrEqual(0.25 / subdivisions + 1e-12);
+    }
+  });
+
+  test('changing direction preserves the rendered position modulo one repeat', () => {
+    for (const style of ['ruler', 'ticker', 'waveform']) {
+      const phase = 0.7;
+      const states = [false, true].map(reverse => getLoopingAnimationState(style, {
+        [`${style}Reverse`]: reverse
+      }, { phase }));
+      const position = state => state.repeatWidth
+        ? ((state.loopOffsetX / state.repeatWidth) % 1 + 1) % 1
+        : ((state.timeSeconds / state.periodSeconds) % 1 + 1) % 1;
+      expect(position(states[0])).toBeCloseTo(position(states[1]));
+    }
   });
 
   test('limits looping GIF eligibility to repeating styles', () => {

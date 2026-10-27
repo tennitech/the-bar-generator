@@ -1,16 +1,27 @@
+// Compile static letter commands once, not on every animation frame.
+const svgPathCommands = new Map();
+function getParsedSVGPathCommands(pathData) {
+  if (!svgPathCommands.has(pathData)) {
+    const commands = pathData.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/gi) || [];
+    svgPathCommands.set(pathData, commands.map(command => ({
+      type: command[0].toUpperCase(),
+      coords: (command.slice(1).trim().match(/[+-]?\d*\.?\d+/g) || []).map(Number)
+    })));
+  }
+  return svgPathCommands.get(pathData);
+}
+
 // Extracted drawing and export functions
 
 function drawSVGPath(pathData) {
-  const commands = pathData.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/gi);
-  if (!commands) return;
+  const commands = getParsedSVGPathCommands(pathData);
+  if (!commands.length) return;
 
   beginShape();
   let currentX = 0, currentY = 0;
   let startX = 0, startY = 0;
 
-  for (let cmd of commands) {
-    const type = cmd[0];
-    const coords = cmd.slice(1).trim().match(/[+-]?\d*\.?\d+/g);
+  for (const { type, coords } of commands) {
 
     if (!coords && type.toUpperCase() !== 'Z') continue;
 
@@ -63,16 +74,14 @@ function drawSVGPath(pathData) {
 }
 
 function drawSVGPathOnGraphics(pg, pathData) {
-  const commands = pathData.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/gi);
-  if (!commands) return;
+  const commands = getParsedSVGPathCommands(pathData);
+  if (!commands.length) return;
 
   pg.beginShape();
   let currentX = 0, currentY = 0;
   let startX = 0, startY = 0;
 
-  for (let cmd of commands) {
-    const type = cmd[0];
-    const coords = cmd.slice(1).trim().match(/[+-]?\d*\.?\d+/g);
+  for (const { type, coords } of commands) {
 
     if (!coords && type.toUpperCase() !== 'Z') continue;
 

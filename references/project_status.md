@@ -25,6 +25,13 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 
 ## 3. Completed Milestones
 
+- **[2026-10-27] Live motion timing repair**:
+    - Replaced the 120 FPS ceiling with a browser-frame-driven render target. The header mark now reuses a canvas and draws with the preview on each frame instead of replacing SVG markup at about 8 FPS.
+    - Added continuous live phase integration for speed, direction, pause, and resume changes. Limited phase advance at dense/fast settings and after stalls to reduce apparent reversal. Reset frame timestamps after visibility changes and pause background rendering during the ASCII overlay.
+    - Cached fixed SVG letter commands and shared the waveform function between live preview, header, and exports, correcting a quarter-cycle SVG phase mismatch. Export loop planning is unchanged.
+    - Added unit and browser regression checks for cadence, header reuse, phase continuity, dense motion, and overlay recovery. See references/bar_science_notes.md for sampling limits. Physical high-refresh display checks remain open; synthetic frame-rate checks do not establish hardware performance.
+
+
 - **[2026-10-27] Audit integration and development conventions**:
     - Integrated the September audit with the existing main-branch contribution setup. Kept both sets of status records and the verified billing restriction.
     - Added a development README, issue forms, branch and commit naming guidance, Node.js version metadata, and reproducible Playwright test commands with a locked test dependency. Root AGENTS.md now gives a required reading path, actionable brand intent, solid-bar size qualifications, and completion checks.
