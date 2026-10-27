@@ -124,7 +124,7 @@
     trigger.setAttribute('aria-haspopup', 'dialog');
     trigger.setAttribute('aria-expanded', 'false');
     trigger.setAttribute('aria-controls', 'share-popover');
-    trigger.innerHTML = '<svg class="header_icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4M5 13v7h14v-7"/></svg>';
+    trigger.innerHTML = scope.FeatherIcons.getIconMarkup('share', 'header_icon');
     document.querySelector('.header-actions .save-section').after(trigger);
     const section = document.createElement('section');
     section.id = 'share-popover';
@@ -133,19 +133,41 @@
     section.dataset.shareUi = '';
     section.setAttribute('role', 'dialog');
     section.setAttribute('aria-label', 'Share bar');
-    section.innerHTML = '<button id="share-copy" class="save-option share_copy" type="button"><span class="option-label" data-share-copy-label>Copy link</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="1"/><path d="M16 8V3H3v13h5"/></svg></button><label class="u-sr-only" for="share-name">Name (optional, up to 80 characters)</label><input id="share-name" class="control-input share_name" type="text" maxlength="160" placeholder="Name (optional)"><div id="share-fallback" class="share_fallback" hidden><label for="share-url">Select and copy</label><textarea id="share-url" rows="2" readonly spellcheck="false"></textarea></div><p id="share-status" class="share_status" role="status" aria-live="polite"></p>';
+    section.innerHTML = '<button id="share-copy" class="save-option share_copy" type="button"><span class="option-label" data-share-copy-label>Copy link</span><span class="share_menu-icon" data-share-copy-icon></span></button><label class="u-sr-only" for="share-name">Name (optional, up to 80 characters)</label><input id="share-name" class="control-input share_name" type="text" maxlength="160" placeholder="Name this bar"><div id="share-fallback" class="share_fallback" hidden><label for="share-url">Select and copy</label><textarea id="share-url" rows="2" readonly spellcheck="false"></textarea></div><p id="share-status" class="share_status" role="status" aria-live="polite"></p>';
     document.body.append(section);
-    const loadedName = document.createElement('p');
+    // A named bar is document context in the app header, never part of the official mark.
+    const nameContext = document.createElement('span');
+    nameContext.className = 'share_document-context';
+    nameContext.hidden = true;
+    const separator = document.createElement('span');
+    separator.textContent = ' / ';
+    separator.setAttribute('aria-hidden', 'true');
+    const loadedName = document.createElement('span');
     loadedName.id = 'share-loaded-name';
-    loadedName.hidden = true;
-    loadedName.className = 'share_caption';
-    document.getElementById('app-main').append(loadedName);
+    nameContext.append(separator, loadedName);
+    const brandTitle = document.querySelector('.brand-title');
+    brandTitle.append(nameContext);
+    const baseDocumentTitle = ['localhost', '127.0.0.1'].includes(location.hostname) && location.port === '4315'
+      ? 'BAR-05 · Share Links · 4315' : document.title;
     const nameInput = section.querySelector('#share-name');
     const output = section.querySelector('#share-url');
     const fallback = section.querySelector('#share-fallback');
     const copyButton = section.querySelector('#share-copy');
     const copyLabel = section.querySelector('[data-share-copy-label]');
+    const copyIcon = section.querySelector('[data-share-copy-icon]');
     const status = section.querySelector('#share-status');
+    function updateNameContext() {
+      loadedName.textContent = name;
+      nameContext.hidden = !name;
+      brandTitle.classList.toggle('has-document-name', !!name);
+      brandTitle.title = name || '';
+      document.title = name ? `${name} · ${baseDocumentTitle}` : baseDocumentTitle;
+    }
+    function resetCopyFeedback() {
+      copyLabel.textContent = 'Copy link';
+      copyIcon.innerHTML = scope.FeatherIcons.getIconMarkup('copy', 'share_menu-glyph');
+      status.classList.remove('u-sr-only');
+    }
     const sanitize = value => bridge.sanitize ? bridge.sanitize(value) : value;
     const capture = () => ({ v: VERSION, name: sanitize(name), controls: Object.fromEntries(fields.map(field => [field.id,
       field.type === 'checkbox' ? field.checked : (field.type === 'text' ? sanitize(field.value) : field.value)])), runtime: bridge.capture() });
@@ -171,8 +193,7 @@
         }
         name = sanitize(snapshot.name);
         nameInput.value = name;
-        loadedName.textContent = name ? `Shared configuration: ${name}` : '';
-        loadedName.hidden = !name;
+        updateNameContext();
         bridge.restore(snapshot.runtime);
         for (const field of fields) {
           if (field.id === 'style-select' || field.id === 'color-mode-select') continue;
@@ -194,7 +215,7 @@
             else field.value = defaultControls[field.id];
           }
           bridge.legacy();
-          name = ''; nameInput.value = ''; loadedName.hidden = true;
+          name = ''; nameInput.value = ''; updateNameContext();
           restoring = false;
         }
         refresh();
@@ -211,7 +232,7 @@
       }
     };
     scope.barShareController = controller;
-    nameInput.addEventListener('input', () => { name = safeText(sanitize(nameInput.value), MAX_NAME_LENGTH); nameInput.value = name; copyLabel.textContent = 'Copy link'; loadedName.textContent = name ? `Shared configuration: ${name}` : ''; loadedName.hidden = !name; controller.syncUrl(); refresh(); });
+    nameInput.addEventListener('input', () => { name = safeText(sanitize(nameInput.value), MAX_NAME_LENGTH); nameInput.value = name; resetCopyFeedback(); updateNameContext(); controller.syncUrl(); refresh(); });
     function positionPopover() {
       if (section.hidden) return;
       const anchor = trigger.getBoundingClientRect();
@@ -230,7 +251,7 @@
       if (open) {
         if (typeof scope.hideSaveMenu === 'function') scope.hideSaveMenu();
         fallback.hidden = true;
-        copyLabel.textContent = 'Copy link';
+        resetCopyFeedback();
         refresh();
         positionPopover();
         if (moveFocus) copyButton.focus({preventScroll:true});
@@ -263,9 +284,12 @@
         if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('Clipboard unavailable');
         await navigator.clipboard.writeText(output.value);
         copyLabel.textContent = 'Copied';
+        copyIcon.innerHTML = scope.FeatherIcons.getIconMarkup('check', 'share_menu-glyph');
+        status.classList.add('u-sr-only');
         status.textContent = 'Link copied.';
         fallback.hidden = true;
       } catch (_) {
+        status.classList.remove('u-sr-only');
         fallback.hidden = false;
         positionPopover();
         output.focus(); output.select();
@@ -277,7 +301,8 @@
     window.addEventListener('popstate', load);
     window.addEventListener('hashchange', load);
     if (location.hash.startsWith(PREFIX)) load();
-    if (['localhost', '127.0.0.1'].includes(location.hostname) && location.port === '4315') document.title = 'BAR-05 · Share Links · 4315';
+    resetCopyFeedback();
+    updateNameContext();
     return controller;
   }
 

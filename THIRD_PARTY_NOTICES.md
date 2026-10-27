@@ -24,3 +24,13 @@ The embedded easter egg vendors modified copies of the upstream runner source an
 - Local path: `third_party/gif.js`
 
 The looping GIF export vendors the upstream browser encoder distribution locally so animated bar exports do not depend on an external CDN at runtime. See `third_party/gif.js/LICENSE` for the retained license text.
+
+## Feather icons
+- Source: https://github.com/feathericons/feather/tree/v4.29.2/icons
+- Version: `4.29.2`
+- License: MIT, copyright 2013–2023 Cole Bemis
+- Local paths: `third_party/feather`, `js/utils/featherIcons.js`
+
+Sharing uses an exact static share/copy/check subset of the same Feather glyph
+source already matched by existing toolbar icons. No runtime package/CDN is added.
+See `third_party/feather/LICENSE` and `third_party/feather/notice.md` for source hashes and attribution.

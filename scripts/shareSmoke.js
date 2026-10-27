@@ -53,7 +53,7 @@ async function svg(page) {
       assert.deepEqual(await page.evaluate(() => barShareController.capture()), before, `${style} complete snapshot round-trip`);
       assert.equal(await svg(page), exported, `${style} actual SVG export round-trip`);
       assert.equal(await page.locator('#share-loaded-name img').count(), 0);
-      assert.equal(await page.locator('#share-loaded-name').textContent(), 'Shared configuration: Exploration α 🚀 <img onerror=alert(1)>');
+      assert.equal(await page.locator('#share-loaded-name').textContent(), 'Exploration α 🚀 <img onerror=alert(1)>');
       console.log(`PASS ${style}: complete controls + paused phase + actual SVG`);
     }
     // Approved palette choices restore alongside complete controls; no arbitrary colors.
@@ -126,7 +126,9 @@ async function svg(page) {
     });
     await reduced.goto(movingLink); await ready(reduced);
     assert.equal(await reduced.isChecked('#ruler-motion-toggle'), false);
-    assert.equal(await reduced.locator('#share-loaded-name').isVisible(), true);
+    assert.equal(await reduced.locator('#share-loaded-name').textContent(), 'Mobile shared bar');
+    assert.ok((await reduced.title()).startsWith('Mobile shared bar'));
+    assert.equal(await reduced.locator('.share_caption').count(), 0);
     assert.ok(await reduced.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     const phase = await reduced.evaluate(() => barShareController.capture().runtime.phase);
     await reduced.waitForTimeout(150);

@@ -6,11 +6,25 @@
 .share_popover .share_copy:focus-visible { background: var(--menu-option-hover-bg); outline: 1px solid var(--menu-border); outline-offset: -1px; }
 .share_popover .share_name { box-sizing: border-box; width: 100%; min-height: 2.75rem; padding: .625rem .75rem; font-size: .75rem; border: 0; border-top: 1px solid var(--menu-border); border-radius: 0; background: transparent; }
 .share_popover .share_name::placeholder { color: var(--text-secondary); opacity: 1; }
-.share_popover .share_name:focus-visible { outline: 1px solid var(--menu-border); outline-offset: -1px; }
 .share_fallback { display: grid; gap: .5rem; padding: .5rem .75rem; font-size: .75rem; }
 .share_fallback textarea { box-sizing: border-box; width: 100%; min-width: 0; min-height: 2.75rem; resize: vertical; padding: .5rem; font: inherit; color: var(--text-primary); background: var(--control-surface); border: 1px solid var(--control-border); }
 .share_status { margin: 0; padding: .5rem .75rem; font-size: .75rem; line-height: 1.4; color: var(--text-primary); }
 .share_status:empty { display: none; }
-.share_caption { position: absolute; top: 1rem; left: 1rem; right: 1rem; margin: 0; text-align: center; font-size: .8rem; line-height: 1.5; color: var(--text-primary); overflow-wrap: anywhere; pointer-events: none; }
-.share_caption[hidden] { display: none; }
-@media (max-width: 900px), (pointer: coarse) { .share_trigger::before { content: ""; position: absolute; inset: -3px; } .share_popover .share_name { font-size: 1rem; } }
+.share_document-context[hidden] { display: none; }
+.brand-title.has-document-name { opacity: 1; }
+.share_menu-icon { display: inline-flex; flex-shrink: 0; }
+.share_menu-glyph { width: 1rem; height: 1rem; }
+.share_popover .share_copy:hover, .share_popover .share_copy:focus-visible { color: var(--menu-option-hover-text); }
+.share_popover .share_copy:active { background: var(--menu-option-selected-bg); color: var(--menu-option-selected-text); }
+.share_popover .share_copy:focus-visible .option-label { color: inherit; }
+.share_popover .share_name:hover { background: var(--menu-option-hover-bg); color: var(--menu-option-hover-text); }
+.share_popover .share_name:hover::placeholder { color: var(--menu-option-hover-text); }
+.share_popover .share_name:focus { box-shadow: none; background: var(--input-focus-bg); color: var(--text-primary); }
+.share_popover .share_name:focus-visible { outline: 2px solid var(--accent-color); outline-offset: -2px; }
+@media (max-width: 900px), (pointer: coarse) { .share_trigger::before { content: ""; position: absolute; inset: -3px; } .share_popover .share_name, .share_popover .share_copy .option-label { font-size: 1rem; } }
+
+/* Keep this compact dialog distinct from the wider mission-credit menu. */
+#share-popover.share_popover { min-width: 0; }
+.save-menu.share_popover .share_copy .option-label { color: inherit; }
+/* The existing Blue selected fill needs black text at this compact type size. */
+body.theme-blue .share_popover .share_copy:active { color: var(--rpi-black); }
