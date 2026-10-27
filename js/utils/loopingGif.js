@@ -19,13 +19,16 @@
   const MIN_LIVE_RENDER_FPS = 60;
   const MAX_LIVE_RENDER_FPS = 1000;
   const MAX_LIVE_FRAME_DELTA_MS = 1000 / 20;
-  const MIN_LOOP_SPEED = 0.2;
-  const MAX_LOOP_SPEED = 5;
-  const DEFAULT_LOOP_SPEEDS = {
-    ruler: 1,
-    ticker: 1,
-    waveform: 0.7
-  };
+  // Speeds are major-pattern recurrences per display second, not physical units.
+  // Ruler has up to ten minor ticks per recurrence; ticker has up to five.
+  const LOOP_SPEED_LIMITS = Object.freeze({
+    ruler: Object.freeze({ min: 0.2, max: 0.6, step: 0.1, default: 0.3 }),
+    ticker: Object.freeze({ min: 0.2, max: 0.8, step: 0.1, default: 0.4 }),
+    waveform: Object.freeze({ min: 0.2, max: 1, step: 0.1, default: 0.3 })
+  });
+  const DEFAULT_LOOP_SPEEDS = Object.freeze(Object.fromEntries(
+    Object.entries(LOOP_SPEED_LIMITS).map(([style, limits]) => [style, limits.default])
+  ));
   const DEFAULT_LOOP_REVERSE = {
     ruler: false,
     ticker: false,
@@ -45,19 +48,32 @@
     return String(style || '').trim().toLowerCase();
   }
 
+  function getLoopSpeedLimits(style) {
+    return LOOP_SPEED_LIMITS[normalizeLoopingGifStyle(style)] || LOOP_SPEED_LIMITS.waveform;
+  }
+
   function getDefaultLoopSpeed(style) {
-    const normalizedStyle = normalizeLoopingGifStyle(style);
-    return DEFAULT_LOOP_SPEEDS[normalizedStyle] || 1;
+    return getLoopSpeedLimits(style).default;
   }
 
   function normalizeLoopSpeed(style, value) {
-    const fallback = getDefaultLoopSpeed(style);
-    const numericValue = Number(value);
-    if (!Number.isFinite(numericValue)) {
-      return fallback;
-    }
+    const limits = getLoopSpeedLimits(style);
+    const valid = typeof value === 'number' || (typeof value === 'string'
+      && /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim()));
+    const numericValue = valid ? Number(value) : NaN;
+    return Number.isFinite(numericValue)
+      ? Math.round((clamp(numericValue, limits.min, limits.max) + Number.EPSILON) * 10) / 10 : limits.default;
+  }
 
-    return clamp(numericValue, MIN_LOOP_SPEED, MAX_LOOP_SPEED);
+  // Share owners can migrate only these known legacy controls before strict
+  // manifest validation. All other fields remain subject to their existing rules.
+  function normalizeMotionSpeedControls(controls) {
+    const normalized = { ...controls };
+    for (const style of Object.keys(LOOP_SPEED_LIMITS)) {
+      const id = `${style}-speed-slider`;
+      if (Object.hasOwn(normalized, id)) normalized[id] = String(normalizeLoopSpeed(style, normalized[id]));
+    }
+    return normalized;
   }
 
   function normalizeLoopReverse(style, value) {
@@ -280,6 +296,8 @@
     DEFAULT_LOOP_SPEEDS,
     DEFAULT_LOOP_REVERSE,
     LOOPING_GIF_STYLE_SET,
+    LOOP_SPEED_LIMITS,
+    getLoopSpeedLimits,
     clampLiveAnimationDeltaMs,
     getDefaultLoopSpeed,
     getPreferredLiveRenderFps,
@@ -289,6 +307,7 @@
     normalizeLoopingGifStyle,
     normalizeLoopReverse,
     normalizeLoopSpeed,
+    normalizeMotionSpeedControls,
     isLoopingGifEligibleStyle,
     getLoopingGifFramePlan
   };

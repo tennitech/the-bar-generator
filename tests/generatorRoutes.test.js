@@ -53,4 +53,11 @@ describe('generator route utils', () => {
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/music/', '?style=staff')).toBe('/repo/generator/solid/');
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/graph/', '?graphText=RPI')).toBe('/repo/generator/solid/?graphText=RPI');
   });
+  test('retains imported motion speed and direction through legacy routes', () => {
+    expect(hasGeneratorQueryState('?rulerSpeed=5')).toBe(true);
+    expect(hasGeneratorQueryState('?tickerSpeed=0.2&tickerReverse=true')).toBe(true);
+    expect(getLegacyGeneratorRedirectUrl('/repo/', '?style=ruler&rulerSpeed=999&rulerReverse=true'))
+      .toBe('/repo/generator/ruler/?rulerSpeed=999&rulerReverse=true');
+  });
+
 });

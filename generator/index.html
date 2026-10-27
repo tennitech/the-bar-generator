@@ -7,7 +7,7 @@
   <meta name="description" content="Explore RPI logo bar patterns and download a generated mark.">
   <title>The Bar Generator | RPI</title>
   <base href="../">
-  <link href="css/style.css?v=20261027-quantum-motion" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261027-motion-polish" rel="stylesheet" type="text/css" />
   <script src="third_party/p5/p5.min.js"></script>
 </head>
 
@@ -231,9 +231,10 @@
               </label>
             </div>
             <div class="control slider-control runtime_speed-control">
-              <label for="ruler-speed-slider" class="control-label">SPEED <span id="ruler-speed-display">1.0</span></label>
-              <input type="range" id="ruler-speed-slider" min="0.2" max="5" step="0.1" value="1" class="control-slider"
-                aria-label="Ruler Motion Speed">
+              <label for="ruler-speed-slider" class="control-label">SPEED <span id="ruler-speed-display">0.3</span></label>
+              <input type="range" id="ruler-speed-slider" min="0.2" max="0.6" step="0.1" value="0.3" class="control-slider"
+                aria-label="Ruler Motion Speed" aria-describedby="ruler-speed-unit">
+              <p id="ruler-speed-unit" class="control-hint">major repeats / s</p>
             </div>
           </div>
         </div>
@@ -316,9 +317,10 @@
               </label>
             </div>
             <div class="control slider-control runtime_speed-control">
-              <label for="ticker-speed-slider" class="control-label">SPEED <span id="ticker-speed-display">1.0</span></label>
-              <input type="range" id="ticker-speed-slider" min="0.2" max="5" step="0.1" value="1" class="control-slider"
-                aria-label="Ticker Motion Speed">
+              <label for="ticker-speed-slider" class="control-label">SPEED <span id="ticker-speed-display">0.4</span></label>
+              <input type="range" id="ticker-speed-slider" min="0.2" max="0.8" step="0.1" value="0.4" class="control-slider"
+                aria-label="Ticker Motion Speed" aria-describedby="ticker-speed-unit">
+              <p id="ticker-speed-unit" class="control-hint">top-row repeats / s</p>
             </div>
           </div>
           <div class="runtime_section audio_section">
@@ -437,9 +439,10 @@
             </div>
             <div class="control slider-control runtime_speed-control">
               <label for="waveform-speed-slider" class="control-label">SPEED <span
-                  id="waveform-speed-display">0.7</span></label>
-              <input type="range" id="waveform-speed-slider" min="0.2" max="5" step="0.1" value="0.7" class="control-slider"
-                aria-label="Waveform Motion Speed">
+                  id="waveform-speed-display">0.3</span></label>
+              <input type="range" id="waveform-speed-slider" min="0.2" max="1" step="0.1" value="0.3" class="control-slider"
+                aria-label="Waveform Motion Speed" aria-describedby="waveform-speed-unit">
+              <p id="waveform-speed-unit" class="control-hint">cycles / s</p>
             </div>
           </div>
           <div class="runtime_section audio_section">
@@ -751,7 +754,22 @@
             <input type="range" id="triangles-variant-slider" min="1" max="2" value="1" class="control-slider"
               aria-label="Triangles Variant">
           </div>
+          <div class="control">
+            <label for="triangles-direction-select" class="control-label">DIRECTION</label>
+            <select id="triangles-direction-select" class="control-select" aria-label="Triangle diagonal direction">
+              <option value="down-right" selected>Down right ↘</option>
+              <option value="up-right">Up right ↗</option>
+              <option value="up-left">Up left ↖</option>
+              <option value="down-left">Down left ↙</option>
+            </select>
           </div>
+          <div class="control slider-control">
+            <label for="triangles-count-slider" class="control-label">TRIANGLES <span
+                id="triangles-count-display">14</span></label>
+            <input type="range" id="triangles-count-slider" min="6" max="28" step="1" value="14" class="control-slider"
+              aria-label="Triangle count">
+          </div>
+        </div>
 
         </div>
         <div class="sidebar-footer">
@@ -862,21 +880,23 @@
 
   <div id="toast-container"></div>
   <script src="third_party/gif.js/gif.js"></script>
-  <script src="js/utils/generatorRoutes.js"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261027-motion-polish"></script>
   <script src="js/utils/profanityFilter.js?v=20260930-audit-fixes"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/musicStyle.js"></script>
   <script src="js/utils/quantumModel.js"></script>
   <script src="js/utils/quantumControls.js"></script>
   <script src="js/utils/barPattern.js?v=20261027-quantum-motion"></script>
-  <script src="js/utils/loopingGif.js?v=20261027-motion-sampling"></script>
+  <script src="js/utils/loopingGif.js?v=20261027-motion-polish"></script>
   <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
   <script src="js/utils/previewControls.js?v=20260417-morse-randomize"></script>
   <script src="js/utils/viewportZoom.js?v=20261027-viewport-zoom"></script>
   <script src="js/utils/viewerTouch.js"></script>
+  <script src="js/utils/headerMotionSurface.js"></script>
+  <script src="js/utils/themeMotion.js"></script>
   <script src="js/ui.js"></script>
-  <script src="js/main.js?v=20261027-quantum-motion"></script>
-  <script src="js/drawing.js?v=20261027-quantum-motion"></script>
+  <script src="js/main.js?v=20261027-motion-polish"></script>
+  <script src="js/drawing.js?v=20261027-motion-polish"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

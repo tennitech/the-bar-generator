@@ -15,6 +15,7 @@ async function main() {
     page.on('pageerror', error => errors.push(error.message));
     if (evidence) await fs.mkdir(evidence, { recursive: true });
     async function checkSurface(open) {
+      await page.waitForFunction(() => !document.querySelector('.theme_scan'));
       await settle(page);
       const state = await page.evaluate(open => {
         const header = document.getElementById('header-logo-preview');
@@ -26,26 +27,26 @@ async function main() {
         const expectedColor = getComputedStyle(expected).color;
         expected.remove();
         const motionCanvas = header.querySelector('canvas');
-        let paintedColor = null;
+        // Motion keeps the letters in SVG and paints only the bar canvas.
+        const letter = header.querySelector('svg path');
+        const paintedColor = letter ? getComputedStyle(letter).fill : null;
         let barColor = null;
+        let barAlpha = 255;
         if (motionCanvas) {
           const data = motionCanvas.getContext('2d').getImageData(0, 0, motionCanvas.width, motionCanvas.height).data;
-          for (let i = 0; i < data.length; i += 4) if (data[i + 3] === 255) {
-            paintedColor = `rgb(${data[i]}, ${data[i + 1]}, ${data[i + 2]})`;
-            break;
-          }
-          const barStart = Math.floor(REFERENCE_BAR_Y * 2) * motionCanvas.width * 4;
-          for (let i = barStart; i < data.length; i += 4) if (data[i + 3] === 255) {
+          let best = 0;
+          for (let i = 0; i < data.length; i += 4) if (data[i + 3] > best) {
+            best = data[i + 3];
             barColor = `rgb(${data[i]}, ${data[i + 1]}, ${data[i + 2]})`;
-            break;
           }
+          barAlpha = best;
         } else {
           const shapes = [...header.querySelectorAll('svg path,svg rect,svg polygon,svg circle')]
             .filter(e => !e.closest('defs,clipPath,mask'));
           if (shapes[3]) barColor = getComputedStyle(shapes[3]).fill;
-          paintedColor = getComputedStyle(header.querySelector('svg path')).fill;
         }
-        return { expectedColor, headerColor: getComputedStyle(header).color, paintedColor, barColor,
+        return { expectedColor, headerColor: getComputedStyle(header).color, paintedColor, barColor, barAlpha,
+          renderedColor: motionCanvas ? headerMotionColor : expectedColor,
           surface: getComputedStyle(surface).backgroundColor,
           hint: document.querySelector('meta[name="theme-color"]').content,
           root: getComputedStyle(document.documentElement).backgroundColor,
@@ -55,11 +56,12 @@ async function main() {
       }, open);
       assert.equal(state.headerColor, state.expectedColor, JSON.stringify(state));
       assert.equal(state.paintedColor, state.expectedColor, JSON.stringify(state));
-      // Canvas coverage/premultiplication can round an opaque edge by one
-      // 8-bit channel value. CSS and SVG fill assertions remain exact.
+      assert.equal(state.renderedColor, state.expectedColor, JSON.stringify(state));
+      // Device-sized coverage pixels can be translucent. Account only for
+      // premultiplied 8-bit quantization; CSS, SVG and paint-source colors stay exact.
       const actualBar = state.barColor?.match(/\d+/g).map(Number);
       const expectedBar = state.expectedColor.match(/\d+/g).map(Number);
-      assert.ok(actualBar && actualBar.every((channel, i) => Math.abs(channel - expectedBar[i]) <= 1), JSON.stringify(state));
+      assert.ok(actualBar && actualBar.every((channel, i) => Math.abs(channel - expectedBar[i]) <= Math.max(1, Math.ceil(255 / state.barAlpha))), JSON.stringify(state));
       assert.equal(state.hint, state.surface, JSON.stringify(state));
       assert.equal(state.body, state.surface);
       assert.equal(state.root, state.surface);

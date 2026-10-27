@@ -93,6 +93,11 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-fast: 150ms;
   --duration-normal: 250ms;
+  --duration-theme-scan: 420ms;
+  --intro-enter-duration: 2.1s;
+  --intro-exit-duration: 0.72s;
+  --intro-enter-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --intro-exit-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ─── Reset ─── */
@@ -1613,12 +1618,14 @@ body.has-logo-animation {
 }
 
 .logo_animation_overlay {
+  --intro-duration: var(--intro-enter-duration);
+  --intro-ease: var(--intro-enter-ease);
   position: fixed;
   inset: 0;
   z-index: 160;
   background: rgba(0, 0, 0, 0);
   display: block;
-  transition: background-color 2.1s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color var(--intro-duration) var(--intro-ease);
 }
 
 .logo_animation_overlay.is-open {
@@ -1627,8 +1634,8 @@ body.has-logo-animation {
 
 .logo_animation_overlay.is-closing {
   background: rgba(0, 0, 0, 0);
-  transition-duration: 0.72s;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  --intro-duration: var(--intro-exit-duration);
+  --intro-ease: var(--intro-exit-ease);
 }
 
 .logo_animation_overlay[hidden] {
@@ -1644,7 +1651,7 @@ body.has-logo-animation {
   align-items: center;
   gap: 0.625rem;
   opacity: 0;
-  transition: opacity 0.28s ease;
+  transition: opacity var(--intro-duration) var(--intro-ease);
 }
 
 .logo_animation_overlay.is-open .logo_animation_chrome {
@@ -1684,11 +1691,16 @@ body.has-logo-animation {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  opacity: 1;
-  transition: opacity 0.72s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  transition: opacity var(--intro-duration) var(--intro-ease);
 }
 
-.logo_animation_overlay.is-closing .logo_animation_stage {
+.logo_animation_overlay.is-open .logo_animation_stage {
+  opacity: 1;
+}
+
+.logo_animation_overlay.is-closing .logo_animation_stage,
+.logo_animation_overlay.is-closing .logo_animation_chrome {
   opacity: 0;
 }
 
@@ -3543,6 +3555,8 @@ input:checked + .slider:before {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  body,
+  .app-header,
   .app-header *,
   .app-sidebar *,
   .app-sidebar,
@@ -3551,7 +3565,8 @@ input:checked + .slider:before {
   .logo_animation_overlay,
   .logo_animation_overlay * {
     animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
   }
 }
 
@@ -3871,3 +3886,69 @@ body { min-height: 0; }
   .control-slider::-moz-range-track { height: 2px; background: var(--slider-track); }
   .control-slider::-moz-range-thumb { width: 1.25rem; height: 1.75rem; border-radius: 0.25rem; }
 }
+
+/* Motion chrome borrows the toolbar component; positions come from its anchors. */
+
+.logo_animation_overlay .logo_animation_chrome .logo_animation_button {
+  color: var(--rpi-white);
+  background: rgba(10, 10, 10, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  min-width: 0;
+  min-height: 0;
+  line-height: 0;
+  touch-action: manipulation;
+}
+.logo_animation_button svg { width: 18px; height: 18px; }
+.logo_animation_overlay .logo_animation_chrome .logo_animation_button:hover { background: #252525; }
+.logo_animation_overlay .logo_animation_chrome .logo_animation_button:focus-visible {
+  background: #252525;
+  outline: 2px solid var(--rpi-white);
+  outline-offset: 3px;
+}
+.has-theme-snapshot,
+.has-theme-snapshot :is(.app-header, .app-layout),
+.has-theme-snapshot :is(.app-header, .app-layout) * { transition: none !important; }
+.theme_scan {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 170;
+  width: 4rem;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  color: var(--rpi-red);
+  font: 10px/16px 'RPIGeistMono', monospace;
+  opacity: 0.5;
+  view-transition-name: theme-scan;
+}
+::view-transition { pointer-events: none; }
+::view-transition-group(root), ::view-transition-group(theme-scan) { animation: none; }
+::view-transition-group(root) { z-index: 0; }
+::view-transition-group(theme-scan) { z-index: 1; animation: theme-scan var(--duration-theme-scan) steps(24, end) both; }
+::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-old(root) {
+  z-index: 2;
+  mix-blend-mode: normal;
+  animation: theme-reveal var(--duration-theme-scan) steps(24, end) both;
+}
+/* The glyph field is identical in both snapshots; retain both for browser parity. */
+::view-transition-old(theme-scan), ::view-transition-new(theme-scan) { animation: none; mix-blend-mode: normal; }
+@keyframes theme-reveal {
+  from { clip-path: polygon(0 0,100% 0,100% 100%,0 100%,0 75%,0 75%,0 50%,0 50%,0 25%,0 25%); }
+  to { clip-path: polygon(100% 0,100% 0,100% 100%,100% 100%,100% 75%,100% 75%,100% 50%,100% 50%,100% 25%,100% 25%); }
+}
+@keyframes theme-scan {
+  0% { transform: translateX(-100%); opacity: 0; }
+  12%, 85% { opacity: 1; }
+  100% { transform: translateX(calc(100vw - 100%)); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme_scan { display: none; }
+  ::view-transition-old(root), ::view-transition-group(theme-scan) { animation: none; }
+}
+
+/* Motion changes only the bar; the official vector lettermark remains persistent. */
+.header_motion-stage { position: relative; display: block; width: 100%; height: 100%; }
+.header_motion-stage .header_motion-letters { display: block; width: 100%; height: 100%; }
+.header_motion-stage .header_motion-canvas { position: absolute; display: block; }

@@ -1126,7 +1126,77 @@ function generateStaticPackedCircles(barWidth, barHeight, density, sizeVariation
   return circles;
 }
 
+// These static families share the header's selected-state vector for both
+// download formats. Other export renderers retain their existing dispatch.
+function usesSharedStaticPatternExport() {
+  return [13, 16, 17, 19].includes(currentShader);
+}
+
+function buildSharedStaticPatternExportSVG() {
+  const doc = new DOMParser().parseFromString(buildHeaderPreviewSVG(), 'image/svg+xml');
+  const svg = doc.documentElement;
+  const width = SVG_EXPORT_WIDTH + SVG_EXPORT_PADDING * 2;
+  // Integer intrinsic dimensions prevent WebKit from letterboxing a fractional viewport.
+  const height = Math.ceil(SVG_EXPORT_TOTAL_HEIGHT + SVG_EXPORT_PADDING * 2);
+  const scheme = colors[currentColorMode];
+  svg.setAttribute('viewBox', `-${SVG_EXPORT_PADDING} -${SVG_EXPORT_PADDING} ${width} ${height}`);
+  svg.setAttribute('width', String(width));
+  svg.setAttribute('height', String(height));
+  svg.setAttribute('style', `color: ${scheme ? scheme.fg : '#000000'};`);
+  ['role', 'aria-hidden', 'focusable'].forEach(attribute => svg.removeAttribute(attribute));
+  return new XMLSerializer().serializeToString(svg);
+}
+
+function downloadSharedStaticPatternSVG() {
+  const blob = new Blob([buildSharedStaticPatternExportSVG()], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'RPI-logo.svg';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  hideSaveMenu();
+  Toast.show('SVG download started', 'success');
+}
+
+async function downloadSharedStaticPatternPNG() {
+  // Capture selected values before image decoding so later control changes
+  // cannot alter an export already requested by the user.
+  const markup = buildSharedStaticPatternExportSVG();
+  const url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml' }));
+  try {
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    const width = (SVG_EXPORT_WIDTH + SVG_EXPORT_PADDING * 2) * PNG_EXPORT_SCALE;
+    const height = Math.ceil(SVG_EXPORT_TOTAL_HEIGHT + SVG_EXPORT_PADDING * 2) * PNG_EXPORT_SCALE;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(width);
+    canvas.height = Math.ceil(height);
+    canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = 'RPI-logo.png';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    hideSaveMenu();
+    Toast.show('PNG download started', 'success');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 function savePNG() {
+  if (usesSharedStaticPatternExport()) {
+    downloadSharedStaticPatternPNG().catch(error => {
+      console.error('PNG save error:', error);
+      Toast.show('Save failed: ' + error.message, 'error');
+    });
+    return;
+  }
   console.log('Save PNG called');
 
   try {
@@ -1193,12 +1263,12 @@ function saveLoopingGIF() {
     const framePlan = window.loopingGifUtils.getLoopingGifFramePlan(selectedStyle, {
       rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
       rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
-      rulerSpeed: rulerSpeedSlider ? rulerSpeedSlider.value : 1,
+      rulerSpeed: normalizeLoopSpeed('ruler', rulerSpeedSlider ? rulerSpeedSlider.value : undefined),
       rulerReverse: rulerReverseToggle ? rulerReverseToggle.checked : false,
       tickerRepeats: tickerSlider ? tickerSlider.value : 34,
-      tickerSpeed: tickerSpeedSlider ? tickerSpeedSlider.value : 1,
+      tickerSpeed: normalizeLoopSpeed('ticker', tickerSpeedSlider ? tickerSpeedSlider.value : undefined),
       tickerReverse: tickerReverseToggle ? tickerReverseToggle.checked : false,
-      waveformSpeed: waveformSpeedSlider ? waveformSpeedSlider.value : 0.7,
+      waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
       waveformReverse: waveformReverseToggle ? waveformReverseToggle.checked : false
     }, {
       barWidth: EXPORT_REFERENCE_WIDTH
@@ -1291,6 +1361,15 @@ function saveLoopingGIF() {
 }
 
 function saveSVG() {
+  if (usesSharedStaticPatternExport()) {
+    try {
+      downloadSharedStaticPatternSVG();
+    } catch (error) {
+      console.error('SVG save error:', error);
+      Toast.show('Save failed: ' + error.message, 'error');
+    }
+    return;
+  }
   try {
     Toast.show('Generating SVG...', 'info', 2000);
 
@@ -1339,16 +1418,16 @@ function saveSVG() {
           ...window.quantumControls.values(),
           rulerRepeats: rulerRepeatsSlider.value,
           rulerUnits: rulerUnitsSlider.value,
-          rulerSpeed: rulerSpeedSlider ? rulerSpeedSlider.value : 1,
+          rulerSpeed: normalizeLoopSpeed('ruler', rulerSpeedSlider ? rulerSpeedSlider.value : undefined),
           tickerRepeats: tickerSlider.value,
           tickerRatio: tickerRatioSlider.value,
           tickerWidthRatio: tickerWidthRatioSlider.value,
-          tickerSpeed: tickerSpeedSlider ? tickerSpeedSlider.value : 1,
+          tickerSpeed: normalizeLoopSpeed('ticker', tickerSpeedSlider ? tickerSpeedSlider.value : undefined),
           loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
           binaryText: binaryInput.value || 'RPI',
           waveformType: waveformTypeSlider.value,
           waveformFrequency: waveformFrequencySlider.value,
-          waveformSpeed: waveformSpeedSlider.value,
+          waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider.value),
           waveformEnvelope: waveformEnvelopeToggle ? waveformEnvelopeToggle.checked : false,
           waveformEnvelopeType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
           waveformEnvelopeWaves: waveformEnvelopeWavesSlider
