@@ -51,4 +51,9 @@ describe('GitHub Pages fallback routing', () => {
       })
     ).toBe('/rpi-logo-generator/generator/ticker/?tickerRepeats=55');
   });
+  test('preserves motion-only state for the generator to normalize safely', () => {
+    expect(getPagesFallbackRedirectUrl('/repo/missing', '?style=ticker&tickerSpeed=999&tickerReverse=true', {hostname:'tennitech.github.io'}))
+      .toBe('/repo/generator/ticker/?tickerSpeed=999&tickerReverse=true');
+  });
+
 });
