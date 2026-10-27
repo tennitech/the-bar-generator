@@ -329,6 +329,32 @@
           </div>
         </div>
 
+        <div id="quantum-group" class="control-group" style="display: none;">
+          <div class="control-header">PARAMETERS</div>
+          <div class="control">
+            <label for="quantum-view" class="control-label">VIEW</label>
+            <select id="quantum-view" class="control-select" aria-describedby="quantum-description">
+              <option value="projections">PHASE PROJECTIONS</option>
+              <option value="density">PROBABILITY DENSITY</option>
+            </select>
+            <div id="quantum-description" class="control-hint">Three phase projections of one wavefunction on a ring. These curves are not particle paths or probabilities.</div>
+          </div>
+          <div class="control slider-control">
+            <label for="quantum-phase" class="control-label">TIME <span id="quantum-phase-display">0.0%</span></label>
+            <input id="quantum-phase" type="range" min="0" max="1" step="any" value="0" class="control-slider" aria-label="Quantum time as fraction of recurrence">
+          </div>
+          <div class="runtime_section motion_section">
+            <div class="control-header">MOTION</div>
+            <div class="control_row control_row-preview">
+              <span id="quantum-motion-state" class="control-label control_row-label">STATIC</span>
+              <div class="preview-controls">
+                <input type="checkbox" id="quantum-motion-toggle" hidden aria-label="Animate quantum wave">
+                <button id="quantum-play-btn" type="button" class="preview-control-btn" data-preview-kind="motion" aria-label="Play motion preview" aria-pressed="false"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div id="waveform-group" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
@@ -833,6 +859,8 @@
   <script src="js/utils/profanityFilter.js?v=20260930-audit-fixes"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/musicStyle.js"></script>
+  <script src="js/utils/quantumModel.js"></script>
+  <script src="js/utils/quantumControls.js"></script>
   <script src="js/utils/barPattern.js?v=20261027-motion-sampling"></script>
   <script src="js/utils/loopingGif.js?v=20261027-motion-sampling"></script>
   <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
