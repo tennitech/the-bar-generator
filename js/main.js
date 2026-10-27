@@ -8,15 +8,11 @@ const paths = {
 
 // Layout constants
 const REFERENCE_WIDTH = 250;
-const MAX_LOGO_SCALE = 1.5;
-const MAX_ULTRAWIDE_LOGO_SCALE = 3;
 const REFERENCE_LOGO_HEIGHT = 111.76;
 const REFERENCE_BAR_Y = 132.911;
 const REFERENCE_BAR_HEIGHT = 18;
 const REFERENCE_TOTAL_HEIGHT = REFERENCE_BAR_Y + REFERENCE_BAR_HEIGHT;
-const RESPONSIVE_LOGO_WIDTH_RATIO = 0.72;
-const RESPONSIVE_LOGO_HEIGHT_RATIO = 0.48;
-const LOGO_VERTICAL_OFFSET = -72; // Vertical offset for centering
+const LOGO_VERTICAL_OFFSET = -REFERENCE_TOTAL_HEIGHT / 2; // Center the complete official mark
 
 // Global variables
 let styleSelect;
@@ -595,19 +591,19 @@ const MOTION_ENABLED_BY_STYLE = {
   ticker: DEFAULT_MOTION_ENABLED,
   waveform: DEFAULT_MOTION_ENABLED
 };
-const DEFAULT_ZOOM_LEVEL = 1.2;
-const MIN_DISPLAY_ZOOM_PERCENT = 50;
-const MAX_DISPLAY_ZOOM_PERCENT = 250;
+const DEFAULT_ZOOM_LEVEL = 1;
 const COMPACT_LAYOUT_MAX_WIDTH = 900;
 const HEADER_ACTION_COLLAPSE_BUFFER = 96;
-const MIN_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MIN_DISPLAY_ZOOM_PERCENT / 100);
-const MAX_ZOOM_LEVEL = DEFAULT_ZOOM_LEVEL * (MAX_DISPLAY_ZOOM_PERCENT / 100);
 
 let zoomLevel = DEFAULT_ZOOM_LEVEL;
+let zoomTargetLevel = DEFAULT_ZOOM_LEVEL;
+let zoomAnimationFrame = 0;
+let zoomAnimationTime = 0;
+let zoomAnchor = null;
+let zoomAnchorState = null;
+let zoomResettingPan = false;
+let previewControlSpace = 88;
 let panOffset = { x: 0, y: 0 };
-let panTargetOffset = { x: 0, y: 0 };
-let panVelocity = { x: 0, y: 0 };
-let panAnimationFrame = 0;
 let panPointerId = null;
 let panPointerPosition = null;
 let panGestureHandlersBound = false;
@@ -627,7 +623,6 @@ let lastCompactLayoutState = null;
 let desktopSidebarWasCollapsed = false;
 let responsiveLayoutAnimationFrame = 0;
 let responsiveLayoutAnimationDeadline = 0;
-let renderedResponsiveLogoScale = null;
 let isPanDragging = false;
 let isPanningMode = false;
 let isAnimated = false;
@@ -646,12 +641,6 @@ const WAVEFORM_RENDER_MAX_POINTS = 1200;
 const WAVEFORM_RENDER_POINTS_PER_BAR_PIXEL = 2;
 const WAVEFORM_RENDER_POINTS_PER_CYCLE = 12;
 
-const PAN_DRAG_RESISTANCE = 0.42;
-const PAN_FOLLOW_EASE = 0.26;
-const PAN_INERTIA_DECAY = 0.88;
-const PAN_INERTIA_STOP_THRESHOLD = 0.025;
-const PAN_SETTLE_THRESHOLD = 0.04;
-const PAN_EDGE_PADDING = 12;
 const TRACKPAD_PINCH_ZOOM_SENSITIVITY = 0.0025;
 
 const CIRCLES_GRID_ROWS = 2;
@@ -663,38 +652,16 @@ const MISSION_CONTROL_GRID_MAX_COLUMNS = 40;
 const MISSION_CONTROL_GRID_MIN_ROWS = 10;
 const MISSION_CONTROL_GRID_MAX_ROWS = 30;
 
-function getResponsiveLogoScale(viewportWidth = width, viewportHeight = height) {
-  const safeWidth = Math.max(1, Math.round(viewportWidth || 0));
-  const safeHeight = Math.max(1, Math.round(viewportHeight || 0));
-  const widthLimitedScale =
-    (safeWidth * RESPONSIVE_LOGO_WIDTH_RATIO) / (REFERENCE_WIDTH * DEFAULT_ZOOM_LEVEL);
-  const heightLimitedScale =
-    (safeHeight * RESPONSIVE_LOGO_HEIGHT_RATIO) / (REFERENCE_TOTAL_HEIGHT * DEFAULT_ZOOM_LEVEL);
+function getPreviewFitLayout() {
+  return window.viewportZoomUtils.getFitLayout(width, height, previewControlSpace);
+}
 
-  const workspaceScaleCap = Math.min(
-    MAX_ULTRAWIDE_LOGO_SCALE,
-    Math.max(MAX_LOGO_SCALE, safeWidth / 1200)
-  );
-  return Math.min(workspaceScaleCap, widthLimitedScale, heightLimitedScale);
+function getResponsiveLogoScale(viewportWidth = width, viewportHeight = height) {
+  return window.viewportZoomUtils.getFitLayout(viewportWidth, viewportHeight, previewControlSpace).scale;
 }
 
 function getRenderedResponsiveLogoScale() {
-  const targetScale = getResponsiveLogoScale();
-
-  if (!Number.isFinite(renderedResponsiveLogoScale) || renderedResponsiveLogoScale <= 0) {
-    renderedResponsiveLogoScale = targetScale;
-    return targetScale;
-  }
-
-  const scaleDelta = targetScale - renderedResponsiveLogoScale;
-  if (Math.abs(scaleDelta) < 0.001) {
-    renderedResponsiveLogoScale = targetScale;
-    return targetScale;
-  }
-
-  renderedResponsiveLogoScale += scaleDelta * 0.18;
-  startResponsiveLayoutAnimation(220);
-  return renderedResponsiveLogoScale;
+  return getResponsiveLogoScale();
 }
 
 // Zoom/Pan/Playback UI references
@@ -1917,15 +1884,6 @@ function syncLunarColorOptionAvailability() {
   }
 }
 
-function zoomLevelToDisplayPercent(level) {
-  return Math.round((level / DEFAULT_ZOOM_LEVEL) * 100);
-}
-
-function displayPercentToZoomLevel(percent) {
-  const constrainedPercent = constrain(percent, MIN_DISPLAY_ZOOM_PERCENT, MAX_DISPLAY_ZOOM_PERCENT);
-  return DEFAULT_ZOOM_LEVEL * (constrainedPercent / 100);
-}
-
 // Convert text to binary
 function sanitizeBarText(text) {
   return window.ProfanityFilter && typeof window.ProfanityFilter.sanitizeText === 'function'
@@ -2260,6 +2218,8 @@ function scheduleResponsiveCanvasResize(delay = RESPONSIVE_CANVAS_RESIZE_SETTLE_
 
 function syncResponsiveWorkspaceSizing() {
   responsiveWorkspaceSyncFrame = 0;
+  const controls = document.querySelector('.workspace-controls');
+  if (controls) previewControlSpace = controls.offsetHeight + (parseFloat(getComputedStyle(controls).bottom) || 0) + 16;
   syncViewportHeightVar();
   syncResponsiveLayoutMode();
   syncSidebarToggleState();
@@ -2275,13 +2235,10 @@ function syncResponsiveWorkspaceSizing() {
       nextHeight > 0 &&
       (lastCanvasSize.width !== nextWidth || lastCanvasSize.height !== nextHeight)
     ) {
-      if (isWorkspaceResizeTransitionActive || hasPendingResponsiveCanvasResize()) {
-        return;
-      }
-
       resizeCanvas(nextWidth, nextHeight);
       lastCanvasSize = { width: nextWidth, height: nextHeight };
       clampPanOffset();
+      updateZoomControls();
       startResponsiveLayoutAnimation(320);
       requestAnimationFrame(() => {
         clampPanOffset();
@@ -2555,102 +2512,42 @@ function setup() {
   zoomResetBtn = document.getElementById('zoom-reset-btn');
   zoomLevelDisplay = document.getElementById('zoom-level');
 
-  // Setup Zoom Listeners and Input
-  let zoomHoldFrame = 0;
-  let zoomHoldDirection = 0;
-  let zoomHoldLastTime = 0;
-  const ZOOM_HOLD_SPEED_PER_SECOND = 1;
-  const stepZoomHold = (timestamp) => {
-    if (!zoomHoldDirection) {
-      zoomHoldFrame = 0;
-      zoomHoldLastTime = 0;
-      return;
-    }
-
-    if (!zoomHoldLastTime) {
-      zoomHoldLastTime = timestamp;
-    } else {
-      const deltaSeconds = Math.min(0.05, Math.max(0, (timestamp - zoomHoldLastTime) / 1000));
-      zoomHoldLastTime = timestamp;
-      if (deltaSeconds > 0) {
-        zoomCanvas(zoomHoldDirection * ZOOM_HOLD_SPEED_PER_SECOND * deltaSeconds);
-      }
-    }
-
-    zoomHoldFrame = requestAnimationFrame(stepZoomHold);
-  };
-  const startZoom = (amount) => {
-    zoomCanvas(amount);
-    zoomHoldDirection = Math.sign(amount);
-    if (!zoomHoldDirection || zoomHoldFrame) {
-      return;
-    }
-    zoomHoldLastTime = 0;
-    zoomHoldFrame = requestAnimationFrame(stepZoomHold);
-  };
-  const stopZoom = () => {
-    zoomHoldDirection = 0;
-    zoomHoldLastTime = 0;
-    if (zoomHoldFrame) {
-      cancelAnimationFrame(zoomHoldFrame);
-      zoomHoldFrame = 0;
-    }
-  };
-
-  if (zoomInBtn) {
-    zoomInBtn.addEventListener('mousedown', () => startZoom(0.1));
-    zoomInBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startZoom(0.1); });
-    zoomInBtn.addEventListener('mouseup', stopZoom);
-    zoomInBtn.addEventListener('mouseleave', stopZoom);
-    zoomInBtn.addEventListener('touchend', stopZoom);
-    zoomInBtn.addEventListener('touchcancel', stopZoom);
-  }
-  if (zoomOutBtn) {
-    zoomOutBtn.addEventListener('mousedown', () => startZoom(-0.1));
-    zoomOutBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startZoom(-0.1); });
-    zoomOutBtn.addEventListener('mouseup', stopZoom);
-    zoomOutBtn.addEventListener('mouseleave', stopZoom);
-    zoomOutBtn.addEventListener('touchend', stopZoom);
-    zoomOutBtn.addEventListener('touchcancel', stopZoom);
-  }
-  if (zoomResetBtn) {
-    zoomResetBtn.addEventListener('click', () => {
-      setZoomLevel(DEFAULT_ZOOM_LEVEL);
-      setPanOffset({ x: 0, y: 0 }, { immediate: true });
-      if (zoomLevelDisplay) {
-        zoomLevelDisplay.value = '100%';
-      }
-      if (!isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
-    });
-  }
-
-  // Zoom Input Handling
+  // Zoom is an inspection scale relative to the fitted viewport, not export size.
+  if (zoomInBtn) zoomInBtn.addEventListener('click', () => stepPreviewZoom(1));
+  if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => stepPreviewZoom(-1));
+  if (zoomResetBtn) zoomResetBtn.addEventListener('click', fitPreview);
   if (zoomLevelDisplay) {
-    const handleZoomInput = () => {
-      let val = zoomLevelDisplay.value.replace('%', '');
-      let num = parseFloat(val);
-      if (!isNaN(num)) {
-        setZoomLevel(displayPercentToZoomLevel(num));
-      }
-      zoomLevelDisplay.value = zoomLevelToDisplayPercent(zoomLevel) + '%';
+    const applyInput = () => {
+      const raw = zoomLevelDisplay.value.trim();
+      const percent = /^fit$/i.test(raw) ? 100 : Number(raw.replace('%', ''));
+      if (Number.isFinite(percent) && percent > 0) setZoomLevel(percent / 100);
     };
-    zoomLevelDisplay.addEventListener('change', handleZoomInput);
-    zoomLevelDisplay.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        handleZoomInput();
-        zoomLevelDisplay.blur();
-      }
-    });
-    // On focus, select the number for easy editing
+    zoomLevelDisplay.addEventListener('change', applyInput);
     zoomLevelDisplay.addEventListener('focus', () => {
-      zoomLevelDisplay.value = zoomLevelToDisplayPercent(zoomLevel);
+      zoomLevelDisplay.value = Math.round(zoomTargetLevel * 100);
       zoomLevelDisplay.select();
     });
-    // On blur, revert to % format if unchanged
-    zoomLevelDisplay.addEventListener('blur', () => {
-      zoomLevelDisplay.value = zoomLevelToDisplayPercent(zoomLevel) + '%';
+    zoomLevelDisplay.addEventListener('blur', updateZoomControls);
+    zoomLevelDisplay.addEventListener('keydown', event => {
+      if (event.key === 'Enter') { applyInput(); zoomLevelDisplay.blur(); }
+      if (event.key === 'Escape') { event.preventDefault(); zoomLevelDisplay.blur(); }
+      if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        stepPreviewZoom(event.key === 'ArrowUp' ? 1 : -1);
+        zoomLevelDisplay.value = Math.round(zoomTargetLevel * 100);
+      }
     });
   }
+  document.addEventListener('keydown', event => {
+    if (event.metaKey || event.ctrlKey || event.altKey || event.target.closest(
+      'input,textarea,select,dialog,[contenteditable="true"],[role="combobox"]')) return;
+    if (['+', '=', '-', '0'].includes(event.key)) {
+      event.preventDefault();
+      if (event.key === '0') fitPreview();
+      else stepPreviewZoom(event.key === '-' ? -1 : 1);
+    }
+  });
+  updateZoomControls();
 
   circlesSizeVariationSlider = document.getElementById('circles-size-variation-slider');
   circlesSizeVariationDisplay = document.getElementById('circles-size-variation-display');
@@ -6975,6 +6872,7 @@ function draw() {
   // Draw the SVG logo
   push();
   if (!liveCanvasUsesWebGL) translate(width / 2, height / 2);
+  translate(0, -getPreviewFitLayout().controlSpace / 2);
 
   // Keep 100% zoom proportional to the visible workspace instead of fixed CSS pixels.
   scale(responsiveLogoScale);
@@ -7014,6 +6912,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
   // Use the exact same coordinate system and positioning as the logo
   push();
   if (!liveCanvasUsesWebGL) translate(width / 2, height / 2);
+  translate(0, -getPreviewFitLayout().controlSpace / 2);
 
   // Scale the same as logo
   scale(responsiveLogoScale);
@@ -7722,46 +7621,8 @@ function togglePlayback() {
   setMotionEnabledForStyle(currentStyle, !isMotionEnabledForStyle(currentStyle));
 }
 
-function applyPanEdgeInset(min, max) {
-  if (min > max) {
-    return { min: max, max: min };
-  }
-
-  const edgeInset = PAN_EDGE_PADDING / getResponsiveLogoScale();
-  if (max - min <= edgeInset * 2) {
-    const midpoint = (min + max) / 2;
-    return { min: midpoint, max: midpoint };
-  }
-
-  return { min: min + edgeInset, max: max - edgeInset };
-}
-
 function getPanBounds() {
-  const workspaceDisplaySize = getWorkspaceDisplaySize();
-  const viewportWidth = workspaceDisplaySize.width;
-  const viewportHeight = workspaceDisplaySize.height;
-  const responsiveLogoScale = getResponsiveLogoScale();
-  const horizontalBounds = applyPanEdgeInset(
-    125 * zoomLevel - viewportWidth / (2 * responsiveLogoScale),
-    viewportWidth / (2 * responsiveLogoScale) - 125 * zoomLevel
-  );
-  let minX = horizontalBounds.min;
-  let maxX = horizontalBounds.max;
-  if (minX > maxX) {
-    let temp = minX; minX = maxX; maxX = temp;
-  }
-
-  const verticalBounds = applyPanEdgeInset(
-    72 * zoomLevel - viewportHeight / (2 * responsiveLogoScale),
-    viewportHeight / (2 * responsiveLogoScale) - 79 * zoomLevel
-  );
-  let minY = verticalBounds.min;
-  let maxY = verticalBounds.max;
-  if (minY > maxY) {
-    let temp = minY; minY = maxY; maxY = temp;
-  }
-
-  return { minX, maxX, minY, maxY };
+  return window.viewportZoomUtils.getPanBounds(getPreviewFitLayout(), zoomLevel);
 }
 
 function clampPanPoint(point) {
@@ -7771,95 +7632,93 @@ function clampPanPoint(point) {
   return point;
 }
 
-function stopPanAnimation() {
-  if (panAnimationFrame) {
-    cancelAnimationFrame(panAnimationFrame);
-    panAnimationFrame = 0;
-  }
-}
+function clampPanOffset() { clampPanPoint(panOffset); }
 
 function renderPanOffsetChange() {
   if (!isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
 }
 
-function setPanOffset(nextOffset, options = {}) {
-  const clampedOffset = clampPanPoint({ x: nextOffset.x, y: nextOffset.y });
-  panTargetOffset = { ...clampedOffset };
-  panVelocity = { x: 0, y: 0 };
-
-  if (options.immediate) {
-    stopPanAnimation();
-    panOffset = { ...clampedOffset };
-    renderPanOffsetChange();
-    return;
-  }
-
-  startPanAnimation();
+function getBarZoomAnchor() {
+  const scale = getResponsiveLogoScale();
+  return {
+    x: scale * panOffset.x,
+    y: scale * (panOffset.y + zoomLevel * (REFERENCE_BAR_Y + REFERENCE_BAR_HEIGHT / 2 - REFERENCE_TOTAL_HEIGHT / 2))
+  };
 }
 
-function clampPanOffset() {
+function getPointerZoomAnchor(event) {
+  const box = canvasViewport.getBoundingClientRect();
+  const layout = getPreviewFitLayout();
+  if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return getBarZoomAnchor();
+  return { x: event.clientX - box.left - layout.centerX, y: event.clientY - box.top - layout.centerY };
+}
+
+function updateZoomControls() {
+  const percent = Math.round(zoomTargetLevel * 100);
+  const fitted = percent === 100;
+  if (zoomLevelDisplay) {
+    if (document.activeElement !== zoomLevelDisplay) zoomLevelDisplay.value = `${percent}%`;
+    zoomLevelDisplay.setAttribute('aria-valuenow', String(percent));
+    zoomLevelDisplay.setAttribute('aria-valuetext', fitted ? 'Fit to viewport, 100 percent' : `${percent} percent of fitted view`);
+  }
+  if (zoomOutBtn) zoomOutBtn.disabled = fitted;
+  if (zoomInBtn) zoomInBtn.disabled = percent >= 400;
+  if (zoomResetBtn) zoomResetBtn.classList.remove('is-active');
+  const status = document.getElementById('zoom-status');
+  if (status) status.textContent = fitted ? 'Whole mark · preview only' : 'Drag to inspect · preview only';
+  isPanningMode = zoomTargetLevel > 1.001 || zoomLevel > 1.001;
+  updatePanTouchAction();
+}
+
+function stepPreviewZoom(direction) {
+  setZoomLevel(window.viewportZoomUtils.getNextZoom(zoomTargetLevel, direction));
+}
+
+function fitPreview() {
+  setZoomLevel(1, { resetPan: true });
+}
+
+function setZoomLevel(nextZoomLevel, options = {}) {
+  zoomTargetLevel = window.viewportZoomUtils.clampZoom(nextZoomLevel);
+  zoomResettingPan = !!options.resetPan;
+  zoomAnchor = options.anchor || getBarZoomAnchor();
+  zoomAnchorState = { pan: { ...panOffset }, level: zoomLevel };
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion) {
+    panOffset = zoomResettingPan ? { x: 0, y: 0 } : window.viewportZoomUtils.anchorPan(
+      panOffset, zoomAnchor, zoomLevel, zoomTargetLevel, getResponsiveLogoScale());
+    zoomLevel = zoomTargetLevel;
+    clampPanOffset();
+
+    if (!isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
+  } else if (!zoomAnimationFrame) {
+    zoomAnimationTime = performance.now();
+    zoomAnimationFrame = requestAnimationFrame(animatePreviewZoom);
+  }
+  updateZoomControls();
+}
+
+function animatePreviewZoom(now) {
+  zoomAnimationFrame = 0;
+  const dt = Math.min(50, Math.max(0, now - zoomAnimationTime));
+  zoomAnimationTime = now;
+  const progress = 1 - Math.exp(-dt / 55);
+  const next = Math.abs(zoomTargetLevel - zoomLevel) < 0.001
+    ? zoomTargetLevel : zoomLevel + (zoomTargetLevel - zoomLevel) * progress;
+  panOffset = zoomResettingPan
+    ? { x: panOffset.x * (1 - progress), y: panOffset.y * (1 - progress) }
+    : window.viewportZoomUtils.anchorPan(zoomAnchorState.pan, zoomAnchor || getBarZoomAnchor(), zoomAnchorState.level, next, getResponsiveLogoScale());
+  zoomLevel = next;
   clampPanPoint(panOffset);
-  clampPanPoint(panTargetOffset);
-}
 
-function startPanAnimation() {
-  if (panAnimationFrame) return;
-  panAnimationFrame = requestAnimationFrame(animatePanOffset);
-}
-
-function animatePanOffset() {
-  panAnimationFrame = 0;
-
-  if (!isPanDragging) {
-    panTargetOffset.x += panVelocity.x;
-    panTargetOffset.y += panVelocity.y;
-    clampPanPoint(panTargetOffset);
-
-    const hitHorizontalEdge = panTargetOffset.x === getPanBounds().minX || panTargetOffset.x === getPanBounds().maxX;
-    const hitVerticalEdge = panTargetOffset.y === getPanBounds().minY || panTargetOffset.y === getPanBounds().maxY;
-    panVelocity.x = hitHorizontalEdge ? 0 : panVelocity.x * PAN_INERTIA_DECAY;
-    panVelocity.y = hitVerticalEdge ? 0 : panVelocity.y * PAN_INERTIA_DECAY;
+  if (!isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
+  if (zoomLevel !== zoomTargetLevel) zoomAnimationFrame = requestAnimationFrame(animatePreviewZoom);
+  else {
+    if (zoomResettingPan) panOffset = { x: 0, y: 0 };
+    zoomAnchor = null;
+    updateZoomControls();
+    if (!isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
   }
-
-  const deltaX = panTargetOffset.x - panOffset.x;
-  const deltaY = panTargetOffset.y - panOffset.y;
-  panOffset.x += deltaX * PAN_FOLLOW_EASE;
-  panOffset.y += deltaY * PAN_FOLLOW_EASE;
-  clampPanPoint(panOffset);
-  renderPanOffsetChange();
-
-  const isStillMoving = Math.abs(deltaX) > PAN_SETTLE_THRESHOLD ||
-    Math.abs(deltaY) > PAN_SETTLE_THRESHOLD ||
-    Math.abs(panVelocity.x) > PAN_INERTIA_STOP_THRESHOLD ||
-    Math.abs(panVelocity.y) > PAN_INERTIA_STOP_THRESHOLD;
-
-  if (isStillMoving) {
-    startPanAnimation();
-    return;
-  }
-
-  panOffset = { ...panTargetOffset };
-  panVelocity = { x: 0, y: 0 };
-  renderPanOffsetChange();
-}
-
-function zoomCanvas(amount) {
-  setZoomLevel(zoomLevel + amount);
-}
-
-function setZoomLevel(nextZoomLevel) {
-  const clampedZoomLevel = constrain(nextZoomLevel, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL);
-  const zoomChanged = Math.abs(clampedZoomLevel - zoomLevel) > 0.0001;
-
-  zoomLevel = clampedZoomLevel;
-
-  clampPanOffset();
-
-  if (zoomLevelDisplay && document.activeElement !== zoomLevelDisplay) {
-    zoomLevelDisplay.value = zoomLevelToDisplayPercent(zoomLevel) + '%';
-  }
-
-  if (zoomChanged && !isMotionEnabledForStyle(getCurrentMotionStyle())) redraw();
 }
 
 function updatePanTouchAction() {
@@ -7882,25 +7741,27 @@ function clearPanPointerState() {
 
 function applyPanDragDelta(deltaX, deltaY) {
   if (!isPanningMode) return;
+  const scale = getResponsiveLogoScale();
+  panOffset = clampPanPoint({ x: panOffset.x + deltaX / scale, y: panOffset.y + deltaY / scale });
 
-  isPanDragging = true;
-  const resistedX = deltaX * PAN_DRAG_RESISTANCE;
-  const resistedY = deltaY * PAN_DRAG_RESISTANCE;
-  panTargetOffset.x += resistedX;
-  panTargetOffset.y += resistedY;
-  panVelocity.x = resistedX;
-  panVelocity.y = resistedY;
-  clampPanPoint(panTargetOffset);
-  startPanAnimation();
+  renderPanOffsetChange();
 }
 
 function bindPanGestureHandlers() {
   if (panGestureHandlersBound || !canvasViewport) return;
   panGestureHandlersBound = true;
 
+  canvasViewport.addEventListener('dblclick', fitPreview);
   canvasViewport.addEventListener('pointerdown', (event) => {
     if (!isPanningMode) return;
-    if (event.pointerType === 'mouse') return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (panPointerId != null) { clearPanPointerState(); endPanDrag(); return; }
+    if (zoomAnimationFrame) cancelAnimationFrame(zoomAnimationFrame);
+    zoomAnimationFrame = 0;
+    zoomTargetLevel = zoomLevel;
+    updateZoomControls();
+    isPanDragging = true;
+    canvasViewport.classList.add('is-dragging');
 
     panPointerId = event.pointerId;
     panPointerPosition = { x: event.clientX, y: event.clientY };
@@ -7940,15 +7801,13 @@ function bindBrowserZoomGuards() {
   browserZoomGuardsBound = true;
 
   window.addEventListener('wheel', (event) => {
-    if (!event.ctrlKey) return;
-
-    const eventTarget = event.target;
-    const isCanvasGesture = !!(canvasViewport && eventTarget instanceof Node && canvasViewport.contains(eventTarget));
+    const isCanvasGesture = canvasViewport && event.target instanceof Node && canvasViewport.contains(event.target);
     if (!isCanvasGesture) return;
     event.preventDefault();
-
-    const zoomMultiplier = Math.exp(-event.deltaY * TRACKPAD_PINCH_ZOOM_SENSITIVITY);
-    setZoomLevel(zoomLevel * zoomMultiplier);
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? height : 1;
+    const delta = Math.max(-120, Math.min(120, event.deltaY * unit));
+    const multiplier = Math.exp(-delta * (event.ctrlKey ? 0.008 : 0.003));
+    setZoomLevel(zoomTargetLevel * multiplier, { anchor: getPointerZoomAnchor(event) });
   }, { passive: false });
 
   const supportsTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -7957,7 +7816,7 @@ function bindBrowserZoomGuards() {
   document.addEventListener('gesturestart', (event) => {
     const eventTarget = event.target;
     const isCanvasGesture = !!(canvasViewport && eventTarget instanceof Node && canvasViewport.contains(eventTarget));
-    safariGestureStartZoomLevel = isCanvasGesture ? zoomLevel : null;
+    safariGestureStartZoomLevel = isCanvasGesture ? zoomTargetLevel : null;
     if (isCanvasGesture) event.preventDefault();
   }, { passive: false });
 
@@ -7967,7 +7826,7 @@ function bindBrowserZoomGuards() {
     if (!isCanvasGesture || safariGestureStartZoomLevel == null || typeof event.scale !== 'number') return;
     event.preventDefault();
 
-    setZoomLevel(safariGestureStartZoomLevel * event.scale);
+    setZoomLevel(safariGestureStartZoomLevel * event.scale, { anchor: getPointerZoomAnchor(event) });
   }, { passive: false });
 
   document.addEventListener('gestureend', (event) => {
@@ -7976,23 +7835,12 @@ function bindBrowserZoomGuards() {
   }, { passive: false });
 }
 
-function mouseDragged() {
-  if (isPanningMode && panPointerId == null) {
-    applyPanDragDelta(movedX, movedY);
-    return false; // Prevent default browser drag
-  }
-}
-
-function touchMoved() {
-  if (isPanningMode) {
-    return false;
-  }
-}
 
 function endPanDrag() {
   if (!isPanDragging) return;
   isPanDragging = false;
-  startPanAnimation();
+  if (canvasViewport) canvasViewport.classList.remove('is-dragging');
+
 }
 
 function mouseReleased() {
