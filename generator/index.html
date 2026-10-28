@@ -10,12 +10,12 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261027-clipboard" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261028-color-availability" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261027-print-pass" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261027-print-pass"></script>
   <script src="js/utils/generatorRoutes.js?v=20261027-motion-polish"></script>
   <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
-  <script src="js/utils/customDropdowns.js?v=20261027-print-pass"></script>
+  <script src="js/utils/customDropdowns.js?v=20261028-color-availability"></script>
   <script src="js/utils/parameterControls.js?v=20261027-print-pass"></script>
   <script src="js/utils/loopingGif.js?v=20261027-motion-polish"></script>
   <script src="js/utils/featherIcons.js?v=20261027-integration-final"></script>
@@ -170,9 +170,9 @@
                   <option value="lunar">Artemis II</option>
                 </optgroup>
                 <optgroup label="Under Construction">
-                  <option value="music" disabled>Music</option>
-                  <option value="graph" disabled>Data Graph</option>
-                  <option value="truss" disabled>Truss</option>
+                  <option value="music" data-coming-soon disabled>Music</option>
+                  <option value="graph" data-coming-soon disabled>Data Graph</option>
+                  <option value="truss" data-coming-soon disabled>Truss</option>
                 </optgroup>
               </select>
             </div>
@@ -182,16 +182,27 @@
             <label id="color-mode-select-label" for="color-mode-select" class="control-label">COLOR THEME</label>
             <div class="select-wrapper">
               <select id="color-mode-select" data-url-parameter="colorMode" class="control-select">
-                <option value="black">Black</option>
-                <option value="white">White</option>
-                <option value="red">Red</option>
-                <option value="blue">Blue</option>
-                <option value="gold">Gold</option>
-                <option value="silver">Silver</option>
-                <option value="gray">Gray</option>
+                <optgroup label="Primary">
+                  <option value="black">Black</option>
+                  <option value="white">White</option>
+                  <option value="red">Red</option>
+                </optgroup>
+                <optgroup label="Secondary">
+                  <option value="blue" data-coming-soon disabled>Blue</option>
+                  <option value="gold" data-coming-soon disabled>Gold</option>
+                  <option value="silver" data-coming-soon disabled>Silver</option>
+                  <option value="gray" data-coming-soon disabled>Gray</option>
+                </optgroup>
                 <option value="lunar">Mission Control</option>
               </select>
             </div>
+            <details class="color_guidance" id="color-guidance">
+              <summary>Using secondary colors</summary>
+              <div class="color_guidance-popover">
+                <p>Secondary colors are coming soon.</p>
+                <a href="https://brand.rpi.edu/document/4#/-/color" target="_blank" rel="noopener noreferrer">Learn how to use secondary colors on the Color page (opens in a new tab).</a>
+              </div>
+            </details>
           </div>
         </div>
 

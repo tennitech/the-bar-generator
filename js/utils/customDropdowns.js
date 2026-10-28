@@ -68,6 +68,17 @@ function setupCustomDropdowns() {
       customOption.setAttribute('aria-selected', String(option.selected));
       customOption.textContent = option.textContent;
       customOption.dataset.value = option.value;
+      if (option.hasAttribute('data-coming-soon')) {
+        // Native touch pickers cannot expose hover hints: include availability
+        // in their label, while preserving the original label for restored URLs.
+        option.label = `${option.textContent} — Coming soon`;
+        const hint = document.createElement('span');
+        hint.className = 'select_availability-hint';
+        hint.id = `${customOption.id}-hint`;
+        hint.textContent = 'Coming soon';
+        customOption.appendChild(hint);
+        customOption.setAttribute('aria-describedby', hint.id);
+      }
       customOption.setAttribute('aria-disabled', String(option.disabled));
 
       if (option.selected) {
@@ -112,12 +123,17 @@ function setupCustomDropdowns() {
       }
     });
 
-    const getEnabledOptions = () => Array.from(optionsViewport.querySelectorAll('.custom-option:not(.is-hidden):not(.is-disabled)'));
+    // Disabled rows with availability hints remain discoverable with arrow keys.
+    // Selection is guarded separately so neither Enter nor pointer can commit them.
+    const getNavigableOptions = () => Array.from(optionsViewport.querySelectorAll('.custom-option:not(.is-hidden)'))
+      .filter(option => !option.classList.contains('is-disabled') || option.querySelector('.select_availability-hint'));
     let activeOption = null;
 
     function setActiveOption(option) {
       if (!option) return;
+      activeOption?.classList.remove('is-active');
       activeOption = option;
+      activeOption.classList.add('is-active');
       trigger.setAttribute('aria-activedescendant', option.id);
       option.scrollIntoView({ block: 'nearest' });
     }
@@ -126,16 +142,18 @@ function setupCustomDropdowns() {
       wrapper.classList.toggle('open', open);
       trigger.setAttribute('aria-expanded', String(open));
       if (open) {
-        const options = getEnabledOptions();
+        const options = getNavigableOptions();
         setActiveOption(options.find(option => option.dataset.value === select.value) || options[0]);
         requestAnimationFrame(updateScrollFades);
       } else {
         trigger.removeAttribute('aria-activedescendant');
+        activeOption?.classList.remove('is-active');
         activeOption = null;
       }
     }
 
     function commitOption(option) {
+      if (option.classList.contains('is-hidden') || option.classList.contains('is-disabled')) return;
       select.value = option.dataset.value;
       select.dispatchEvent(new Event('change', { bubbles: true }));
       setOpen(false);
@@ -145,9 +163,12 @@ function setupCustomDropdowns() {
     // Toggle dropdown
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
+      const guidance = document.getElementById('color-guidance');
+      if (guidance) guidance.open = false;
       document.querySelectorAll('.custom-select-wrapper').forEach(w => {
         if (w !== wrapper) {
           w.classList.remove('open');
+          w.querySelectorAll('.is-active').forEach(option => option.classList.remove('is-active'));
           const otherTrigger = w.querySelector('.custom-select-trigger');
           if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
         }
@@ -173,7 +194,7 @@ function setupCustomDropdowns() {
       event.stopPropagation();
       if (!wrapper.classList.contains('open')) {
         setOpen(true);
-        const options = getEnabledOptions();
+        const options = getNavigableOptions();
         if (event.key === 'Home') setActiveOption(options[0]);
         if (event.key === 'End') setActiveOption(options[options.length - 1]);
         return;
@@ -182,7 +203,7 @@ function setupCustomDropdowns() {
         if (activeOption) commitOption(activeOption);
         return;
       }
-      const options = getEnabledOptions();
+      const options = getNavigableOptions();
       if (!options.length) return;
       const currentIndex = Math.max(0, options.indexOf(activeOption));
       const nextIndex = event.key === 'Home' ? 0
@@ -210,11 +231,28 @@ function setupCustomDropdowns() {
     requestAnimationFrame(updateScrollFades);
   });
 
+  const guidance = document.getElementById('color-guidance');
+  if (guidance && !guidance.dataset.initialized) {
+    guidance.dataset.initialized = 'true';
+    guidance.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && guidance.open) {
+        event.preventDefault();
+        event.stopPropagation();
+        guidance.open = false;
+        guidance.querySelector('summary').focus();
+      }
+    });
+    document.addEventListener('click', event => {
+      if (!guidance.contains(event.target)) guidance.open = false;
+    });
+  }
+
   // click outside to close dropdowns
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.custom-select-wrapper')) {
       document.querySelectorAll('.custom-select-wrapper').forEach(w => {
         w.classList.remove('open');
+        w.querySelectorAll('.is-active').forEach(option => option.classList.remove('is-active'));
         const trigger = w.querySelector('.custom-select-trigger');
         if (trigger) {
           trigger.setAttribute('aria-expanded', 'false');
