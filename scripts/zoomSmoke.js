@@ -48,10 +48,38 @@ async function inspect(page) {
   });
 }
 
+async function verifyExportInvariant(browser) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 3, reducedMotion: 'reduce' });
+  try {
+    await page.goto(`${base}/generator/triangle-grid/`);
+    await page.waitForFunction(() => window.barShareController);
+    async function capture(zoom) {
+      await page.evaluate(zoom => setZoomLevel(zoom, { immediate: true }), zoom);
+      const header = await page.evaluate(() => buildHeaderPreviewSVG());
+      const files = {};
+      for (const type of ['SVG', 'PNG']) {
+        const download = page.waitForEvent('download');
+        await page.evaluate(type => window[`save${type}`](), type);
+        files[type] = await fs.readFile(await (await download).path());
+      }
+      return { header, ...files };
+    }
+    const fit = await capture(1), enlarged = await capture(4);
+    assert.equal(enlarged.header, fit.header, 'inspection zoom must not alter header SVG geometry');
+    assert.ok(enlarged.SVG.equals(fit.SVG), 'inspection zoom must not alter exported SVG');
+    assert.ok(enlarged.PNG.equals(fit.PNG), 'inspection zoom must not alter exported PNG');
+    assert.equal(fit.PNG.readUInt32BE(16), 1160);
+    assert.equal(fit.PNG.readUInt32BE(20), 762);
+    console.log(`${browserName}: Triangle Grid Fit/400% header, SVG and 1160x762 PNG are identical at DPR 3.`);
+  } finally { await page.close(); }
+}
+
 async function main() {
   const browser = await ({ chromium, webkit })[browserName].launch({ headless: true });
   const results = [];
   try {
+    if (process.argv.includes('--exports-only')) { await verifyExportInvariant(browser); return; }
     const page = await browser.newPage({ viewport: { width: 1200, height: 850 }, deviceScaleFactor: 2, reducedMotion: 'reduce' });
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     await page.goto(`${base}/generator/triangle-grid/`);
@@ -148,6 +176,7 @@ async function main() {
     results.push(fallbackResult);
     await fallback.close();
     assert.deepEqual(errors, []);
+    await verifyExportInvariant(browser);
     if (evidence) {
       await fs.mkdir(evidence, { recursive: true });
       await fs.writeFile(`${evidence}/${browserName}-zoom-results.json`, JSON.stringify(results, null, 2));
