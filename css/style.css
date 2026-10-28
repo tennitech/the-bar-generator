@@ -497,57 +497,52 @@ body {
   font-style: italic;
 }
 
-.lunar_source-note {
-  display: none;
-  margin-top: 4px;
-  padding: 10px 11px;
+.bar_information {
+  margin: 0 0 0.75rem;
+  padding: 0.75rem;
   border: 1px solid var(--control-border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm, 2px);
   background: var(--control-surface);
-  color: var(--text-secondary);
-}
-
-.lunar_source-kicker {
-  display: block;
-  margin-bottom: 4px;
   color: var(--text-primary);
+}
+
+.bar_information-kicker {
   font-family: 'RPIGeistMono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.1;
-  text-transform: uppercase;
-  letter-spacing: 0;
+  font-size: 0.625rem;
+  line-height: 1.4;
 }
 
-.lunar_source-note p {
+.bar_information h2 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+
+.bar_information p {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.35;
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
-.lunar_source-note a {
-  color: var(--accent-color);
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.lunar_source-link {
-  margin: 0;
-}
-
-.sidebar-footer .lunar_source-note {
-  margin: 0 0 12px;
-}
-
-.lunar_source-divider {
+.bar_information .bar_information-credit {
   display: none;
-  margin: 0 0 12px;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--control-border);
 }
 
-.lunar_source-note a:hover,
-.lunar_source-note a:focus-visible {
+.bar_information a {
+  color: inherit;
   text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
+
+.bar_information a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+body.theme-lunar .bar_information-credit { display: block; }
 
 /* ─── Selects & Inputs ─── */
 
@@ -2907,18 +2902,6 @@ body.theme-lunar #lunar-group .control_row-preview {
   justify-content: space-between;
 }
 
-body.theme-lunar .lunar_source-note {
-  display: block;
-  background:
-    linear-gradient(180deg, rgba(225, 237, 245, 0.035), transparent),
-    var(--control-surface);
-  border-color: var(--lunar-divider);
-}
-
-body.theme-lunar .lunar_source-note a {
-  color: var(--rpi-silver);
-}
-
 body.theme-lunar .control-input,
 body.theme-lunar .custom-select-trigger,
 body.theme-lunar .preview-control-btn,
@@ -3104,10 +3087,6 @@ body.theme-lunar .workspace-divider {
 
 body.theme-lunar .sidebar-content > .sidebar-divider {
   display: none;
-}
-
-body.theme-lunar .sidebar-footer > .lunar_source-divider {
-  display: block;
 }
 
 body.theme-lunar .save-menu {

@@ -4025,6 +4025,7 @@ function handleSidebarTransitionEnd(event) {
 }
 
 function handleStyleChange() {
+  if (window.BarInformation) window.BarInformation.sync();
   // Get the selected style from dropdown
   const selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   if (styleSelect && styleSelect.value !== selectedStyle) {

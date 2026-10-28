@@ -601,6 +601,12 @@ Validation: 307 unit tests in 30 suites; 32 preference/playback/intro cases each
 - The change is confined to Quantum control transport. Its analytic model, speed bounds, reverse evolution, fixed spatial/amplitude scales and static SVG/PNG snapshot geometry are unchanged. See [Quantum controls and model](quantum_model.md).
 - Validation: 312 unit tests passed in 31 suites, including seven focused transport regressions. WebKit completed active/paused seeks, keyboard, pointer, 320/390px touch-layout interaction, reduced motion, paused legacy sharing and deterministic SVG/PNG snapshots. Chromium passed the desktop seek/share/export checks but its full run intermittently stalled during routed startup; a touch-layout run reported `GeneratorInitialState is not defined` before controls initialized. This separate startup issue is handed to platform/integration work. Browser emulation does not establish physical-device or formal brand approval.
 
+### Bar information cards — October 28, 2026
+
+- Added one standardized information card above the problem-report button for all 21 available styles, including Organizations and Special. Each explanation has two sentences and approximately 40 words, grounded in the implemented system and RPI voice records.
+- Mission Control's existing BOROMIR/Maeve Marshall surface credit now appears within that same card. No duplicate card, invented Union affiliation, telemetry claim or new approval is introduced. Quantum explains projections of the actual ring model.
+- Copy inventory and source/approval limits: [bar information cards](bar_information_cards.md). Rendering/export math and motion behavior are unchanged. Validation: 305 unit tests pass; focused Chromium/WebKit checks pass for all styles, four themes, 320/390/768px layouts, motion preferences and credit focus. Desktop and 320px screenshots were visually inspected. Local static-file fulfillment avoids test-server socket resets; audio playback, physical devices and formal RPI approval remain outside this check.
+
 ## 6. Design Decisions
 *   **Profanity Filter:** Implemented client-side for immediate feedback and user privacy. Unicode folding and a documented list improve coverage, but this is best-effort moderation rather than a guarantee.
 *   **Renderer Dependency:** An unchanged, licensed p5.js 1.7.0 build is served locally so generator boot is independent of cdnjs.
