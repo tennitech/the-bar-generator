@@ -663,3 +663,5 @@ The audit found and locally repaired preference-change edge cases: relaxing redu
 ### Quantum category — October 28, 2026
 
 Quantum now appears once under Dynamic, immediately after Waveform, in the native bar-style selector and its generated custom menu. The `wave-quantum` route, shader/model identity, phase/loop controls, preview and share keys are unchanged. Category grouping is authored by the selector’s optgroups; the landing marquee has no separate Quantum category entry. Combined selector checks cover the unique entry and still preview.
+
+Numeric integration also guards historical aliases with own-property checks. Prototype names such as `constructor` previously entered Formula mode and fell back to Pi; they now recover as empty Values without executing text or substituting data. Unit and browser legacy-query/share cases cover this integration repair.

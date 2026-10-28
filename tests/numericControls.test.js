@@ -53,3 +53,10 @@ test('legacy shares migrate sources; new numeric shares reject text before apply
   expect(() => context.BarShareState.normalizeState(state({'numeric-input':'1abc2','numeric-source-select':'values'}),manifest)).toThrow(/numeric/);
   expect(() => context.BarShareState.normalizeState(state({'numeric-input':'123','numeric-source-select':'formula','numeric-formula-select':'eval'}),manifest)).toThrow(/unavailable/);
 });
+
+// Unknown legacy text must not pick inherited properties and silently select Pi.
+test.each(['constructor', 'toString', '__proto__', 'hasOwnProperty'])(
+  'unsupported legacy token %s recovers as empty Values', value => {
+    expect(numeric.migrate(value)).toEqual({ numericSource: 'values', numericFormula: 'pi', numericValue: '' });
+  }
+);

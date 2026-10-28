@@ -102,7 +102,7 @@ async function file(page, type) {
     await page.getByRole('button',{name:'Randomize numeric parameters',exact:true}).click();
     assert.equal(await page.inputValue('#numeric-source-select'),'formula');
     assert.ok(presets.includes(await page.inputValue('#numeric-formula-select')));
-    for(const [legacy,expected] of [['PI','3.141592653589793'],['Math.pow(3,5)','243'],['bad123','']]) {
+    for(const [legacy,expected] of [['PI','3.141592653589793'],['Math.pow(3,5)','243'],['bad123',''],['constructor',''],['toString',''],['__proto__',''],['hasOwnProperty','']]) {
       await page.goto(`${base}/generator/numeric/?numericValue=${encodeURIComponent(legacy)}`);await ready(page);
       assert.equal(await page.evaluate(()=>getNumericSourceValue()),expected);
     }
@@ -112,6 +112,17 @@ async function file(page, type) {
     });
     await page.goto(legacy);await ready(page);
     assert.equal(await page.inputValue('#numeric-source-select'),'formula');assert.equal(await page.inputValue('#numeric-formula-select'),'sqrt2');
+    const unknownLegacy = await page.evaluate(() => {
+      const state = barShareController.capture();
+      delete state.controls['numeric-source-select']; delete state.controls['numeric-formula-select'];
+      state.controls['numeric-input'] = 'constructor';
+      return location.href.split('#')[0] + '#bar=' + btoa(JSON.stringify(state)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    });
+    await page.goto(unknownLegacy); await ready(page);
+    assert.equal(await page.inputValue('#numeric-source-select'), 'values');
+    assert.equal(await page.inputValue('#numeric-input'), '');
+    assert.equal(await page.evaluate(() => getNumericSourceValue()), '');
+
     assert.deepEqual(errors,[]);
     }
     const touch=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});

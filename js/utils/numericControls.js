@@ -73,7 +73,8 @@
     if (value === undefined) return { numericSource: 'values', numericFormula: 'pi', numericValue: DEFAULT_VALUE };
     if (isDraft(value)) return { numericSource: 'values', numericFormula: 'pi', numericValue: value };
     const aliases = { PI: 'pi', 'Math.PI': 'pi', E: 'e', 'Math.E': 'e', 'sqrt(2)': 'sqrt2', 'Math.sqrt(2)': 'sqrt2', '(1+sqrt(5))/2': 'phi' };
-    const id = aliases[String(value).replace(/\s/g, '')];
+    const key = String(value).replace(/\s/g, '');
+    const id = Object.hasOwn(aliases, key) ? aliases[key] : null;
     return { numericSource: id ? 'formula' : 'values', numericFormula: id || 'pi', numericValue: id ? DEFAULT_VALUE : (legacyValue(value) ?? '') };
   }
   function readQuery(params) {
