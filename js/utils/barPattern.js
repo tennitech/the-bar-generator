@@ -641,8 +641,8 @@ function createCirclesGradientPatternGeometry(options = {}) {
   const variant = clampPatternVariant(options.variant || 1, 3);
   const circles = [];
   const rects = [];
-  // Row spacing bounds each radius vertically. Horizontal centers interpolate
-  // between tangent end circles, so every row paints both exact bar edges.
+  // All rows share column centers: shrinking dots stay vertically aligned.
+  // The largest endpoint circles touch the edges without shifting smaller rows.
   const rows = variant === 2 ? 2 : 3;
   const columns = variant === 2 ? 24 : 28;
   const cellWidth = exactBarWidth / columns;
@@ -653,10 +653,10 @@ function createCirclesGradientPatternGeometry(options = {}) {
     if (variant === 2) return maxRadius * Math.sqrt(0.12 + 0.88 * t);
     return maxRadius * Math.sqrt(0.16 + 0.84 * (1 - Math.abs(2 * t - 1)));
   };
+  const leftRadius = Math.max(...Array.from({ length: rows }, (_, row) => radiusAt(0, row)));
+  const rightRadius = Math.max(...Array.from({ length: rows }, (_, row) => radiusAt(1, row)));
+  const centerSpan = exactBarWidth - leftRadius - rightRadius;
   for (let row = 0; row < rows; row++) {
-    const leftRadius = radiusAt(0, row);
-    const rightRadius = radiusAt(1, row);
-    const centerSpan = exactBarWidth - leftRadius - rightRadius;
     for (let col = 0; col < columns; col++) {
       const t = col / (columns - 1);
       circles.push({
@@ -1335,6 +1335,28 @@ function ensureCirclePatternCoverageForSVG(circles, barWidth, barHeight) {
   return coveredCircles;
 }
 
+// Packing radii describe the OUTSIDE of each circle, including its stroke.
+// Complete circles, rather than a mask or a horizontal stretch, define the bounds.
+function createBoundedCirclePatternGeometry(circles, barWidth, barHeight, fillStyle = 'stroke') {
+  const bounded = ensureCirclePatternCoverageForSVG(circles, barWidth, barHeight)
+    .map(circle => fitCircleToBoundsForSVG(circle.x, circle.y, circle.r, barWidth, barHeight))
+    .filter(Boolean);
+  if (!bounded.length) return [];
+  let left = bounded[0], right = bounded[0];
+  for (const circle of bounded) {
+    if (circle.x - circle.r < left.x - left.r) left = circle;
+    if (circle.x + circle.r > right.x + right.r) right = circle;
+  }
+  // Retain the scattered composition. Only the two extreme circles move to
+  // exact tangency; no boundary blocks, extra circles or distorted ellipses.
+  left.x = left.r;
+  right.x = barWidth - right.r;
+  return bounded.map(circle => {
+    const strokeWidth = fillStyle === 'fill' ? 0 : Math.min(1, circle.r);
+    return { ...circle, r: circle.r - strokeWidth / 2, strokeWidth };
+  });
+}
+
 function getRepresentativeCircleRadiusForSVG(circles, barHeight) {
   const radii = circles
     .map((circle) => circle.r)
@@ -1607,7 +1629,7 @@ function createBarPatternSVG(config) {
       parseInt(values.circlesSizeVariation, 10)
     );
 
-    circleData = ensureCirclePatternCoverageForSVG(circleData, exactBarWidth, barHeight);
+    circleData = createBoundedCirclePatternGeometry(circleData, exactBarWidth, barHeight, circlesFill);
     const clipId = createCirclePatternClipId(barStartX, barY, exactBarWidth, barHeight);
     pattern += `\n    <clipPath id="${clipId}"><rect x="${barStartX}" y="${barY}" width="${exactBarWidth}" height="${barHeight}"/></clipPath>`;
     pattern += `\n    <g clip-path="url(#${clipId})">`;
@@ -1617,7 +1639,7 @@ function createBarPatternSVG(config) {
       if (circlesFill === 'fill') {
         pattern += `\n      <circle cx="${barStartX + circle.x}" cy="${barY + circle.y}" r="${circle.r}" fill="${fgColor}"/>`;
       } else {
-        pattern += `\n      <circle cx="${barStartX + circle.x}" cy="${barY + circle.y}" r="${circle.r}" fill="none" stroke="${fgColor}" stroke-width="1"/>`;
+        pattern += `\n      <circle cx="${barStartX + circle.x}" cy="${barY + circle.y}" r="${circle.r}" fill="none" stroke="${fgColor}" stroke-width="${circle.strokeWidth}"/>`;
       }
     }
     pattern += '\n    </g>';
@@ -2062,6 +2084,7 @@ function createBarPatternSVG(config) {
 
 if (typeof window !== 'undefined') {
   window.applyWaveformEnvelope = applyWaveformEnvelope;
+  window.createBoundedCirclePatternGeometry = createBoundedCirclePatternGeometry;
   window.createCirclesGradientPatternGeometry = createCirclesGradientPatternGeometry;
   window.createFibonacciPatternGeometry = createFibonacciPatternGeometry;
   window.createGradientPatternGeometry = createGradientPatternGeometry;
@@ -2091,6 +2114,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getTickerHeaderSampling,
     createBarPatternSVG,
     createCirclesGradientPatternGeometry,
+    createBoundedCirclePatternGeometry,
     createFibonacciPatternGeometry,
     createGradientPatternGeometry,
     createGridPatternGeometry,

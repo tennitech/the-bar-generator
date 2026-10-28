@@ -3,6 +3,7 @@ const {
   createLinesPatternGeometry,
   createGradientPatternGeometry,
   createCirclesGradientPatternGeometry,
+  createBoundedCirclePatternGeometry,
   createTrianglesPatternGeometry
 } = require('../js/utils/barPattern');
 
@@ -104,6 +105,33 @@ describe('experimental pattern compositions', () => {
       const circles = createCirclesGradientPatternGeometry({ variant }).circles;
       expect(Math.min(...circles.map(c => c.r * 2))).toBeGreaterThanOrEqual(2);
     }
+  });
+
+  test.each([1, 2, 3])('circle gradient %s keeps columns upright', variant => {
+    const circles = createCirclesGradientPatternGeometry({ variant }).circles;
+    const columns = variant === 2 ? 24 : 28;
+    for (let i = columns; i < circles.length; i++) {
+      expect(circles[i].cx).toBe(circles[i % columns].cx);
+    }
+  });
+
+  test.each(['fill', 'stroke'])('packed circles retain complete %s bounds and edge tangency', fill => {
+    // Include the formerly clipped bottom circle and intentionally bad input.
+    const source = [{ x: 1, y: 0, r: 3 }, { x: 249, y: 17, r: 4 },
+      { x: 125, y: 9, r: 20 }, { x: 55, y: 3, r: 0.6 }];
+    const circles = createBoundedCirclePatternGeometry(source, 250, 18, fill);
+    const extents = circles.map(c => {
+      const radius = c.r + c.strokeWidth / 2;
+      expect(c.r).toBeGreaterThan(0);
+      expect(c.x - radius).toBeGreaterThanOrEqual(0);
+      expect(c.x + radius).toBeLessThanOrEqual(250);
+      expect(c.y - radius).toBeGreaterThanOrEqual(0);
+      expect(c.y + radius).toBeLessThanOrEqual(18);
+      return [c.x - radius, c.x + radius];
+    });
+    expect(Math.min(...extents.map(b => b[0]))).toBe(0);
+    expect(Math.max(...extents.map(b => b[1]))).toBe(250);
+    expect(source[0]).toEqual({ x: 1, y: 0, r: 3 });
   });
 
   test('circle variants encode vertical, directional, and symmetric area progressions', () => {

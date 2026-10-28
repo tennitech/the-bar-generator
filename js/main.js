@@ -4409,8 +4409,8 @@ function buildCurrentBarPatternSVGFragment({
     markup += `<rect x="${axis.x}" y="${axis.y}" width="${axis.width}" height="${axis.height}" fill="${fgColor}"/>`;
   }
   if (!markup.trim()) return '';
-  // Data/reference geometry and nested artwork viewports retain their fixed domains.
-  const fittedMarkup = [1, 2, 3, 4, 6, 7, 12, 22, 23, 24].includes(currentShader)
+  // Data/reference geometry, bounded circles and nested artwork retain fixed domains.
+  const fittedMarkup = [1, 2, 3, 4, 5, 6, 7, 12, 16, 22, 23, 24].includes(currentShader)
     ? markup : fitBarSVGToEdges(markup, barStartX, barY, exactBarWidth, barHeight);
   return clipBarSVG(fittedMarkup, barStartX, barY, exactBarWidth, barHeight);
 }

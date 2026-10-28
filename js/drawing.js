@@ -809,10 +809,11 @@ function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, si
 
     // Only regenerate if parameters changed
     if (!staticCircleData || lastCircleParams !== params) {
-      staticCircleData = ensureStaticCirclePatternCoverage(
+      staticCircleData = createBoundedCirclePatternGeometry(
         generateStaticPackedCircles(barWidth, barHeight, density, sizeVariation),
         barWidth,
-        barHeight
+        barHeight,
+        circlesFill
       );
       lastCircleParams = params;
     }
@@ -850,14 +851,13 @@ function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, si
           continue;
         }
 
-        const drawableCircle = canUseNativeClip
-          ? circle
-          : fitCircleWithinBar(circle, barWidth, barHeight);
+        const drawableCircle = circle;
         if (!drawableCircle) {
           continue;
         }
 
         if (pg) {
+          pg.strokeWeight(drawableCircle.strokeWidth);
           pg.ellipse(
             barStartX + drawableCircle.x,
             barY + drawableCircle.y,
@@ -865,6 +865,7 @@ function drawCirclePattern(pg, barStartX, barY, barWidth, barHeight, density, si
             drawableCircle.r * 2
           );
         } else {
+          strokeWeight(drawableCircle.strokeWidth);
           ellipse(
             barStartX + drawableCircle.x,
             barY + drawableCircle.y,

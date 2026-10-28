@@ -18,7 +18,12 @@ for (const trianglesCount of [6, 28]) {
   }
 }
 const selectedCases = process.env.RPI_PATTERN_QUICK === '1' ? [...cases.slice(0, 9), cases[9], cases.at(-1)] : cases;
-const activeCases = process.env.RPI_PATTERN_LIMIT ? selectedCases.slice(0, Number(process.env.RPI_PATTERN_LIMIT)) : selectedCases;
+const circleCases = [1, 2, 3].map(circlesGradientVariant => ({ style: 'circles-gradient', circlesGradientVariant }));
+for (const circlesDensity of [10, 100]) for (const circlesSizeVariation of [0, 100]) {
+  for (const circlesFill of ['fill', 'stroke']) circleCases.push({ style: 'circles', circlesDensity, circlesSizeVariation, circlesFill });
+}
+const activeCases = process.env.RPI_PATTERN_CIRCLES === '1' ? circleCases
+  : process.env.RPI_PATTERN_LIMIT ? selectedCases.slice(0, Number(process.env.RPI_PATTERN_LIMIT)) : selectedCases;
 
 async function download(page, kind) {
   await page.locator('#save-button').click();
@@ -40,8 +45,8 @@ async function main() {
     await page.locator('#p5-container canvas').waitFor();
     await page.evaluate(() => {
       noLoop();
-      const original = createPNGExportBlob;
-      createPNGExportBlob = (snapshot, signal) => {
+      const original = createRasterExportBlob;
+      createRasterExportBlob = (snapshot, signal) => {
         window.__patternPNGSource = snapshot.svgSource;
         return original(snapshot, signal);
       };
@@ -56,6 +61,11 @@ async function main() {
         };
         set('style-select', style, 'change');
         set('color-mode-select', colorMode, 'change');
+        if (style === 'circles') {
+          set('circles-density-slider', values.circlesDensity);
+          set('circles-size-variation-slider', values.circlesSizeVariation);
+          set('circles-fill-select', values.circlesFill, 'change');
+        }
         if (style === 'lines') set('lines-variant-slider', values.linesVariant);
         if (style === 'gradient') set('gradient-variant-slider', values.gradientVariant);
         if (style === 'circles-gradient') set('circles-gradient-variant-slider', values.circlesGradientVariant);
@@ -73,10 +83,22 @@ async function main() {
         const shapes = node => Array.from(node.querySelectorAll('path,rect,circle,polygon,line'))
           .filter(shape => !shape.closest('defs,clipPath,mask')).slice(3)
           .map(shape => [shape.tagName, ...Array.from(shape.attributes)
-            .filter(a => a.name !== 'fill').map(a => [a.name, a.value])]);
+            .filter(a => a.name !== 'fill').map(a => [a.name, a.name === 'stroke' && a.value !== 'none' ? 'ink' : a.value])]);
         const doc = parse(svg);
         const header = document.querySelector('#header-logo-preview svg');
         const expected = parse(buildHeaderPreviewSVG());
+        if ([5, 16].includes(currentShader)) {
+          const circles = [...doc.querySelectorAll('circle')];
+          for (const circle of circles) {
+            const x = +circle.getAttribute('cx'), y = +circle.getAttribute('cy');
+            const radius = +circle.getAttribute('r') + +(circle.getAttribute('stroke-width') || 0) / 2;
+            if (x - radius < -1e-7 || x + radius > 250 + 1e-7 ||
+                y - radius < REFERENCE_BAR_Y - 1e-7 || y + radius > REFERENCE_BAR_Y + 18 + 1e-7) {
+              throw new Error('Circle artwork extends beyond the bar before clipping');
+            }
+            if (circle.closest('[data-bar-edge-fit]')) throw new Error('Circle artwork must not be stretched: ' + circle.closest('[data-bar-edge-fit]').getAttribute('transform'));
+          }
+        }
         const svgGeometry = shapes(doc);
         const headerGeometry = shapes(header);
         const expectedGeometry = shapes(expected);
@@ -188,6 +210,17 @@ async function main() {
           pngWidth: target.width, pngHeight: target.height, barPixels, leftPixels, rightPixels,
           previewOverlap: intersection / union };
       }, { svg, png: png.toString('base64') });
+      if (process.env.RPI_PATTERN_CIRCLES === '1') {
+        await page.evaluate(() => setZoomLevel(4, { immediate: true }));
+        await page.evaluate(() => getCanonicalBarImage(4000).ready);
+        await page.evaluate(() => { noLoop(); redraw(); });
+        const zoomSVG = (await download(page, 'svg')).toString('utf8');
+        const zoomPNG = await download(page, 'png');
+        assert.equal(zoomSVG, svg, 'Inspection zoom must not change circle SVG');
+        assert.deepEqual(zoomPNG, png, 'Inspection zoom must not change circle PNG');
+        if (evidence && colorMode === 'black') await page.screenshot({ path: path.join(evidence, `${browserName}-${style}-${JSON.stringify(values).replace(/[^a-z0-9]/gi, '')}-400.png`) });
+        await page.evaluate(() => setZoomLevel(1, { immediate: true }));
+      }
       const label = `${browserName} ${style} ${JSON.stringify(values)} ${colorMode}`;
       assert.equal(result.capturedSourceMatches, true, `${label}: PNG captures the exact downloaded SVG source`);
       assert.deepEqual(result.svgGeometry, result.expectedGeometry, `${label}: SVG selected geometry`);

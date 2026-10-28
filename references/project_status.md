@@ -646,3 +646,9 @@ The audit found and locally repaired preference-change edge cases: relaxing redu
 *   `main.js` relies heavily on global variables (p5.js pattern). Future refactoring might consider modularizing this.
 *   Previously identified issue where ticker width ratio display failed to update has been resolved (2026-02-17).
 *   Previously identified SVG export drift between `main.js` and `drawing.js` has been addressed by shared utility (2026-02-17).
+
+### Circle bounds and alignment repair — October 28, 2026
+
+- Circles Gradient rows now share column centers, removing variant 1's leaning columns while preserving row sizes and complete dot bounds. The largest endpoint dots meet the bar edges; smaller endpoint dots remain aligned inside them.
+- Circles now treats packed radii as outer painted extents and insets stroked paths by half their stroke width. Every complete circle is geometrically bounded before clipping, with exact tangent endpoint circles and no horizontal stretching. Moving formerly overflowing circles inward can introduce minor overlaps; this remains an illustrative geometric pattern. See [circle assumptions](bar_science_notes.md#circle-containment-repair--october-28-2026).
+- Validation: 326 unit tests passed in 33 suites. Chromium and WebKit each passed 22 selected states (all three gradient variants; Circles density 10/100 × variation 0/100 × fill/stroke, black/white), checking pre-clip primitive bounds, no circle stretch, actual SVG/header geometry, downloaded PNG parity, painted edges, preview interior agreement, and byte-identical SVG/PNG at Fit versus 400%. Both engines also passed 390px touch-layout rendering at Fit/400% with stable snapshots and no page errors. Desktop and phone preview screenshots were visually inspected; exported PNG pixels were checked automatically. This is browser emulation, not physical-device or formal brand approval.

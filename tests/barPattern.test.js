@@ -220,8 +220,8 @@ describe('createBarPatternSVG', () => {
     }));
     const circleBounds = [...result.matchAll(/<circle cx="([^"]+)" cy="[^"]+" r="([^"]+)"/g)]
       .map((match) => ({
-        left: parseFloat(match[1]) - parseFloat(match[2]),
-        right: parseFloat(match[1]) + parseFloat(match[2])
+        left: parseFloat(match[1]) - parseFloat(match[2]) - 0.5,
+        right: parseFloat(match[1]) + parseFloat(match[2]) + 0.5
       }));
 
     expect(result).toContain('<clipPath');
