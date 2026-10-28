@@ -18,14 +18,14 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
             const field = document.getElementById(id); field.value = String(value);
             field.dispatchEvent(new Event(type, { bubbles: true }));
           };
-          set('triangles-count-slider', 6); set('triangles-variant-slider', 2);
+          set('triangles-count-slider', 6);
           set('triangles-direction-select', 'up-left', 'change');
           set('quantum-phase', 0.375); window.quantumControls.pause();
           set('share-name', 'Frozen request');
           set('export-size-select', 'standard', 'change');
           window.__oldSVG = captureLogoExportSnapshot().svgSource;
           window.__mutateExportControls = () => {
-            set('triangles-count-slider', 28); set('triangles-variant-slider', 1);
+            set('triangles-count-slider', 28);
             set('triangles-direction-select', 'down-right', 'change');
             set('quantum-phase', 0.8); set('share-name', 'In-flight change');
             set('export-size-select', 'large', 'change');

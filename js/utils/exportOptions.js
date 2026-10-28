@@ -27,7 +27,7 @@
     const values = snapshot.values || {};
     const tokens = ['rpi-bar', snapshot.family || 'solid'];
     const variants = { 'circles-gradient': 'circlesGradientVariant', gradient: 'gradientVariant', grid: 'gridVariant',
-      lines: 'linesVariant', 'point-connect': 'pointConnectVariant', 'triangle-grid': 'triangleGridVariant', triangles: 'trianglesVariant' };
+      lines: 'linesVariant', 'point-connect': 'pointConnectVariant', 'triangle-grid': 'triangleGridVariant' };
     if (variants[snapshot.family]) tokens.push(`v${values[variants[snapshot.family]] || 1}`);
     if (snapshot.family === 'triangles') {
       if (values.trianglesDirection) tokens.push(values.trianglesDirection);

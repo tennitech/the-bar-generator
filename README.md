@@ -140,6 +140,7 @@ RPI_SITE_URL=http://127.0.0.1:8000 node scripts/iconsSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/exportSnapshotSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/urlStateSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/colorPickerSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/selectorSmoke.js
 ```
 
 `test:integration` checks real triangle controls, downloaded SVG equality after

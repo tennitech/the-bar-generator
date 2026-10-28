@@ -582,6 +582,13 @@ Verification: 299 unit tests in 30 suites; full Chromium and WebKit browser smok
     - Set up Jest testing framework.
     - Created Frontify integration strategy document.
 
+### October 28 selector refinement
+
+- Bar style menus now offer up to 35rem of choices, bounded to the viewport and sidebar scroll area. Short menus flip upward when needed. Names stay left aligned with still SVG family samples in a right column; direction options use matching right-hand arrows. Touch users receive the same visual selectors with 48px rows. Other selectors retain their native touch picker.
+- Samples use default family parameters and shared bar export geometry, a frozen packing sample, and the existing Artemis source as a mask. They describe a family rather than the active settings or live motion. Unfinished styles retain disabled Coming soon hints and have no misleading preview.
+- Triangles now expose direction and count only. Old variant-2 query/share state migrates to the opposite direction to preserve the image; new captures, canonical URLs and filenames omit variant. Low-level historical complementary geometry is retained. Reset/Randomize cover the remaining controls.
+- Validation: 305 unit tests; selector, touch, legacy-link and SVG/PNG checks plus integrated triangle/header/raster/share comparisons in Chromium and WebKit. Browser evidence does not establish formal brand approval or physical Safari/device accessibility validation.
+
 ## 6. Design Decisions
 *   **Profanity Filter:** Implemented client-side for immediate feedback and user privacy. Unicode folding and a documented list improve coverage, but this is best-effort moderation rather than a guarantee.
 *   **Renderer Dependency:** An unchanged, licensed p5.js 1.7.0 build is served locally so generator boot is independent of cdnjs.

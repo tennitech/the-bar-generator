@@ -10,11 +10,11 @@ const cases = [
   ...[1, 2].map(linesVariant => ({ style: 'lines', linesVariant })),
   ...[1, 2].map(gradientVariant => ({ style: 'gradient', gradientVariant })),
   ...[1, 2, 3].map(circlesGradientVariant => ({ style: 'circles-gradient', circlesGradientVariant })),
-  ...[1, 2].map(trianglesVariant => ({ style: 'triangles', trianglesVariant }))
+  { style: 'triangles' }
 ];
 for (const trianglesCount of [6, 28]) {
   for (const trianglesDirection of ['down-right', 'up-right', 'up-left', 'down-left']) {
-    for (const trianglesVariant of [1, 2]) cases.push({ style: 'triangles', trianglesCount, trianglesDirection, trianglesVariant });
+    cases.push({ style: 'triangles', trianglesCount, trianglesDirection });
   }
 }
 const selectedCases = process.env.RPI_PATTERN_QUICK === '1' ? [...cases.slice(0, 9), cases[9], cases.at(-1)] : cases;
@@ -60,7 +60,6 @@ async function main() {
         if (style === 'gradient') set('gradient-variant-slider', values.gradientVariant);
         if (style === 'circles-gradient') set('circles-gradient-variant-slider', values.circlesGradientVariant);
         if (style === 'triangles') {
-          set('triangles-variant-slider', values.trianglesVariant);
           set('triangles-count-slider', values.trianglesCount || 14);
           set('triangles-direction-select', values.trianglesDirection || 'down-right', 'change');
         }
@@ -215,7 +214,7 @@ async function main() {
       if (style === 'triangles') assert.equal(result.svgGeometry.length, values.trianglesCount || 14, `${label}: triangle count`);
       results.push({ style, ...values, colorMode, ...result, expectedPNG: undefined, referenceSVG: undefined, svgGeometry: undefined, headerGeometry: undefined, expectedGeometry: undefined });
       if (results.length % 10 === 0) console.log(`${browserName}: ${results.length} selected states verified`);
-      if (evidence && (results.length <= 9 || (style === 'triangles' && values.trianglesCount === 28 && values.trianglesDirection === 'up-left' && values.trianglesVariant === 2))) {
+      if (evidence && (results.length <= 9 || (style === 'triangles' && values.trianglesCount === 28 && values.trianglesDirection === 'up-left'))) {
         const name = `${browserName}-${results.length}-${style}`;
         await fs.writeFile(path.join(evidence, `${name}.svg`), svg);
         await fs.writeFile(path.join(evidence, `${name}.png`), png);

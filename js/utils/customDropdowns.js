@@ -10,6 +10,7 @@ function setupCustomDropdowns() {
     // Create wrapper
     const wrapper = document.createElement('div');
     wrapper.className = 'custom-select-wrapper';
+    if (['style-select', 'triangles-direction-select'].includes(select.id)) wrapper.classList.add('select_visual');
     select.parentNode.insertBefore(wrapper, select);
     wrapper.appendChild(select);
 
@@ -59,6 +60,29 @@ function setupCustomDropdowns() {
       optionsList.classList.toggle('has-scroll-bottom', hasScrollBottom);
     };
 
+    let previewsReady = false;
+    function preparePreviews() {
+      if (previewsReady || !window.SelectorPreviews || typeof window.generateStaticPackedCircles !== 'function') return;
+      Array.from(select.options).forEach(option => {
+        const row = Array.from(optionsViewport.children).find(row => row.dataset.value === option.value);
+        if (row) window.SelectorPreviews.decorate(row, select, option);
+      });
+      previewsReady = true;
+    }
+    function fitMenu() {
+      const bounds = trigger.getBoundingClientRect();
+      const scrollRegion = select.closest('#sidebar-scroll')?.getBoundingClientRect();
+      const bottom = Math.min(window.innerHeight, window.visualViewport?.height || window.innerHeight, scrollRegion?.bottom || Infinity) - 12;
+      const top = Math.max(12, scrollRegion?.top || 0);
+      const below = bottom - bounds.bottom;
+      const above = bounds.top - top;
+      const flip = below < 176 && above > below;
+      optionsList.style.top = flip ? 'auto' : '100%';
+      optionsList.style.bottom = flip ? '100%' : 'auto';
+      const preferred = select.id === 'style-select' ? 560 : 256;
+      optionsList.style.setProperty('--dropdown-menu-max-height', `${Math.max(44, Math.min(preferred, flip ? above : below))}px`);
+      updateScrollFades();
+    }
     let optionIndex = 0;
     const appendCustomOption = (option) => {
       const customOption = document.createElement('div');
@@ -142,6 +166,8 @@ function setupCustomDropdowns() {
       wrapper.classList.toggle('open', open);
       trigger.setAttribute('aria-expanded', String(open));
       if (open) {
+        preparePreviews();
+        fitMenu();
         const options = getNavigableOptions();
         setActiveOption(options.find(option => option.dataset.value === select.value) || options[0]);
         requestAnimationFrame(updateScrollFades);
@@ -163,6 +189,7 @@ function setupCustomDropdowns() {
     // Toggle dropdown
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
+      trigger.focus({ preventScroll: true });
       const guidance = document.getElementById('color-guidance');
       if (guidance) guidance.open = false;
       document.querySelectorAll('.custom-select-wrapper').forEach(w => {
@@ -227,6 +254,7 @@ function setupCustomDropdowns() {
       window.themeModeUtils.syncCustomSelectState(select, wrapper, select.value, newSelected ? newSelected.textContent : select.value);
     });
 
+    window.addEventListener('resize', () => { if (wrapper.classList.contains('open')) fitMenu(); });
     optionsViewport.addEventListener('scroll', updateScrollFades);
     requestAnimationFrame(updateScrollFades);
   });
