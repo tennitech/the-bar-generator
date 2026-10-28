@@ -41,7 +41,10 @@ runtime retry policy was added.
 The user's separate all-motion-off/still-logo report matches the deliberate
 reduced-motion branch, which formerly hid Replay. That branch was reproduced
 against the published controller. It is distinct from the test's missing-script
-failure. The affected physical Windows/Android preference values remain unknown.
+failure. After this release, the owner confirmed that the affected phone limits
+animations and the Windows browser is a very old Chrome version. The exact
+Chrome version and failing feature were not supplied. See the later
+[confirmed-incident audit](motion_rendering.md#confirmed-incident-audit-october-28-2026).
 
 ## Verification
 

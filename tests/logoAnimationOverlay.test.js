@@ -319,6 +319,50 @@ describe('logo animation overlay controller', () => {
     controller.destroy();
   });
 
+  test('relaxing reduced motion preserves the current explicit one-run frame', async () => {
+    const motionPreference = { matches: true, addEventListener: jest.fn(), removeEventListener: jest.fn() };
+    const { controller } = createController({ motionPreference });
+    await controller.open();
+    await controller.replay();
+    const playingFrame = controller.getFrame();
+    motionPreference.matches = false;
+    motionPreference.addEventListener.mock.calls[0][1]();
+    expect(controller.getFrame()).toBe(playingFrame);
+    expect(playingFrame.remove).not.toHaveBeenCalled();
+    controller.destroy();
+  });
+
+  test('replacing a focused static play control keeps focus in the dialog', async () => {
+    const motionPreference = { matches: true, addEventListener: jest.fn(), removeEventListener: jest.fn() };
+    const { controller, documentRef, closeEl } = createController({ motionPreference });
+    await controller.open();
+    jest.runOnlyPendingTimers();
+    const still = controller.getFrame();
+    const play = still.children.find(child => child.tagName === 'BUTTON');
+    still.contains = node => node === play;
+    documentRef.activeElement = play;
+    closeEl.focus.mockClear();
+    motionPreference.matches = false;
+    motionPreference.addEventListener.mock.calls[0][1]();
+    expect(controller.getFrame().tagName).toBe('IFRAME');
+    expect(closeEl.focus).toHaveBeenCalledTimes(1);
+    controller.destroy();
+  });
+
+  test('one-time Play follows the same entrance and exit disabling as toolbar actions', async () => {
+    const motionPreference = { matches: true, addEventListener: jest.fn(), removeEventListener: jest.fn() };
+    const { controller, overlayEl } = createController({ motionPreference });
+    await controller.open();
+    const play = controller.getFrame().children.find(child => child.tagName === 'BUTTON');
+    expect(play.disabled).toBe(true);
+    jest.runOnlyPendingTimers();
+    expect(play.disabled).toBe(false);
+    overlayEl.getAnimations = () => [{ finished: new Promise(() => {}) }];
+    controller.close();
+    expect(play.disabled).toBe(true);
+    controller.destroy();
+  });
+
   test('animation completion message closes the overlay without navigation', async () => {
     const {
       controller,
