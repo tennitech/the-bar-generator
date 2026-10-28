@@ -12,7 +12,7 @@ async function main() {
   const browser = await ({ chromium, webkit }[engine]).launch({ headless: true });
   let cases = 0;
   try {
-    for (const touch of (process.argv.includes('--iframe-only') ? [] : [false, true])) for (const reduce of [false, true]) for (const fallback of [false, true]) {
+    for (const touch of (process.argv.includes('--iframe-only') || process.argv.includes('--preference-change-only') ? [] : [false, true])) for (const reduce of [false, true]) for (const fallback of [false, true]) {
       const page = await browser.newPage({ ...(touch ? devices['Pixel 7'] : { viewport: { width: 1440, height: 900 } }),
         reducedMotion: reduce ? 'reduce' : 'no-preference' });
       const errors = [];
@@ -87,6 +87,24 @@ async function main() {
       cases++;
       console.log(`${engine}: touch=${touch} reduce=${reduce} fallback=${fallback} passed`);
     }
+    const preferences = await browser.newPage({ reducedMotion: 'no-preference' });
+    await preferences.goto(`${base}/generator/ruler/`);
+    await preferences.locator('#p5-container canvas').waitFor();
+    await preferences.waitForFunction(() => !window.PageEntrance?.isActive?.());
+    await preferences.emulateMedia({ reducedMotion: 'reduce' });
+    await preferences.waitForFunction(() => ['ruler', 'ticker', 'waveform'].every(style =>
+      !document.getElementById(`${style}-motion-toggle`).checked));
+    const paused = await preferences.evaluate(() => liveMotionPhase);
+    await frames(preferences);
+    assert.equal(await preferences.evaluate(() => liveMotionPhase), paused);
+    await preferences.emulateMedia({ reducedMotion: 'no-preference' });
+    await frames(preferences);
+    assert.equal(await preferences.evaluate(() => liveMotionPhase), paused, 'preference relaxation must not silently restart loops');
+    await preferences.evaluate(() => setMotionEnabledForStyle('ruler', true));
+    await frames(preferences);
+    assert.notEqual(await preferences.evaluate(() => liveMotionPhase), paused, 'explicit restart remains available');
+    await preferences.close();
+    console.log(`${engine}: changed OS preference pauses all repeating styles; relaxing it preserves pause and explicit restart works.`);
     // A same-origin embed verifies preference inheritance and nested ASCII playback;
     // it is not a test of Frontify itself.
     const host = await browser.newPage({ reducedMotion: 'reduce', viewport: { width: 1280, height: 900 } });

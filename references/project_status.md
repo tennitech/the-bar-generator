@@ -99,7 +99,7 @@ Combined the preserved motion-preference, Quantum-seek and information-card bran
 
 The earlier Chromium mobile `GeneratorInitialState is not defined` failure did not recur during successful real-HTTP loading. Intentionally resetting that module request reproduced the exact missing-global failure and the existing Retry recovered after the connection was restored. This establishes a missing-dependency failure mechanism, not a Chromium platform/API incompatibility; the original request trace was unavailable. The previous copy-test file-fulfillment fixture is removed. The optional standard-library `scripts/test_server.py` uses a larger connection backlog for concurrent browser asset requests instead of older Python servers’ small default queue. No production framework, network retry policy or new dependency was introduced.
 
-Integration verification and remaining physical-device limits are recorded in [motion rendering](motion_rendering.md) and [bar information cards](bar_information_cards.md). Source feature branches and shared main remain intact; no merge or deployment is included.
+Integration verification and remaining physical-device limits are recorded in [motion rendering](motion_rendering.md) and [bar information cards](bar_information_cards.md). Source feature branches and shared main remain intact; no merge or deployment is included. A new reduced-motion request now pauses Ruler/Ticker/Waveform during an open session, matching Quantum; relaxing it does not silently restart playback. Focused Chromium/WebKit preference-change and explicit-restart checks passed.
 
 ## 3. Completed Milestones
 

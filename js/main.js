@@ -2705,6 +2705,15 @@ function setup() {
   updateWaveformSpeedDisplay(); // Set initial value
   syncMotionToggleState();
 
+  // A new system request pauses existing loops; only an explicit choice restarts them.
+  window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => {
+    if (!event.matches) return;
+    for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = false;
+    lastAnimationFrameTimestamp = 0;
+    syncMotionToggleState();
+    requestUpdate();
+  });
+
   // Setup circles sliders with display updates and debouncing
   let circleUpdateTimeout;
 

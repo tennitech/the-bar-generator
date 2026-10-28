@@ -80,3 +80,9 @@ physical Windows/Android validation. WebKit `introLifecycleSmoke.js` passed.
 Desktop and emulated-touch screenshots in `/tmp/rpi-motion-choice-evidence` were
 visually inspected. The application stack, bar geometry and export code remain
 unchanged; only the lazy intro-controller version changed in p5 global main.js.
+
+The integrated runtime also pauses Ruler/Ticker/Waveform when the OS newly
+requests reduced motion while the page is open. Relaxing that preference does
+not restart paused loops; explicit Loop remains available. The focused
+`motionPreferenceSmoke.js --preference-change-only` checks passed in Chromium
+and WebKit, including embedded playback after the preference checks.
