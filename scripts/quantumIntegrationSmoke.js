@@ -10,7 +10,7 @@ async function file(page, type) {
   return fs.readFile(await (await wait).path());
 }
 async function ready(page) {
-  await page.waitForFunction(() => window.barShareController && window.quantumControls);
+  await page.waitForFunction(() => window.barShareController && window.quantumControls, null, { timeout: 60000 });
   await page.locator('#p5-container canvas').waitFor();
 }
 (async () => {
@@ -67,6 +67,36 @@ async function ready(page) {
     assert.ok(persistentHeader.headerBarPositionError < 0.02);
     assert.ok(persistentHeader.leftInk > 8 && persistentHeader.rightInk > 8);
     assert.ok((await page.screenshot({ clip: letterClip, scale: 'css' })).equals(letterPixels), 'Quantum header letter pixels stay exact');
+    // Native keyboard seeking retains the running loop, then continues from the seek.
+    await page.locator('#quantum-phase').focus();
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.isChecked('#quantum-motion-toggle'), true);
+    const keyboardPhase = Number(await page.inputValue('#quantum-phase'));
+    await page.waitForFunction(phase => quantumControls.values().quantumPhase > phase, keyboardPhase);
+    for (const percent of ['37.1', '62.3']) {
+      await page.locator('#quantum-phase-display').focus();
+      await page.keyboard.press('Enter');
+      await page.locator('.slider_value-input').waitFor({ state: 'visible' });
+      const heldPhase = Number(await page.inputValue('#quantum-phase'));
+      await page.waitForTimeout(100);
+      assert.equal(Number(await page.inputValue('#quantum-phase')), heldPhase, 'numeric editor holds model time');
+      assert.equal(await page.isChecked('#quantum-motion-toggle'), true);
+      await page.locator('.slider_value-input').fill(percent);
+      await page.locator('.slider_value-input').press('Enter');
+      await page.waitForFunction(phase => quantumControls.values().quantumPhase > phase, Number(percent) / 100);
+      assert.equal(await page.isChecked('#quantum-motion-toggle'), true);
+    }
+    const phaseRect = await page.locator('#quantum-phase').boundingBox();
+    await page.mouse.move(phaseRect.x + phaseRect.width * .25, phaseRect.y + phaseRect.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(phaseRect.x + phaseRect.width * .45, phaseRect.y + phaseRect.height / 2);
+    const dragPhase = Number(await page.inputValue('#quantum-phase'));
+    await page.waitForTimeout(100);
+    assert.equal(Number(await page.inputValue('#quantum-phase')), dragPhase, 'pointer drag holds model time');
+    assert.equal(await page.isChecked('#quantum-motion-toggle'), true);
+    await page.mouse.up();
+    await page.waitForFunction(phase => quantumControls.values().quantumPhase > phase, dragPhase);
+    await page.locator('#quantum-motion-toggle').focus();
     await page.keyboard.press('Space');
     const forward = await page.evaluate(() => quantumControls.values().quantumPhase);
     assert.equal(await page.evaluate(() => window.__quantumSnapshots), 0, 'moving Quantum must bypass asynchronous snapshots');
@@ -109,7 +139,7 @@ async function ready(page) {
     for (const width of [320, 390]) {
       const phone = await browser.newPage({ viewport: { width, height: 664 }, isMobile: true,
         hasTouch: true, reducedMotion: 'reduce' });
-      phone.on('pageerror', error => errors.push(error.message));
+      phone.on('pageerror', error => { errors.push(error.message); console.error('phone pageerror:', error.message); });
       await phone.goto(`${base}/generator/wave-quantum/`); await ready(phone);
       await phone.locator('#mobile-menu-toggle').tap();
       await phone.locator('#quantum-phase-display').scrollIntoViewIfNeeded();
@@ -117,6 +147,13 @@ async function ready(page) {
       await phone.locator('.slider_value-input').fill('37.1');
       await phone.locator('.slider_value-input').press('Enter');
       assert.equal(await phone.inputValue('#quantum-phase'), '0.371');
+      assert.equal(await phone.isChecked('#quantum-motion-toggle'), false, 'paused touch edit stays paused');
+      await phone.locator('#quantum-motion-toggle').locator('..').tap();
+      await phone.locator('#quantum-phase').tap();
+      assert.equal(await phone.isChecked('#quantum-motion-toggle'), true, 'touch seek keeps LOOP selected');
+      const touchedPhase = Number(await phone.inputValue('#quantum-phase'));
+      await phone.waitForFunction(phase => quantumControls.values().quantumPhase > phase, touchedPhase);
+      await phone.locator('#quantum-motion-toggle').locator('..').tap();
       const metrics = await phone.evaluate(() => ({
         overflow: document.documentElement.scrollWidth > innerWidth,
         targets: ['quantum-motion-toggle', 'quantum-reverse-toggle', 'quantum-speed-slider', 'quantum-phase']
@@ -134,7 +171,7 @@ async function ready(page) {
     if (evidence) {
       await page.screenshot({ path: `${evidence}/${name}-quantum-integrated.png` });
       await fs.writeFile(`${evidence}/${name}-quantum-integration.json`, JSON.stringify({ forward, nativeSnapshotBypass: true, persistentHeader,
-        repeatedSVGAndPNG: true, oldDensityMigration: true, pausedShare: true, queryHistory: true, reducedMotion: true, mobile, errors }, null, 2));
+        repeatedSVGAndPNG: true, oldDensityMigration: true, pausedShare: true, phaseSeeksPreserveTransport: true, queryHistory: true, reducedMotion: true, mobile, errors }, null, 2));
     }
     console.log(`${name}: native Quantum motion, reverse, deterministic SVG/PNG seek, legacy paused share, query history and reduced motion passed`);
   } finally { await browser.close(); }

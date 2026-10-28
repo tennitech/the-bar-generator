@@ -2,6 +2,8 @@
 (function (root) {
   let lastTimestamp = null;
   let initialized = false;
+  let phasePointerId = null;
+  let phaseEditor = null;
   const el = id => document.getElementById(id);
   function values() {
     return { quantumPhase: root.quantumModel.normalizePhase(el('quantum-phase')?.value || 0) };
@@ -35,22 +37,35 @@
     el('quantum-motion-toggle').addEventListener('change', () => { lastTimestamp = null; commit(); });
     el('quantum-reverse-toggle').addEventListener('change', () => { lastTimestamp = null; commit(); });
     el('quantum-speed-slider').addEventListener('input', () => { lastTimestamp = null; sync(); commit(); });
-    el('quantum-phase').addEventListener('input', () => { pause(); commit(); });
+    // Seeking changes model time, not the user's explicit LOOP selection.
+    const seek = () => { lastTimestamp = null; sync(); commit(); };
+    el('quantum-phase').addEventListener('input', seek);
+    el('quantum-phase').addEventListener('pointerdown', event => {
+      phasePointerId = event.pointerId;
+      lastTimestamp = null;
+    });
+    const finishSeek = event => {
+      if (phasePointerId !== event.pointerId) return;
+      phasePointerId = null;
+      lastTimestamp = null;
+    };
+    root.addEventListener('pointerup', finishSeek);
+    root.addEventListener('pointercancel', finishSeek);
+    root.addEventListener('blur', () => { phasePointerId = null; lastTimestamp = null; });
     root.registerSliderValueEditor({
       slider: el('quantum-speed-slider'), display: el('quantum-speed-display'), refreshDisplay: sync,
       commit: () => { lastTimestamp = null; sync(); commit(); }, ariaLabel: 'Set quantum motion speed'
     });
-    root.registerSliderValueEditor({
+    phaseEditor = {
       slider: el('quantum-phase'), display: el('quantum-phase-display'), refreshDisplay: sync,
       getEditorValue: () => (values().quantumPhase * 100).toFixed(1),
       parseValue: value => {
         const number = root.parseSliderNumericInput(value);
         return number === null ? null : Math.max(0, Math.min(100, number)) / 100;
       },
-      commit: () => { pause(); commit(); }, ariaLabel: 'Set quantum phase percent'
-    });
-    el('quantum-phase-display').addEventListener('click', pause);
-    el('quantum-phase-display').addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') pause(); });
+      commit: seek, ariaLabel: 'Set quantum phase percent'
+    };
+    root.registerSliderValueEditor(phaseEditor);
     el('style-select').addEventListener('change', () => { lastTimestamp = null; sync(); });
     root.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => { if (event.matches) pause(); });
     document.addEventListener('visibilitychange', () => { lastTimestamp = null; });
@@ -58,7 +73,8 @@
   }
   function tick(timestamp, suspended) {
     if (!initialized) return;
-    const active = !suspended && el('style-select').value === 'wave-quantum' && el('quantum-motion-toggle').checked;
+    const seeking = phasePointerId !== null || Boolean(phaseEditor?.editorInput);
+    const active = !suspended && !seeking && el('style-select').value === 'wave-quantum' && el('quantum-motion-toggle').checked;
     if (!active) { lastTimestamp = null; return; }
     if (lastTimestamp !== null) {
       el('quantum-phase').value = root.quantumModel.advancePhase(values().quantumPhase, timestamp - lastTimestamp, {

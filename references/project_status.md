@@ -595,6 +595,12 @@ Validation: 307 unit tests in 30 suites; 32 preference/playback/intro cases each
 - Triangles now expose direction and count only. Old variant-2 query/share state migrates to the opposite direction to preserve the image; new captures, canonical URLs and filenames omit variant. Low-level historical complementary geometry is retained. Reset/Randomize cover the remaining controls.
 - Validation: 305 unit tests; selector, touch, legacy-link and SVG/PNG checks plus integrated triangle/header/raster/share comparisons in Chromium and WebKit. Browser evidence does not establish formal brand approval or physical Safari/device accessibility validation.
 
+### October 28 Quantum phase transport repair
+
+- Phase changes now retain the explicit LOOP selection. Running playback continues from the selected phase; paused playback remains paused. Native pointer drags and the numeric editor temporarily hold model time, then resume with a fresh timestamp and no catch-up. Keyboard range input rebases the frame timestamp. Explicit pause/play, reduced-motion pause, static defaults and paused query/share restoration remain intact.
+- The change is confined to Quantum control transport. Its analytic model, speed bounds, reverse evolution, fixed spatial/amplitude scales and static SVG/PNG snapshot geometry are unchanged. See [Quantum controls and model](quantum_model.md).
+- Validation: 312 unit tests passed in 31 suites, including seven focused transport regressions. WebKit completed active/paused seeks, keyboard, pointer, 320/390px touch-layout interaction, reduced motion, paused legacy sharing and deterministic SVG/PNG snapshots. Chromium passed the desktop seek/share/export checks but its full run intermittently stalled during routed startup; a touch-layout run reported `GeneratorInitialState is not defined` before controls initialized. This separate startup issue is handed to platform/integration work. Browser emulation does not establish physical-device or formal brand approval.
+
 ## 6. Design Decisions
 *   **Profanity Filter:** Implemented client-side for immediate feedback and user privacy. Unicode folding and a documented list improve coverage, but this is best-effort moderation rather than a guarantee.
 *   **Renderer Dependency:** An unchanged, licensed p5.js 1.7.0 build is served locally so generator boot is independent of cdnjs.
