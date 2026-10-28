@@ -39,32 +39,24 @@ const ROW_NARROW_CLEARANCE_WIDTH_END = 430;
 const ROW_NARROW_CLEARANCE_BASE_LIFT = 18;
 const ROW_NARROW_CLEARANCE_MAX_LIFT = 56;
 
-const rowPatterns = [
-  ['assets/bar references/Style=Triangle Grid 1.svg', 'assets/bar references/Style=Ruler CM.svg', 'assets/bar references/Style=Ticker Md.svg', 'assets/bar references/Style=Grid 1.svg'],
-  ['assets/bar references/Style=Point Connect 2.svg', 'assets/bar references/Style=Lines Md.svg', 'assets/bar references/Style=Triangle Grid 1.svg', 'assets/bar references/Style=Ruler CM.svg'],
-  ['assets/bar references/Style=Ticker Lg.svg', 'assets/bar references/Style=Grid 1.svg', 'assets/bar references/Style=Lines Md.svg', 'assets/bar references/Style=Point Connect 2.svg'],
-  ['assets/bar references/Style=Default.svg', 'assets/bar references/Style=Triangle Grid 1.svg', 'assets/bar references/Style=Ruler CM.svg', 'assets/bar references/Style=Grid 1.svg'],
-  ['assets/bar references/Style=Lines Md.svg', 'assets/bar references/Style=Ticker Md.svg', 'assets/bar references/Style=Triangle Grid 1.svg', 'assets/bar references/Style=Point Connect 2.svg'],
-  ['assets/bar references/Style=Grid 1.svg', 'assets/bar references/Style=Ruler CM.svg', 'assets/bar references/Style=Lines Md.svg', 'assets/bar references/Style=Ticker Lg.svg'],
-  ['assets/bar references/Style=Triangle Grid 1.svg', 'assets/bar references/Style=Grid 1.svg', 'assets/bar references/Style=Ticker Md.svg', 'assets/bar references/Style=Lines Md.svg'],
-  ['assets/bar references/Style=Ruler CM.svg', 'assets/bar references/Style=Point Connect 2.svg', 'assets/bar references/Style=Grid 1.svg', 'assets/bar references/Style=Triangle Grid 1.svg'],
-  ['assets/bar references/Style=Ticker Md.svg', 'assets/bar references/Style=Lines Md.svg', 'assets/bar references/Style=Ruler CM.svg', 'assets/bar references/Style=Grid 1.svg'],
-  ['assets/bar references/Style=Triangle Grid 1.svg', 'assets/bar references/Style=Ticker Lg.svg', 'assets/bar references/Style=Lines Md.svg', 'assets/bar references/Style=Point Connect 2.svg']
-];
+const marqueeCatalog = typeof module !== 'undefined' && module.exports
+  ? require('./utils/marqueeCatalog').entries : window.MarqueeCatalog.entries;
+// A coprime stride distributes every family through short repeating lanes.
+// Seven slots per row keep both wrapping DOM and image decoding bounded.
+const rowPatterns = Array.from({ length: ROW_COUNT }, (_, row) =>
+  Array.from({ length: 7 }, (_, slot) => marqueeCatalog[(row * 7 + slot * 5) % marqueeCatalog.length].path));
 
-function toAssetUrl(path) {
-  return encodeURI(path);
-}
+function toAssetUrl(path) { return encodeURI(path); }
 
 function getMarqueeBarStyle(path) {
+  const entry = marqueeCatalog.find(item => item.path === path);
+  if (entry) return entry;
+  // Historical reference filenames remain recognized by external consumers.
   const name = String(path || '').split('/').pop() || '';
-  if (name.startsWith('Style=Triangle Grid')) return { value: 'triangle-grid', label: 'Triangle Grid' };
-  if (name.startsWith('Style=Point Connect')) return { value: 'point-connect', label: 'Point Connect' };
-  if (name.startsWith('Style=Ruler')) return { value: 'ruler', label: 'Ruler' };
-  if (name.startsWith('Style=Ticker')) return { value: 'ticker', label: 'Ticker' };
-  if (name.startsWith('Style=Grid')) return { value: 'grid', label: 'Grid' };
-  if (name.startsWith('Style=Lines')) return { value: 'lines', label: 'Lines' };
-  return { value: 'solid', label: 'Solid' };
+  const legacy = [['Triangle Grid', 'triangle-grid'], ['Point Connect', 'point-connect'],
+    ['Ruler', 'ruler'], ['Ticker', 'ticker'], ['Grid', 'grid'], ['Lines', 'lines']];
+  const match = legacy.find(([prefix]) => name.startsWith(`Style=${prefix}`));
+  return marqueeCatalog.find(item => item.value === (match ? match[1] : 'solid'));
 }
 
 function getGeneratorHref(style = 'solid') {
@@ -204,6 +196,7 @@ function createAssetElement(path) {
   asset.className = 'bar_asset_wrap';
   asset.style.setProperty('--asset-width', 'var(--marquee-asset-width)');
   asset.href = getGeneratorHref(style.value);
+  asset.dataset.barStyle = style.value;
   asset.setAttribute('aria-label', `Open ${style.label} in the generator`);
   asset.tabIndex = -1;
   asset.setAttribute('aria-hidden', 'true');

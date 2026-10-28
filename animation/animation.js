@@ -20,7 +20,9 @@ function readRuntimeConfig() {
   const config = {
     isOverlay: params.get('overlay') === '1',
     barSvg: '',
-    finalLogoSvg: ''
+    finalLogoSvg: '',
+    foreground: '',
+    colorMode: ''
   };
 
   if (!stateKey || !window.sessionStorage) {
@@ -36,6 +38,8 @@ function readRuntimeConfig() {
     const parsedState = JSON.parse(rawState);
     config.barSvg = typeof parsedState.barSvg === 'string' ? parsedState.barSvg : '';
     config.finalLogoSvg = typeof parsedState.finalLogoSvg === 'string' ? parsedState.finalLogoSvg : '';
+    config.foreground = typeof parsedState.foreground === 'string' ? parsedState.foreground : '';
+    config.colorMode = typeof parsedState.colorMode === 'string' ? parsedState.colorMode : '';
   } catch (error) {
     return config;
   }
@@ -44,6 +48,10 @@ function readRuntimeConfig() {
 }
 
 const runtimeConfig = readRuntimeConfig();
+const animationPalette = AnimationPalette.resolve(runtimeConfig);
+document.documentElement.style.setProperty('--animation-ink', animationPalette.ink);
+document.documentElement.style.setProperty('--animation-background', animationPalette.background);
+document.documentElement.style.colorScheme = animationPalette.background === '#ffffff' ? 'light' : 'dark';
 
 if (runtimeConfig.isOverlay && document.body && document.body.classList) {
   document.body.classList.add('is-overlay');
@@ -52,7 +60,7 @@ if (runtimeConfig.isOverlay && document.body && document.body.classList) {
 const TEXT_BLOCK = `
 /dream BUILDING THE NEW THROUGH PRECISE ITERATION AND CODE.
 /dream WHAT IF WE TRIED THIS AGAIN WITH MORE RIGOR.
-/dream RPI LOGO GENERATOR INITIALIZING IN RED PIXEL SPACE.
+/dream RPI LOGO GENERATOR INITIALIZING IN PIXEL SPACE.
 /dream TROY COORDINATES TOLERANCES LAB NOTES AND SYSTEMS.
 /dream TEST BREAK REBUILD REPEAT UNTIL THE SHAPE HOLDS.
 /dream MEASUREMENT DATA MOTION BAR SIGNAL AND STRUCTURE.

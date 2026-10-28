@@ -51,7 +51,7 @@ async function main() {
         const paused = await phase(); await frames(page); assert.equal(await phase(), paused);
         cases++;
       }
-      await page.locator('#header-logo-preview').click();
+      await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
       if (reduce) {
         const play = page.getByRole('button', { name: 'Play animation once' });
         await play.waitFor();
@@ -75,9 +75,9 @@ async function main() {
       assert.notEqual(await projection.textContent(), content, 'ASCII projection must actually animate');
       await page.keyboard.press('Escape');
       await page.locator('.logo_animation_overlay').waitFor({ state: 'hidden' });
-      assert.equal(await page.locator('#header-logo-preview').evaluate(el => el === document.activeElement), true);
+      assert.equal(await page.locator('#brand-title').evaluate(el => el === document.activeElement), true);
       if (reduce) {
-        await page.locator('#header-logo-preview').click();
+        await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
         await page.getByRole('button', { name: 'Play animation once' }).waitFor();
         assert.equal(await page.locator('.logo_animation_frame').count(), 0, 'one-run consent must reset');
         await page.keyboard.press('Escape');
@@ -114,7 +114,7 @@ async function main() {
     const embedded = host.frameLocator('iframe[title="Embedded generator"]');
     await embedded.locator('#p5-container canvas').waitFor();
     assert.equal(await embedded.locator('#ruler-motion-toggle').isChecked(), false);
-    await embedded.locator('#header-logo-preview').click();
+    await embedded.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
     await embedded.getByRole('button', { name: 'Play animation once' }).click();
     const ascii = embedded.frameLocator('.logo_animation_frame').locator('#animation-projection');
     await ascii.filter({ hasText: /\S/ }).waitFor();

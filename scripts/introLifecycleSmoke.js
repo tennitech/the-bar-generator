@@ -32,7 +32,7 @@ async function main(){
    return{frames,hidden:o.hidden,focus:document.activeElement.id,bodyFlag:document.body.classList.contains('has-logo-animation')};
   });
   if(evidence)await fs.writeFile(path.join(evidence,`${engine}-intro-timing-${touch?'phone':'desktop'}.json`),JSON.stringify({entrance,exit},null,2));
-  assert.equal(exit.hidden,true);assert.equal(exit.focus,'header-logo-preview');assert.equal(exit.bodyFlag,false);
+  assert.equal(exit.hidden,true);assert.equal(exit.focus,'brand-title');assert.equal(exit.bodyFlag,false);
   assert.ok(exit.frames.some(f=>f.chrome>0.05&&f.chrome<0.95));
   exit.frames.forEach(f=>{assert.equal(f.disabled,true);assert.equal(f.inert,true);assert.ok(Math.abs(f.chrome-f.background)<0.035);assert.ok(Math.abs(f.chrome-f.stage)<0.02)});
   await page.evaluate(async()=>{const c=await ensureHeaderLogoAnimationController();for(let i=0;i<8;i++){await c.open();c.close();}await c.open();});

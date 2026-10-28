@@ -1508,7 +1508,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: currentColor;
+  color: var(--header-artwork-ink, currentColor);
+  text-decoration: none;
   overflow: visible;
 }
 
@@ -1516,8 +1517,9 @@ body {
   cursor: pointer;
 }
 
-.brand-mark.brand-mark-clickable:focus-visible {
-  outline: none;
+.brand-mark:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
   box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 24%, transparent), 0 0 0 4px color-mix(in srgb, currentColor 12%, transparent);
 }
 
@@ -1614,17 +1616,17 @@ body.has-logo-animation {
   position: fixed;
   inset: 0;
   z-index: 160;
-  background: rgba(0, 0, 0, 0);
+  background: rgba(var(--intro-background-rgb, 0, 0, 0), 0);
   display: block;
   transition: background-color var(--intro-duration) var(--intro-ease);
 }
 
 .logo_animation_overlay.is-open {
-  background: rgba(0, 0, 0, 0.96);
+  background: var(--intro-background, #000000);
 }
 
 .logo_animation_overlay.is-closing {
-  background: rgba(0, 0, 0, 0);
+  background: rgba(var(--intro-background-rgb, 0, 0, 0), 0);
   --intro-duration: var(--intro-exit-duration);
   --intro-ease: var(--intro-exit-ease);
 }
@@ -1704,9 +1706,11 @@ body.has-logo-animation {
   max-height: 80vh;
   overflow: auto;
   padding: clamp(2rem, 5vw, 5rem);
-  color: var(--text-primary);
-  background: var(--bg-canvas);
+  color: var(--intro-text, #ffffff);
+  background: var(--intro-background, #000000);
 }
+
+.logo_animation_static-artwork { color: var(--intro-ink, #d6001c); }
 
 .logo_animation_motion-note {
   margin: 1.5rem 0 0.75rem;
@@ -1719,8 +1723,8 @@ body.has-logo-animation {
   padding: 0.625rem 1rem;
   border: 1px solid currentColor;
   border-radius: var(--control-radius);
-  background: var(--bg-canvas);
-  color: var(--text-primary);
+  background: var(--intro-background, #000000);
+  color: var(--intro-text, #ffffff);
   font: inherit;
   cursor: pointer;
 }
@@ -4084,3 +4088,13 @@ body { min-height: 0; }
 .neural_model-details summary { cursor: pointer; padding-block: 0.5rem; }
 .neural_model-details a { color: inherit; text-underline-offset: 0.2em; }
 #neural-network-group .control-hint { font-size: 0.75rem; line-height: 1.5; font-style: normal; }
+
+/* Artwork ink is independent of the softer interface text neutrals. */
+:is(html, body).theme-black,
+:is(html, body).theme-gold,
+:is(html, body).theme-silver,
+:is(html, body).theme-gray { --header-artwork-ink: var(--rpi-black); }
+:is(html, body).theme-white,
+:is(html, body).theme-red { --header-artwork-ink: var(--rpi-white); }
+:is(html, body).theme-lunar { --header-artwork-ink: #f4f7fb; }
+#brand-title { touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }

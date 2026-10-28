@@ -39,7 +39,7 @@
     const visibleSurface = sidebar && touchLayout.matches && sidebar.classList.contains('active')
       ? sidebar : (touchLayout.matches ? (canvasSurface || body) : body);
     const background = body.classList.contains('has-logo-animation')
-      ? 'rgb(0, 0, 0)'
+      ? (document.getElementById('logo-animation-overlay')?.style.getPropertyValue('--intro-background') || '#000000')
       : getComputedStyle(visibleSurface).backgroundColor;
     const channels = background.match(/[\d.]+/g);
     const dark = channels && channels.length >= 3

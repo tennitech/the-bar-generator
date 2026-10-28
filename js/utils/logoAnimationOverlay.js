@@ -1,6 +1,7 @@
 (function (root, factory) {
   const registry = typeof module === 'object' && module.exports ? require('./featherIcons') : root.FeatherIcons;
-  const api = factory(registry);
+  const palette = typeof module === 'object' && module.exports ? require('./animationPalette') : root.AnimationPalette;
+  const api = factory(registry, palette);
 
   if (typeof module === 'object' && module.exports) {
     module.exports = api;
@@ -9,7 +10,7 @@
   if (root) {
     root.LogoAnimationOverlay = api;
   }
-}(typeof globalThis !== 'undefined' ? globalThis : this, function (registry) {
+}(typeof globalThis !== 'undefined' ? globalThis : this, function (registry, palette) {
   const OVERLAY_ID = 'logo-animation-overlay';
   const TITLE_ID = 'logo-animation-title';
   const STAGE_ID = 'logo-animation-stage';
@@ -230,7 +231,8 @@
       parts.overlayEl.classList.remove('is-closing');
       setBackgroundInert(false);
       documentRef.body.classList.remove('has-logo-animation');
-      if (triggerEl.isConnected !== false && triggerEl.focus) triggerEl.focus();
+      const returnTarget = typeof options.getReturnFocus === 'function' ? options.getReturnFocus() : triggerEl;
+      if (returnTarget && returnTarget.isConnected !== false && returnTarget.focus) returnTarget.focus();
     }
 
     function schedule(callback, delay = 0) {
@@ -368,15 +370,8 @@
           return;
         }
 
-        if (event
-          && event.origin
-          && windowRef
-          && windowRef.location
-          && event.origin !== windowRef.location.origin) {
-          return;
-        }
-
-        if (event && event.source && event.source !== frameEl.contentWindow) return;
+        if (!event || !windowRef.location || event.origin !== windowRef.location.origin
+          || event.source !== frameEl.contentWindow || !frameEl.contentWindow) return;
         const data = event ? event.data : null;
         if (data && data.type === 'rpi-logo-animation-close') {
           close();
@@ -448,10 +443,15 @@
     function mountFrame(allowMotion = false) {
       const parts = ensureOverlayParts();
       destroyFrame();
+      const state = getAnimationState ? getAnimationState() : null;
+      const colors = palette.resolve(state || {});
+      parts.overlayEl.style.setProperty('--intro-background', colors.background);
+      parts.overlayEl.style.setProperty('--intro-background-rgb', colors.backgroundRGB);
+      parts.overlayEl.style.setProperty('--intro-ink', colors.ink);
+      parts.overlayEl.style.setProperty('--intro-text', colors.text);
       const reducedMotion = !!(windowRef && windowRef.matchMedia
         && windowRef.matchMedia('(prefers-reduced-motion: reduce)').matches);
       if (reducedMotion && !allowMotion) {
-        const state = getAnimationState ? getAnimationState() : null;
         frameEl = documentRef.createElement('div');
         frameEl.className = 'logo_animation_static';
         const artwork = documentRef.createElement('div');
@@ -490,7 +490,7 @@
       const parts = ensureOverlayParts();
       isOpen = nextIsOpen;
       parts.overlayEl.setAttribute('aria-hidden', 'false');
-      triggerEl.setAttribute('aria-expanded', String(nextIsOpen));
+      if (options.exposeTriggerState !== false) triggerEl.setAttribute('aria-expanded', String(nextIsOpen));
 
       if (parts.overlayEl.classList && typeof parts.overlayEl.classList.toggle === 'function') {
         parts.overlayEl.classList.toggle('is-closing', !nextIsOpen);

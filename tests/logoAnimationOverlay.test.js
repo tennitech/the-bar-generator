@@ -46,7 +46,8 @@ function createMockElement() {
     dataset: {},
     attributes: {},
     classList: createClassList(),
-    style: {},
+    style: { setProperty(name, value) { this[name] = value; } },
+    contentWindow: {},
     focus: jest.fn(),
     remove: jest.fn(),
     addEventListener(type, handler) {
@@ -116,6 +117,7 @@ function createMockWindow() {
   return {
     setTimeout,
     clearTimeout,
+    location: { origin: 'https://example.test' },
     sessionStorage: {
       setItem: jest.fn((key, value) => {
         storage.set(key, value);
@@ -372,6 +374,7 @@ describe('logo animation overlay controller', () => {
 
     await controller.open();
     windowRef.dispatch('message', {
+      origin: windowRef.location.origin, source: controller.getFrame().contentWindow,
       data: { type: 'rpi-logo-animation-complete' }
     });
 

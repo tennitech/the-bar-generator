@@ -16,6 +16,18 @@ See [combined QA and limits](circle_controls_integration_qa.md). This batch is
 local and ready for release coordination; it has not been pushed, merged or
 deployed. Shared main and all source branches remain preserved.
 
+## Marquee and Home checkpoint — October 28, 2026
+
+A separate WIP branch adds all 21 current bar families as captured shared-renderer
+SVG stills, exact-black splash and header ink, native Home navigation, a deliberate
+hidden title/keyboard secret, and selected-color ASCII with a white backdrop for
+black artwork. It is based on published PR #57 `f8ad484`; no release is included.
+All 356 unit tests in 37 suites pass. Browser/visual/color verification remains
+incomplete after a local transport interruption and cloud-continuation checkpoint.
+See [saved scope, exact trigger, evidence and remaining QA](marquee_home_handoff.md).
+Existing asset permission, gradient/artwork and institutional approval questions
+remain open. The new derived samples add no external artwork or font.
+
 ## 1. Project Overview
 A web-based **Design Tool** intended for RPI's central Brand Hub. It lets students and faculty explore RPI bar patterns using configured brand assets and geometry. Secondary colors and proposed club or mission lockups still need owner approval before being described as brand-compliant.
 

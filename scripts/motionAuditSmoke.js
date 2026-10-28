@@ -32,7 +32,7 @@ const settle = page => page.evaluate(() => new Promise(resolve => requestAnimati
     }), 0);
 
     // Replacing a focused still-view control must retain dialog focus.
-    await page.locator('#header-logo-preview').tap();
+    await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
     const play = page.getByRole('button', { name: 'Play animation once' });
     await play.waitFor();
     await play.focus();
@@ -61,12 +61,12 @@ const settle = page => page.evaluate(() => new Promise(resolve => requestAnimati
     assert.equal(await page.evaluate(() => liveMotionPhase), heldPhase);
     await page.locator('.logo_animation_overlay').waitFor({ state: 'hidden' });
     assert.equal(await page.evaluate(() => window.__auditCompletions), 1);
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'header-logo-preview');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'brand-title');
     assert.equal(await page.isChecked('#ruler-motion-toggle'), false, 'explicit intro playback must not enable bar loops');
     await page.waitForTimeout(150);
     assert.equal(await page.locator('.logo_animation_frame').count(), 0);
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.locator('#header-logo-preview').tap();
+    await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
     await play.waitFor();
     assert.equal(await page.locator('.logo_animation_frame').count(), 0);
     await page.keyboard.press('Escape');
@@ -79,14 +79,14 @@ const settle = page => page.evaluate(() => new Promise(resolve => requestAnimati
     await normal.goto(`${base}/generator/ruler/`);
     await normal.waitForFunction(() => window.barShareController && !window.PageEntrance?.isActive?.());
     assert.equal(await normal.isChecked('#ruler-motion-toggle'), true);
-    await normal.locator('#header-logo-preview').click();
+    await normal.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
     await normal.locator('.logo_animation_frame').waitFor();
     await normal.locator('.logo_animation_overlay').waitFor({ state: 'hidden' });
     assert.equal(await normal.isChecked('#ruler-motion-toggle'), true);
     const resumed = await normal.evaluate(() => liveMotionPhase);
     await settle(normal);
     await normal.waitForFunction(value => liveMotionPhase !== value, resumed);
-    assert.equal(await normal.evaluate(() => document.activeElement.id), 'header-logo-preview');
+    assert.equal(await normal.evaluate(() => document.activeElement.id), 'brand-title');
     results.push({ normalAutoplayAndCompletion: true, normalLoopResume: true });
     await normal.close();
     // Decorative landing motion follows the same OS preference without an override.

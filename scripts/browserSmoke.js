@@ -109,7 +109,7 @@ async function main() {
 
     const reduced = await browser.newPage({ reducedMotion: 'reduce' });
     await openGenerator(reduced, 'ruler');
-    await reduced.locator('#header-logo-preview').click();
+    await reduced.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
     await reduced.locator('.logo_animation_static svg').waitFor({ timeout: 15000 });
     assert.equal(await reduced.locator('.logo_animation_frame').count(), 0);
     await reduced.close();

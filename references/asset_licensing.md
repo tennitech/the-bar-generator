@@ -65,3 +65,13 @@ captures and an actual-size sheet generated from the new original mathematical
 primitives. No external image, replacement identity asset or font is added.
 Existing identity/font permissions and RPI approval questions remain unchanged.
 See the validation record in that directory for capture conditions.
+
+## Marquee samples — October 28, 2026
+
+`assets/images/marquee-bars/` contains captured SVG stills from this repository's
+shared generator preview/export functions. `scripts/generateMarqueeAssets.js`
+records the reproducible capture route, fixed seed and motion/source-color setup.
+No external artwork, identity replacement or font was added. Artemis reuses the
+existing supplied white-source asset; its unresolved rights/approval questions
+remain. These captures do not establish formal approval of existing gradient,
+club or mission treatments. See `marquee_home_handoff.md` for checkpoint limits.

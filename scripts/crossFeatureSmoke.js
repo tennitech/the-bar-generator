@@ -49,7 +49,7 @@ async function artifact(page, kind) {
     assert.equal(await quantum.locator('.select_style-preview svg').count(), 1);
     assert.ok(await page.locator('#style-select-options [data-value="neural-network"] .select_style-preview circle').count() > 0);
     await page.keyboard.press('Escape');
-    await page.locator('#header-logo-preview').click();
+    await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
     await page.getByRole('button', { name: 'Play animation once' }).click();
     await page.frameLocator('.logo_animation_frame').locator('#animation-projection').filter({ hasText: /\S/ }).waitFor();
     await page.evaluate(() => { window.__crossFrame = document.querySelector('.logo_animation_frame'); });

@@ -90,7 +90,7 @@ async function main() {
         return kept;
       });
       assert.equal(hiddenPhaseKept, true, `${style}: hidden preview advanced`);
-      await page.locator('#header-logo-preview').click();
+      await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
       await page.locator('.logo_animation_overlay.is-open').waitFor();
       const overlayPhaseKept = await page.evaluate(async () => {
         const phase = liveMotionPhase;

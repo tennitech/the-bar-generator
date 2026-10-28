@@ -80,7 +80,7 @@ const evidence = process.env.RPI_ICON_EVIDENCE;
       await page.evaluate(() => { document.querySelectorAll('.toast').forEach(toast => toast.remove()); Toast.show('Success state', 'success'); Toast.show('Error state', 'error'); Toast.show('Information state', 'info'); });
       assert.equal(await page.locator('.toast_icon[aria-hidden="true"][focusable="false"]').count(), 3);
       if (evidence) await page.screenshot({ path: path.join(evidence, `${engine}-${viewport.width}-toast-states.png`) });
-      await page.locator('#header-logo-preview').click();
+      await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
       await page.locator('#logo-animation-close').waitFor({ state: 'visible' });
       for (const id of ['logo-animation-close', 'logo-animation-replay']) {
         assert.ok(await page.locator(`#${id}`).getAttribute('aria-label'));

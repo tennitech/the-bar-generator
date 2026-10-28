@@ -4438,7 +4438,8 @@ function buildHeaderLogoAnimationState() {
     barSvg: buildCurrentBarOnlySVG(),
     finalLogoSvg: buildHeaderPreviewSVG(),
     style: normalizeStyleValue(styleSelect ? styleSelect.value : 'solid'),
-    colorMode: currentColorMode
+    colorMode: currentColorMode,
+    foreground: colors[currentColorMode].fg
   };
 }
 
@@ -4577,7 +4578,7 @@ async function ensureHeaderLogoAnimationController() {
   }
 
   headerLogoAnimationControllerPromise = (async () => {
-    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261028-circle-controls-integration');
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261028-marquee-home-secret');
 
     if (!window.LogoAnimationOverlay
       || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {
@@ -4585,7 +4586,9 @@ async function ensureHeaderLogoAnimationController() {
     }
 
     return window.LogoAnimationOverlay.createLogoAnimationController({
-      triggerEl: headerLogoPreview,
+      triggerEl: document.getElementById('brand-title'),
+      exposeTriggerState: false,
+      getReturnFocus: () => headerLogoAnimationReturnFocus || document.getElementById('brand-title'),
       documentRef: document,
       windowRef: window,
       loadScript: loadExternalScriptOnce,
@@ -4596,7 +4599,13 @@ async function ensureHeaderLogoAnimationController() {
   return headerLogoAnimationControllerPromise;
 }
 
+let headerLogoAnimationReturnFocus = null;
+
 async function openHeaderLogoAnimation() {
+  if (!document.body.classList.contains('has-logo-animation')) {
+    headerLogoAnimationReturnFocus = document.activeElement && document.activeElement !== document.body
+      ? document.activeElement : document.getElementById('brand-title');
+  }
   if (window.ThemeMotion) window.ThemeMotion.cancel();
   if (headerLogoAnimationLoadPromise) {
     return headerLogoAnimationLoadPromise;
@@ -4624,35 +4633,8 @@ async function openHeaderLogoAnimation() {
 }
 
 function setupHeaderLogoAnimationTrigger() {
-  if (!headerLogoPreview || headerLogoPreview.dataset.animationTriggerReady === 'true') {
-    return;
-  }
-
-  headerLogoPreview.dataset.animationTriggerReady = 'true';
-  headerLogoPreview.classList.add('brand-mark-clickable');
-  headerLogoPreview.setAttribute('role', 'button');
-  headerLogoPreview.setAttribute('tabindex', '0');
-  if (typeof headerLogoPreview.removeAttribute === 'function') {
-    headerLogoPreview.removeAttribute('aria-hidden');
-  } else {
-    headerLogoPreview.setAttribute('aria-hidden', 'false');
-  }
-  headerLogoPreview.setAttribute('aria-label', 'Play full-screen animation');
-  headerLogoPreview.setAttribute('aria-haspopup', 'dialog');
-  headerLogoPreview.setAttribute('aria-expanded', 'false');
-
-  headerLogoPreview.addEventListener('click', () => {
-    void openHeaderLogoAnimation();
-  });
-
-  headerLogoPreview.addEventListener('keydown', (event) => {
-    if (event.key !== 'Enter' && event.key !== ' ') {
-      return;
-    }
-
-    event.preventDefault();
-    void openHeaderLogoAnimation();
-  });
+  window.SecretIntro?.bind({ target: document.getElementById('brand-title'),
+    open: openHeaderLogoAnimation });
 }
 
 function requestUpdate() {

@@ -29,7 +29,7 @@ async function main() {
       const activate = selector => mode === 'desktop' ? page.locator(selector).click() : page.locator(selector).tap();
       const shot = async name => { if (evidence) await page.screenshot({ path: path.join(evidence, `${engine}-${mode}-${name}.png`), fullPage: mode === 'desktop', scale: 'css' }); };
       await shot('before');
-      await activate('#header-logo-preview');
+      await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
       await page.locator('#logo-animation-close').waitFor();
       const measure = () => page.evaluate(() => {
         const rect = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { x:r.x, y:r.y, width:r.width, height:r.height, bottom:r.bottom }; };
@@ -66,7 +66,7 @@ async function main() {
       await page.locator('.logo_animation_frame').focus();
       await page.keyboard.press('Escape');
       await page.waitForFunction(() => document.querySelector('#logo-animation-overlay').hidden);
-      assert.equal(await page.evaluate(() => document.activeElement.id), 'header-logo-preview');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'brand-title');
       assert.equal(await page.evaluate(() => document.querySelector('.app-header').inert), false);
       await page.setViewportSize(mode === 'desktop' ? { width:1440,height:900 } : mode === 'phone' ? { width:390,height:664 } : { width:844,height:290 });
       await page.waitForTimeout(300);
@@ -93,7 +93,7 @@ async function main() {
       await page.waitForFunction(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
       await page.evaluate(() => { const s=document.querySelector('#color-mode-select');s.value='black';s.dispatchEvent(new Event('change')); });
       assert.equal(await page.locator('.theme_scan').count(), 0);
-      await activate('#header-logo-preview');
+      await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
       await page.locator('.logo_animation_static').waitFor();
       assert.equal(await page.locator('#logo-animation-replay').isVisible(), false);
       await page.keyboard.press('Tab');
@@ -101,7 +101,7 @@ async function main() {
       await page.keyboard.press('Escape');
       await page.waitForFunction(() => !document.body.classList.contains('has-logo-animation'));
       await page.emulateMedia({ reducedMotion:'no-preference' });
-      await activate('#header-logo-preview');
+      await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
       await page.locator('.logo_animation_frame').waitFor();
       await page.emulateMedia({ reducedMotion:'reduce' });
       await page.waitForFunction(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -125,7 +125,7 @@ async function main() {
         slot.className='header_icon-button';slot.setAttribute('aria-label','Share placeholder');
         slot.textContent='Share';document.querySelector('#mobile-menu-toggle').before(slot);
       });
-      await activate('#header-logo-preview');
+      await page.evaluate(() => { document.getElementById('brand-title').focus(); return openHeaderLogoAnimation(); });
       await page.locator('#logo-animation-close').waitFor();
       const withShare = await measure();
       assert.deepEqual(withShare.replay, withShare.github);

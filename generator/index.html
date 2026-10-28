@@ -10,25 +10,25 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261028-circle-controls-integration" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261028-marquee-home-secret" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261027-print-pass" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261027-print-pass"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261028-circle-controls-integration"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261028-marquee-home-secret"></script>
   <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
   <script src="js/utils/selectorPreviews.js?v=20261028-selector-previews"></script>
-  <script src="js/utils/customDropdowns.js?v=20261028-circle-controls-integration"></script>
+  <script src="js/utils/customDropdowns.js?v=20261028-marquee-home-secret"></script>
   <script src="js/utils/parameterControls.js?v=20261027-print-pass"></script>
   <script src="js/utils/loopingGif.js?v=20261027-motion-polish"></script>
   <script src="js/utils/featherIcons.js?v=20261027-integration-final"></script>
-  <script src="js/utils/numericControls.js?v=20261028-circle-controls-integration"></script>
-  <script src="js/utils/shareState.js?v=20261028-circle-controls-integration"></script>
+  <script src="js/utils/numericControls.js?v=20261028-marquee-home-secret"></script>
+  <script src="js/utils/shareState.js?v=20261028-marquee-home-secret"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/barPattern.js?v=20261028-circle-controls-integration"></script>
+  <script src="js/utils/barPattern.js?v=20261028-marquee-home-secret"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20260930-audit-fixes"></script>
   <script src="js/utils/quantumModel.js"></script>
-  <script src="js/utils/generatorParameters.js?v=20261028-circle-controls-integration"></script>
-  <script src="js/utils/generatorInitialState.js?v=20261028-circle-controls-integration"></script>
+  <script src="js/utils/generatorParameters.js?v=20261028-marquee-home-secret"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261028-marquee-home-secret"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
 </head>
@@ -38,9 +38,9 @@
   <!-- App Header -->
   <header class="app-header" data-page-entrance>
     <div class="header-brand">
-      <div id="header-logo-preview" class="brand-mark" aria-hidden="true"><span class="brand_initial-mark"></span></div>
+      <a id="header-logo-preview" class="brand-mark" href="./" aria-label="RPI — Home"><span class="brand_initial-mark" aria-hidden="true"></span></a>
       <span class="brand-divider">|</span>
-      <span class="brand-title">THE BAR GENERATOR</span>
+      <span id="brand-title" class="brand-title" tabindex="-1">THE BAR GENERATOR</span>
     </div>
     <section id="lunar-splashdown-counter" class="lunar_counter" aria-label="Time since Artemis II splashdown">
       <button id="lunar-counter-detail-toggle" class="lunar_counter-toggle" type="button" aria-expanded="false"
@@ -958,11 +958,13 @@
   <script src="js/utils/exportOptions.js?v=20261028-selector-previews"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/exportUi.js?v=20261027-native-svg"></script>
-  <script src="js/utils/barInformation.js?v=20261028-circle-controls-integration"></script>
+  <script src="js/utils/barInformation.js?v=20261028-marquee-home-secret"></script>
   <script>BarInformation.sync();</script>
-  <script src="js/main.js?v=20261028-circle-controls-integration"></script>
+  <script src="js/utils/animationPalette.js?v=20261028-marquee-home-secret"></script>
+  <script src="js/utils/secretIntro.js?v=20261028-marquee-home-secret"></script>
+  <script src="js/main.js?v=20261028-marquee-home-secret"></script>
   <script src="js/utils/logoClipboard.js?v=20261027-native-svg"></script>
-  <script src="js/drawing.js?v=20261028-circle-controls-integration"></script>
+  <script src="js/drawing.js?v=20261028-marquee-home-secret"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =
