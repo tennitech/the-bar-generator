@@ -589,6 +589,11 @@ Verification: 299 unit tests in 30 suites; full Chromium and WebKit browser smok
 - Triangles now expose direction and count only. Old variant-2 query/share state migrates to the opposite direction to preserve the image; new captures, canonical URLs and filenames omit variant. Low-level historical complementary geometry is retained. Reset/Randomize cover the remaining controls.
 - Validation: 305 unit tests; selector, touch, legacy-link and SVG/PNG checks plus integrated triangle/header/raster/share comparisons in Chromium and WebKit. Browser evidence does not establish formal brand approval or physical Safari/device accessibility validation.
 
+### October 28 follow-up variant audit
+
+- Audited all 24 style entries after PR #42. No additional generic Variant control coexists with another style-specific design parameter. Circles Gradient, Gradient, Grid, Lines, Point Connect, and Triangle Grid each retain Variant as their only design control. Triangles already has the redundant control removed.
+- Recorded the complete inventory and decision rule in [variant control audit](variant_control_audit.md). Runtime, geometry, queries, shared-state compatibility, exports and existing artwork are unchanged. Global color/export/view settings and Reset/Randomize actions do not count as extra design parameters.
+
 ## 6. Design Decisions
 *   **Profanity Filter:** Implemented client-side for immediate feedback and user privacy. Unicode folding and a documented list improve coverage, but this is best-effort moderation rather than a guarantee.
 *   **Renderer Dependency:** An unchanged, licensed p5.js 1.7.0 build is served locally so generator boot is independent of cdnjs.
