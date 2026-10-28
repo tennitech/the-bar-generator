@@ -1308,10 +1308,14 @@ function createNumericTexture(digits) {
 // header, and PNG variants identical without duplicating every pattern renderer.
 const canonicalBarImages = new Map();
 const readyCanonicalBarImages = new Map();
-function getCanonicalBarImage(pixelWidth = 1000) {
+function getCanonicalBarImage(pixelWidth = 1000, maxPixelWidth = Infinity) {
   // 250:18 simplifies to125:9. Integer raster dimensions prevent SVG engines
   // from letterboxing a fractional intrinsic height (visible in WebKit at zoom).
-  pixelWidth = Math.ceil(Math.max(1000, pixelWidth) / 125) * 125;
+  const requestedWidth = Math.ceil(Math.max(1000, pixelWidth) / 125) * 125;
+  // Round the hardware limit DOWN to preserve the exact 125:9 raster ratio.
+  // Oversized WebGL uploads fail and sample as an opaque black rectangle.
+  const boundedWidth = Math.floor(maxPixelWidth / 125) * 125;
+  pixelWidth = Math.min(requestedWidth, boundedWidth);
   const fgColor = colors[currentColorMode] ? colors[currentColorMode].fg : '#000000';
   const markup = buildCurrentBarPatternSVGFragment({ barStartX: 0, barY: 0,
     exactBarWidth: REFERENCE_WIDTH, barHeight: REFERENCE_BAR_HEIGHT, fgColor });
@@ -1340,9 +1344,12 @@ function drawCanonicalBarPattern(target, x, y, width, height) {
   const pixelWidth = target === window
     ? REFERENCE_WIDTH * getRenderedResponsiveLogoScale() * zoomLevel * (window.devicePixelRatio || 1)
     : 1000;
-  const entry = getCanonicalBarImage(pixelWidth);
-  // Keep the same pattern visible while a sharper zoom snapshot is decoding.
-  const image = entry.image || readyCanonicalBarImages.get(entry.markup);
+  const gl = target._renderer && target._renderer.GL;
+  const maxPixelWidth = gl ? gl.getParameter(gl.MAX_TEXTURE_SIZE) : Infinity;
+  const entry = getCanonicalBarImage(pixelWidth, maxPixelWidth);
+  // A cached export/previous renderer snapshot may exceed this renderer's limit.
+  const previous = readyCanonicalBarImages.get(entry.markup);
+  const image = entry.image || (previous && previous.width <= maxPixelWidth ? previous : null);
   if (!image) return;
   target.push();
   target.imageMode(CORNER);
