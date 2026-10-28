@@ -3376,6 +3376,29 @@ body.theme-lunar .lunar_counter {
   background: color-mix(in srgb, var(--menu-surface) 90%, var(--bg-app) 10%);
 }
 
+/* Section bounds let the following section heading push the sticky one away. */
+.select_grouped {
+  --dropdown-group-height: 1.75rem;
+}
+.select_grouped .custom-select-options-scroll {
+  scroll-padding-top: var(--dropdown-group-height);
+}
+
+.select_grouped .select_option-group > .custom-option-group-label {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  min-height: var(--dropdown-group-height);
+  box-sizing: border-box;
+  background: var(--menu-surface);
+  opacity: 1;
+}
+
+/* The opaque heading supplies the upper edge; a fade would obscure its text. */
+.select_grouped .custom-select-scroll-fade-top {
+  display: none;
+}
+
 .save-option:hover {
   background: var(--menu-option-hover-bg);
 }
