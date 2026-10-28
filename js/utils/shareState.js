@@ -31,6 +31,15 @@
     const sourceControls = scope.loopingGifUtils && typeof scope.loopingGifUtils.normalizeMotionSpeedControls === 'function'
       ? scope.loopingGifUtils.normalizeMotionSpeedControls(value.controls)
       : { ...value.controls };
+    if (scope.NumericControls && manifest['numeric-source-select']) {
+      if (!Object.hasOwn(sourceControls, 'numeric-source-select')) {
+        const migrated = scope.NumericControls.migrate(sourceControls['numeric-input']);
+        sourceControls['numeric-source-select'] = migrated.numericSource;
+        sourceControls['numeric-formula-select'] = migrated.numericFormula;
+        sourceControls['numeric-input'] = migrated.numericValue;
+      }
+      if (sourceControls['numeric-input'] !== undefined && !scope.NumericControls.isDraft(sourceControls['numeric-input'])) throw new Error('This share link has an invalid numeric value.');
+    }
     const triangleDirectionId = 'triangles-direction-select';
     const triangleDirections = manifest[triangleDirectionId] && manifest[triangleDirectionId].options;
     if (triangleDirections && triangleDirections.includes('up-left')) {

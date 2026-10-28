@@ -64,7 +64,7 @@ function setupCustomDropdowns() {
     function preparePreviews() {
       if (previewsReady || !window.SelectorPreviews || typeof window.generateStaticPackedCircles !== 'function') return;
       Array.from(select.options).forEach(option => {
-        const row = Array.from(optionsViewport.children).find(row => row.dataset.value === option.value);
+        const row = Array.from(optionsViewport.querySelectorAll('.custom-option')).find(row => row.dataset.value === option.value);
         if (row) window.SelectorPreviews.decorate(row, select, option);
       });
       previewsReady = true;
@@ -84,7 +84,7 @@ function setupCustomDropdowns() {
       updateScrollFades();
     }
     let optionIndex = 0;
-    const appendCustomOption = (option) => {
+    const appendCustomOption = (option, parent = optionsViewport) => {
       const customOption = document.createElement('div');
       customOption.className = 'custom-option';
       customOption.id = `${select.id}-option-${optionIndex++}`;
@@ -127,7 +127,7 @@ function setupCustomDropdowns() {
         commitOption(customOption);
       });
 
-      optionsViewport.appendChild(customOption);
+      parent.appendChild(customOption);
     };
 
     // Populate options, preserving optgroup headings where present.
@@ -136,9 +136,17 @@ function setupCustomDropdowns() {
         const groupLabel = document.createElement('div');
         groupLabel.className = 'custom-option-group-label';
         groupLabel.textContent = child.label;
-        optionsViewport.appendChild(groupLabel);
+        // Section bounds let the next heading naturally push this one away.
+        optionsList.classList.add('select_grouped');
+        const group = document.createElement('div');
+        group.className = 'select_option-group';
+        group.setAttribute('role', 'group');
+        groupLabel.id = `${select.id}-group-${optionIndex}`;
+        group.setAttribute('aria-labelledby', groupLabel.id);
+        optionsViewport.appendChild(group);
+        group.appendChild(groupLabel);
 
-        Array.from(child.children).forEach(option => appendCustomOption(option));
+        Array.from(child.children).forEach(option => appendCustomOption(option, group));
         return;
       }
 

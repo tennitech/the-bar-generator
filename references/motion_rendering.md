@@ -43,14 +43,17 @@ a still logo) matches the explicit `prefers-reduced-motion: reduce` branch. This
 is a browser-reported operating-system preference, not a Windows/Android user-agent
 check. It suppresses marquee motion, page/theme reveals, default continuous bar
 loops and the ASCII intro. The intro's former branch also hid Replay, leaving no
-way to deliberately play it. Browser simulation reproduces that behavior; the
-affected physical devices' preference values have not been captured, so the
-platform-specific cause remains an evidence-supported inference.
+way to deliberately play it. Browser simulation reproduces that behavior. The owner subsequently confirmed
+that the affected phone limits animations and the Windows browser runs a very old
+Chrome version. Those reported causes are now known; the exact Chrome version
+and its failing feature were not supplied, and no physical-device run is claimed.
 
 The still intro now explains the preference and offers **Play animation once**.
-That button starts one ASCII sequence and keeps focus within the dialog. Closing
-and reopening returns to the still view; no override is stored or applied to
-other motion. A later preference change remounts the preference-appropriate view.
+That button starts one ASCII sequence and keeps focus within the dialog. While
+reduced motion is still requested, reopening returns to the still view; no
+override is stored or applied to other motion. If the system now permits motion,
+normal autoplay behavior applies. A later reduced-motion request stops playback and restores the still view.
+Relaxing that request preserves an already playing sequence instead of restarting it.
 Normal playback keeps the existing Replay and close/completion behavior.
 Ruler/Ticker/Waveform already allow deliberate Loop selection under reduced
 motion. Their geometry, phase and export planning are unchanged. Quantum phase
@@ -86,3 +89,43 @@ requests reduced motion while the page is open. Relaxing that preference does
 not restart paused loops; explicit Loop remains available. The focused
 `motionPreferenceSmoke.js --preference-change-only` checks passed in Chromium
 and WebKit, including embedded playback after the preference checks.
+
+## Confirmed-incident audit — October 28, 2026
+
+PR #50 introduced no Windows/Android user-agent detection, automatic-motion
+override, legacy-browser shim or animation-engine replacement. The retained
+changes are an accessibility choice (one explicit ASCII sequence with no saved
+override) and pausing loops when reduced motion is newly requested. Marquee,
+page/theme reveals and automatic loop defaults continue to honor the system.
+Quantum, information cards and GPU-bounded zoom are independent fixes.
+
+The audit reproduced two preference-change edges in the opt-in flow: relaxing
+reduced motion restarted an explicitly running frame; replacing the focused
+Play control could leave focus on body. The local repair preserves that running
+frame and keeps focus in the dialog when preference changes replace or hide a
+focused control. The new Play control now also follows the existing entrance
+and exit disabling of Replay/Close. Normal playback, deliberate Replay,
+completion, reopening and explicit loop selection retain their behavior.
+
+Compatibility inspection compared PR #50 with `3814997`. The motion additions
+do not raise the existing API/syntax requirement: MediaQueryList change
+listeners were already used without a legacy fallback in page entrance, theme
+motion and Quantum setup; optional chaining and Object.hasOwn were already in
+the runtime. [V8 documents optional chaining in Chrome 80 and later](https://v8.dev/features/optional-chaining);
+that is an example of an existing requirement, not a complete supported-version
+floor. [MDN explains older MediaQueryList/EventTarget differences](https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/addListener).
+Without the actual old version, no exact failure mechanism or expanded legacy
+support is asserted. No broad polyfill or user-agent exception was introduced.
+
+Audit validation: 324 unit tests in 33 suites passed, including three new
+controller regressions for retained one-run frame identity, focus after
+replacement, and Play entrance/exit disabling. Chromium and WebKit each passed
+`motionAuditSmoke.js`: reduced loop/page/theme defaults, focus and Tab cycle,
+actual full ASCII completion exactly once, preserved frame on preference
+relaxation, reopening reset, no intro opt-in leaking to bar loops, normal
+autoplay/completion/loop resume, and landing marquee preference changes. The
+existing 32-case motion preference matrix passed in each engine, including
+forced 2D, desktop/emulated touch, hidden/resume and same-origin iframe playback.
+Evidence: `/tmp/rpi-motion-audit-evidence`. These are current Mac Playwright
+engines (Chromium 151.0.7922.34 / WebKit 26.5), not the unspecified old Chrome
+or physical phone. The audit branch is local only and has not been deployed.

@@ -19,6 +19,12 @@ function read() {
     ? requestedColorMode
     : DEFAULT_COLOR_MODE;
 
+  const neural = normalizeNeuralNetworkSettings({
+    hiddenLayers: params.get('neuralNetworkHiddenLayers'), units: params.get('neuralNetworkUnits'),
+    input: params.get('neuralNetworkInput'), seed: params.get('neuralNetworkSeed'),
+    connectivity: params.get('neuralNetworkConnectivity'), activation: params.get('neuralNetworkActivation')
+  });
+
   return {
     style,
     colorMode,
@@ -27,7 +33,7 @@ function read() {
     binaryText: params.get('binaryText') || 'RPI',
 
     // Numeric parameters
-    numericValue: params.get('numericValue') || '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679',
+    ...window.NumericControls.readQuery(params),
     numericMode: params.get('numericMode') || 'dotmatrix',
     circlesGradientVariant: Math.max(1, Math.min(3, parseInt(params.get('circlesGradientVariant')) || 1)),
     gradientVariant: Math.max(1, Math.min(2, parseInt(params.get('gradientVariant')) || 1)),
@@ -36,7 +42,12 @@ function read() {
     // Reference pattern parameters
     linesVariant: Math.max(1, Math.min(2, parseInt(params.get('linesVariant')) || 2)),
     pointConnectVariant: Math.max(1, Math.min(2, parseInt(params.get('pointConnectVariant')) || 1)),
-    neuralNetworkHiddenLayers: Math.max(1, Math.min(5, parseInt(params.get('neuralNetworkHiddenLayers')) || 1)),
+    neuralNetworkHiddenLayers: neural.hiddenLayers,
+    neuralNetworkUnits: neural.units,
+    neuralNetworkInput: neural.input,
+    neuralNetworkSeed: neural.seed,
+    neuralNetworkConnectivity: neural.connectivity,
+    neuralNetworkActivation: neural.activation,
     triangleGridVariant: Math.max(1, Math.min(3, parseInt(params.get('triangleGridVariant')) || 2)),
     trianglesDirection: migrateTriangleDirection(params.get('trianglesDirection'), params.get('trianglesVariant')),
     trianglesCount: normalizeTrianglesPatternSettings({ count: params.has('trianglesCount') ? params.get('trianglesCount') : undefined }).count,

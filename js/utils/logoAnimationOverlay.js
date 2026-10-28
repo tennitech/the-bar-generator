@@ -162,7 +162,19 @@
     const motionPreference = windowRef && windowRef.matchMedia
       ? windowRef.matchMedia('(prefers-reduced-motion: reduce)') : null;
     function handleMotionPreference() {
-      if (isOpen) { mountFrame(); startScrimFade(0); }
+      if (!isOpen) return;
+      // Relaxing the preference must not restart an explicitly playing sequence.
+      if (!motionPreference.matches && frameEl && frameEl.tagName === 'IFRAME') return;
+      const focused = documentRef.activeElement;
+      const replaceFocus = frameEl && (focused === frameEl
+        || (frameEl.contains && frameEl.contains(focused)))
+        || (motionPreference.matches && overlayParts && focused === overlayParts.replayEl);
+      mountFrame();
+      startScrimFade(0);
+      if (replaceFocus) {
+        const target = overlayParts.closeEl.disabled ? overlayParts.overlayEl : overlayParts.closeEl;
+        if (target.focus) target.focus();
+      }
     }
     if (motionPreference && motionPreference.addEventListener) {
       motionPreference.addEventListener('change', handleMotionPreference);
@@ -200,6 +212,7 @@
       if (!overlayParts) return;
       overlayParts.closeEl.disabled = !available;
       overlayParts.replayEl.disabled = !available;
+      if (motionPlayEl) motionPlayEl.disabled = !available;
     }
 
     function activateChrome() {
@@ -453,6 +466,7 @@
         const play = documentRef.createElement('button');
         motionPlayEl = play;
         play.type = 'button';
+        play.disabled = parts.closeEl.disabled;
         play.className = 'logo_animation_motion-play';
         play.textContent = 'Play animation once';
         play.setAttribute('aria-describedby', explanation.id);

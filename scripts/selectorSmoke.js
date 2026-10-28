@@ -26,6 +26,12 @@ async function bounds(page, id) {
     const style = page.locator('#style-select + button');
     await style.click(); await page.waitForTimeout(200);
     assert.equal(await page.locator('#style-select-options .select_style-preview').count(), 21);
+    const quantum = page.locator('#style-select-options [data-value="wave-quantum"]');
+    assert.equal(await quantum.count(), 1);
+    assert.equal(await page.locator('#style-select option[value="wave-quantum"]').evaluate(option => option.parentElement.label), 'Dynamic');
+    assert.equal(await quantum.locator('.select_style-preview svg').count(), 1);
+    assert.equal(await quantum.evaluate(row => row.closest('.select_option-group').firstElementChild.textContent), 'Dynamic');
+
     assert.equal(await page.locator('#style-select-options .is-disabled .select_style-preview').count(), 0);
     assert.ok((await bounds(page,'style-select')).height > 500);
     const samples = await page.locator('.select_style-preview').evaluateAll(rows=>rows.map(r=>r.innerHTML));

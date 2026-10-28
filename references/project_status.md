@@ -3,6 +3,19 @@
 **Last Updated:** 2026-10-28
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## Ready local integration — October 28, 2026
+
+The motion audit, circle bounds/alignment, Numeric modes, sticky grouped headings
+and short-window footer, Quantum Dynamic category and Neural Network redesign
+are combined on `codex/fix-circle-controls-integration` from published `ab23e3a`.
+Final combined checks pass 346 unit tests in 35 suites, 28 Neural browser cases
+and 18 routed starts per engine, plus targeted cross-feature share/export and
+short-window checks in Chromium and WebKit. The integration also rejects inherited
+Numeric migration aliases and retains the early Numeric startup dependency.
+See [combined QA and limits](circle_controls_integration_qa.md). This batch is
+local and ready for release coordination; it has not been pushed, merged or
+deployed. Shared main and all source branches remain preserved.
+
 ## 1. Project Overview
 A web-based **Design Tool** intended for RPI's central Brand Hub. It lets students and faculty explore RPI bar patterns using configured brand assets and geometry. Secondary colors and proposed club or mission lockups still need owner approval before being described as brand-compliant.
 
@@ -91,7 +104,7 @@ Verification: 299 unit tests in 30 suites; full Chromium and WebKit browser smok
 
 The reported all-motion-off/still-logo behavior matches the browser's reduced-motion path. The intro previously hid Replay in that path, so deliberate playback was unavailable. Its still view now explains the device preference and offers a keyboard-accessible **Play animation once** action. That choice lasts for one intro opening; later preference changes and reopening respect the system setting. Default marquee/page/theme motion remains reduced, and existing explicit Ruler/Ticker/Waveform Loop choices still work. No geometry, export timing, scientific model or runtime dependency changes. See [diagnosis and follow-up](motion_rendering.md#cross-platform-motion-preference-october-28-2026).
 
-Validation: 307 unit tests in 30 suites; 32 preference/playback/intro cases each in Chromium and WebKit, covering desktop/emulated touch, normal/reduced motion, WebGL/forced 2D, explicit Loop, pause, background resume, keyboard one-time Play, real changing ASCII frames, close focus and consent reset. Same-origin embedded reduced-motion opt-in and nested ASCII playback passed in both engines; this is distinct from a Frontify test. WebKit intro lifecycle checks passed for transition synchronization, rapid reopen and focus. Desktop and touch still-view screenshots were visually inspected. The affected physical Windows/Android devices and Frontify environment remain unverified. Browser-reported preference matching is an evidence-supported inference, not a captured device diagnosis. No supported connected Windows/Android device tool was available.
+Validation: 307 unit tests in 30 suites; 32 preference/playback/intro cases each in Chromium and WebKit, covering desktop/emulated touch, normal/reduced motion, WebGL/forced 2D, explicit Loop, pause, background resume, keyboard one-time Play, real changing ASCII frames, close focus and consent reset. Same-origin embedded reduced-motion opt-in and nested ASCII playback passed in both engines; this is distinct from a Frontify test. WebKit intro lifecycle checks passed for transition synchronization, rapid reopen and focus. Desktop and touch still-view screenshots were visually inspected. The owner subsequently confirmed that the affected phone limits animations and the Windows browser runs a very old Chrome version. No physical Windows/Android or actual Frontify validation was performed; the exact old Chrome version and its failing feature remain unspecified.
 
 ## Motion, Quantum and card integration — October 28, 2026
 
@@ -100,6 +113,12 @@ Combined the preserved motion-preference, Quantum-seek and information-card bran
 The earlier Chromium mobile `GeneratorInitialState is not defined` failure did not recur during successful real-HTTP loading. Intentionally resetting that module request reproduced the exact missing-global failure and the existing Retry recovered after the connection was restored. This establishes a missing-dependency failure mechanism, not a Chromium platform/API incompatibility; the original request trace was unavailable. The previous copy-test file-fulfillment fixture is removed. The optional standard-library `scripts/test_server.py` uses a larger connection backlog for concurrent browser asset requests instead of older Python servers’ small default queue. No production framework, network retry policy or new dependency was introduced.
 
 Final integration includes the preserved zoom repair as well. Verification passed 321 unit tests in 33 suites, 129 zoom pixel cases per engine, actual Fit/400% SVG/PNG and header equality, 12 real-HTTP startup cases per engine including 320/390px, complete Quantum and card checks, and motion preference/playback checks in Chromium and WebKit. See the [combined verification record](motion_cards_integration_qa.md), [motion rendering](motion_rendering.md) and [bar information cards](bar_information_cards.md) for exact coverage and remaining physical-device limits. Source feature branches and shared main remain intact; no merge or deployment is included. A new reduced-motion request now pauses Ruler/Ticker/Waveform during an open session, matching Quantum; relaxing it does not silently restart playback. Focused Chromium/WebKit preference-change and explicit-restart checks passed.
+
+## Confirmed motion incident audit — October 28, 2026
+
+The owner confirmed the phone’s animation-limiting setting and the Windows browser’s very old Chrome version. PR #50 added no platform sniffing or global preference bypass. Its explicit one-time intro choice and pause-on-new-reduced-motion behavior are independent accessibility improvements and are retained. Existing runtime syntax/API assumptions predate this release; no expanded legacy-browser support is inferred without an actual version.
+
+The audit found and locally repaired preference-change edge cases: relaxing reduced motion no longer restarts an already playing explicit intro; replacing or hiding a focused intro control keeps focus in the dialog. The new Play control is disabled during the same entrance/exit states as Replay and Close. Quantum, cards, zoom, circle geometry, sticky-header and Numeric work are untouched. Details and compatibility evidence: [motion audit](motion_rendering.md#confirmed-incident-audit-october-28-2026). Validation passed 324 unit tests in 33 suites, the full one-run/preference/focus/marquee audit in Chromium and WebKit, and the existing 32-case motion matrix per engine including forced 2D, touch layouts and same-origin embeds. Exact old-Chrome and physical-device validation remain outside this audit. This audit branch is local only and has not been deployed.
 
 ## 3. Completed Milestones
 
@@ -640,3 +659,68 @@ Final integration includes the preserved zoom repair as well. Verification passe
 *   `main.js` relies heavily on global variables (p5.js pattern). Future refactoring might consider modularizing this.
 *   Previously identified issue where ticker width ratio display failed to update has been resolved (2026-02-17).
 *   Previously identified SVG export drift between `main.js` and `drawing.js` has been addressed by shared utility (2026-02-17).
+
+### Circle bounds and alignment repair — October 28, 2026
+
+- Circles Gradient rows now share column centers, removing variant 1's leaning columns while preserving row sizes and complete dot bounds. The largest endpoint dots meet the bar edges; smaller endpoint dots remain aligned inside them.
+- Circles now treats packed radii as outer painted extents and insets stroked paths by half their stroke width. Every complete circle is geometrically bounded before clipping, with exact tangent endpoint circles and no horizontal stretching. Moving formerly overflowing circles inward can introduce minor overlaps; this remains an illustrative geometric pattern. See [circle assumptions](bar_science_notes.md#circle-containment-repair--october-28-2026).
+- Validation: 326 unit tests passed in 33 suites. Chromium and WebKit each passed 22 selected states (all three gradient variants; Circles density 10/100 × variation 0/100 × fill/stroke, black/white), checking pre-clip primitive bounds, no circle stretch, actual SVG/header geometry, downloaded PNG parity, painted edges, preview interior agreement, and byte-identical SVG/PNG at Fit versus 400%. Both engines also passed 390px touch-layout rendering at Fit/400% with stable snapshots and no page errors. Desktop and phone preview screenshots were visually inspected; exported PNG pixels were checked automatically. This is browser emulation, not physical-device or formal brand approval.
+
+## Numeric Values / Formula sources — October 28, 2026
+
+- Implemented Numeric's mutually exclusive decimal entry and curated formula dropdown on an isolated branch from published main `ab23e3a`. Decimal input retains leading zeros/precision, rejects invalid edits as a whole, permits normal incomplete drafts, and explicitly omits signs from encoding. Empty drafts no longer silently render π. The existing encodings, geometry and zero-ink export recovery remain intact.
+- Added eight fixed examples: π, e, φ, √2, √3, 2π, sine RMS/peak `1/√2`, and exponential half-life/time-constant `ln(2)`. Descriptions explain their assumptions and show exact encoded decimal approximations. They are not a popularity ranking or official RPI endorsements. Reset/Randomize and inactive-source retention use the existing control system.
+- Replaced the Function-constructor evaluator with fixed presets and a bounded non-executing arithmetic parser used only for historical-link migration. New query/share controls restore modes and inactive values intentionally; new explicit-source shares reject invalid values. Unsupported/oversized historical expressions recover as empty input with guidance. One resolved source drives preview/header and frozen SVG/PNG snapshots. New utility loads before routed first-paint/share parsing; updated asset versions keep those dependencies together for returning visitors. The app retains vanilla/p5 global-state integration and the existing browser/CommonJS utility convention.
+- Validation: 326 unit tests in 34 suites, then 41 focused tests after final cleanup; Chromium/WebKit checked eight presets × two encodings, actual SVG/PNG pixel parity and share restoration, source switching, Reset/Randomize, drafts/bad input, legacy query/share migration and desktop/native touch controls at 390/320px. Twelve Chromium routed-startup checks passed with normal/reduced motion and Retry recovery. See [Numeric design, sources and migration](numeric_modes.md) and [QA evidence](review-images/numeric-modes/validation.md). Physical-device/clipboard/keyboard, manual screen-reader, Safari application and formal brand approval remain unverified. This entry records local implementation, not publication.
+
+### Quantum category — October 28, 2026
+
+Quantum now appears once under Dynamic, immediately after Waveform, in the native bar-style selector and its generated custom menu. The `wave-quantum` route, shader/model identity, phase/loop controls, preview and share keys are unchanged. Category grouping is authored by the selector’s optgroups; the landing marquee has no separate Quantum category entry. Combined selector checks cover the unique entry and still preview.
+
+Numeric integration also guards historical aliases with own-property checks. Prototype names such as `constructor` previously entered Formula mode and fell back to Pi; they now recover as empty Values without executing text or substituting data. Unit and browser legacy-query/share cases cover this integration repair.
+
+### Sticky grouped dropdown headings — October 28, 2026
+
+- Grouped dropdowns now retain their section heading while scrolling, with the next section naturally pushing the previous heading away. The shared enhancement covers Color Theme (Primary/Secondary), Bar Style (Dynamic/Static/Organizations/Special/Under Construction), and future native optgroups. Each section has a named ARIA group; ungrouped menus retain their existing structure.
+- Headers use an opaque menu-surface backing and reserve scroll space so arrow-key navigation does not hide the active option behind them. The upper fade is suppressed for grouped menus; the lower fade, previews, arrows, disabled Coming soon hints, selection, guidance popover and native touch color picker are retained. No bar geometry or export calculations changed.
+- Validation: all 321 unit tests pass. `scripts/stickyDropdownSmoke.js` checks section push/return, eight theme surfaces, every style section, previews, keyboard visibility, disabled choices, repeated open/close, constrained dropdowns, narrow/short windows and native touch fallback. The focused sticky suite passes in Chromium/WebKit. The existing color-picker smoke also passes in both engines, including legacy query/share/SVG checks; the full selector suite passes in both engines, including 21 previews, direction arrows, 320/390px touch interaction, legacy links and SVG/PNG exports. Chromium was rerun serially after an interrupted concurrent run. Browser screenshots were visually inspected; this does not establish physical-device, screen-reader or formal brand approval.
+- Resolved the short-window followup: the pinned information-card footer could intercept the theme trigger after switching to Artemis II at 1024 × 360. At viewport heights up to 40rem (640 CSS px), the intact footer now flows through the same sidebar scroller as the controls; larger desktop layouts retain the pinned footer. No controls or card content are hidden. Focused short-layout evidence is captured by `scripts/shortSidebarSmoke.js` for Artemis II, Circles, Quantum and Solid at 1024 × 360, 1280 × 500 and 320 × 568, including pointer/keyboard selection, scrolling both directions, the complete information card and report action. These focused short-layout checks pass in Chromium and WebKit, and the 1024 × 360 control/card screenshots were visually checked.
+
+## Neural Network redesign — October 28, 2026
+
+Replaced the clipped illustrative graph with an explicit untrained feedforward
+network. Six controls cover hidden layers, units per layer, dense/local
+connectivity, tanh/sigmoid activation, input mix and deterministic weight sets.
+The three-hidden-layer default balances the narrow bar; explicit legacy layer
+settings remain supported. Each unit now computes its actual weighted sum and
+activation. Ring-center area encodes activation, line width encodes weight
+magnitude and dashes encode negative weights without depending on color.
+The sidebar includes numeric outputs and an optional model explanation/source.
+There is no training, biological simulation, animated inference or GIF mode.
+
+Complete node rings include their stroke in the vertical padding and horizontal
+edge placement, fixing cutoff while retaining the official 250 × 18 domain,
+132.4885 offset and existing painted-edge rule. Shared geometry/values feed
+preview, header, SVG and PNG. Query/share links, native controls, numeric editors,
+Reset and Randomize cover every parameter. No runtime dependency, asset, framework,
+font, theme or permission change. See [model and sources](neural_network_model.md)
+and [review evidence](review-images/neural-network/validation.md).
+
+Validation: 329 unit tests in 34 suites, including forward-pass equations,
+determinism, sparse/dense weight identity, connectedness, activation area and 320
+parameter combinations with complete node/stroke bounds. Focused Chromium and
+WebKit checks pass 28 theme/extrema/header-raster cases per engine, shared and
+plain-query round trips including zero input, old shared links, numeric editor,
+keyboard and real emulated touch interaction, Reset/Randomize, motion preference,
+Fit–400% export stability and 2D fallback. Decoded Standard PNG is 1160 × 762;
+its bar paints x=80…1079 with no paint outside the official bar domain. Fit and
+400% PNG bytes are identical. Source primitives agree; live SVG-raster sampling
+versus direct header rasterization differs by at most 3.624/255 mean alpha in the
+bar, due to fractional bar placement and thin-stroke sampling, rather than a
+geometry or model change.
+
+Implementation is saved locally on `codex/feat-neural-network`, based on published
+`ab23e3a`, with unrelated local-main ancestry and concurrent feature branches
+preserved. No merge or deployment is included. Physical devices, Safari app,
+screen readers, final-size owner acceptance and formal RPI approval remain
+unverified; secondary themes were exercised only for legacy-state compatibility.

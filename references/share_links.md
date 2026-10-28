@@ -91,3 +91,7 @@ retaining the final edit without exhausting WebKit’s history API limit. Copy l
 always captures current controls immediately. History navigation cancels an older
 pending edit. A same-origin session handoff recovers the final pending URL before
 startup on immediate reload; no upload or server storage is involved.
+
+## Numeric source migration — October 28, 2026
+
+Numeric adds `numeric-source-select` (`values`/`formula`) and `numeric-formula-select` (eight stable preset IDs), retaining `numeric-input` and `numeric-mode-select`. Both inactive choices remain captured, so switching sources does not erase a decimal draft. Historical snapshots without the source control explicitly migrate decimal strings, known formula aliases and bounded finite arithmetic; unsupported or oversized historical expressions recover as an empty value with input guidance. New explicit-source snapshots reject invalid decimal strings before applying controls. No arbitrary expression is executed. Legacy query links use the same migration; `numericSource`/`numericFormula` are new canonical query keys. See [Numeric modes](numeric_modes.md).

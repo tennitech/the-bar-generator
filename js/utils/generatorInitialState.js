@@ -138,6 +138,7 @@
         }
       } catch (_) { /* Runtime provides the recovery UI for invalid snapshots. */ }
     }
+    scope.NumericControls?.sync(root);
     if (phase && scope.quantumModel) {
       const phaseLabel = root.querySelector('#quantum-phase-display');
       const speedLabel = root.querySelector('#quantum-speed-display');

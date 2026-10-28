@@ -16,17 +16,25 @@ const evidence = process.env.RPI_INTEGRATION_EVIDENCE;
       page.on('pageerror', error => errors.push(error.message));
       page.on('requestfailed', request => failedRequests.push({ url: request.url(), error: request.failure()?.errorText }));
       page.on('response', response => { if (response.status() >= 400) badResponses.push({ url: response.url(), status: response.status() }); });
-      for (const style of ['wave-quantum', 'ruler']) {
-        await page.goto(`${base}/generator/${style}/`);
+      for (const style of ['wave-quantum', 'ruler', 'numeric']) {
+        await page.goto(`${base}/generator/${style}/${style === 'numeric' ? '?numericSource=formula&numericFormula=sqrt2&numericValue=001.20' : ''}`);
         await page.waitForFunction(() => window.barShareController && window.GeneratorInitialState, null, { timeout: 60000 });
         await page.locator('#p5-container canvas').waitFor();
         assert.equal(await page.locator('#style-select').inputValue(), style);
-        assert.equal(await page.locator('#bar-information-title').textContent(), style === 'wave-quantum' ? 'Quantum' : 'Ruler');
+        assert.equal(await page.locator('#style-select option[value="wave-quantum"]').evaluate(option => option.parentElement.label), 'Dynamic');
+        if (style === 'numeric') {
+          assert.equal(await page.inputValue('#numeric-source-select'), 'formula');
+          assert.equal(await page.inputValue('#numeric-formula-select'), 'sqrt2');
+          assert.equal(await page.inputValue('#numeric-input'), '001.20');
+          assert.equal(await page.evaluate(() => getNumericSourceValue()), String(Math.SQRT2));
+        }
+
+        assert.equal(await page.locator('#bar-information-title').textContent(), ({ 'wave-quantum': 'Quantum', ruler: 'Ruler', numeric: 'Numeric' })[style]);
       }
       assert.deepEqual(errors, [], 'routed startup page errors');
       assert.deepEqual(failedRequests, [], 'routed startup network failures');
       assert.deepEqual(badResponses, [], 'routed startup bad HTTP responses');
-      results.push({ width, reducedMotion, styles: ['wave-quantum', 'ruler'], errors, failedRequests, badResponses });
+      results.push({ width, reducedMotion, styles: ['wave-quantum', 'ruler', 'numeric'], errors, failedRequests, badResponses });
       await context.close();
     }
     // Card copy must be ready with the selected controls, before the renderer starts.
@@ -43,6 +51,23 @@ const evidence = process.env.RPI_INTEGRATION_EVIDENCE;
     await navigation;
     await firstPaint.close();
     results.push({ cardReadyBeforeRenderer: true });
+    const numericPaint = await browser.newPage();
+    await numericPaint.route('**/js/main.js?*', async route => {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      await route.continue();
+    });
+    const numericNavigation = numericPaint.goto(`${base}/generator/numeric/?numericSource=formula&numericFormula=sqrt2&numericValue=001.20`);
+    await numericPaint.locator('#bar-information').waitFor();
+    assert.equal(await numericPaint.locator('#p5-container canvas').count(), 0);
+    assert.equal(await numericPaint.inputValue('#numeric-source-select'), 'formula');
+    assert.equal(await numericPaint.inputValue('#numeric-formula-select'), 'sqrt2');
+    assert.equal(await numericPaint.inputValue('#numeric-input'), '001.20');
+    assert.equal(await numericPaint.locator('#numeric-values-control').isHidden(), true);
+    assert.equal(await numericPaint.locator('#numeric-formula-control').isVisible(), true);
+    assert.ok((await numericPaint.locator('#numeric-formula-value').textContent()).includes(String(Math.SQRT2)));
+    await numericNavigation;
+    await numericPaint.close();
+    results.push({ numericFormulaReadyBeforeRenderer: true });
     // Establish the reported missing-global failure mechanism, then verify real Retry recovery.
     const page = await browser.newPage({ viewport: { width: 320, height: 664 }, isMobile: true, hasTouch: true });
     const expectedErrors = [], failedRequests = [];
@@ -63,6 +88,6 @@ const evidence = process.env.RPI_INTEGRATION_EVIDENCE;
       await fs.mkdir(evidence, { recursive: true });
       await fs.writeFile(`${evidence}/${engine}-routed-startup.json`, JSON.stringify(results, null, 2));
     }
-    console.log(`${engine}: 12 real-HTTP routed starts passed at 320/390/1440px with normal/reduced motion; missing-script fault reproduced GeneratorInitialState error and Retry recovered.`);
+    console.log(`${engine}: 18 real-HTTP routed starts passed at 320/390/1440px with normal/reduced motion; missing-script fault reproduced GeneratorInitialState error and Retry recovered.`);
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

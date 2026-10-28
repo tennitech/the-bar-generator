@@ -5,7 +5,7 @@ const routes = require('../js/utils/generatorRoutes');
 const theme = require('../js/utils/themeMode');
 const loopingGifUtils = require('../js/utils/loopingGif');
 function read(search, pathname = '/generator/waveform/') {
-  const window = {location:{search,pathname},GeneratorRoutes:routes,loopingGifUtils};
+  const window = {location:{search,pathname},GeneratorRoutes:routes,loopingGifUtils,NumericControls:require('../js/utils/numericControls')};
   window.GeneratorInitialState = {resolveTheme: query => theme.normalizeColorModeValue(new URLSearchParams(query).get('colorMode'))};
   const context = vm.createContext({window,URLSearchParams,...pattern});
   vm.runInContext(fs.readFileSync(require.resolve('../js/utils/musicStyle'),'utf8'),context);
@@ -31,4 +31,23 @@ test('legacy triangle variant folds into direction without exposing a variant pa
     expect(state.trianglesDirection).toBe(expected);
     expect(state.trianglesVariant).toBeUndefined();
   }
+});
+
+
+test('Numeric query modes migrate historical expressions and retain decimal drafts', () => {
+  expect(read('?numericValue=PI','/generator/numeric/').numericSource).toBe('formula');
+  expect(read('?numericValue=PI','/generator/numeric/').numericFormula).toBe('pi');
+  expect(read('?numericValue=2%2B3','/generator/numeric/').numericValue).toBe('5');
+  const source = read('?numericSource=values&numericValue=&numericFormula=rms','/generator/numeric/');
+  expect(source.numericValue).toBe('');
+  expect(source.numericSource).toBe('values');
+  expect(source.numericFormula).toBe('rms');
+  expect(read('?numericSource=formula&numericFormula=bad','/generator/numeric/').numericFormula).toBe('pi');
+});
+
+test('Neural Network query state retains zero input, bounds model controls and preserves explicit legacy layers', () => {
+  expect(read('?neuralNetworkHiddenLayers=1', '/generator/neural-network/')).toMatchObject({ neuralNetworkHiddenLayers: 1,
+    neuralNetworkUnits: 3, neuralNetworkInput: 65, neuralNetworkSeed: 1, neuralNetworkConnectivity: 'dense', neuralNetworkActivation: 'tanh' });
+  expect(read('?neuralNetworkHiddenLayers=99&neuralNetworkUnits=99&neuralNetworkInput=0&neuralNetworkSeed=99&neuralNetworkConnectivity=local&neuralNetworkActivation=sigmoid', '/generator/neural-network/')).toMatchObject({
+    neuralNetworkHiddenLayers: 5, neuralNetworkUnits: 5, neuralNetworkInput: 0, neuralNetworkSeed: 16, neuralNetworkConnectivity: 'local', neuralNetworkActivation: 'sigmoid' });
 });
