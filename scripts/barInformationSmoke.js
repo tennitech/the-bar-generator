@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
-const path = require('node:path');
 const { chromium, webkit } = require('playwright');
 const engine = process.env.RPI_BROWSER || 'chromium';
-const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8027';
+const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8765';
 const evidence = `/tmp/rpi-bar-information-${engine}`;
 (async () => {
   await fs.mkdir(evidence, {recursive:true});
@@ -11,15 +10,6 @@ const evidence = `/tmp/rpi-bar-information-${engine}`;
   const errors = [];
   try {
     const page = await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
-    // Serve the unchanged static files through Playwright to avoid local socket limits.
-    await page.route(`${base}/**`, async route => {
-      let relative = decodeURIComponent(new URL(route.request().url()).pathname).replace(/^\//, '');
-      if (!path.extname(relative)) relative = relative.replace(/\/$/, '') + '/index.html';
-      const file = path.resolve(__dirname, '..', relative);
-      const types = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.woff2':'font/woff2','.png':'image/png','.mp3':'audio/mpeg'};
-      try {await route.fulfill({status:200,contentType:types[path.extname(file)]||'application/octet-stream',body:await fs.readFile(file)});}
-      catch {await route.fulfill({status:404,body:'Not found'});}
-    });
     page.on('pageerror' ,error=>{ errors.push(error.message); console.error(error.message); });
     page.on('console',message=>{if(message.type()==='error') console.error(message.text());});
     await page.goto(`${base}/generator/solid/`);

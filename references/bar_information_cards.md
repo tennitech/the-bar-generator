@@ -14,7 +14,7 @@ Asset permissions, proposed organizational lockups, gradients and formal RPI app
 
 ## Implementation
 
-`js/utils/barInformation.js` contains the complete inventory and updates text safely with `textContent`. Its sync function runs after initial state preparation and in the existing style-change synchronization path, covering user selections and restored style state. `main.js` retains its existing p5 global-state structure; the new copy remains in a separate utility following the project's browser/CommonJS compatibility convention.
+`js/utils/barInformation.js` contains the complete inventory and updates text safely with `textContent`. Its sync function runs after initial state preparation and in the existing style-change synchronization path, covering user selections and restored style state. Integration also loads the utility before routed chrome is inserted and prepares its detached shell, so selected-style copy is present before the renderer initializes. `main.js` retains its existing p5 global-state structure; the new copy remains in a separate utility following the project's browser/CommonJS compatibility convention.
 
 The card uses semantic `aside`/`h2`/`p` markup, existing surface/text/border tokens and rem sizing. There is no card animation or live region. The Mission Control source link remains keyboard reachable with a visible focus outline. Canvas, renderer, export coordinates, motion state and profanity filtering are unchanged.
 
@@ -24,3 +24,12 @@ The card uses semantic `aside`/`h2`/`p` markup, existing surface/text/border tok
 - `scripts/barInformationSmoke.js` checks all 21 selectable styles, placement above the report button, four themes, 320/390/768px layouts, direct Quantum routing, both reduced-motion settings and credit keyboard focus. Passed in local Chromium and WebKit. Screenshots are in `/tmp/rpi-bar-information-chromium` and `/tmp/rpi-bar-information-webkit`; desktop and 320px Mission Control images were visually inspected.
 - Browser checks fulfill the actual local static files through Playwright because temporary Python HTTP-server runs encountered connection resets during bootstrap. Chromium logs an audio-worklet initialization warning in that fixture; audio playback is outside this copy/layout check. No renderer or motion module is mocked.
 - Mac Playwright engines do not establish physical Windows/Android, Safari-app, manual screen-reader or formal brand validation.
+
+### Integrated HTTP verification
+
+After combining the Quantum and motion-preference repairs, the card smoke passed
+again in Chromium and WebKit over a real HTTP server, without static-file
+fulfillment. The fixture now defaults to actual HTTP. A delayed-main probe found
+that the routed card initially showed an empty Solid description; the bootstrap
+now prepares the selected-style text before inserting chrome. A regression
+checks Quantum copy before the canvas exists. See `scripts/routedStartupSmoke.js`.

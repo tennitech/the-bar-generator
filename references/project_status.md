@@ -93,6 +93,14 @@ The reported all-motion-off/still-logo behavior matches the browser's reduced-mo
 
 Validation: 307 unit tests in 30 suites; 32 preference/playback/intro cases each in Chromium and WebKit, covering desktop/emulated touch, normal/reduced motion, WebGL/forced 2D, explicit Loop, pause, background resume, keyboard one-time Play, real changing ASCII frames, close focus and consent reset. Same-origin embedded reduced-motion opt-in and nested ASCII playback passed in both engines; this is distinct from a Frontify test. WebKit intro lifecycle checks passed for transition synchronization, rapid reopen and focus. Desktop and touch still-view screenshots were visually inspected. The affected physical Windows/Android devices and Frontify environment remain unverified. Browser-reported preference matching is an evidence-supported inference, not a captured device diagnosis. No supported connected Windows/Android device tool was available.
 
+## Motion, Quantum and card integration — October 28, 2026
+
+Combined the preserved motion-preference, Quantum-seek and information-card branches in an isolated integration checkout based on published `3814997`. Generator shell, CSS, bootstrap, main runtime and Quantum controller cache references are consolidated for the combined changes. The card utility now prepares the selected style’s copy on the detached routed shell before it is inserted; a delayed-renderer check reproduced and repaired the brief empty Solid card on Quantum routes.
+
+The earlier Chromium mobile `GeneratorInitialState is not defined` failure did not recur during successful real-HTTP loading. Intentionally resetting that module request reproduced the exact missing-global failure and the existing Retry recovered after the connection was restored. This establishes a missing-dependency failure mechanism, not a Chromium platform/API incompatibility; the original request trace was unavailable. The previous copy-test file-fulfillment fixture is removed. The optional standard-library `scripts/test_server.py` uses a larger connection backlog for concurrent browser asset requests instead of older Python servers’ small default queue. No production framework, network retry policy or new dependency was introduced.
+
+Integration verification and remaining physical-device limits are recorded in [motion rendering](motion_rendering.md) and [bar information cards](bar_information_cards.md). Source feature branches and shared main remain intact; no merge or deployment is included.
+
 ## 3. Completed Milestones
 
 - **[2026-10-27] Header and intro motion polish**:

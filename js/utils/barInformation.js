@@ -88,12 +88,12 @@
 };
 
   function sync(root = document) {
-    const style = root.getElementById('style-select');
-    const card = root.getElementById('bar-information');
+    const style = root.querySelector('#style-select');
+    const card = root.querySelector('#bar-information');
     if (!style || !card) return;
     const description = descriptions[style.value] || descriptions.solid;
-    root.getElementById('bar-information-title').textContent = description.title;
-    root.getElementById('bar-information-description').textContent = description.text;
+    root.querySelector('#bar-information-title').textContent = description.title;
+    root.querySelector('#bar-information-description').textContent = description.text;
   }
 
   globalScope.BarInformation = { descriptions, sync };

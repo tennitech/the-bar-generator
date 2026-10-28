@@ -55,7 +55,7 @@
     // Download dependencies together; async=false preserves their execution order.
     const shellSources = Array.from(doc.querySelectorAll('script[src]'), script => script.getAttribute('src'));
     const earlyScripts = new Set();
-    const earlySources = ['selectorPreviews', 'loopingGif', 'featherIcons', 'shareState', 'musicStyle', 'barPattern', 'tickerDisplay', 'profanityFilter', 'quantumModel', 'generatorParameters']
+    const earlySources = ['selectorPreviews', 'loopingGif', 'featherIcons', 'shareState', 'musicStyle', 'barPattern', 'tickerDisplay', 'profanityFilter', 'quantumModel', 'generatorParameters', 'barInformation']
       .map(name => shellSources.find(src => src.startsWith(`js/utils/${name}.js`))).filter(Boolean);
     await Promise.all(earlySources.map(source => { earlyScripts.add(source); return loadScript(source); }));
     // Reconcile fetched shell CSS before inserting its chrome (also protects old route stubs).
@@ -70,6 +70,7 @@
     }
     window.BarShareState?.prepareTrigger(bodyClone);
     window.GeneratorInitialState.apply(bodyClone);
+    window.BarInformation?.sync(bodyClone);
     bodyClone.querySelectorAll('script').forEach(script => script.remove());
     document.body.replaceChildren(...bodyClone.childNodes);
     window.setupCustomDropdowns();
