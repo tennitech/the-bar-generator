@@ -3,6 +3,19 @@
 **Last Updated:** 2026-10-28
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## Ready local integration — October 28, 2026
+
+The motion audit, circle bounds/alignment, Numeric modes, sticky grouped headings
+and short-window footer, Quantum Dynamic category and Neural Network redesign
+are combined on `codex/fix-circle-controls-integration` from published `ab23e3a`.
+Final combined checks pass 346 unit tests in 35 suites, 28 Neural browser cases
+and 18 routed starts per engine, plus targeted cross-feature share/export and
+short-window checks in Chromium and WebKit. The integration also rejects inherited
+Numeric migration aliases and retains the early Numeric startup dependency.
+See [combined QA and limits](circle_controls_integration_qa.md). This batch is
+local and ready for release coordination; it has not been pushed, merged or
+deployed. Shared main and all source branches remain preserved.
+
 ## 1. Project Overview
 A web-based **Design Tool** intended for RPI's central Brand Hub. It lets students and faculty explore RPI bar patterns using configured brand assets and geometry. Secondary colors and proposed club or mission lockups still need owner approval before being described as brand-compliant.
 
