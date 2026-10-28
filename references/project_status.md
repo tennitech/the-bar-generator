@@ -724,3 +724,39 @@ Implementation is saved locally on `codex/feat-neural-network`, based on publish
 preserved. No merge or deployment is included. Physical devices, Safari app,
 screen readers, final-size owner acceptance and formal RPI approval remain
 unverified; secondary themes were exercised only for legacy-state compatibility.
+
+
+## Sidebar and parameter actions — October 28, 2026 WIP checkpoint
+
+Unpublished work on `codex/fix-sidebar-control-actions`, based on published PR #57
+`f8ad484`. Desktop sidebar is widened from 300px to 22rem. Its usable-width token
+also sizes the Download Asset trigger and export menu; compact drawer/bottom-sheet
+and landscape rules remain in place. Browser layout validation is pending.
+
+An explicit inventory in `js/utils/parameterControls.js` defines parameter actions
+for all 21 available styles. Ruler, Binary, Morse, Ticker, Waveform, Quantum,
+Circles, Numeric, Circles Gradient, Gradient, Grid, Lines, Point Connect, Neural
+Network, Triangle Grid and Triangles offer Randomize/Reset in their first section
+heading. Solid, Fibonacci Sequence, Union, Runway and Artemis II are fixed artwork
+and have neither action. Reset stays in place and is disabled when parameter
+fields match authored defaults (Circles also checks its restorable seed).
+Unavailable construction styles do not receive actions.
+
+Randomize now excludes the current single variant/text choice, changes a relevant
+primary parameter on multi-control families, changes Circles' shared seed, and
+changes Neural's deterministic weight-set selection. Numeric preserves the
+selected source and visualization: Formula chooses another curated preset; Values
+generates a bounded 24-digit sample while retaining the inactive formula. Quantum
+randomizes phase within its recurrence and resets phase/speed/reverse. Reset and
+Randomize preserve loop preferences; no render/model/export geometry changed.
+Existing p5 global-state callbacks remain; capability and field-default logic
+lives in the shared parameter utility.
+
+Validation at checkpoint: all 346 unit tests pass in 35 suites; `git diff --check`
+passes. No new browser script or new tests yet. Chromium/WebKit all-style action
+transitions, disabled/default state, share restore, themes, responsive layouts,
+keyboard/touch, repeated switching and SVG/PNG checks remain required before
+release. Review authored versus runtime defaults, Quantum running-state reset
+availability, and restore refresh behavior during that validation. This checkpoint
+has no merge/deployment, physical-device check or formal brand approval. Work was
+paused for the owner's cloud-continuation request; no temporary server was started.
