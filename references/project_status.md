@@ -1,6 +1,6 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-10-27
+**Last Updated:** 2026-10-28
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## 1. Project Overview
@@ -78,6 +78,14 @@ Copy SVG now writes only native `image/svg+xml`. Source-text fallback and destin
 Reviewed the frozen recovery edits in `/tmp/bar-generator-figma-copy` (`codex/fix-figma-svg-copy`) and applied only relevant changes on `codex/fix-native-svg-clipboard`, based on published `6a20ef4`. Original uncommitted recovery files and local documentation ancestry are preserved. No concrete malformed exported-SVG issue was found; valid standalone XML and vector geometry are retained, without speculative preamble normalization. Chromium's macOS source maps SVG to `public.svg-image`; isolated browser payload readback is separate from destination-app acceptance. No Figma operation or native-app paste acceptance is claimed. The user will test after deployment.
 
 Verification passed 299 unit tests in 30 suites, full Chromium/WebKit browser smoke (21 styles, SVG exports, PNG, five widths, text safety, reduced motion, 2D fallback and renderer recovery), genuine isolated Chromium SVG/PNG clipboard payload and receiving-browser paste checks, WebKit clipboard adapter checks, frozen SVG/PNG request snapshots, and all six Chromium transparent GIF family/size cases. Desktop/mobile menu screenshots were visually inspected. An initial local preview connection-reset failure was resolved by increasing the temporary server backlog; the complete reruns passed. See [clipboard behavior and limits](clipboard_exports.md) and [review evidence](review-images/native-svg-clipboard/validation.md).
+
+## Color picker availability — October 28, 2026
+
+The color picker now groups Black, White and Red under Primary, and Blue, Gold, Silver and Gray under Secondary using the existing bar-style headings. Secondary choices are disabled for new selection. Existing query/shared states still restore those themes and retain their original export colors; Mission Control remains available for Artemis II. Rendering, export math, color values and text safety are unchanged.
+
+Secondary colors and the three existing Under Construction styles expose Coming soon on pointer hover and keyboard active-descendant navigation. Enter/Space and pointer clicks cannot commit those rows. Native touch pickers retain disabled options and include Coming soon in their labels. An optional Using secondary colors disclosure links to the recorded official [Color page](https://brand.rpi.edu/document/4#/-/color); Escape/outside click dismisses it, and opening a picker closes it. It uses an inline layout on touch to keep the link reachable within the controls sheet. Cache versions are refreshed across route stubs.
+
+Verification: 299 unit tests in 30 suites; full Chromium and WebKit browser smoke (21 styles/SVG exports, PNG, five widths, text safety, reduced motion, 2D fallback and renderer recovery); focused Chromium/WebKit picker checks covering repeated selection, hover, keyboard disabled-state guards, disclosure dismissal, legacy query/shared-color SVG export, Artemis theme and 320/390px emulated touch layouts. Light/dark menus, guidance, unfinished styles and small-screen screenshots were visually inspected. See [review evidence](review-images/color-picker/validation.md). Physical OS-picker interaction, screen-reader output and owner/RPI approval remain unverified. This is implemented on a feature branch; no merge or production deployment is included.
 
 ## 3. Completed Milestones
 

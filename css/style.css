@@ -3976,3 +3976,49 @@ body { min-height: 0; }
 .export_copy-actions { border-top: 1px solid var(--border-color); padding-top: 0.375rem; }
 .export_copy-icon { width: 1rem; height: 1rem; margin-right: 0.5rem; vertical-align: middle; }
 .export_copy-actions .save-option { min-height: 2.75rem; }
+
+/* Availability stays within each menu row so scrolling never clips a tooltip. */
+.custom-option:has(.select_availability-hint) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.custom-option.is-active { outline: 2px solid var(--text-primary); outline-offset: -2px; }
+.custom-option.is-disabled:has(.select_availability-hint) { opacity: 1; }
+.select_availability-hint {
+  font-size: 0.625rem;
+  line-height: 1.5;
+  text-transform: none;
+  border: 1px solid var(--input-border);
+  border-radius: var(--control-radius);
+  padding: 0.125rem 0.375rem;
+  visibility: hidden;
+}
+.custom-option:hover .select_availability-hint,
+.custom-option.is-active .select_availability-hint { visibility: visible; }
+@media (hover: none) {
+  .select_availability-hint { visibility: visible; }
+}
+.color_guidance { position: relative; margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.75rem; }
+.color_guidance summary { cursor: pointer; width: fit-content; }
+.color_guidance summary:focus-visible,
+.color_guidance a:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+.color_guidance-popover {
+  position: absolute;
+  inset: calc(100% + 0.5rem) 0 auto;
+  z-index: 101;
+  padding: 0.75rem;
+  background: var(--bg-sidebar);
+  color: var(--text-primary);
+  border: 1px solid var(--input-border);
+  border-radius: var(--control-radius);
+  box-shadow: var(--shadow-soft);
+  line-height: 1.5;
+}
+.color_guidance-popover p { margin: 0 0 0.5rem; }
+.color_guidance a { color: inherit; text-decoration: underline; text-underline-offset: 0.15em; }
+@media (pointer: coarse) and (max-width: 1100px) {
+  .color_guidance summary { min-height: 2.75rem; display: flex; align-items: center; }
+  .color_guidance-popover { position: static; margin-top: 0.25rem; }
+}
