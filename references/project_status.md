@@ -87,6 +87,12 @@ Secondary colors and the three existing Under Construction styles expose Coming 
 
 Verification: 299 unit tests in 30 suites; full Chromium and WebKit browser smoke (21 styles/SVG exports, PNG, five widths, text safety, reduced motion, 2D fallback and renderer recovery); focused Chromium/WebKit picker checks covering repeated selection, hover, keyboard disabled-state guards, disclosure dismissal, legacy query/shared-color SVG export, Artemis theme and 320/390px emulated touch layouts. Light/dark menus, guidance, unfinished styles and small-screen screenshots were visually inspected. See [review evidence](review-images/color-picker/validation.md). Physical OS-picker interaction, screen-reader output and owner/RPI approval remain unverified. This is implemented on a feature branch; no merge or production deployment is included.
 
+## Cross-platform animation investigation — October 28, 2026
+
+The reported all-motion-off/still-logo behavior matches the browser's reduced-motion path. The intro previously hid Replay in that path, so deliberate playback was unavailable. Its still view now explains the device preference and offers a keyboard-accessible **Play animation once** action. That choice lasts for one intro opening; later preference changes and reopening respect the system setting. Default marquee/page/theme motion remains reduced, and existing explicit Ruler/Ticker/Waveform Loop choices still work. No geometry, export timing, scientific model or runtime dependency changes. See [diagnosis and follow-up](motion_rendering.md#cross-platform-motion-preference-october-28-2026).
+
+Validation: 307 unit tests in 30 suites; 32 preference/playback/intro cases each in Chromium and WebKit, covering desktop/emulated touch, normal/reduced motion, WebGL/forced 2D, explicit Loop, pause, background resume, keyboard one-time Play, real changing ASCII frames, close focus and consent reset. Same-origin embedded reduced-motion opt-in and nested ASCII playback passed in both engines; this is distinct from a Frontify test. WebKit intro lifecycle checks passed for transition synchronization, rapid reopen and focus. Desktop and touch still-view screenshots were visually inspected. The affected physical Windows/Android devices and Frontify environment remain unverified. Browser-reported preference matching is an evidence-supported inference, not a captured device diagnosis. No supported connected Windows/Android device tool was available.
+
 ## 3. Completed Milestones
 
 - **[2026-10-27] Header and intro motion polish**:

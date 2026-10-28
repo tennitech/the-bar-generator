@@ -1707,9 +1707,32 @@ body.has-logo-animation {
 .logo_animation_static {
   width: min(80vw, 50rem);
   max-height: 80vh;
+  overflow: auto;
   padding: clamp(2rem, 5vw, 5rem);
   color: var(--text-primary);
   background: var(--bg-canvas);
+}
+
+.logo_animation_motion-note {
+  margin: 1.5rem 0 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.logo_animation_motion-play {
+  min-height: 2.75rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: var(--control-radius);
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.logo_animation_motion-play:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 
 .logo_animation_static svg {

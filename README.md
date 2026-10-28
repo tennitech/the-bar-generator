@@ -48,6 +48,7 @@ npm test -- --runInBand
 npm run test:browser:install
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:motion
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/motionPreferenceSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/transparentGifSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/patternExportSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/firstPaintSmoke.js
