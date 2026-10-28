@@ -9,8 +9,8 @@ test('Standard and Large are actual1000/2000pixel marks with proportionate clear
 test('filenames preserve design identity and append a safe optional Unicode name before the extension', () => {
   const snapshot = { family: 'triangles', inkName: 'black', title: 'Solar / Car: Équipe',
     values: { trianglesVariant: 2, trianglesDirection: 'up-left', trianglesCount: 28 }, dimensions: { logoWidth: 2000 } };
-  expect(filename(snapshot, 'png')).toBe('rpi-bar-triangles-v2-up-left-n28-black-clear-2000w--solar-car-équipe.png');
-  expect(filename({ ...snapshot, title: '' }, 'svg')).toBe('rpi-bar-triangles-v2-up-left-n28-black-clear-vector.svg');
+  expect(filename(snapshot, 'png')).toBe('rpi-bar-triangles-up-left-n28-black-clear-2000w--solar-car-équipe.png');
+  expect(filename({ ...snapshot, title: '' }, 'svg')).toBe('rpi-bar-triangles-up-left-n28-black-clear-vector.svg');
   expect(safeTitle('..\\evil\u202Epng.exe/\u0000')).toBe('evilpng-exe');
   expect(safeTitle('CON')).toBe('name-con');
 });

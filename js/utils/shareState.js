@@ -39,6 +39,16 @@
       else if (sourceControls[triangleDirectionId] === 'up') sourceControls[triangleDirectionId] = 'up-right';
       else if (sourceControls[triangleDirectionId] === 'down') sourceControls[triangleDirectionId] = 'down-right';
     }
+    // Variant 2 is the opposite corner of variant 1. Fold it into direction
+    // only when the current shell no longer exposes the historical control.
+    if (triangleDirections && !manifest['triangles-variant-slider']) {
+      const legacyVariant = sourceControls['triangles-variant-slider'];
+      if (legacyVariant !== undefined && !['1', '2'].includes(legacyVariant)) throw new Error('This share link has an invalid triangle variant.');
+      if (legacyVariant === '2') {
+        sourceControls[triangleDirectionId] = { 'down-right': 'up-left', 'up-left': 'down-right', 'up-right': 'down-left', 'down-left': 'up-right' }[sourceControls[triangleDirectionId]] || sourceControls[triangleDirectionId];
+      }
+      delete sourceControls['triangles-variant-slider'];
+    }
     const controls = {};
     for (const id of Object.keys(manifest).sort()) {
       if (!Object.hasOwn(sourceControls, id)) continue;

@@ -23,3 +23,12 @@ test('startup and runtime share query precedence, typed controls and existing no
   expect(read('?trianglesDirection=up&trianglesCount=99','/generator/triangles/').trianglesDirection).toBe('up-right');
   expect(read('?trussFamily=pratt','/generator/truss/').trussFamily).toBe('queen-post');
 });
+
+test('legacy triangle variant folds into direction without exposing a variant parameter', () => {
+  const opposites = { 'down-right': 'up-left', 'up-right': 'down-left', 'up-left': 'down-right', 'down-left': 'up-right' };
+  for (const [direction, expected] of Object.entries(opposites)) {
+    const state = read(`?trianglesVariant=2&trianglesDirection=${direction}`, '/generator/triangles/');
+    expect(state.trianglesDirection).toBe(expected);
+    expect(state.trianglesVariant).toBeUndefined();
+  }
+});

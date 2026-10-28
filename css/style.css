@@ -4022,3 +4022,27 @@ body { min-height: 0; }
   .color_guidance summary { min-height: 2.75rem; display: flex; align-items: center; }
   .color_guidance-popover { position: static; margin-top: 0.25rem; }
 }
+
+/* Preview and direction columns share one reading order: name, then visual. */
+.select_visual-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.5rem;
+  line-height: 1.25;
+  padding-block: 0.5rem;
+}
+.select_style-preview { flex: 0 0 5rem; width: 5rem; }
+.select_style-preview svg { display: block; width: 100%; height: auto; overflow: hidden; }
+.select_direction-arrow { flex: 0 0 1.125rem; width: 1.125rem; height: 1.125rem; }
+.select_direction-arrow svg { display: block; width: 100%; height: 100%; }
+@media (pointer: coarse) and (max-width: 1100px) {
+  .select_visual > .control-select { display: none; }
+  .select_visual > .custom-select-trigger { display: block; min-height: 3rem; font-size: 1rem; }
+  .select_visual > .custom-select-options { display: block; }
+  .select_visual::after { display: none; }
+  .select_visual .custom-option { min-height: 3rem; line-height: 1.25; padding-block: 0.875rem; }
+}
+
+.select_style-preview.is-artemis { height: 0.36rem; background: currentColor; -webkit-mask: url('../assets/bars/bar-lunar.svg') center / contain no-repeat; mask: url('../assets/bars/bar-lunar.svg') center / contain no-repeat; }

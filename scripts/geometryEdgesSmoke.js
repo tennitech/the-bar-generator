@@ -81,12 +81,12 @@ async function main() {
       }
       if (style === 'triangles') {
         const forwarded = await page.evaluate(() => {
-          window.getTrianglePatternControlValues = () => ({ trianglesVariant: 2, trianglesDirection: 'up-left', trianglesCount: 28 });
+          window.getTrianglePatternControlValues = () => ({ trianglesDirection: 'up-left', trianglesCount: 28 });
           const values = getCurrentBarPatternValues(250);
           delete window.getTrianglePatternControlValues;
-          return { trianglesVariant: values.trianglesVariant, trianglesDirection: values.trianglesDirection, trianglesCount: values.trianglesCount };
+          return { trianglesDirection: values.trianglesDirection, trianglesCount: values.trianglesCount };
         });
-        assert.deepEqual(forwarded, { trianglesVariant: 2, trianglesDirection: 'up-left', trianglesCount: 28 });
+        assert.deepEqual(forwarded, { trianglesDirection: 'up-left', trianglesCount: 28 });
       }
       if (style === 'numeric') for (const mode of ['height', 'dotmatrix']) for (const value of ['1', '9', '0123456789', '0.0']) {
         await page.evaluate(({ mode, value }) => {

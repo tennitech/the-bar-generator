@@ -1,5 +1,11 @@
 /* Canonical legacy query parser, shared by initial chrome and renderer setup. */
 (function (window) {
+function migrateTriangleDirection(direction, variant) {
+  const normalized = normalizeTrianglePatternDirection(direction);
+  return Number(variant) === 2
+    ? { 'down-right': 'up-left', 'up-left': 'down-right', 'up-right': 'down-left', 'down-left': 'up-right' }[normalized]
+    : normalized;
+}
 function read() {
   const params = new URLSearchParams(window.location.search);
   const routeStyle = window.GeneratorRoutes
@@ -32,8 +38,7 @@ function read() {
     pointConnectVariant: Math.max(1, Math.min(2, parseInt(params.get('pointConnectVariant')) || 1)),
     neuralNetworkHiddenLayers: Math.max(1, Math.min(5, parseInt(params.get('neuralNetworkHiddenLayers')) || 1)),
     triangleGridVariant: Math.max(1, Math.min(3, parseInt(params.get('triangleGridVariant')) || 2)),
-    trianglesVariant: Math.max(1, Math.min(2, parseInt(params.get('trianglesVariant')) || 1)),
-    trianglesDirection: normalizeTrianglePatternDirection(params.get('trianglesDirection')),
+    trianglesDirection: migrateTriangleDirection(params.get('trianglesDirection'), params.get('trianglesVariant')),
     trianglesCount: normalizeTrianglesPatternSettings({ count: params.has('trianglesCount') ? params.get('trianglesCount') : undefined }).count,
 
     // Ruler parameters

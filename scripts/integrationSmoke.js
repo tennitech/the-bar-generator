@@ -33,10 +33,11 @@ async function ready(page) {
     assert.equal(await page.inputValue('#triangles-direction-select'), 'down-right');
     assert.equal((await svg(page)).match(/<polygon /g).length, 27);
     for (const direction of ['up-left', 'up-right', 'down-left', 'down-right']) {
-      for (const count of [6, 28]) for (const variant of [1, 2]) {
+      for (const count of [6, 28]) {
+        const variant = 1;
         await page.selectOption('#triangles-direction-select', direction, { force: true });
         await page.evaluate(({ count, variant }) => {
-          for (const [id, value] of [['triangles-count-slider', count], ['triangles-variant-slider', variant]]) {
+          for (const [id, value] of [['triangles-count-slider', count]]) {
             const input = document.getElementById(id); input.value = value;
             input.dispatchEvent(new Event('input', { bubbles: true }));
           }
@@ -92,6 +93,6 @@ async function ready(page) {
       await fs.writeFile(`${evidence}/${browserName}-integration-results.json`, JSON.stringify({ triangles: results, seedHistory: true, errors }, null, 2));
       await page.screenshot({ path: `${evidence}/${browserName}-integration-desktop.png` });
     }
-    console.log(`${browserName}: 16 triangle SVG/count/paint/header/raster/share comparisons and seed-history restore passed`);
+    console.log(`${browserName}: 8 triangle SVG/count/paint/header/raster/share comparisons and seed-history restore passed`);
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

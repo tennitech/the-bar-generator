@@ -48,3 +48,12 @@ captured from this repository's application on October 27, 2026. They reuse the
 existing identity/font assets and licensed Feather glyphs, with no external
 artwork. Existing permission questions remain open. Capture conditions and
 limits are recorded in `review-images/clipboard-validation.md`.
+
+## Selector review screenshots
+
+`references/review-images/selector-styles.png` and `selector-directions.png`
+are October 28 application captures of the still family samples and geometric
+direction indicators. Samples reuse existing shared geometry and supplied Artemis
+artwork; no external asset or replacement artwork was added. The arrows are
+simple original UI line geometry with the established 24-unit, two-unit stroke
+language. Existing underlying asset permissions and owner approval questions remain.

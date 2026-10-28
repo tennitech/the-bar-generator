@@ -45,3 +45,31 @@ test('old omitted inactive triangle direction remains Down right; explicit previ
   const fresh = { v: 1, controls: { ...old.controls, 'triangles-direction-select': 'up-left' } };
   expect(decodeState(encodeState(fresh, manifest), manifest).controls['triangles-direction-select']).toBe('up-left');
 });
+
+test.each(['down-right', 'up-right', 'up-left', 'down-left'])('variant-free shell preserves legacy variant 2 artwork facing %s', direction => {
+  const currentManifest = { ...manifest };
+  delete currentManifest['triangles-variant-slider'];
+  const state = { v: 1, controls: { 'style-select': 'triangles', 'triangles-variant-slider': '2', 'triangles-direction-select': direction } };
+  const old = '#bar=' + Buffer.from(JSON.stringify(state)).toString('base64url');
+  const restored = decodeState(old, currentManifest);
+  const expected = { 'down-right': 'up-left', 'up-right': 'down-left', 'up-left': 'down-right', 'down-left': 'up-right' }[direction];
+  expect(restored.controls['triangles-direction-select']).toBe(expected);
+  expect(restored.controls['triangles-variant-slider']).toBeUndefined();
+  expect(decodeState(encodeState(restored, currentManifest), currentManifest).controls).toEqual(restored.controls);
+});
+
+test('variant-free migration preserves every triangle polygon for all supported counts', () => {
+  const { createTrianglesPatternGeometry } = require('../js/utils/barPattern');
+  const currentManifest = { ...manifest }; delete currentManifest['triangles-variant-slider'];
+  const vertices = geometry => geometry.polygons.map(polygon => polygon
+    .map(({x,y}) => [x.toFixed(8),y.toFixed(8)].join(',')).sort().join('|'));
+  for (const variant of [1, 2]) for (const direction of ['down-right','up-right','up-left','down-left']) {
+    for (let count=6;count<=28;count++) {
+      const controls = { 'triangles-variant-slider': String(variant), 'triangles-direction-select': direction };
+      const old = '#bar=' + Buffer.from(JSON.stringify({v:1,controls})).toString('base64url');
+      const restored = decodeState(old, currentManifest).controls['triangles-direction-select'];
+      expect(vertices(createTrianglesPatternGeometry({variant,count,direction})))
+        .toEqual(vertices(createTrianglesPatternGeometry({variant:1,count,direction:restored})));
+    }
+  }
+});

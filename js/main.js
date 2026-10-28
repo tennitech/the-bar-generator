@@ -92,8 +92,6 @@ let triangleGridGroup;
 let triangleGridVariantSlider;
 let triangleGridVariantDisplay;
 let trianglesGroup;
-let trianglesVariantSlider;
-let trianglesVariantDisplay;
 let trianglesDirectionSelect;
 let trianglesCountSlider;
 let trianglesCountDisplay;
@@ -1409,8 +1407,12 @@ function resetStyleParameters(style) {
       updateTriangleGridVariantDisplay();
       break;
     case 'triangles':
-      if (trianglesVariantSlider) trianglesVariantSlider.value = 1;
-      updateTrianglesVariantDisplay();
+      if (trianglesDirectionSelect) {
+        trianglesDirectionSelect.value = 'down-right';
+        trianglesDirectionSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if (trianglesCountSlider) trianglesCountSlider.value = 14;
+      updateTrianglesCountDisplay();
       break;
   }
 
@@ -1560,8 +1562,12 @@ function randomizeStyleParameters(style) {
       updateTriangleGridVariantDisplay();
       break;
     case 'triangles':
-      if (trianglesVariantSlider) trianglesVariantSlider.value = randomStepValue(1, 2, 1);
-      updateTrianglesVariantDisplay();
+      if (trianglesDirectionSelect) {
+        trianglesDirectionSelect.value = pickRandom(['down-right', 'up-right', 'up-left', 'down-left']);
+        trianglesDirectionSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if (trianglesCountSlider) trianglesCountSlider.value = randomStepValue(6, 28, 1);
+      updateTrianglesCountDisplay();
       break;
   }
 
@@ -2449,8 +2455,6 @@ function setup() {
   triangleGridVariantSlider = document.getElementById('triangle-grid-variant-slider');
   triangleGridVariantDisplay = document.getElementById('triangle-grid-variant-display');
   trianglesGroup = document.getElementById('triangles-group');
-  trianglesVariantSlider = document.getElementById('triangles-variant-slider');
-  trianglesVariantDisplay = document.getElementById('triangles-variant-display');
   trianglesDirectionSelect = document.getElementById('triangles-direction-select');
   trianglesCountSlider = document.getElementById('triangles-count-slider');
   trianglesCountDisplay = document.getElementById('triangles-count-display');
@@ -3022,15 +3026,6 @@ function setup() {
     updateTriangleGridVariantDisplay();
   }
 
-  if (trianglesVariantSlider) {
-    trianglesVariantSlider.addEventListener('input', function () {
-      updateTrianglesVariantDisplay();
-      updateUrlParameters();
-      requestUpdate();
-    });
-    updateTrianglesVariantDisplay();
-  }
-
   if (trianglesDirectionSelect) {
     trianglesDirectionSelect.addEventListener('change', function () {
       updateUrlParameters();
@@ -3370,13 +3365,6 @@ function setup() {
       refreshDisplay: updateTrianglesCountDisplay,
       commit: () => { updateTrianglesCountDisplay(); updateUrlParameters(); requestUpdate(); },
       ariaLabel: 'Set triangle count'
-    },
-    {
-      slider: trianglesVariantSlider,
-      display: trianglesVariantDisplay,
-      refreshDisplay: updateTrianglesVariantDisplay,
-      commit: () => { updateTrianglesVariantDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set triangles variant'
     }
   ].forEach(registerSliderValueEditor);
 
@@ -3657,11 +3645,6 @@ function updateTriangleGridVariantDisplay() {
   triangleGridVariantDisplay.textContent = triangleGridVariantSlider.value;
 }
 
-function updateTrianglesVariantDisplay() {
-  if (!trianglesVariantSlider || !trianglesVariantDisplay) return;
-  trianglesVariantDisplay.textContent = trianglesVariantSlider.value;
-}
-
 function updateTrianglesCountDisplay() {
   if (!trianglesCountSlider || !trianglesCountDisplay) return;
   const settings = normalizeTrianglesPatternSettings({ count: trianglesCountSlider.value });
@@ -3672,12 +3655,10 @@ function updateTrianglesCountDisplay() {
 // Shared triangle state for the preview and canonical export collector.
 function getTrianglePatternControlValues() {
   const settings = normalizeTrianglesPatternSettings({
-    variant: trianglesVariantSlider ? trianglesVariantSlider.value : 1,
     direction: trianglesDirectionSelect ? trianglesDirectionSelect.value : 'down-right',
     count: trianglesCountSlider ? trianglesCountSlider.value : 14
   });
   return {
-    trianglesVariant: settings.variant,
     trianglesDirection: settings.direction,
     trianglesCount: settings.count
   };
@@ -4357,7 +4338,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     triangleGridVariant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2,
     ...(typeof getTrianglePatternControlValues === 'function'
       ? getTrianglePatternControlValues()
-      : { trianglesVariant: trianglesVariantSlider ? trianglesVariantSlider.value : 1 }),
+      : { trianglesDirection: 'down-right', trianglesCount: 14 }),
     morseText: morseInput ? sanitizeBarText(morseInput.value) : 'RPI',
     trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
     trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
@@ -6127,9 +6108,6 @@ function updateUrlParameters() {
   }
 
   if (styleSelect && styleSelect.value === 'triangles') {
-    if (trianglesVariantSlider && parseInt(trianglesVariantSlider.value, 10) !== 1) {
-      params.set('trianglesVariant', trianglesVariantSlider.value);
-    }
     // Keep an explicit saved direction even when it equals the current default.
     const hasSavedTriangleDirection = new URLSearchParams(window.location.search).has('trianglesDirection');
     if (trianglesDirectionSelect && (trianglesDirectionSelect.value !== 'down-right' || hasSavedTriangleDirection)) {
@@ -6361,10 +6339,7 @@ function applyUrlParameters() {
     triangleGridVariantSlider.value = params.triangleGridVariant;
     updateTriangleGridVariantDisplay();
   }
-  if (trianglesVariantSlider) {
-    trianglesVariantSlider.value = params.trianglesVariant;
-    updateTrianglesVariantDisplay();
-  }
+
   if (trianglesDirectionSelect) trianglesDirectionSelect.value = params.trianglesDirection;
   if (trianglesCountSlider) {
     trianglesCountSlider.value = params.trianglesCount;
@@ -6554,7 +6529,6 @@ function updateAllDisplays() {
   updatePointConnectVariantDisplay();
   updateNeuralNetworkHiddenLayersDisplay();
   updateTriangleGridVariantDisplay();
-  updateTrianglesVariantDisplay();
   updateTrussSegmentsDisplay();
   updateTrussThicknessDisplay();
   updateStaffTempoDisplay();
@@ -7403,7 +7377,6 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       barY: 0,
       exactBarWidth,
       barHeight: rectHeight,
-      variant: triangleValues.trianglesVariant,
       count: triangleValues.trianglesCount,
       direction: triangleValues.trianglesDirection
     });
