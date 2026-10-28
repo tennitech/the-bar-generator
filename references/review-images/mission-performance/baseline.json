@@ -1,0 +1,1866 @@
+{
+  "chromium": [
+    {
+      "run": 0,
+      "theme": "lunar",
+      "settled": 589,
+      "ready": 55.70000000298023,
+      "calls": {
+        "draw": {
+          "count": 41,
+          "totalMs": 44.40000006556511
+        },
+        "drawLunarBarPattern": {
+          "count": 40,
+          "totalMs": 5.000000014901161
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.20000000298023224
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 4.700000002980232
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 11
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 5,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4.700000002980232,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 4.700000002980232,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 7,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 22.900000005960464,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 5.299999997019768,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "theme": "black",
+      "settled": 525,
+      "ready": 39.400000005960464,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 2
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 31.700000002980232
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.10000000894069672
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 1.7000000029802322
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 4.100000008940697
+        }
+      },
+      "long": [],
+      "nodes": 2785,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 5,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4.700000002980232,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 4.700000002980232,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 7,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 22.900000005960464,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 5.299999997019768,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "theme": "lunar",
+      "settled": 526,
+      "ready": 48.20000000298023,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 4.30000002682209
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 32.89999996125698
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.09999999403953552
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 4
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 8.699999988079071
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 5,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4.700000002980232,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 4.700000002980232,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 7,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 22.900000005960464,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 5.299999997019768,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "theme": "white",
+      "settled": 525,
+      "ready": 52.900000005960464,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 5.500000059604645
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 42.800000086426735
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.09999999403953552
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 0.20000000298023224
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 5.9000000059604645
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 5,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4.700000002980232,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 4.700000002980232,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 7,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 22.900000005960464,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 5.299999997019768,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "theme": "lunar",
+      "settled": 529,
+      "ready": 46.79999999701977,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 4.5999999940395355
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 34
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.09999999403953552
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 0.3999999910593033
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 5.699999988079071
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 5,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4.700000002980232,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 4.700000002980232,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 7,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 22.900000005960464,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 5.299999997019768,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "theme": "lunar",
+      "settled": 562,
+      "ready": 56.79999999701977,
+      "calls": {
+        "draw": {
+          "count": 40,
+          "totalMs": 40.80000001192093
+        },
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 4.80000002682209
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.20000001788139343
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 4.0999999940395355
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 9.700000002980232
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 4.4000000059604645,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 5.0999999940395355,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 6.0999999940395355,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 7.5999999940395355,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 11.5,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 23.80000001192093,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "theme": "black",
+      "settled": 524,
+      "ready": 41.900000005960464,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 2
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 31.10000005364418
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.10000000894069672
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 1.7000000029802322
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 4.399999991059303
+        }
+      },
+      "long": [],
+      "nodes": 2785,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 4.4000000059604645,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 5.0999999940395355,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 6.0999999940395355,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 7.5999999940395355,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 11.5,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 23.80000001192093,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "theme": "lunar",
+      "settled": 525,
+      "ready": 47.400000005960464,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 3.900000035762787
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 33.10000005364418
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 3.7000000029802322
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 8.600000008940697
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 4.4000000059604645,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 5.0999999940395355,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 6.0999999940395355,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 7.5999999940395355,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 11.5,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 23.80000001192093,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "theme": "white",
+      "settled": 525,
+      "ready": 47.5,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 4.700000017881393
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 36
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.09999999403953552
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 0.4000000059604645
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 5.700000002980232
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 4.4000000059604645,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 5.0999999940395355,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 6.0999999940395355,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 7.5999999940395355,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 11.5,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 23.80000001192093,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "theme": "lunar",
+      "settled": 526,
+      "ready": 45.5,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 4.799999997019768
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 30.29999989271164
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 0.20000000298023224
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 5.5
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 4.4000000059604645,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 5.0999999940395355,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 6.0999999940395355,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 7.5999999940395355,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 11.5,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 23.80000001192093,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "theme": "lunar",
+      "settled": 553,
+      "ready": 50.80000001192093,
+      "calls": {
+        "draw": {
+          "count": 39,
+          "totalMs": 42.89999997615814
+        },
+        "drawLunarBarPattern": {
+          "count": 38,
+          "totalMs": 5.1999999433755875
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.10000000894069672
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 4.5999999940395355
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 10.299999997019768
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 4.0999999940395355,
+          "bytes": 30364
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 5.700000002980232,
+          "bytes": 4828
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 4.799999997019768,
+          "bytes": 28732
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 6.4000000059604645,
+          "bytes": 31612
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 9.900000005960464,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 23.700000002980232,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "theme": "black",
+      "settled": 508,
+      "ready": 42.79999999701977,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 38,
+          "totalMs": 2.300000011920929
+        },
+        "draw": {
+          "count": 38,
+          "totalMs": 30.200000002980232
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.20000000298023224
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 1.6000000089406967
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 4.700000002980232
+        }
+      },
+      "long": [],
+      "nodes": 2785,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 4.0999999940395355,
+          "bytes": 30364
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 5.700000002980232,
+          "bytes": 4828
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 4.799999997019768,
+          "bytes": 28732
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 6.4000000059604645,
+          "bytes": 31612
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 9.900000005960464,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 23.700000002980232,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "theme": "lunar",
+      "settled": 557,
+      "ready": 48.80000001192093,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 38,
+          "totalMs": 4.100000008940697
+        },
+        "draw": {
+          "count": 38,
+          "totalMs": 33.50000001490116
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.19999998807907104
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 3.7999999970197678
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 8.200000002980232
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 4.0999999940395355,
+          "bytes": 30364
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 5.700000002980232,
+          "bytes": 4828
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 4.799999997019768,
+          "bytes": 28732
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 6.4000000059604645,
+          "bytes": 31612
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 9.900000005960464,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 23.700000002980232,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "theme": "white",
+      "settled": 521,
+      "ready": 46.29999999701977,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 4.69999997317791
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 34.60000003874302
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.10000000894069672
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 0.29999999701976776
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 5.700000002980232
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 4.0999999940395355,
+          "bytes": 30364
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 5.700000002980232,
+          "bytes": 4828
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 4.799999997019768,
+          "bytes": 28732
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 6.4000000059604645,
+          "bytes": 31612
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 9.900000005960464,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 23.700000002980232,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "theme": "lunar",
+      "settled": 524,
+      "ready": 47.5,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 4.80000002682209
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 31.500000044703484
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0.10000000894069672
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 0.30000001192092896
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 5.700000002980232
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 4.0999999940395355,
+          "bytes": 30364
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 5.700000002980232,
+          "bytes": 4828
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 4.799999997019768,
+          "bytes": 28732
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 6.4000000059604645,
+          "bytes": 31612
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 9.900000005960464,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 23.700000002980232,
+          "bytes": 3802937
+        }
+      ]
+    }
+  ],
+  "webkit": [
+    {
+      "run": 0,
+      "theme": "lunar",
+      "settled": 597,
+      "ready": 83,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 37,
+          "totalMs": 8
+        },
+        "draw": {
+          "count": 37,
+          "totalMs": 55
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 6
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 13
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 5,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 6,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 9,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 5,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "theme": "black",
+      "settled": 500,
+      "ready": 42,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 38,
+          "totalMs": 4
+        },
+        "draw": {
+          "count": 38,
+          "totalMs": 47
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 3
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 9
+        }
+      },
+      "long": [],
+      "nodes": 2785,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 5,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 6,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 9,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 5,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "theme": "lunar",
+      "settled": 576,
+      "ready": 86,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 13
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 55
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 1
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 6
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 14
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 5,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 6,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 9,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 5,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "theme": "white",
+      "settled": 571,
+      "ready": 80,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 40,
+          "totalMs": 9
+        },
+        "draw": {
+          "count": 40,
+          "totalMs": 50
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 1
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 1
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 10
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 5,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 6,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 9,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 5,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "theme": "lunar",
+      "settled": 570,
+      "ready": 72,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 40,
+          "totalMs": 8
+        },
+        "draw": {
+          "count": 40,
+          "totalMs": 49
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 1
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 1
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 8
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 5,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 6,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 9,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 5,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "theme": "lunar",
+      "settled": 597,
+      "ready": 73,
+      "calls": {
+        "draw": {
+          "count": 37,
+          "totalMs": 52
+        },
+        "drawLunarBarPattern": {
+          "count": 36,
+          "totalMs": 5
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 1
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 7
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 13
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 3,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 2,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 4,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 11,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 2,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "theme": "black",
+      "settled": 506,
+      "ready": 49,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 5
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 49
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 3
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 9
+        }
+      },
+      "long": [],
+      "nodes": 2785,
+      "resources": [
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 3,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 2,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 4,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 11,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 2,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "theme": "lunar",
+      "settled": 563,
+      "ready": 68,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 6
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 46
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 5
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 12
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 3,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 2,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 4,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 11,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 2,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "theme": "white",
+      "settled": 556,
+      "ready": 65,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 5
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 48
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 1
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 1
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 8
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 3,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 2,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 4,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 11,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 2,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "theme": "lunar",
+      "settled": 570,
+      "ready": 74,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 40,
+          "totalMs": 8
+        },
+        "draw": {
+          "count": 40,
+          "totalMs": 52
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 1
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 0
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 8
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 3,
+          "bytes": 31612
+        },
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 2,
+          "bytes": 28732
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 4,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 11,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 2,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "theme": "lunar",
+      "settled": 606,
+      "ready": 83,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 39,
+          "totalMs": 9
+        },
+        "draw": {
+          "count": 39,
+          "totalMs": 56
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 7
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 15
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 3,
+          "bytes": 28732
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4,
+          "bytes": 31612
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 5,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 12,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 2,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "theme": "black",
+      "settled": 501,
+      "ready": 48,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 38,
+          "totalMs": 7
+        },
+        "draw": {
+          "count": 38,
+          "totalMs": 47
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 1
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 4
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 11
+        }
+      },
+      "long": [],
+      "nodes": 2785,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 3,
+          "bytes": 28732
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4,
+          "bytes": 31612
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 5,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 12,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 2,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "theme": "lunar",
+      "settled": 580,
+      "ready": 76,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 41,
+          "totalMs": 6
+        },
+        "draw": {
+          "count": 41,
+          "totalMs": 52
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 1
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 6
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 12
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 3,
+          "bytes": 28732
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4,
+          "bytes": 31612
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 5,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 12,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 2,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "theme": "white",
+      "settled": 567,
+      "ready": 84,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 38,
+          "totalMs": 6
+        },
+        "draw": {
+          "count": 38,
+          "totalMs": 50
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 0
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 9
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 3,
+          "bytes": 28732
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4,
+          "bytes": 31612
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 5,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 12,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 2,
+          "bytes": 3802937
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "theme": "lunar",
+      "settled": 567,
+      "ready": 71,
+      "calls": {
+        "drawLunarBarPattern": {
+          "count": 40,
+          "totalMs": 8
+        },
+        "draw": {
+          "count": 40,
+          "totalMs": 56
+        },
+        "createLunarBarVectorFragment": {
+          "count": 2,
+          "totalMs": 0
+        },
+        "updateHeaderBrandPreview": {
+          "count": 1,
+          "totalMs": 1
+        },
+        "applyColorMode": {
+          "count": 1,
+          "totalMs": 9
+        }
+      },
+      "long": [],
+      "nodes": 7017,
+      "resources": [
+        {
+          "name": "RPIGeist-Regular.woff2",
+          "duration": 3,
+          "bytes": 30364
+        },
+        {
+          "name": "RPIGeistMono-Regular.woff2",
+          "duration": 3,
+          "bytes": 28732
+        },
+        {
+          "name": "RPIGeist-Bold.woff2",
+          "duration": 4,
+          "bytes": 31612
+        },
+        {
+          "name": "themeMode.js?v=20260419-lunar-theme",
+          "duration": 5,
+          "bytes": 4828
+        },
+        {
+          "name": "lunarBarAsset.js?v=20261027-artemis-vector",
+          "duration": 12,
+          "bytes": 693899
+        },
+        {
+          "name": "lunar-canvas-backdrop.png",
+          "duration": 2,
+          "bytes": 3802937
+        }
+      ]
+    }
+  ]
+}

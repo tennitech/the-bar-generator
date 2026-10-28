@@ -724,3 +724,9 @@ Implementation is saved locally on `codex/feat-neural-network`, based on publish
 preserved. No merge or deployment is included. Physical devices, Safari app,
 screen readers, final-size owner acceptance and formal RPI approval remain
 unverified; secondary themes were exercised only for legacy-state compatibility.
+
+### Mission Control performance investigation checkpoint — October 28, 2026
+
+- Baseline investigation is saved on isolated `codex/fix-mission-control-performance`, based on published PR #57 `f8ad484`; no production optimization, merge or deployment yet. Existing main and feature/recovery branches are preserved.
+- Chromium/WebKit profiles identify continuous static Artemis drawing, same-source theme SVG reparsing, the 3.8 MB backdrop transfer and an always-running hidden counter as candidates for targeted work. Local measurements do not reproduce a multi-second stall or establish a speed improvement. Cloud continuation must rebaseline on its own host.
+- See [measurement context, reproducible profile and remaining checks](review-images/mission-performance/handoff.md). No unit/full regression or visual screenshot review has been completed for this checkpoint.
