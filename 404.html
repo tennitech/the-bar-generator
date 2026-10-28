@@ -228,7 +228,7 @@
         return;
       }
 
-      script.src = `${basePath}js/utils/pagesFallback.js?v=20261028-numeric-modes`;
+      script.src = `${basePath}js/utils/pagesFallback.js?v=20261028-circle-controls-integration`;
       script.onload = function onFallbackScriptLoad() {
         const redirectUrl = window.PagesFallback && typeof window.PagesFallback.getPagesFallbackRedirectUrl === 'function'
           ? window.PagesFallback.getPagesFallbackRedirectUrl(window.location.pathname, window.location.search, {

@@ -30,6 +30,7 @@ async function bounds(page, id) {
     assert.equal(await quantum.count(), 1);
     assert.equal(await page.locator('#style-select option[value="wave-quantum"]').evaluate(option => option.parentElement.label), 'Dynamic');
     assert.equal(await quantum.locator('.select_style-preview svg').count(), 1);
+    assert.equal(await quantum.evaluate(row => row.closest('.select_option-group').firstElementChild.textContent), 'Dynamic');
 
     assert.equal(await page.locator('#style-select-options .is-disabled .select_style-preview').count(), 0);
     assert.ok((await bounds(page,'style-select')).height > 500);
