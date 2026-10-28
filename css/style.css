@@ -2080,6 +2080,13 @@ body.has-logo-animation {
   );
 }
 
+/* A pinned information card can cover the entire control area in short windows.
+   Let both sections flow through the same sidebar scroller at these heights. */
+@media (max-height: 40rem) {
+  .sidebar-footer { position: static; }
+  .sidebar-footer::before { display: none; }
+}
+
 .sidebar-feedback-btn {
   width: 100%;
   min-height: 40px;

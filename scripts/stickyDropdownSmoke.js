@@ -27,7 +27,6 @@ const evidence = process.env.RPI_EVIDENCE_DIR || '/tmp/rpi-sticky-themes';
     });
     for (const theme of ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray', 'lunar']) {
       if (theme === 'lunar') {
-        await page.setViewportSize({ width: 1024, height: 600 });
         await page.selectOption('#style-select', 'lunar', { force: true });
       }
       // Legacy/query state can restore secondary themes, whose new selection is disabled.
