@@ -35,7 +35,7 @@
   },
   "neural-network": {
     "title": "Neural Network",
-    "text": "Nodes and connecting lines form a schematic network, with an adjustable number of interior layers. Add or remove layers to explore the relationships in the diagram; it illustrates network structure rather than showing a trained model, its weights, or measured activity."
+    "text": "What changes when a network gets wider or deeper? Explore an untrained feedforward model: nodes apply tanh or sigmoid to weighted sums, filled centers encode activation, and dashed links mark negative weights; changing the input recomputes every layer, without training."
   },
   "circles-gradient": {
     "title": "Circles Gradient",

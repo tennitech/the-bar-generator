@@ -498,8 +498,8 @@ describe('createBarPatternSVG', () => {
     });
     const svg = createBarPatternSVG(makeBaseConfig({ currentShader: 23 }));
 
-    expect(geometry.nodes.length).toBe(7);
-    expect(geometry.lines.length).toBe(8);
+    expect(geometry.nodes.length).toBe(8);
+    expect(geometry.lines.length).toBe(15);
     expect(svg).toContain('<path d="');
     expect(svg).toContain('<circle');
   });
@@ -523,8 +523,8 @@ describe('createBarPatternSVG', () => {
     expect(deep.hiddenLayers).toBe(4);
     expect(deep.nodes.length).toBeGreaterThan(shallow.nodes.length);
     expect(deep.lines.length).toBeGreaterThan(shallow.lines.length);
-    expect(deep.nodes.length).toBe(16);
-    expect(deep.lines.length).toBe(26);
+    expect(deep.nodes.length).toBe(17);
+    expect(deep.lines.length).toBe(42);
   });
 
   test('builds dense line geometry for point connect and triangle grid styles', () => {

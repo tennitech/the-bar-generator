@@ -4078,3 +4078,9 @@ body { min-height: 0; }
 }
 
 .select_style-preview.is-artemis { height: 0.36rem; background: currentColor; -webkit-mask: url('../assets/bars/bar-lunar.svg') center / contain no-repeat; mask: url('../assets/bars/bar-lunar.svg') center / contain no-repeat; }
+
+/* Supplemental model explanation uses the existing control typography/tokens. */
+.neural_model-details { font-size: 0.75rem; line-height: 1.5; }
+.neural_model-details summary { cursor: pointer; padding-block: 0.5rem; }
+.neural_model-details a { color: inherit; text-underline-offset: 0.2em; }
+#neural-network-group .control-hint { font-size: 0.75rem; line-height: 1.5; font-style: normal; }

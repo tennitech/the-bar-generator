@@ -784,11 +784,37 @@
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="neural-network-hidden-layers-slider" class="control-label">HIDDEN LAYERS <span
-                id="neural-network-hidden-layers-display" data-slider-value>1</span></label>
-            <input type="range" id="neural-network-hidden-layers-slider" data-url-parameter="neuralNetworkHiddenLayers" min="1" max="5" value="1"
+                id="neural-network-hidden-layers-display" data-slider-value>3</span></label>
+            <input type="range" id="neural-network-hidden-layers-slider" data-url-parameter="neuralNetworkHiddenLayers" min="1" max="5" value="3"
               class="control-slider" aria-label="Neural Network Hidden Layers">
           </div>
-          <div class="control-hint">Adjusts the number of interior network layers in the bar</div>
+          <div class="control slider-control">
+            <label for="neural-network-units-slider" class="control-label">UNITS PER HIDDEN LAYER <span id="neural-network-units-display" data-slider-value>3</span></label>
+            <input type="range" id="neural-network-units-slider" data-url-parameter="neuralNetworkUnits" min="2" max="5" value="3" class="control-slider" aria-label="Neural Network Units Per Hidden Layer">
+          </div>
+          <div class="control slider-control">
+            <label for="neural-network-input-slider" class="control-label">INPUT MIX <span id="neural-network-input-display" data-slider-value>65</span></label>
+            <input type="range" id="neural-network-input-slider" data-url-parameter="neuralNetworkInput" min="0" max="100" value="65" class="control-slider" aria-label="Neural Network Input Mix">
+          </div>
+          <div class="control slider-control">
+            <label for="neural-network-seed-slider" class="control-label">WEIGHT SET <span id="neural-network-seed-display" data-slider-value>1</span></label>
+            <input type="range" id="neural-network-seed-slider" data-url-parameter="neuralNetworkSeed" min="1" max="16" value="1" class="control-slider" aria-label="Neural Network Weight Set">
+          </div>
+          <div class="control">
+            <label for="neural-network-connectivity-select" class="control-label">CONNECTIONS</label>
+            <select id="neural-network-connectivity-select" data-url-parameter="neuralNetworkConnectivity" class="control-select"><option value="dense">Fully connected</option><option value="local">Local neighbors</option></select>
+          </div>
+          <div class="control">
+            <label for="neural-network-activation-select" class="control-label">ACTIVATION</label>
+            <select id="neural-network-activation-select" data-url-parameter="neuralNetworkActivation" class="control-select"><option value="tanh">Tanh</option><option value="sigmoid">Sigmoid</option></select>
+          </div>
+          <p class="control-hint">Left to right: 3 inputs → hidden layers → 2 outputs. Larger filled centers mean higher activation; thicker links mean larger weights. Dashed links have negative weights.</p>
+          <p id="neural-network-readout" class="control-hint" aria-label="Network output values"></p>
+          <details class="neural_model-details"><summary>How this network works</summary>
+            <p class="control-hint">Input mix t sets [t, 1 − t, 2t − 1]. Each unit applies the selected activation to its weighted input sum, with zero bias. Tanh center areas map −1 to +1; sigmoid areas map 0 to 1. Input areas always map −1 to +1.</p>
+            <p class="control-hint">Weight sets are repeatable random initializations. This untrained model has no dataset, learning or prediction task. Local neighbors masks the dense matrix to nearby units.</p>
+            <a href="https://cs231n.github.io/neural-networks-1/" target="_blank" rel="noopener noreferrer">Read the Stanford network guide</a>
+          </details>
         </div>
 
         <div id="triangle-grid-group" data-parameter-actions="triangle-grid" class="control-group" style="display: none;">

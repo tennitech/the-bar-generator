@@ -433,101 +433,84 @@ function createPointConnectPatternGeometry(options = {}) {
   return { lines, thickness };
 }
 
+// A small, untrained feedforward network. Model values and drawing geometry stay
+// together so preview, header, and every static export describe the same pass.
+function normalizeNeuralNetworkSettings(options = {}) {
+  const integer = (key, fallback, min, max) => {
+    const value = Number(options[key]);
+    return Math.max(min, Math.min(max, Number.isFinite(value) && options[key] !== '' && options[key] != null ? Math.round(value) : fallback));
+  };
+  return {
+    hiddenLayers: integer('hiddenLayers', 3, 1, 5),
+    units: integer('units', 3, 2, 5),
+    connectivity: options.connectivity === 'local' ? 'local' : 'dense',
+    activation: options.activation === 'sigmoid' ? 'sigmoid' : 'tanh',
+    input: integer('input', 65, 0, 100),
+    seed: integer('seed', 1, 1, 16)
+  };
+}
+
 function createNeuralNetworkPatternGeometry(options = {}) {
+  const settings = normalizeNeuralNetworkSettings(options);
   const barStartX = Number(options.barStartX || 0);
   const barY = Number(options.barY || 0);
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const hiddenLayers = Math.max(1, Math.min(5, parseInt(options.hiddenLayers || 1, 10) || 1));
-  const thickness = Math.max(0.65, parseFloat(options.thickness || Math.max(0.8, barHeight * 0.045)));
-  const endpointNodeCount = 2;
-  const hiddenNodeCount = 3;
-  const layerNodeCounts = [endpointNodeCount];
-  for (let i = 0; i < hiddenLayers; i++) {
-    layerNodeCounts.push(hiddenNodeCount);
-  }
-  layerNodeCounts.push(endpointNodeCount);
-  const layerCount = layerNodeCounts.length;
-  const maxNodes = Math.max(...layerNodeCounts);
-  const coreRadius = Math.max(thickness * 1.35, Math.min(barHeight * 0.12, (barHeight * 0.92) / (maxNodes * 1.8)));
-  const sideInset = coreRadius; // Keep endpoint circles circular and tangent to the nominal edges.
-  const verticalInset = Math.max(coreRadius * 0.7, barHeight * 0.015);
-  const left = barStartX + sideInset;
-  const right = barStartX + exactBarWidth - sideInset;
-  const top = barY + verticalInset;
-  const bottom = barY + barHeight - verticalInset;
-  const layers = [];
-  const lines = [];
-  const nodes = [];
-  const lerp = (a, b, t) => a + (b - a) * t;
-
-  for (let layerIndex = 0; layerIndex < layerCount; layerIndex++) {
-    const nodeCount = layerNodeCounts[layerIndex];
-    const layerNodes = [];
-    const x = layerCount === 1 ? barStartX + exactBarWidth / 2 : lerp(left, right, layerIndex / (layerCount - 1));
-    const stepY = nodeCount === 1 ? 0 : (bottom - top) / (nodeCount - 1);
-
-    for (let nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
-      const yBase = nodeCount === 1 ? (top + bottom) / 2 : top + stepY * nodeIndex;
-      const layerParityOffset = layerIndex > 0 && layerIndex < layerCount - 1
-        ? (layerIndex % 2 === 0 ? -1 : 1) * stepY * 0.04
-        : 0;
-      const y = Math.max(top, Math.min(bottom, yBase + layerParityOffset));
-      const node = { x, y, r: coreRadius, layerIndex, nodeIndex };
-
-      layerNodes.push(node);
-      nodes.push(node);
-    }
-
-    layers.push(layerNodes);
-  }
-
-  const addTrimmedLine = (a, b) => {
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance < 0.001) return;
-
-    const trimStart = a.r + thickness * 0.35;
-    const trimEnd = b.r + thickness * 0.35;
-    if (distance <= trimStart + trimEnd) return;
-
-    const unitX = dx / distance;
-    const unitY = dy / distance;
-    lines.push({
-      x1: a.x + unitX * trimStart,
-      y1: a.y + unitY * trimStart,
-      x2: b.x - unitX * trimEnd,
-      y2: b.y - unitY * trimEnd
-    });
+  const counts = [3, ...Array(settings.hiddenLayers).fill(settings.units), 2];
+  const thickness = barHeight * 0.022;
+  const radius = Math.min(barHeight * 0.1, barHeight / (Math.max(...counts) * 2.8));
+  const outerRadius = radius + thickness / 2;
+  // Whole endpoint rings touch the horizontal domain edges. Vertical padding
+  // includes the complete ring stroke; no node is hidden behind the bar clip.
+  const verticalInset = outerRadius + barHeight * 0.035;
+  const layers = counts.map((count, layerIndex) => Array.from({ length: count }, (_, nodeIndex) => ({
+    x: barStartX + outerRadius + (exactBarWidth - 2 * outerRadius) * layerIndex / (counts.length - 1),
+    y: barY + verticalInset + (barHeight - 2 * verticalInset) * nodeIndex / (count - 1),
+    r: radius, layerIndex, nodeIndex, value: 0, sum: 0
+  })));
+  const t = settings.input / 100;
+  [t, 1 - t, 2 * t - 1].forEach((value, index) => { layers[0][index].value = value; });
+  let randomState = settings.seed;
+  const random = () => {
+    randomState = (Math.imul(1664525, randomState) + 1013904223) >>> 0;
+    return randomState / 4294967296;
   };
-
-  const normalizeNodePosition = (index, count) => (count <= 1 ? 0.5 : index / (count - 1));
-  const targetNeighborSpan = endpointNodeCount === hiddenNodeCount ? 1 : 2;
-
-  for (let layerIndex = 0; layerIndex < layers.length - 1; layerIndex++) {
-    const currentLayer = layers[layerIndex];
-    const nextLayer = layers[layerIndex + 1];
-
-    for (let i = 0; i < currentLayer.length; i++) {
-      const currentPosition = normalizeNodePosition(i, currentLayer.length);
-      let connectionCount = 0;
-
-      for (let j = 0; j < nextLayer.length; j++) {
-        const nextPosition = normalizeNodePosition(j, nextLayer.length);
-        const positionDelta = Math.abs(currentPosition - nextPosition);
-        const isPrimaryNeighbor = positionDelta <= 0.01;
-        const isDiagonalNeighbor = positionDelta > 0.01 && positionDelta <= 0.51;
-
-        if (isPrimaryNeighbor || (isDiagonalNeighbor && connectionCount < targetNeighborSpan)) {
-          addTrimmedLine(currentLayer[i], nextLayer[j]);
-          connectionCount++;
-        }
+  const lines = [];
+  for (let layerIndex = 1; layerIndex < layers.length; layerIndex++) {
+    const previous = layers[layerIndex - 1];
+    const current = layers[layerIndex];
+    // Dense Glorot uniform initialization; local mode masks that same matrix.
+    // This explicit sparse ablation is not a claim of variance preservation.
+    const limit = Math.sqrt(6 / (previous.length + current.length));
+    for (const target of current) {
+      for (const source of previous) {
+        const weight = (2 * random() - 1) * limit;
+        const nearest = Math.round(target.nodeIndex * (previous.length - 1) / (current.length - 1));
+        const nearestTarget = Math.round(source.nodeIndex * (current.length - 1) / (previous.length - 1));
+        if (settings.connectivity === 'local' && Math.abs(source.nodeIndex - nearest) > 1 && target.nodeIndex !== nearestTarget) continue;
+        target.sum += source.value * weight;
+        const dx = target.x - source.x;
+        const dy = target.y - source.y;
+        const distance = Math.hypot(dx, dy);
+        const trim = outerRadius + barHeight * 0.025;
+        lines.push({
+          x1: source.x + dx / distance * trim, y1: source.y + dy / distance * trim,
+          x2: target.x - dx / distance * trim, y2: target.y - dy / distance * trim,
+          weight, width: barHeight * (0.012 + 0.022 * Math.abs(weight) / limit),
+          sourceLayer: layerIndex - 1, sourceIndex: source.nodeIndex,
+          targetLayer: layerIndex, targetIndex: target.nodeIndex
+        });
       }
+      target.value = settings.activation === 'sigmoid' ? 1 / (1 + Math.exp(-target.sum)) : Math.tanh(target.sum);
     }
   }
-
-  return { lines, nodes, thickness, hiddenLayers };
+  const nodes = layers.flat();
+  for (const node of nodes) {
+    const normalized = node.layerIndex === 0 || settings.activation === 'tanh' ? (node.value + 1) / 2 : node.value;
+    // Filled AREA, not radius, is linear in the normalized activation.
+    node.fillRadius = (radius - thickness * 1.35) * Math.sqrt(normalized);
+  }
+  return { ...settings, lines, nodes, layers, thickness, outputs: layers.at(-1).map(node => node.value) };
 }
 
 function createTriangleGridPatternGeometry(options = {}) {
@@ -1826,21 +1809,20 @@ function createBarPatternSVG(config) {
       barY,
       exactBarWidth,
       barHeight,
-      hiddenLayers: values.neuralNetworkHiddenLayers
+      hiddenLayers: values.neuralNetworkHiddenLayers,
+      units: values.neuralNetworkUnits,
+      connectivity: values.neuralNetworkConnectivity,
+      activation: values.neuralNetworkActivation,
+      input: values.neuralNetworkInput,
+      seed: values.neuralNetworkSeed
     });
 
-    let pathData = '';
-    for (let i = 0; i < geometry.lines.length; i++) {
-      const line = geometry.lines[i];
-      pathData += ` M ${line.x1} ${line.y1} L ${line.x2} ${line.y2}`;
+    for (const edge of geometry.lines) {
+      pattern += `\n    <path d="M ${edge.x1} ${edge.y1} L ${edge.x2} ${edge.y2}" fill="none" stroke="${fgColor}" stroke-width="${edge.width}" stroke-linecap="round"${edge.weight < 0 ? ' stroke-dasharray="1.5 1.2"' : ''}/>`;
     }
-    if (pathData) {
-      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${geometry.thickness}" stroke-linecap="round" stroke-linejoin="round"/>`;
-    }
-
-    for (let i = 0; i < geometry.nodes.length; i++) {
-      const node = geometry.nodes[i];
-      pattern += `\n    <circle cx="${node.x}" cy="${node.y}" r="${node.r}" fill="${fgColor}"/>`;
+    for (const node of geometry.nodes) {
+      pattern += `\n    <circle cx="${node.x}" cy="${node.y}" r="${node.r}" fill="none" stroke="${fgColor}" stroke-width="${geometry.thickness}"/>`;
+      if (node.fillRadius > 0) pattern += `\n    <circle cx="${node.x}" cy="${node.y}" r="${node.fillRadius}" fill="${fgColor}"/>`;
     }
     return pattern;
   }
@@ -2090,6 +2072,7 @@ if (typeof window !== 'undefined') {
   window.createGradientPatternGeometry = createGradientPatternGeometry;
   window.createGridPatternGeometry = createGridPatternGeometry;
   window.createLinesPatternGeometry = createLinesPatternGeometry;
+  window.normalizeNeuralNetworkSettings = normalizeNeuralNetworkSettings;
   window.createNeuralNetworkPatternGeometry = createNeuralNetworkPatternGeometry;
   window.createPointConnectPatternGeometry = createPointConnectPatternGeometry;
   window.createRulerPatternGeometry = createRulerPatternGeometry;
@@ -2119,6 +2102,7 @@ if (typeof module !== 'undefined' && module.exports) {
     createGradientPatternGeometry,
     createGridPatternGeometry,
     createLinesPatternGeometry,
+    normalizeNeuralNetworkSettings,
     createNeuralNetworkPatternGeometry,
     createPointConnectPatternGeometry,
     createRulerPatternGeometry,

@@ -672,3 +672,42 @@ Numeric integration also guards historical aliases with own-property checks. Pro
 - Headers use an opaque menu-surface backing and reserve scroll space so arrow-key navigation does not hide the active option behind them. The upper fade is suppressed for grouped menus; the lower fade, previews, arrows, disabled Coming soon hints, selection, guidance popover and native touch color picker are retained. No bar geometry or export calculations changed.
 - Validation: all 321 unit tests pass. `scripts/stickyDropdownSmoke.js` checks section push/return, eight theme surfaces, every style section, previews, keyboard visibility, disabled choices, repeated open/close, constrained dropdowns, narrow/short windows and native touch fallback. The focused sticky suite passes in Chromium/WebKit. The existing color-picker smoke also passes in both engines, including legacy query/share/SVG checks; the full selector suite passes in both engines, including 21 previews, direction arrows, 320/390px touch interaction, legacy links and SVG/PNG exports. Chromium was rerun serially after an interrupted concurrent run. Browser screenshots were visually inspected; this does not establish physical-device, screen-reader or formal brand approval.
 - Resolved the short-window followup: the pinned information-card footer could intercept the theme trigger after switching to Artemis II at 1024 × 360. At viewport heights up to 40rem (640 CSS px), the intact footer now flows through the same sidebar scroller as the controls; larger desktop layouts retain the pinned footer. No controls or card content are hidden. Focused short-layout evidence is captured by `scripts/shortSidebarSmoke.js` for Artemis II, Circles, Quantum and Solid at 1024 × 360, 1280 × 500 and 320 × 568, including pointer/keyboard selection, scrolling both directions, the complete information card and report action. These focused short-layout checks pass in Chromium and WebKit, and the 1024 × 360 control/card screenshots were visually checked.
+
+## Neural Network redesign — October 28, 2026
+
+Replaced the clipped illustrative graph with an explicit untrained feedforward
+network. Six controls cover hidden layers, units per layer, dense/local
+connectivity, tanh/sigmoid activation, input mix and deterministic weight sets.
+The three-hidden-layer default balances the narrow bar; explicit legacy layer
+settings remain supported. Each unit now computes its actual weighted sum and
+activation. Ring-center area encodes activation, line width encodes weight
+magnitude and dashes encode negative weights without depending on color.
+The sidebar includes numeric outputs and an optional model explanation/source.
+There is no training, biological simulation, animated inference or GIF mode.
+
+Complete node rings include their stroke in the vertical padding and horizontal
+edge placement, fixing cutoff while retaining the official 250 × 18 domain,
+132.4885 offset and existing painted-edge rule. Shared geometry/values feed
+preview, header, SVG and PNG. Query/share links, native controls, numeric editors,
+Reset and Randomize cover every parameter. No runtime dependency, asset, framework,
+font, theme or permission change. See [model and sources](neural_network_model.md)
+and [review evidence](review-images/neural-network/validation.md).
+
+Validation: 329 unit tests in 34 suites, including forward-pass equations,
+determinism, sparse/dense weight identity, connectedness, activation area and 320
+parameter combinations with complete node/stroke bounds. Focused Chromium and
+WebKit checks pass 28 theme/extrema/header-raster cases per engine, shared and
+plain-query round trips including zero input, old shared links, numeric editor,
+keyboard and real emulated touch interaction, Reset/Randomize, motion preference,
+Fit–400% export stability and 2D fallback. Decoded Standard PNG is 1160 × 762;
+its bar paints x=80…1079 with no paint outside the official bar domain. Fit and
+400% PNG bytes are identical. Source primitives agree; live SVG-raster sampling
+versus direct header rasterization differs by at most 3.624/255 mean alpha in the
+bar, due to fractional bar placement and thin-stroke sampling, rather than a
+geometry or model change.
+
+Implementation is saved locally on `codex/feat-neural-network`, based on published
+`ab23e3a`, with unrelated local-main ancestry and concurrent feature branches
+preserved. No merge or deployment is included. Physical devices, Safari app,
+screen readers, final-size owner acceptance and formal RPI approval remain
+unverified; secondary themes were exercised only for legacy-state compatibility.

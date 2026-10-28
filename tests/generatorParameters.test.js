@@ -44,3 +44,10 @@ test('Numeric query modes migrate historical expressions and retain decimal draf
   expect(source.numericFormula).toBe('rms');
   expect(read('?numericSource=formula&numericFormula=bad','/generator/numeric/').numericFormula).toBe('pi');
 });
+
+test('Neural Network query state retains zero input, bounds model controls and preserves explicit legacy layers', () => {
+  expect(read('?neuralNetworkHiddenLayers=1', '/generator/neural-network/')).toMatchObject({ neuralNetworkHiddenLayers: 1,
+    neuralNetworkUnits: 3, neuralNetworkInput: 65, neuralNetworkSeed: 1, neuralNetworkConnectivity: 'dense', neuralNetworkActivation: 'tanh' });
+  expect(read('?neuralNetworkHiddenLayers=99&neuralNetworkUnits=99&neuralNetworkInput=0&neuralNetworkSeed=99&neuralNetworkConnectivity=local&neuralNetworkActivation=sigmoid', '/generator/neural-network/')).toMatchObject({
+    neuralNetworkHiddenLayers: 5, neuralNetworkUnits: 5, neuralNetworkInput: 0, neuralNetworkSeed: 16, neuralNetworkConnectivity: 'local', neuralNetworkActivation: 'sigmoid' });
+});

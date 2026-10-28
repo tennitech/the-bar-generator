@@ -771,31 +771,30 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       pg.endShape(pg.CLOSE);
     }
   } else if (currentShader === 23) {
-    // Neural network pattern
-    const geometry = createNeuralNetworkPatternGeometry({
-      barStartX,
-      barY,
-      exactBarWidth,
-      barHeight: rectHeight,
-      hiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1
-    });
-
+    // Neural network pattern: same weighted graph and activation areas as SVG.
+    const values = getNeuralNetworkControlValues();
+    const geometry = createNeuralNetworkPatternGeometry({ barStartX, barY: barY, exactBarWidth, barHeight: rectHeight,
+      hiddenLayers: values.neuralNetworkHiddenLayers, units: values.neuralNetworkUnits,
+      connectivity: values.neuralNetworkConnectivity, activation: values.neuralNetworkActivation,
+      input: values.neuralNetworkInput, seed: values.neuralNetworkSeed });
     pg.noFill();
     pg.stroke(fgColor);
-    pg.strokeWeight(geometry.thickness);
     pg.strokeCap(pg.ROUND);
-    pg.strokeJoin(pg.ROUND);
-
-    for (let i = 0; i < geometry.lines.length; i++) {
-      const lineSegment = geometry.lines[i];
-      pg.line(lineSegment.x1, lineSegment.y1, lineSegment.x2, lineSegment.y2);
+    for (const edge of geometry.lines) {
+      pg.strokeWeight(edge.width);
+      const length = Math.hypot(edge.x2 - edge.x1, edge.y2 - edge.y1);
+      const step = edge.weight < 0 ? 2.7 : length;
+      for (let offset = 0; offset < length; offset += step) {
+        const end = Math.min(length, offset + (edge.weight < 0 ? 1.5 : length));
+        pg.line(edge.x1 + (edge.x2 - edge.x1) * offset / length, edge.y1 + (edge.y2 - edge.y1) * offset / length,
+          edge.x1 + (edge.x2 - edge.x1) * end / length, edge.y1 + (edge.y2 - edge.y1) * end / length);
+      }
     }
-
-    pg.noStroke();
-    pg.fill(fgColor);
-    for (let i = 0; i < geometry.nodes.length; i++) {
-      const node = geometry.nodes[i];
+    for (const node of geometry.nodes) {
+      pg.noFill(); pg.stroke(fgColor); pg.strokeWeight(geometry.thickness);
       pg.circle(node.x, node.y, node.r * 2);
+      pg.noStroke(); pg.fill(fgColor);
+      pg.circle(node.x, node.y, node.fillRadius * 2);
     }
   }
   pg.pop();

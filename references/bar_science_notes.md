@@ -31,7 +31,7 @@ Apply the remaining painted-edge requirement to every other family, variant and 
 | Numeric | Visualizes digits supplied by the user or generated from the selected formula. It does not claim to measure an external quantity. |
 | Waveform | Synthetic waveform based on the selected controls. It is not a recording or measured signal. |
 | Ticker | Repeating visual ticks with configurable ratios. It is not tied to a physical time or length unit. |
-| Neural Network | Schematic node-and-edge diagram. It does not represent a trained model or measured network topology. |
+| Neural Network | Untrained feedforward model with computed weighted sums, tanh/sigmoid activation and deterministic dense or local connections. Ring centers encode activation area; dashed edges indicate negative weights. See [model, sources and limits](neural_network_model.md). |
 | Artemis II | The splashdown counter uses April 10, 2026, 8:07 p.m. EDT, matching [NASA's splashdown record](https://www.nasa.gov/gallery/artemis-ii-splashdown-and-recovery/). The bar artwork is a supplied project asset, not mission telemetry. |
 
 The other selectable styles—Solid, Circles, Circles Gradient, Gradient, Grid, Lines, Point Connect, Triangle Grid, Triangles, Union, and Runway—are geometric or supplied artwork patterns. Their names describe visual motifs; they do not assert a measured dataset. Runway and Artemis II still need owner approval for the proposed lockups, as do the secondary logo colors.
@@ -102,3 +102,12 @@ Circles Gradient shares column centers across all rows, including variant 1's sh
 ## Numeric source separation — October 28, 2026
 
 Numeric uses mutually exclusive decimal-entry and curated-formula modes. Only digits and the decimal point are encoded; an optional sign is not. Presets encode the explicitly displayed finite decimal approximation of π, e, φ, √2, √3, 2π, 1/√2 or ln(2), rather than a sampled physical signal or formula graph. The eight examples are familiar mathematical/engineering relationships, not officially endorsed RPI formulas or a popularity ranking. Empty/transient decimal edits produce no pattern instead of substituting π. Preview/header/SVG/PNG resolve one selected source, and exports retain the captured decimal. See [sources, bounds, UI and historical migration](numeric_modes.md). Existing geometry, encoding and zero-ink recovery remain unchanged.
+
+## Neural Network redesign — October 28, 2026
+
+The network now computes an explicit forward pass with configurable depth, width,
+connectivity, activation, input mix and deterministic weight sets. Complete node
+rings include stroke-aware vertical padding and retain natural horizontal edge
+contact. Preview/header/static exports share one graph and visual encoding.
+There is no training or animated biological-flow claim. See
+[Neural Network model](neural_network_model.md) for equations and limitations.

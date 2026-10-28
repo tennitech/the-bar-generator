@@ -1392,7 +1392,8 @@ function resetStyleParameters(style) {
       updatePointConnectVariantDisplay();
       break;
     case 'neural-network':
-      if (neuralNetworkHiddenLayersSlider) neuralNetworkHiddenLayersSlider.value = 1;
+      setNeuralNetworkControls();
+      if (neuralNetworkHiddenLayersSlider) neuralNetworkHiddenLayersSlider.value = 3;
       updateNeuralNetworkHiddenLayersDisplay();
       break;
     case 'triangle-grid':
@@ -1549,6 +1550,8 @@ function randomizeStyleParameters(style) {
       updatePointConnectVariantDisplay();
       break;
     case 'neural-network':
+      setNeuralNetworkControls({ units: randomStepValue(2, 5, 1), input: randomStepValue(0, 100, 1),
+        seed: randomStepValue(1, 16, 1), activation: pickRandom(['tanh', 'sigmoid']), connectivity: pickRandom(['dense', 'local']) });
       if (neuralNetworkHiddenLayersSlider) neuralNetworkHiddenLayersSlider.value = randomStepValue(1, 5, 1);
       updateNeuralNetworkHiddenLayersDisplay();
       break;
@@ -2939,6 +2942,7 @@ function setup() {
     updatePointConnectVariantDisplay();
   }
 
+  setupNeuralNetworkControls();
   if (neuralNetworkHiddenLayersSlider) {
     neuralNetworkHiddenLayersSlider.addEventListener('input', function () {
       updateNeuralNetworkHiddenLayersDisplay();
@@ -3566,9 +3570,54 @@ function updatePointConnectVariantDisplay() {
   pointConnectVariantDisplay.textContent = pointConnectVariantSlider.value;
 }
 
+const NEURAL_CONTROL_DEFAULTS = { units: 3, input: 65, seed: 1, connectivity: 'dense', activation: 'tanh' };
+function getNeuralNetworkControlValues() {
+  const values = { neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 3 };
+  for (const [key, fallback] of Object.entries(NEURAL_CONTROL_DEFAULTS)) {
+    const field = document.getElementById(`neural-network-${key}-${typeof fallback === 'number' ? 'slider' : 'select'}`);
+    values[`neuralNetwork${key[0].toUpperCase()}${key.slice(1)}`] = field ? field.value : fallback;
+  }
+  return values;
+}
+function updateNeuralNetworkControls() {
+  for (const key of ['units', 'input', 'seed']) {
+    const display = document.getElementById(`neural-network-${key}-display`);
+    const field = document.getElementById(`neural-network-${key}-slider`);
+    if (display && field) display.textContent = key === 'input' ? `${field.value}%` : field.value;
+  }
+  const readout = document.getElementById('neural-network-readout');
+  if (readout) {
+    const v = getNeuralNetworkControlValues();
+    const model = createNeuralNetworkPatternGeometry({ hiddenLayers: v.neuralNetworkHiddenLayers,
+      units: v.neuralNetworkUnits, input: v.neuralNetworkInput, seed: v.neuralNetworkSeed,
+      activation: v.neuralNetworkActivation, connectivity: v.neuralNetworkConnectivity });
+    readout.textContent = `${model.lines.length} connections · Outputs ${model.outputs.map(value => value.toFixed(3)).join(', ')}`;
+  }
+}
+function setupNeuralNetworkControls() {
+  for (const [key, fallback] of Object.entries(NEURAL_CONTROL_DEFAULTS)) {
+    const field = document.getElementById(`neural-network-${key}-${typeof fallback === 'number' ? 'slider' : 'select'}`);
+    if (!field) continue;
+    const commit = () => { updateNeuralNetworkControls(); updateUrlParameters(); requestUpdate(); };
+    field.addEventListener(typeof fallback === 'number' ? 'input' : 'change', commit);
+    if (typeof fallback === 'number') registerSliderValueEditor({ slider: field,
+      display: document.getElementById(`neural-network-${key}-display`),
+      refreshDisplay: updateNeuralNetworkControls, commit, ariaLabel: `Set neural network ${key}` });
+  }
+  updateNeuralNetworkControls();
+}
+function setNeuralNetworkControls(values = NEURAL_CONTROL_DEFAULTS) {
+  for (const [key, fallback] of Object.entries(NEURAL_CONTROL_DEFAULTS)) {
+    const field = document.getElementById(`neural-network-${key}-${typeof fallback === 'number' ? 'slider' : 'select'}`);
+    if (field) field.value = values[key] ?? fallback;
+  }
+  updateNeuralNetworkControls();
+}
+
 function updateNeuralNetworkHiddenLayersDisplay() {
   if (!neuralNetworkHiddenLayersSlider || !neuralNetworkHiddenLayersDisplay) return;
   neuralNetworkHiddenLayersDisplay.textContent = neuralNetworkHiddenLayersSlider.value;
+  updateNeuralNetworkControls();
 }
 
 function updateTriangleGridVariantDisplay() {
@@ -4268,7 +4317,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     gridVariant: gridVariantSlider ? gridVariantSlider.value : 1,
     linesVariant: linesVariantSlider ? linesVariantSlider.value : 2,
     pointConnectVariant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1,
-    neuralNetworkHiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1,
+    ...getNeuralNetworkControlValues(),
     triangleGridVariant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2,
     ...(typeof getTrianglePatternControlValues === 'function'
       ? getTrianglePatternControlValues()
@@ -6030,7 +6079,13 @@ function updateUrlParameters() {
   }
 
   if (styleSelect && styleSelect.value === 'neural-network') {
-    if (neuralNetworkHiddenLayersSlider && parseInt(neuralNetworkHiddenLayersSlider.value, 10) !== 1) {
+    const values = getNeuralNetworkControlValues();
+    for (const [key, fallback] of Object.entries(NEURAL_CONTROL_DEFAULTS)) {
+      const name = `neuralNetwork${key[0].toUpperCase()}${key.slice(1)}`;
+      if (String(values[name]) !== String(fallback)) params.set(name, values[name]);
+    }
+
+    if (neuralNetworkHiddenLayersSlider && parseInt(neuralNetworkHiddenLayersSlider.value, 10) !== 3) {
       params.set('neuralNetworkHiddenLayers', neuralNetworkHiddenLayersSlider.value);
     }
   }
@@ -6268,6 +6323,8 @@ function applyUrlParameters() {
     pointConnectVariantSlider.value = params.pointConnectVariant;
     updatePointConnectVariantDisplay();
   }
+  setNeuralNetworkControls({ units: params.neuralNetworkUnits, input: params.neuralNetworkInput,
+    seed: params.neuralNetworkSeed, activation: params.neuralNetworkActivation, connectivity: params.neuralNetworkConnectivity });
   if (neuralNetworkHiddenLayersSlider) {
     neuralNetworkHiddenLayersSlider.value = params.neuralNetworkHiddenLayers;
     updateNeuralNetworkHiddenLayersDisplay();
@@ -7196,32 +7253,31 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       line(lineSegment.x1, lineSegment.y1, lineSegment.x2, lineSegment.y2);
     }
   } else if (currentShader === 23) {
-    // Neural network pattern
+    // Neural network pattern: same weighted graph and activation areas as SVG.
     resetShader();
-    const geometry = createNeuralNetworkPatternGeometry({
-      barStartX,
-      barY: 0,
-      exactBarWidth,
-      barHeight: rectHeight,
-      hiddenLayers: neuralNetworkHiddenLayersSlider ? neuralNetworkHiddenLayersSlider.value : 1
-    });
-
+    const values = getNeuralNetworkControlValues();
+    const geometry = createNeuralNetworkPatternGeometry({ barStartX, barY: 0, exactBarWidth, barHeight: rectHeight,
+      hiddenLayers: values.neuralNetworkHiddenLayers, units: values.neuralNetworkUnits,
+      connectivity: values.neuralNetworkConnectivity, activation: values.neuralNetworkActivation,
+      input: values.neuralNetworkInput, seed: values.neuralNetworkSeed });
     noFill();
     stroke(fgColor);
-    strokeWeight(geometry.thickness);
     strokeCap(ROUND);
-    strokeJoin(ROUND);
-
-    for (let i = 0; i < geometry.lines.length; i++) {
-      const lineSegment = geometry.lines[i];
-      line(lineSegment.x1, lineSegment.y1, lineSegment.x2, lineSegment.y2);
+    for (const edge of geometry.lines) {
+      strokeWeight(edge.width);
+      const length = Math.hypot(edge.x2 - edge.x1, edge.y2 - edge.y1);
+      const step = edge.weight < 0 ? 2.7 : length;
+      for (let offset = 0; offset < length; offset += step) {
+        const end = Math.min(length, offset + (edge.weight < 0 ? 1.5 : length));
+        line(edge.x1 + (edge.x2 - edge.x1) * offset / length, edge.y1 + (edge.y2 - edge.y1) * offset / length,
+          edge.x1 + (edge.x2 - edge.x1) * end / length, edge.y1 + (edge.y2 - edge.y1) * end / length);
+      }
     }
-
-    noStroke();
-    fill(fgColor);
-    for (let i = 0; i < geometry.nodes.length; i++) {
-      const node = geometry.nodes[i];
+    for (const node of geometry.nodes) {
+      noFill(); stroke(fgColor); strokeWeight(geometry.thickness);
       circle(node.x, node.y, node.r * 2);
+      noStroke(); fill(fgColor);
+      circle(node.x, node.y, node.fillRadius * 2);
     }
   } else if (currentShader === 15) {
     // Triangle grid pattern

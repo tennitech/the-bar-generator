@@ -57,3 +57,11 @@ direction indicators. Samples reuse existing shared geometry and supplied Artemi
 artwork; no external asset or replacement artwork was added. The arrows are
 simple original UI line geometry with the established 24-unit, two-unit stroke
 language. Existing underlying asset permissions and owner approval questions remain.
+
+## Neural Network review screenshots
+
+`references/review-images/neural-network/` contains October 28 application
+captures and an actual-size sheet generated from the new original mathematical
+primitives. No external image, replacement identity asset or font is added.
+Existing identity/font permissions and RPI approval questions remain unchanged.
+See the validation record in that directory for capture conditions.
