@@ -35,3 +35,54 @@ The shared status/science references in the integration checkout now describe th
 ## Review evidence
 
 [Desktop](review-images/motion-desktop.png) and [mobile Quantum](review-images/motion-mobile.png) screenshots were generated locally from this app for review. They show existing repository-provided logo/font assets within the software UI; no third-party image, font or brand asset was added or relicensed. The outstanding underlying permission records in [asset licensing](asset_licensing.md) remain unchanged. These images are visual evidence, not formal brand approval.
+
+## Cross-platform motion preference: October 28, 2026
+
+The reported combination (all decorative motion absent and the header logo opening
+a still logo) matches the explicit `prefers-reduced-motion: reduce` branch. This
+is a browser-reported operating-system preference, not a Windows/Android user-agent
+check. It suppresses marquee motion, page/theme reveals, default continuous bar
+loops and the ASCII intro. The intro's former branch also hid Replay, leaving no
+way to deliberately play it. Browser simulation reproduces that behavior; the
+affected physical devices' preference values have not been captured, so the
+platform-specific cause remains an evidence-supported inference.
+
+The still intro now explains the preference and offers **Play animation once**.
+That button starts one ASCII sequence and keeps focus within the dialog. Closing
+and reopening returns to the still view; no override is stored or applied to
+other motion. A later preference change remounts the preference-appropriate view.
+Normal playback keeps the existing Replay and close/completion behavior.
+Ruler/Ticker/Waveform already allow deliberate Loop selection under reduced
+motion. Their geometry, phase and export planning are unchanged. Quantum phase
+and transport are owned by the separate Quantum repair. The existing p5 global
+state architecture in main.js is retained; its only change here versions the
+lazily loaded intro controller.
+
+Sources: [Chrome's motion preference guide](https://web.dev/articles/prefers-reduced-motion)
+describes the OS preference and Android Remove animations setting;
+[MDN's preference reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion)
+records Windows Animation Effects and Android Remove animations mappings.
+Do not disable these accessibility settings globally to work around the report.
+
+For a remaining physical-device failure, capture the browser/version and the
+value of `matchMedia('(prefers-reduced-motion: reduce)').matches`, then test the
+new one-time Play button and an explicit bar Loop toggle. If the preference is
+false or deliberate playback remains stopped, collect the first console error
+and renderer/context state; that would be a different failure from this branch.
+
+Verification: 307 unit tests in 30 suites; `scripts/motionPreferenceSmoke.js`
+passed 32 cases per Chromium/WebKit engine for normal/reduced preferences,
+desktop/emulated touch, WebGL/forced 2D, explicit Loop, pause, hidden/resume,
+keyboard one-time play, changed ASCII content, focus return and reopen reset.
+Its `--iframe-only` check passed in both engines for preference inheritance and
+nested ASCII playback in a same-origin iframe. This is not actual Frontify or
+physical Windows/Android validation. WebKit `introLifecycleSmoke.js` passed.
+Desktop and emulated-touch screenshots in `/tmp/rpi-motion-choice-evidence` were
+visually inspected. The application stack, bar geometry and export code remain
+unchanged; only the lazy intro-controller version changed in p5 global main.js.
+
+The integrated runtime also pauses Ruler/Ticker/Waveform when the OS newly
+requests reduced motion while the page is open. Relaxing that preference does
+not restart paused loops; explicit Loop remains available. The focused
+`motionPreferenceSmoke.js --preference-change-only` checks passed in Chromium
+and WebKit, including embedded playback after the preference checks.

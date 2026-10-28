@@ -10,7 +10,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261028-selector-previews" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261028-motion-cards-integration" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261027-print-pass" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261027-print-pass"></script>
   <script src="js/utils/generatorRoutes.js?v=20261027-motion-polish"></script>
@@ -793,15 +793,15 @@
 
         </div>
         <div class="sidebar-footer">
-          <aside class="lunar_source-note" aria-label="Mission Control lunar surface credit">
-            <span class="lunar_source-kicker">BOROMIR - Lunar surface source</span>
-            <p>Thesis imagery by Maeve Marshall.</p>
-            <p class="lunar_source-link">
+          <aside id="bar-information" class="bar_information" aria-labelledby="bar-information-title">
+            <span class="bar_information-kicker">ABOUT THIS BAR</span>
+            <h2 id="bar-information-title">Solid</h2>
+            <p id="bar-information-description"></p>
+            <p class="bar_information-credit">Mission Control surface: thesis imagery by Maeve Marshall.
               <a href="https://github.com/the-astronot/boromir/blob/main/README.md" target="_blank"
-                rel="noopener noreferrer">View source code</a>
+                rel="noopener noreferrer">View BOROMIR source code</a>
             </p>
           </aside>
-          <div class="sidebar-divider lunar_source-divider" aria-hidden="true"></div>
           <button id="report-problem-btn" class="sidebar-feedback-btn" type="button">
             <span id="report-problem-label">Report a Problem</span>
           </button>
@@ -891,7 +891,7 @@
   <div id="toast-container"></div>
   <script>BarShareState.prepareTrigger(); GeneratorInitialState.apply(document.body); setupCustomDropdowns(); ParameterControls.prepare(document);</script>
   <script src="third_party/gif.js/gif.js"></script>
-  <script src="js/utils/quantumControls.js"></script>
+  <script src="js/utils/quantumControls.js?v=20261028-motion-cards-integration"></script>
   <script src="js/utils/previewControls.js?v=20261027-integration-final"></script>
   <script src="js/utils/viewportZoom.js?v=20261027-viewport-zoom"></script>
   <script src="js/utils/viewerTouch.js"></script>
@@ -903,9 +903,11 @@
   <script src="js/utils/exportOptions.js?v=20261028-selector-previews"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/exportUi.js?v=20261027-native-svg"></script>
-  <script src="js/main.js?v=20261028-selector-previews"></script>
+  <script src="js/utils/barInformation.js?v=20261028-motion-cards-integration"></script>
+  <script>BarInformation.sync();</script>
+  <script src="js/main.js?v=20261028-motion-cards-integration"></script>
   <script src="js/utils/logoClipboard.js?v=20261027-native-svg"></script>
-  <script src="js/drawing.js?v=20261027-ruler-natural-edges"></script>
+  <script src="js/drawing.js?v=20261028-motion-cards-integration"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

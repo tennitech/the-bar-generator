@@ -149,6 +149,7 @@
 
     let overlayParts = null;
     let frameEl = null;
+    let motionPlayEl = null;
     let isOpen = false;
     let escapeHandler = null;
     let messageHandler = null;
@@ -392,7 +393,8 @@
           return;
         }
         if (isOpen && event.key === 'Tab') {
-          const buttons = [overlayParts.replayEl, overlayParts.closeEl].filter(button => !button.hidden);
+          const buttons = [overlayParts.replayEl, overlayParts.closeEl, motionPlayEl]
+            .filter(button => button && !button.hidden && !button.disabled);
           const index = buttons.indexOf(documentRef.activeElement);
           event.preventDefault();
           buttons[(index + (event.shiftKey ? -1 : 1) + buttons.length) % buttons.length].focus();
@@ -422,6 +424,7 @@
       }
 
       frameEl = null;
+      motionPlayEl = null;
       clearAnimationState();
 
       if (overlayParts && overlayParts.stageEl) {
@@ -429,22 +432,42 @@
       }
     }
 
-    function mountFrame() {
+    function mountFrame(allowMotion = false) {
       const parts = ensureOverlayParts();
       destroyFrame();
       const reducedMotion = !!(windowRef && windowRef.matchMedia
         && windowRef.matchMedia('(prefers-reduced-motion: reduce)').matches);
-      if (reducedMotion) {
+      if (reducedMotion && !allowMotion) {
         const state = getAnimationState ? getAnimationState() : null;
         frameEl = documentRef.createElement('div');
         frameEl.className = 'logo_animation_static';
-        frameEl.setAttribute('role', 'img');
-        frameEl.setAttribute('aria-label', 'RPI logo with the selected bar');
-        frameEl.innerHTML = state && state.finalLogoSvg ? state.finalLogoSvg : triggerEl.innerHTML;
+        const artwork = documentRef.createElement('div');
+        artwork.className = 'logo_animation_static-artwork';
+        artwork.setAttribute('role', 'img');
+        artwork.setAttribute('aria-label', 'RPI logo with the selected bar');
+        artwork.innerHTML = state && state.finalLogoSvg ? state.finalLogoSvg : triggerEl.innerHTML;
+        const explanation = documentRef.createElement('p');
+        explanation.className = 'logo_animation_motion-note';
+        explanation.id = 'logo-animation-motion-note';
+        explanation.textContent = 'Your device requests reduced motion. You can still play this animation once.';
+        const play = documentRef.createElement('button');
+        motionPlayEl = play;
+        play.type = 'button';
+        play.className = 'logo_animation_motion-play';
+        play.textContent = 'Play animation once';
+        play.setAttribute('aria-describedby', explanation.id);
+        play.addEventListener('click', () => {
+          replay();
+          // The clicked button is removed with the still view. Keep focus in the dialog.
+          parts.closeEl.focus();
+        });
+        appendChild(frameEl, artwork);
+        appendChild(frameEl, explanation);
+        appendChild(frameEl, play);
       } else {
         frameEl = createAnimationFrame(documentRef, getFrameSrc());
       }
-      parts.replayEl.hidden = reducedMotion;
+      parts.replayEl.hidden = reducedMotion && !allowMotion;
       appendChild(parts.stageEl, frameEl);
       return frameEl;
     }
@@ -511,7 +534,8 @@
         return open();
       }
 
-      mountFrame();
+      // A deliberate play/replay is a one-run choice, never a stored preference.
+      mountFrame(true);
       return Promise.resolve(true);
     }
 

@@ -40,6 +40,10 @@ Serve the files over HTTP. Do not open HTML files with `file://`; routed pages a
 
 ## Tests
 
+For concurrent browser checks, use `python3 scripts/test_server.py --port 8000`.
+It serves the checkout over real HTTP with a larger connection backlog so
+parallel startup requests do not exceed older Python servers’ small default queue.
+
 ```sh
 # Unit tests
 npm test -- --runInBand
@@ -48,6 +52,11 @@ npm test -- --runInBand
 npm run test:browser:install
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:motion
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/motionPreferenceSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/routedStartupSmoke.js
+
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/zoomSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit node scripts/zoomSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/transparentGifSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/patternExportSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/firstPaintSmoke.js

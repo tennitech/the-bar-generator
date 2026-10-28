@@ -164,6 +164,7 @@ describe('logo animation overlay controller', () => {
     const replayEl = createMockElement();
     const documentRef = createMockDocument();
     const windowRef = createMockWindow();
+    if (options.motionPreference) windowRef.matchMedia = () => options.motionPreference;
 
     const controller = createLogoAnimationController({
       triggerEl,
@@ -279,6 +280,43 @@ describe('logo animation overlay controller', () => {
 
     expect(firstFrame).not.toBe(secondFrame);
     expect(stageEl.lastChild).toBe(secondFrame);
+  });
+
+  test('reduced motion stays static until explicit one-run play, then resets on reopen', async () => {
+    const motionPreference = { matches: true, addEventListener: jest.fn(), removeEventListener: jest.fn() };
+    const { controller, replayEl, documentRef, closeEl } = createController({ motionPreference });
+    await controller.open();
+    const still = controller.getFrame();
+    expect(still.tagName).toBe('DIV');
+    expect(replayEl.hidden).toBe(true);
+    const play = still.children.find(child => child.tagName === 'BUTTON');
+    expect(play.textContent).toBe('Play animation once');
+    // The opt-in control participates in the dialog keyboard cycle.
+    jest.runOnlyPendingTimers();
+    documentRef.activeElement = closeEl;
+    documentRef.dispatch('keydown', { key: 'Tab', preventDefault: jest.fn() });
+    expect(play.focus).toHaveBeenCalled();
+    play.dispatch('click');
+    expect(controller.getFrame().tagName).toBe('IFRAME');
+    expect(replayEl.hidden).toBe(false);
+    expect(closeEl.focus).toHaveBeenCalled();
+    controller.close();
+    await controller.open();
+    expect(controller.getFrame().tagName).toBe('DIV');
+    expect(replayEl.hidden).toBe(true);
+    controller.destroy();
+  });
+
+  test('a new reduced-motion request stops an explicitly started animation', async () => {
+    const motionPreference = { matches: true, addEventListener: jest.fn(), removeEventListener: jest.fn() };
+    const { controller } = createController({ motionPreference });
+    await controller.open();
+    await controller.replay();
+    expect(controller.getFrame().tagName).toBe('IFRAME');
+    const onChange = motionPreference.addEventListener.mock.calls[0][1];
+    onChange();
+    expect(controller.getFrame().tagName).toBe('DIV');
+    controller.destroy();
   });
 
   test('animation completion message closes the overlay without navigation', async () => {
