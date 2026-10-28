@@ -24,8 +24,16 @@ const evidence = process.env.RPI_EVIDENCE_DIR || '/tmp/rpi-short-sidebar';
     for (const size of [{ width: 1024, height: 360 }, { width: 1280, height: 500 }, { width: 320, height: 568 }]) {
       await page.setViewportSize(size);
       if (size.width === 320) await page.locator('#mobile-menu-toggle').click();
-      for (const family of ['lunar', 'circles', 'wave-quantum', 'solid']) {
+      for (const family of ['lunar', 'circles', 'wave-quantum', 'numeric', 'solid']) {
         await page.selectOption('#style-select', family, { force: true });
+        if (family === 'numeric') {
+          await page.selectOption('#numeric-source-select', 'formula', { force: true });
+          await page.selectOption('#numeric-formula-select', 'half-life', { force: true });
+          const customFormula = page.locator('#numeric-formula-select + button');
+          await reachable(await customFormula.isVisible() ? customFormula : page.locator('#numeric-formula-select'));
+          assert.ok((await page.locator('#numeric-formula-value').textContent()).includes(String(Math.LN2)));
+        }
+
         await reachable(style); await style.click();
         await page.keyboard.press('Home'); await page.keyboard.press('End'); await page.keyboard.press('Home'); await page.keyboard.press('Escape');
         await reachable(theme); await theme.click();
@@ -51,6 +59,6 @@ const evidence = process.env.RPI_EVIDENCE_DIR || '/tmp/rpi-short-sidebar';
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     }
     assert.deepEqual(errors, []);
-    console.log(`${engine}: Artemis/Circles/Quantum/Solid at 1024x360, 1280x500 and 320x568: theme/style pointer and keyboard, two-way scrolling, intact card/report action and no interception passed`);
+    console.log(`${engine}: Artemis/Circles/Quantum/Numeric/Solid at 1024x360, 1280x500 and 320x568: theme/style pointer and keyboard, two-way scrolling, intact card/report action and no interception passed`);
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
