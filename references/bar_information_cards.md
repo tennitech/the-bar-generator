@@ -33,3 +33,5 @@ fulfillment. The fixture now defaults to actual HTTP. A delayed-main probe found
 that the routed card initially showed an empty Solid description; the bootstrap
 now prepares the selected-style text before inserting chrome. A regression
 checks Quantum copy before the canvas exists. See `scripts/routedStartupSmoke.js`.
+
+Numeric's card now names decimal entry and formula selection as separate sources and explains that signs are not encoded. Formula approximations, sources, limits and historical migration are documented in [Numeric modes](numeric_modes.md). The remaining 20 cards are unchanged.

@@ -70,6 +70,8 @@ let circlesFillSelect;
 let numericGroup;
 let numericInput;
 let numericModeSelect;
+let numericSourceSelect;
+let numericFormulaSelect;
 let circlesGradientGroup;
 let circlesGradientVariantSlider;
 let circlesGradientVariantDisplay;
@@ -480,18 +482,6 @@ const SURPRISE_TEXT_OPTIONS = [
   'FLIGHT',
   'LAB',
   'DEBUG'
-];
-const SURPRISE_NUMERIC_OPTIONS = [
-  'PI',
-  'E',
-  'sqrt(2)',
-  '(1+sqrt(5))/2',
-  'sin(1)+cos(1)',
-  'pow(3,5)',
-  'exp(1)',
-  'log(64)',
-  'round(PI*1000)',
-  'sqrt(5)*PI'
 ];
 const SURPRISE_GRAPH_STREAM_SETS = [
   ['RPI', 'BUILD', 'TEST', 'REBUILD'],
@@ -1345,7 +1335,10 @@ function resetStyleParameters(style) {
     case 'numeric':
       if (numericInput) numericInput.value = '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679';
       if (numericModeSelect) numericModeSelect.value = 'dotmatrix';
-      updateNumericData(numericInput ? numericInput.value : '');
+      numericSourceSelect.value = 'values';
+      numericFormulaSelect.value = 'pi';
+      window.NumericControls.sync();
+      updateNumericData();
       break;
     case 'circles-gradient':
       if (circlesGradientVariantSlider) circlesGradientVariantSlider.value = 1;
@@ -1496,9 +1489,11 @@ function randomizeStyleParameters(style) {
       updateCirclesSizeVariationDisplay();
       break;
     case 'numeric':
-      if (numericInput) numericInput.value = pickRandom(SURPRISE_NUMERIC_OPTIONS);
+      numericSourceSelect.value = 'formula';
+      numericFormulaSelect.value = pickRandom(window.NumericControls.presets).id;
+      window.NumericControls.sync();
       if (numericModeSelect) numericModeSelect.value = pickRandom(['dotmatrix', 'height']);
-      updateNumericData(numericInput ? numericInput.value : '');
+      updateNumericData();
       break;
     case 'circles-gradient':
       if (circlesGradientVariantSlider) circlesGradientVariantSlider.value = randomStepValue(1, 3, 1);
@@ -1826,71 +1821,10 @@ function textToBinary(text) {
   return binary;
 }
 
-// Evaluate mathematical formulas safely
-function evaluateFormula(formula) {
-  if (!formula || typeof formula !== 'string') {
-    return "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679";
-  }
-
-  // Clean the input
-  const cleanFormula = formula.trim();
-
-  // If it's already a number, return it
-  if (!isNaN(cleanFormula) && !isNaN(parseFloat(cleanFormula))) {
-    return cleanFormula;
-  }
-
-  try {
-    // Create a safe evaluation context with allowed mathematical functions
-    const safeContext = {
-      Math: Math,
-      PI: Math.PI,
-      E: Math.E,
-      sqrt: Math.sqrt,
-      pow: Math.pow,
-      sin: Math.sin,
-      cos: Math.cos,
-      tan: Math.tan,
-      log: Math.log,
-      exp: Math.exp,
-      abs: Math.abs,
-      floor: Math.floor,
-      ceil: Math.ceil,
-      round: Math.round,
-      min: Math.min,
-      max: Math.max
-    };
-
-    // Replace ^ with ** for exponentiation (JavaScript syntax)
-    let processedFormula = cleanFormula.replace(/\^/g, '**');
-
-    // Replace common mathematical constants if used without Math prefix
-    processedFormula = processedFormula.replace(/\bPI\b/g, 'Math.PI');
-    processedFormula = processedFormula.replace(/\bE\b/g, 'Math.E');
-
-    // Basic security check - only allow numbers, operators, parentheses, dots, and Math functions
-    const allowedPattern = /^[0-9+\-*/().^Math\s_a-zA-Z]*$/;
-    if (!allowedPattern.test(processedFormula)) {
-      throw new Error('Invalid characters in formula');
-    }
-
-    // Evaluate the formula using Function constructor (safer than eval)
-    const evalFunction = new Function('Math', `return ${processedFormula}`);
-    const result = evalFunction(Math);
-
-    // Check if result is a valid number
-    if (isNaN(result) || !isFinite(result)) {
-      throw new Error('Formula result is not a valid number');
-    }
-
-    // Convert to string with appropriate precision
-    return result.toString();
-
-  } catch (error) {
-    console.warn('Formula evaluation failed:', error);
-    // Return the original input if evaluation fails
-    return cleanFormula;
-  }
+// Numeric inputs are validated decimal strings or values from fixed presets.
+function getNumericSourceValue() {
+  return window.NumericControls.resolve({ numericSource: numericSourceSelect?.value,
+    numericFormula: numericFormulaSelect?.value, numericValue: numericInput?.value });
 }
 
 function getSelectedMusicNoteShape() {
@@ -1935,27 +1869,8 @@ function drawMusicHeadP5(shape, x, y, rx, ry, filled, noteColor) {
 }
 
 // Convert numeric string to digit array
-function parseNumericString(numericString) {
-  if (!numericString || typeof numericString !== 'string') {
-    numericString = "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679";
-  }
-
-  // First, try to evaluate as a formula
-  const evaluatedString = evaluateFormula(numericString);
-
-  let digits = [];
-  for (let i = 0; i < evaluatedString.length; i++) {
-    const char = evaluatedString[i];
-    if (char === '.') {
-      digits.push(10); // Use 10 to represent decimal point
-    } else if (char >= '0' && char <= '9') {
-      digits.push(parseInt(char));
-    }
-    // Skip any other characters
-  }
-
-  // Limit to reasonable length to prevent performance issues
-  return digits.slice(0, 200);
+function parseNumericString(value) {
+  return window.NumericControls.digits(value);
 }
 
 const GRAPH_MAX_STREAMS = 5;
@@ -2328,7 +2243,7 @@ function setup() {
   updateMorseData("RPI");
 
   // Initialize numeric data
-  updateNumericData("3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679");
+  updateNumericData();
 
   // Get control references
   styleSelect = document.getElementById('style-select');
@@ -2432,6 +2347,8 @@ function setup() {
   circlesFillSelect = document.getElementById('circles-fill-select');
   numericGroup = document.getElementById('numeric-group');
   numericInput = document.getElementById('numeric-input');
+  numericSourceSelect = document.getElementById('numeric-source-select');
+  numericFormulaSelect = document.getElementById('numeric-formula-select');
   numericModeSelect = document.getElementById('numeric-mode-select');
   circlesGradientGroup = document.getElementById('circles-gradient-group');
   circlesGradientVariantSlider = document.getElementById('circles-gradient-variant-slider');
@@ -2939,32 +2856,37 @@ function setup() {
     });
   }
 
-  // Setup numeric input with real-time updates
+  // Reject an invalid edit as a whole: pasting text must not silently turn it into another number.
+  let numericDraft = numericInput.value;
   numericInput.addEventListener('input', function () {
-    updateNumericData(numericInput.value);
-    updateUrlParameters();
-    requestUpdate();
-  });
-  numericInput.addEventListener('keyup', function () {
-    updateNumericData(numericInput.value);
-    updateUrlParameters();
-    requestUpdate();
-  });
-  numericInput.addEventListener('paste', function () {
-    setTimeout(() => {
-      updateNumericData(numericInput.value);
-      updateUrlParameters();
-      requestUpdate();
-    }, 10);
-  });
-  numericInput.addEventListener('blur', function () {
-    // When user leaves the field, show the evaluated result
-    const evaluated = evaluateFormula(numericInput.value);
-    if (evaluated !== numericInput.value && !isNaN(parseFloat(evaluated))) {
-      // Only update display if it's a valid number and different from input
-      console.log('Formula evaluated:', numericInput.value, '->', evaluated);
+    const error = document.getElementById('numeric-input-error');
+    if (!window.NumericControls.isDraft(numericInput.value)) {
+      const caret = Math.max(0, (numericInput.selectionStart || 0) - (numericInput.value.length - numericDraft.length));
+      numericInput.value = numericDraft;
+      numericInput.setSelectionRange(caret, caret);
+      error.textContent = 'Use decimal digits, one decimal point, and an optional leading sign.';
+      return;
     }
+    numericDraft = numericInput.value;
+    numericInput.removeAttribute('aria-invalid');
+    error.textContent = '';
+    updateNumericData();
+    updateUrlParameters();
+    requestUpdate();
   });
+  numericInput.addEventListener('focus', () => { numericDraft = numericInput.value; });
+  numericInput.addEventListener('blur', () => {
+    const complete = window.NumericControls.isValue(numericInput.value);
+    numericInput.setAttribute('aria-invalid', String(!complete));
+    document.getElementById('numeric-input-error').textContent = complete ? '' : 'Enter at least one digit to create a pattern.';
+  });
+  for (const field of [numericSourceSelect, numericFormulaSelect]) field.addEventListener('change', () => {
+    window.NumericControls.sync();
+    updateNumericData();
+    updateUrlParameters();
+    requestUpdate();
+  });
+  window.NumericControls.sync();
 
   // Setup numeric mode selector
   numericModeSelect.addEventListener('change', function () {
@@ -3561,8 +3483,8 @@ function updateMorseData(text) {
   morseLength = morseData.morse.length;
 }
 
-function updateNumericData(numericString) {
-  numericData = parseNumericString(numericString);
+function updateNumericData() {
+  numericData = parseNumericString(getNumericSourceValue());
   numericLength = numericData.length;
 
   // Create texture for shader
@@ -4337,7 +4259,9 @@ function getCurrentBarPatternValues(exactBarWidth) {
     circlesFill: circlesFillSelect ? circlesFillSelect.value : 'stroke',
     circlesDensity: circlesDensitySlider ? circlesDensitySlider.value : 50,
     circlesSizeVariation: circlesSizeVariationSlider ? circlesSizeVariationSlider.value : 0,
-    numericValue: numericInput ? numericInput.value : '',
+    numericValue: getNumericSourceValue(),
+    numericSource: numericSourceSelect?.value || 'values',
+    numericFormula: numericFormulaSelect?.value || 'pi',
     numericMode: numericModeSelect ? numericModeSelect.value : 'dotmatrix',
     circlesGradientVariant: circlesGradientVariantSlider ? circlesGradientVariantSlider.value : 1,
     gradientVariant: gradientVariantSlider ? gradientVariantSlider.value : 1,
@@ -4399,7 +4323,7 @@ function buildCurrentBarPatternSVGFragment({
     });
   }
   if (currentShader === 6 && markup.trim()) {
-    const digits = parseNumericString(values.numericValue || '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679');
+    const digits = parseNumericString(values.numericValue);
     for (const marker of createEncodedBarBoundaryGeometry(barStartX, barY, exactBarWidth, barHeight, digits.length)) {
       markup += `<rect x="${marker.x}" y="${marker.y}" width="${marker.width}" height="${marker.height}" fill="${fgColor}"/>`;
     }
@@ -6067,9 +5991,9 @@ function updateUrlParameters() {
   }
 
   if (styleSelect && styleSelect.value === 'numeric') {
-    if (numericInput && numericInput.value !== '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679') {
-      params.set('numericValue', numericInput.value);
-    }
+    params.set('numericSource', numericSourceSelect.value);
+    params.set('numericFormula', numericFormulaSelect.value);
+    params.set('numericValue', numericInput.value);
     if (numericModeSelect && numericModeSelect.value !== 'dotmatrix') {
       params.set('numericMode', numericModeSelect.value);
     }
@@ -6314,7 +6238,10 @@ function applyUrlParameters() {
   // Apply numeric parameters
   if (numericInput) {
     numericInput.value = params.numericValue;
-    updateNumericData(params.numericValue);
+    numericSourceSelect.value = params.numericSource || 'values';
+    numericFormulaSelect.value = params.numericFormula || 'pi';
+    window.NumericControls.sync();
+    updateNumericData();
   }
   if (numericModeSelect) {
     numericModeSelect.value = params.numericMode;
@@ -7047,7 +6974,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
     // Numeric mode - get visualization mode
     resetShader();
 
-    const numericString = numericInput.value || "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679";
+    const numericString = getNumericSourceValue();
     const digits = parseNumericString(numericString);
     const mode = numericModeSelect ? numericModeSelect.value : 'dotmatrix';
 
@@ -7846,7 +7773,8 @@ function setupShareLinks() {
       applyColorMode(colorModeSelect.value);
       updateBinaryData(binaryInput.value);
       updateMorseData(morseInput.value);
-      updateNumericData(numericInput.value);
+      window.NumericControls.sync();
+      updateNumericData();
       updateAllDisplays();
       handleStyleChange();
       syncMotionToggleState();

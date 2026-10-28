@@ -27,7 +27,7 @@ function read() {
     binaryText: params.get('binaryText') || 'RPI',
 
     // Numeric parameters
-    numericValue: params.get('numericValue') || '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679',
+    ...window.NumericControls.readQuery(params),
     numericMode: params.get('numericMode') || 'dotmatrix',
     circlesGradientVariant: Math.max(1, Math.min(3, parseInt(params.get('circlesGradientVariant')) || 1)),
     gradientVariant: Math.max(1, Math.min(2, parseInt(params.get('gradientVariant')) || 1)),

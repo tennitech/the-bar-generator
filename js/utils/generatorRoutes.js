@@ -22,6 +22,8 @@
     'colorMode',
     'binaryText',
     'morseText',
+    'numericSource',
+    'numericFormula',
     'numericValue',
     'numericMode',
     'circlesGradientVariant',

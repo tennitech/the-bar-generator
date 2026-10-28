@@ -1647,7 +1647,7 @@ function createBarPatternSVG(config) {
   }
 
   if (currentShader === 6) {
-    const numericString = values.numericValue || '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679';
+    const numericString = values.numericValue === undefined ? '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679' : values.numericValue;
     const mode = values.numericMode || 'height';
     const digits = parseNumericString(numericString);
     if (digits.length === 0) {

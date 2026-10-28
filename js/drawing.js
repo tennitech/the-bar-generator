@@ -497,7 +497,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     drawCirclePattern(pg, barStartX, barY, exactBarWidth, rectHeight, density, sizeVariation);
   } else if (currentShader === 6) {
     // Numeric pattern - get visualization mode
-    const numericString = numericInput.value || "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679";
+    const numericString = getNumericSourceValue();
     const digits = parseNumericString(numericString);
     const mode = numericModeSelect ? numericModeSelect.value : 'height';
 

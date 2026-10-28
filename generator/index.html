@@ -13,21 +13,22 @@
   <link href="css/style.css?v=20261028-motion-cards-integration" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261027-print-pass" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261027-print-pass"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261027-motion-polish"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261028-numeric-modes"></script>
   <script src="js/utils/themeMode.js?v=20260419-lunar-theme"></script>
   <script src="js/utils/selectorPreviews.js?v=20261028-selector-previews"></script>
   <script src="js/utils/customDropdowns.js?v=20261028-selector-previews"></script>
   <script src="js/utils/parameterControls.js?v=20261027-print-pass"></script>
   <script src="js/utils/loopingGif.js?v=20261027-motion-polish"></script>
   <script src="js/utils/featherIcons.js?v=20261027-integration-final"></script>
-  <script src="js/utils/shareState.js?v=20261028-selector-previews"></script>
+  <script src="js/utils/numericControls.js?v=20261028-numeric-modes"></script>
+  <script src="js/utils/shareState.js?v=20261028-numeric-modes"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/barPattern.js?v=20261027-quantum-motion"></script>
+  <script src="js/utils/barPattern.js?v=20261028-numeric-modes"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20260930-audit-fixes"></script>
   <script src="js/utils/quantumModel.js"></script>
-  <script src="js/utils/generatorParameters.js?v=20261028-selector-previews"></script>
-  <script src="js/utils/generatorInitialState.js?v=20261027-integration-final"></script>
+  <script src="js/utils/generatorParameters.js?v=20261028-numeric-modes"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261028-numeric-modes"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
 </head>
@@ -513,9 +514,37 @@
           <div class="control-header">PARAMETERS</div>
           <p class="control-hint">Side marks show the bar’s limits; the pattern between them encodes the digits.</p>
           <div class="control">
-            <label for="numeric-input" class="control-label">NUMBER / FORMULA</label>
-            <input type="text" id="numeric-input" data-url-parameter="numericValue" placeholder="Enter a number..." class="control-input"
-              value="3.14159..." aria-label="Numeric Input">
+            <label for="numeric-source-select" class="control-label">DIGIT SOURCE</label>
+            <div class="select-wrapper">
+              <select id="numeric-source-select" data-url-parameter="numericSource" class="control-select">
+                <option value="values">Enter values</option>
+                <option value="formula">Select a formula</option>
+              </select>
+            </div>
+          </div>
+          <div id="numeric-values-control" class="control">
+            <label for="numeric-input" class="control-label">VALUE</label>
+            <input type="text" inputmode="decimal" id="numeric-input" data-url-parameter="numericValue" placeholder="Enter a decimal value" class="control-input"
+              maxlength="200" value="3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679" aria-describedby="numeric-value-hint numeric-input-error" spellcheck="false" autocomplete="off">
+            <p id="numeric-value-hint" class="control-hint">Up to 200 characters: digits, one decimal point, and an optional leading sign. The sign is not encoded.</p>
+            <p id="numeric-input-error" class="control-hint" role="status"></p>
+          </div>
+          <div id="numeric-formula-control" class="control" hidden>
+            <label for="numeric-formula-select" class="control-label">FORMULA</label>
+            <div class="select-wrapper">
+              <select id="numeric-formula-select" data-url-parameter="numericFormula" class="control-select" aria-describedby="numeric-formula-description numeric-formula-value">
+                <option value="pi">Pi · π</option>
+                <option value="e">Euler’s number · e</option>
+                <option value="phi">Golden ratio · φ</option>
+                <option value="sqrt2">Square root of 2 · √2</option>
+                <option value="sqrt3">Square root of 3 · √3</option>
+                <option value="tau">Full turn · 2π</option>
+                <option value="rms">Sine RMS · 1 / √2</option>
+                <option value="half-life">Decay half-life · ln(2)</option>
+              </select>
+            </div>
+            <p id="numeric-formula-description" class="control-hint"></p>
+            <p id="numeric-formula-value" class="control-hint"></p>
           </div>
 
           <div class="control">
@@ -903,11 +932,11 @@
   <script src="js/utils/exportOptions.js?v=20261028-selector-previews"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/exportUi.js?v=20261027-native-svg"></script>
-  <script src="js/utils/barInformation.js?v=20261028-motion-cards-integration"></script>
+  <script src="js/utils/barInformation.js?v=20261028-numeric-modes"></script>
   <script>BarInformation.sync();</script>
-  <script src="js/main.js?v=20261028-motion-audit"></script>
+  <script src="js/main.js?v=20261028-numeric-modes"></script>
   <script src="js/utils/logoClipboard.js?v=20261027-native-svg"></script>
-  <script src="js/drawing.js?v=20261028-motion-cards-integration"></script>
+  <script src="js/drawing.js?v=20261028-numeric-modes"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

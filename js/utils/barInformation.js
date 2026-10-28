@@ -31,7 +31,7 @@
   },
   "numeric": {
     "title": "Numeric",
-    "text": "Digits from your input or the selected formula determine the bar’s pattern. Try changing the number or formula to compare the resulting structures; the design visualizes those digits rather than claiming to measure an outside quantity or predict an outcome."
+    "text": "Enter a decimal value or select a formula to turn its digits into a pattern. Compare dot matrix and height encoding to explore the same digits; the bar encodes the displayed decimal approximation, without a sign, rather than measuring an external quantity."
   },
   "neural-network": {
     "title": "Neural Network",
