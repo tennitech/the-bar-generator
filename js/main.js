@@ -202,7 +202,7 @@ const DEFAULT_SAVE_MENU_COPY = {
 };
 const DEFAULT_INTERFACE_COPY = {
   styleLabel: 'BAR STYLE',
-  colorLabel: 'COLOR THEME',
+  colorLabel: 'LOGO COLOR',
   reportProblem: 'Report a Problem'
 };
 const MISSION_CONTROL_INTERFACE_COPY = {
@@ -848,8 +848,11 @@ function cancelSliderValueEditor(config) {
   if (!config || !config.editorInput || !config.display) return;
 
   const valueGroup = config.display.parentElement;
-  config.editorInput.remove();
+  const editor = config.editorInput;
+  // Removing a focused input may synchronously blur it. Clear the reference
+  // first so Escape cannot accidentally commit, and commits cannot re-enter.
   config.editorInput = null;
+  editor.remove();
   config.display.removeAttribute('aria-hidden');
   if (valueGroup) {
     valueGroup.classList.remove('is-editing');
@@ -865,8 +868,11 @@ function commitSliderValueEditor(config) {
 
   const valueGroup = config.display.parentElement;
   const rawValue = config.editorInput.value;
-  config.editorInput.remove();
+  const editor = config.editorInput;
+  // Removing a focused input may synchronously blur it. Clear the reference
+  // first so Escape cannot accidentally commit, and commits cannot re-enter.
   config.editorInput = null;
+  editor.remove();
   config.display.removeAttribute('aria-hidden');
   if (valueGroup) {
     valueGroup.classList.remove('is-editing');
@@ -3314,11 +3320,22 @@ function setup() {
   setupCustomDropdowns();
   syncLunarColorOptionAvailability();
   syncAllCustomSelects();
-  window.ParameterControls.bindActions({ randomize: randomizeStyleParameters, reset: resetStyleParameters, isDefaultSeed: () => sharePatternSeed === 1 });
   updateHeaderBrandPreview(true);
 
   setupLunarSplashdownCounter();
   setupShareLinks();
+  window.randomizeHistory = window.RandomizeHistory?.initialize({
+    snapshots: window.barShareController,
+    afterRestore: () => { updateUrlParameters(); window.URLState?.flush(); },
+    announce: (message, type) => Toast.show(message, type)
+  });
+  window.ParameterControls.bindActions({
+    randomize: style => window.randomizeHistory
+      ? window.randomizeHistory.randomize(style, () => randomizeStyleParameters(style))
+      : randomizeStyleParameters(style),
+    reset: style => { window.randomizeHistory?.clear(); resetStyleParameters(style); },
+    isDefaultSeed: () => sharePatternSeed === 1
+  });
   window.addEventListener('urlstateerror', () => Toast.show('The address could not update. Keep this page open to preserve your current bar.', 'error'));
 
   // Add global keyboard event listener for more reliable shift detection
@@ -5878,6 +5895,7 @@ function getUrlParameters() {
 }
 
 function updateUrlParameters() {
+  window.randomizeHistory?.clear();
   window.ParameterControls.refresh();
   if (window.barShareController && window.barShareController.syncUrl()) return;
   const params = new URLSearchParams();
@@ -7625,7 +7643,7 @@ function setupShareLinks() {
     sanitize: sanitizeBarText,
     capture: () => ({ seed: sharePatternSeed, phase: liveMotionPhase, time: window.animationTime,
       notes: currentStaffNotes, duration: currentNoteDuration }),
-    restore: state => {
+    restore: (state, options = {}) => {
       stopAudio();
       sharePatternSeed = state.seed;
       currentStaffNotes = state.notes;
@@ -7642,7 +7660,10 @@ function setupShareLinks() {
       document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
         button.classList.toggle('active', Number(button.dataset.duration) === state.duration);
       });
+      const quantumRunning = document.getElementById('quantum-motion-toggle').checked;
       window.quantumControls.pause();
+      // Historical share links open Quantum paused. Local Undo preserves transport.
+      if (options.local && quantumRunning && !reduce) document.getElementById('quantum-motion-toggle').checked = true;
       window.quantumControls.sync();
       resetCirclePatternCache();
     },
