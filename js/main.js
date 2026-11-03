@@ -190,16 +190,16 @@ const ARTEMIS_II_AUDIO_SOURCE = 'assets/audio/artemis-ii-liftoff.mp3';
 const DEFAULT_SAVE_MENU_COPY = {
   button: 'Export',
   png: {
-    label: 'Download PNG',
-    description: 'Transparent image · current frame'
+    label: 'PNG',
+    description: 'Transparent image'
   },
   svg: {
-    label: 'Download SVG',
-    description: 'Scalable vector · current frame'
+    label: 'SVG',
+    description: 'Scalable vector'
   },
   gif: {
-    label: 'Download GIF',
-    description: 'Transparent animation · full loop'
+    label: 'GIF',
+    description: 'Looping animation'
   }
 };
 const DEFAULT_INTERFACE_COPY = {

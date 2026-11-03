@@ -107,10 +107,11 @@ async function main() {
         await page.keyboard.press('Escape');
         assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
       } else assert.equal(await toggle.isVisible(), false, 'Existing compact layout hides the counter');
-      assert.equal(await page.locator('#save-button').getAttribute('aria-label'), 'Open asset download menu');
+      assert.equal(await page.locator('#save-button').getAttribute('aria-label'), 'Open export menu');
       if (touch) await page.locator('#save-button').tap();
       else await page.locator('#save-button').click();
-      assert.match(await page.locator('#save-menu').innerText(), /Download SVG/);
+      assert.equal(await page.locator('#export-download-label').innerText(), 'Download');
+      assert.match(await page.locator('#save-svg').getAttribute('aria-label'), /^Download SVG:/);
       assert.equal(await page.locator('#export-settings').isVisible(), true);
       assert.equal(await page.locator('#save-loop-gif').isVisible(), false);
       assert.equal(await page.locator('#artemis-information').count(), 1);

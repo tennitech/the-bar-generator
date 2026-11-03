@@ -46,7 +46,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
       for (let i = 0; i < data.length; i += 4) { if (data[i + 3] > 0 && data[i + 3] < 255) partial++; if (data[i + 3] > 250) { ink++; if (!firstInk) firstInk = [...data.slice(i, i + 4)]; } }
       return { types, type: blob.type, width: c.width, height: c.height, corner: [...data.slice(0, 4)], partial, ink, firstInk, pixelHash: hash };
     }, { engine, format });
-    assert.deepEqual(await page.locator('#clipboard-actions button').evaluateAll(nodes => nodes.map(node => node.id)), ['copy-svg', 'copy-png']);
+    assert.deepEqual(await page.locator('#clipboard-actions button').evaluateAll(nodes => nodes.map(node => node.id)), ['copy-png', 'copy-svg']);
     await open(); assert.doesNotMatch(await page.locator('#save-menu').innerText(), /Finder/);
     const caps = await page.evaluate(() => ({ svg: logoClipboard.native('image/svg+xml') }));
     for (const size of ['standard', 'large']) for (const theme of ['black', 'white', 'red']) {
@@ -96,7 +96,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
       logoClipboard.sync();
     });
     await open();
-    assert.match(await page.locator('#copy-svg').innerText(), /Not supported here. Download SVG instead/);
+    assert.match(await page.locator('#copy-svg').innerText(), /Not supported here. Save the SVG file instead/);
     assert.equal(await page.locator('#copy-svg').isDisabled(), true);
     await page.evaluate(() => logoClipboard.copy('svg')); await page.waitForFunction(() => !logoExportUI.isBusy());
     assert.match(await page.locator('#export-message').innerText(), /SVG clipboard copying is unavailable/);
@@ -105,7 +105,8 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
     results.push({ unsupportedSVG: 'no write or format substitution', types: afterUnsupported });
     // File recovery is a genuine vector download, not a clipboard file promise.
     await open();
-    assert.match(await page.locator('#save-svg').innerText(), /Download SVG/);
+    assert.equal(await page.locator('#save-svg .option-label').innerText(), 'SVG');
+    assert.match(await page.locator('#save-svg').getAttribute('aria-label'), /^Download SVG:/);
     const waitingSVG = page.waitForEvent('download'); await page.locator('#save-svg').click();
     const file = await waitingSVG, vector = await fs.readFile(await file.path(), 'utf8');
     assert.match(file.suggestedFilename(), /\.svg$/); assert(vector.includes('<path')); assert(vector.includes('<polygon')); assert(!vector.includes('<image'));

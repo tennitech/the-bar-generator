@@ -10,7 +10,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261103-export-menu" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261103-export-hierarchy" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
   <script src="js/utils/generatorRoutes.js?v=20261103-save-removal"></script>
@@ -96,7 +96,7 @@
         </button>
         <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Export asset">
           <div id="export-settings" class="export_settings">
-            <label for="export-size-select" class="export_size-label">PNG &amp; GIF size</label>
+            <label for="export-size-select" class="export_size-label">Image size</label>
             <select id="export-size-select" class="export_size-select" aria-describedby="export-dimensions export-size-note">
               <option value="large" selected>Large · Recommended</option>
               <option value="standard">Standard</option>
@@ -104,23 +104,25 @@
             <p id="export-dimensions" class="export_dimensions">2320 × 1524 px</p>
             <p id="export-size-note" class="export_note">Includes clear space. SVG scales to any size.</p>
           </div>
-          <div class="export_download-actions" role="group" aria-label="Download files">
+          <div class="export_download-actions" role="group" aria-labelledby="export-download-label">
+            <h2 id="export-download-label" class="export_group-label">Download</h2>
             <button id="save-png" class="save-option" type="button">
-              <span class="option-label">Download PNG</span>
-              <span class="option-desc">Transparent image · current frame</span>
+              <span class="option-label">PNG</span>
+              <span class="option-desc">Transparent image</span>
             </button>
             <button id="save-svg" class="save-option" type="button">
-              <span class="option-label">Download SVG</span>
-              <span class="option-desc">Scalable vector · current frame</span>
+              <span class="option-label">SVG</span>
+              <span class="option-desc">Scalable vector</span>
             </button>
             <button id="save-loop-gif" class="save-option" type="button" hidden>
-              <span class="option-label">Download GIF</span>
-              <span class="option-desc">Transparent animation · full loop</span>
+              <span class="option-label">GIF</span>
+              <span class="option-desc">Looping animation</span>
             </button>
           </div>
-          <div id="clipboard-actions" class="export_copy-actions" role="group" aria-label="Copy asset">
-            <button id="copy-svg" class="save-option" type="button"><span class="option-label">Copy SVG</span><span class="option-desc">Scalable vector · current frame</span></button>
-            <button id="copy-png" class="save-option" type="button"><span class="option-label">Copy PNG</span><span class="option-desc">Transparent image · 2320 × 1524 px</span></button>
+          <div id="clipboard-actions" class="export_copy-actions" role="group" aria-labelledby="export-copy-label">
+            <h2 id="export-copy-label" class="export_group-label">Copy</h2>
+            <button id="copy-png" class="save-option" type="button"><span class="option-label">PNG</span><span class="option-desc">2320 × 1524 px</span></button>
+            <button id="copy-svg" class="save-option" type="button"><span class="option-label">SVG</span><span class="option-desc">Scalable vector</span></button>
           </div>
           <p id="export-host-note" class="export_host-note" hidden>Downloads and copying depend on this site’s embed permissions.</p>
           <div id="export-progress" class="export_progress" hidden>
@@ -972,13 +974,13 @@
   <script src="js/utils/exportOptions.js?v=20261103-export-menu"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportUi.js?v=20261103-export-menu"></script>
+  <script src="js/utils/exportUi.js?v=20261103-export-hierarchy"></script>
   <script src="js/utils/barInformation.js?v=20261103-ruler-scale"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-ascii-discovery"></script>
-  <script src="js/main.js?v=20261103-export-menu"></script>
-  <script src="js/utils/logoClipboard.js?v=20261103-export-menu"></script>
+  <script src="js/main.js?v=20261103-export-hierarchy"></script>
+  <script src="js/utils/logoClipboard.js?v=20261103-export-hierarchy"></script>
   <script src="js/drawing.js?v=20261103-export-menu"></script>
   <script>
     if (typeof window.p5 !== 'function') {

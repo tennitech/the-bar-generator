@@ -26,10 +26,10 @@
       const dimensions = root.RPI_LOGO_GEOMETRY && root.logoExportOptions
         ? root.logoExportOptions.dimensions(root.logoExportUI.size(), root.RPI_LOGO_GEOMETRY) : null;
       const description = root.embedSupport?.clipboardBlocked() ? 'Blocked by this site’s embed permissions'
-        : unavailable ? `Not supported here. Download ${format.toUpperCase()} instead.`
-          : format === 'svg' ? 'Scalable vector · current frame'
-            : dimensions ? `Transparent image · ${dimensions.width} × ${dimensions.height} px` : 'Transparent image · current frame';
-      button.querySelector('.option-label').innerHTML = root.FeatherIcons.getIconMarkup('copy', 'export_action-icon') + label;
+        : unavailable ? `Not supported here. Save the ${format.toUpperCase()} file instead.`
+          : format === 'svg' ? 'Scalable vector'
+            : dimensions ? `${dimensions.width} × ${dimensions.height} px` : 'Transparent image';
+      button.querySelector('.option-label').textContent = format.toUpperCase();
       button.querySelector('.option-desc').textContent = description;
       button.setAttribute('aria-label', `${label}: ${description}`);
       button.setAttribute('aria-disabled', String(unavailable));

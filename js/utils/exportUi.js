@@ -18,10 +18,10 @@
       for (const format of ['png', 'svg', 'gif']) {
         const button = byId(format === 'gif' ? 'save-loop-gif' : `save-${format}`);
         const label = `Download ${format.toUpperCase()}`;
-        const description = format === 'svg' ? 'Scalable vector · current frame'
-          : format === 'png' ? 'Transparent image · current frame' : 'Transparent animation · full loop';
+        const description = format === 'svg' ? 'Scalable vector'
+          : format === 'png' ? 'Transparent image' : 'Looping animation';
         if (!button) continue;
-        button.querySelector('.option-label').innerHTML = (root.FeatherIcons?.getIconMarkup('download', 'export_action-icon') || '') + label;
+        button.querySelector('.option-label').textContent = format.toUpperCase();
         button.querySelector('.option-desc').textContent = description;
         button.setAttribute('aria-label', `${label}: ${description}${format === 'svg' ? '' : `, ${pixelSize(dimensions)}`}`);
       }
