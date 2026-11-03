@@ -4,6 +4,7 @@ const {
   createRowPatterns,
   syncRowTargetFactor,
   computeRowTopPositions,
+  fitRowsAboveHero,
   getEdgeCaseRowLiftPx,
   getNarrowPortraitHeroScaleCap,
   getMarqueeBarStyle,
@@ -172,5 +173,40 @@ describe('lane-level marquee rendering', () => {
     state.direction = 1;
     updateRowLayout(state);
     expect(write).toHaveBeenLastCalledWith('translate3d(-1374px, 0, 0)');
+  });
+});
+
+
+describe('measured desktop hero clearance', () => {
+  const geometry = {
+    rowStart: -100, rowStep: 80, rowHeight: 62,
+    firstBounds: { left: -900, top: -450 }, tiltRadians: 17 * Math.PI / 180,
+    heroRects: [{ left: 30, right: 118, top: 1100, width: 88, height: 53 },
+      { left: 680, right: 975, top: 1320, width: 295, height: 44 }]
+  };
+  test.each([400, 768, 900, 1200, 1470, 2000, 4320])('fills to the text at %ipx without changing pitch', height => {
+    const heroRects = geometry.heroRects.map(rect => ({ ...rect, top: rect.top + height - 1470 }));
+    const result = fitRowsAboveHero({ ...geometry, heroRects });
+    const finalShift = result.rowStart - geometry.rowStart + (result.rowCount - 1) * geometry.rowStep;
+    const gaps = heroRects.map(rect => rect.top - geometry.firstBounds.top
+      - (rect.right - geometry.firstBounds.left) * Math.tan(geometry.tiltRadians)
+      - geometry.rowHeight * Math.cos(geometry.tiltRadians) - finalShift);
+    expect(Math.min(...gaps)).toBeCloseTo(geometry.rowStep * 0.6, 8);
+    expect(result.rowCount).toBeGreaterThan(0);
+    expect(result.rowStart).toBeLessThanOrEqual(geometry.rowStart + 1e-7);
+    expect(result.rowStart).toBeGreaterThanOrEqual(geometry.rowStart - geometry.rowStep - 1e-7);
+  });
+  test('the lower boundary follows one-pixel text movement without a lane-size jump', () => {
+    const before = fitRowsAboveHero(geometry);
+    const after = fitRowsAboveHero({ ...geometry,
+      heroRects: geometry.heroRects.map(rect => ({ ...rect, top: rect.top + 1 })) });
+    const end = layout => layout.rowStart + (layout.rowCount - 1) * geometry.rowStep;
+    expect(end(after) - end(before)).toBeCloseTo(1, 8);
+  });
+  test('hidden credit rectangles do not constrain the field', () => {
+    const rect = geometry.heroRects[0];
+    expect(fitRowsAboveHero({ ...geometry, heroRects: [rect, { top: 0, left: 0, right: 0, width: 0, height: 0 }] }))
+      .toEqual(fitRowsAboveHero({ ...geometry, heroRects: [rect] }));
+    expect(fitRowsAboveHero({ ...geometry, heroRects: [] })).toBeNull();
   });
 });
