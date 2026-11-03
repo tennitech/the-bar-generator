@@ -2,6 +2,8 @@
 (function (scope) {
   let callbacks = {};
   const pendingActions = [];
+  const fieldFeedback = new WeakMap();
+  let transitionBound = false;
   // Every available family is intentional: fixed artwork has no parameter actions.
   const capabilities = Object.freeze({
     solid: null, ruler: 'ruler', binary: 'binary', morse: 'morse', ticker: 'ticker',
@@ -31,13 +33,76 @@
     }
     return field.value === field.defaultValue;
   }
+  function defaultValueLabel(field) {
+    if (field.type === 'checkbox') return field.defaultChecked ? 'On' : 'Off';
+    if (field.tagName === 'SELECT') {
+      const option = Array.from(field.options).find(item => item.defaultSelected) || field.options[0];
+      return option?.textContent?.trim() || option?.value || '';
+    }
+    const value = field.defaultValue;
+    if (field.id === 'waveform-type-slider') return ['Sine', 'Sawtooth', 'Square', 'Pulse'][Math.round(Number(value))];
+    if (field.id === 'lines-variant-slider') return Number(value) === 1 ? 'LG' : 'MD';
+    if (field.id === 'quantum-phase') return `${(Number(value) * 100).toFixed(1)}%`;
+    if (field.id === 'ticker-ratio-slider') return `${value}:1`;
+    if (field.id === 'ticker-width-ratio-slider') return `1:${value}`;
+    if (['neural-network-input-slider', 'circles-density-slider', 'circles-size-variation-slider'].includes(field.id)) return `${value}%`;
+    return value === '' ? 'Empty' : String(value);
+  }
+  function prepareFieldFeedback(field, group) {
+    if (fieldFeedback.has(field) || !field.labels) return;
+    const label = Array.from(field.labels).find(item => item.classList.contains('control-label'));
+    if (!label) return;
+    const marker = document.createElement('span');
+    marker.className = 'parameter_marker';
+    marker.setAttribute('aria-hidden', 'true');
+    (label.querySelector('.slider_label-text') || label).appendChild(marker);
+    const note = document.createElement('span');
+    note.id = `${field.id}-default-note`;
+    note.className = 'u-sr-only';
+    group.appendChild(note);
+    const targets = [field, label.querySelector('[data-slider-value]'),
+      field.closest('.select-wrapper, .control')?.querySelector('.custom-select-trigger')].filter(Boolean);
+    for (const target of targets) {
+      const ids = new Set((target.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));
+      ids.add(note.id);
+      target.setAttribute('aria-describedby', [...ids].join(' '));
+    }
+    fieldFeedback.set(field, { marker, note, label });
+  }
+  function refreshFeedback(style, fields, root) {
+    const group = root.querySelector(`[data-parameter-actions="${style}"]`);
+    if (!group) return;
+    let changed = 0;
+    for (const field of fields) {
+      const pristine = isDefaultField(field);
+      if (!pristine) changed++;
+      const feedback = fieldFeedback.get(field);
+      if (!feedback) continue;
+      const text = `${pristine ? 'Default setting.' : 'Changed.'} Default: ${defaultValueLabel(field)}.`;
+      if (feedback.note.textContent !== text) feedback.note.textContent = text;
+      feedback.label.classList.toggle('has-parameter-change', !pristine);
+      feedback.marker.title = text;
+      // The title also makes the default discoverable without opening an editor.
+      feedback.label.title = text;
+    }
+    const seedChanged = style === 'circles' && callbacks.isDefaultSeed && !callbacks.isDefaultSeed();
+    if (seedChanged) changed++;
+    const summary = group.querySelector('[data-parameter-summary]');
+    if (summary) {
+      const text = changed ? `${changed} changed from defaults` : 'Default settings';
+      if (summary.textContent !== text) summary.textContent = text;
+      summary.title = seedChanged ? 'Includes the circle arrangement.' : '';
+    }
+  }
   function refreshButton(button, root) {
     const style = button.dataset.parameterStyle;
-    const pristine = fieldsFor(style, root).every(isDefaultField)
+    const fields = fieldsFor(style, root);
+    const pristine = fields.every(isDefaultField)
       && (style !== 'circles' || !callbacks.isDefaultSeed || callbacks.isDefaultSeed());
     if (button.disabled !== pristine) button.disabled = pristine;
     const title = pristine ? 'Parameters are at their defaults' : 'Restore default parameters';
     if (button.title !== title) button.title = title;
+    refreshFeedback(style, fields, root);
   }
   function refresh(root = document) {
     root.querySelectorAll('[data-parameter-action="reset"]').forEach(button => refreshButton(button, root));
@@ -124,8 +189,39 @@
         actions.appendChild(button);
       }
       header.replaceChildren(label, actions);
+      const summary = document.createElement('p');
+      summary.className = 'parameter_summary';
+      summary.dataset.parameterSummary = '';
+      header.after(summary);
+      fieldsFor(style, root).forEach(field => prepareFieldFeedback(field, group));
     });
+    prepareGroupTransition(root);
     refresh(root);
+  }
+  function prepareGroupTransition(root) {
+    const select = root.querySelector('#style-select');
+    if (transitionBound || !select?.addEventListener || !scope.matchMedia) return;
+    transitionBound = true;
+    let lastStyle = select.value;
+    let animation;
+    let frame;
+    const reduced = scope.matchMedia('(prefers-reduced-motion: reduce)');
+    const cancel = () => { animation?.cancel(); scope.cancelAnimationFrame(frame); };
+    reduced.addEventListener('change', event => { if (event.matches) cancel(); });
+    select.addEventListener('change', () => {
+      if (select.value === lastStyle) return;
+      lastStyle = select.value;
+      cancel();
+      if (reduced.matches) return;
+      // Reveal the whole group together after its controls synchronize. Values,
+      // layout and input remain immediate; no stagger or movement is introduced.
+      frame = scope.requestAnimationFrame(() => {
+        const group = root.querySelector(`[data-parameter-actions="${select.value}"]`);
+        if (group?.animate && group.getClientRects().length) {
+          animation = group.animate([{ opacity: 0.8 }, { opacity: 1 }], { duration: 120, easing: 'ease-out' });
+        }
+      });
+    });
   }
   function bindActions(nextCallbacks) {
     callbacks = nextCallbacks;
@@ -136,5 +232,6 @@
       if (callbacks[action]) callbacks[action](style);
     }
   }
-  scope.ParameterControls = { prepareSliderValueLabel, prepare, bindActions, capabilities, supportsActions, fieldsFor, refresh, refreshStyle };
+  scope.ParameterControls = { prepareSliderValueLabel, prepare, bindActions, capabilities, supportsActions, fieldsFor,
+    isDefaultField, defaultValueLabel, refresh, refreshStyle };
 })(typeof window !== 'undefined' ? window : globalThis);
