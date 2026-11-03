@@ -1,4 +1,5 @@
 const {
+  updateRowLayout,
   advanceRowSpeed,
   createRowPatterns,
   syncRowTargetFactor,
@@ -146,5 +147,30 @@ describe('marquee hover motion and fixed per-load samples', () => {
     expect(new Set(patterns.flat())).toEqual(new Set(entries.map(entry => entry.path)));
     expect(createRowPatterns(entries)).toEqual(patterns);
     expect(createRowPatterns([...entries].reverse())).not.toEqual(patterns);
+  });
+});
+
+
+describe('lane-level marquee rendering', () => {
+  test('updates one transform per row regardless of repeated bar count', () => {
+    const write = jest.fn();
+    const style = { set transform(value) { write(value); } };
+    const state = { slotWidth: 100, patternSpan: 700, direction: -1, travel: 25,
+      track: { style }, items: Array.from({ length: 23 }, () => ({ element: { style: Object.freeze({ left: '0px' }) } })) };
+    updateRowLayout(state);
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(write).toHaveBeenLastCalledWith('translate3d(-725px, 0, 0)');
+    updateRowLayout(state);
+    expect(write).toHaveBeenCalledTimes(1);
+    state.travel = 26;
+    updateRowLayout(state);
+    expect(write).toHaveBeenCalledTimes(2);
+    expect(write).toHaveBeenLastCalledWith('translate3d(-726px, 0, 0)');
+    state.travel = 726;
+    updateRowLayout(state);
+    expect(write).toHaveBeenCalledTimes(2);
+    state.direction = 1;
+    updateRowLayout(state);
+    expect(write).toHaveBeenLastCalledWith('translate3d(-1374px, 0, 0)');
   });
 });

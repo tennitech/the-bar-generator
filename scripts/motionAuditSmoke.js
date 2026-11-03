@@ -91,16 +91,16 @@ const settle = page => page.evaluate(() => new Promise(resolve => requestAnimati
     await normal.close();
     // Decorative landing motion follows the same OS preference without an override.
     await page.goto(`${base}/`);
-    await page.waitForFunction(() => document.querySelector('.marquee_item:not(.is-measure)')?.style.transform);
+    await page.waitForFunction(() => document.querySelector('.marquee_track')?.style.transform);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForFunction(() => Array.from(document.images).every(image => image.complete));
     await page.waitForTimeout(100);
-    const item = page.locator('.marquee_item:not(.is-measure)').first();
+    const item = page.locator('.marquee_track').first();
     const stillTransform = await item.evaluate(el => el.style.transform);
     await page.waitForTimeout(150);
     assert.equal(await item.evaluate(el => el.style.transform), stillTransform);
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.waitForFunction(value => document.querySelector('.marquee_item:not(.is-measure)').style.transform !== value, stillTransform);
+    await page.waitForFunction(value => document.querySelector('.marquee_track').style.transform !== value, stillTransform);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await settle(page);
     const stopped = await item.evaluate(el => el.style.transform);

@@ -50,3 +50,15 @@ test('randomness changes configurations and order without modifying the catalog'
   }
   expect(JSON.stringify(entries)).toBe(before);
 });
+
+test('Triangle Grid samples contain both diagonal directions, not only a frame', () => {
+  for (const sample of entries.find(entry => entry.value === 'triangle-grid').variants) {
+    const svg = fs.readFileSync(path.join(__dirname, '..', sample.path.split('?')[0]), 'utf8');
+    const lines = [...svg.matchAll(/M\s+([-\d.e]+)\s+([-\d.e]+)\s+L\s+([-\d.e]+)\s+([-\d.e]+)/g)]
+      .map(match => match.slice(1).map(Number));
+    const diagonals = lines.filter(([x1, y1, x2, y2]) => Math.abs(x2 - x1) > 0.01 && Math.abs(y2 - y1) > 0.01);
+    expect(diagonals.length).toBeGreaterThanOrEqual(100);
+    expect(diagonals.some(([x1, y1, x2, y2]) => (x2 - x1) * (y2 - y1) > 0)).toBe(true);
+    expect(diagonals.some(([x1, y1, x2, y2]) => (x2 - x1) * (y2 - y1) < 0)).toBe(true);
+  }
+});

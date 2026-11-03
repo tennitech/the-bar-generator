@@ -378,11 +378,12 @@ function updateRowLayout(state) {
     ? -state.patternSpan - phase
     : -(2 * state.patternSpan) + phase;
 
-  state.items.forEach((itemState, index) => {
-    const x = startX + (index * state.slotWidth);
-    itemState.x = x;
-    itemState.element.style.transform = `translate3d(${x}px, 0, 0)`;
-  });
+  // Move one shared lane instead of rewriting every repeated bar each frame.
+  // Static slot positions are assigned only when the layout changes.
+  if (state.renderedX !== startX) {
+    state.track.style.transform = `translate3d(${startX}px, 0, 0)`;
+    state.renderedX = startX;
+  }
 }
 
 function ensureRowItems(state) {
@@ -400,7 +401,7 @@ function ensureRowItems(state) {
     const itemElement = createTrackItem(state, state.pattern[patternIndex]);
     const asset = itemElement.querySelector('.bar_asset_wrap');
     state.track.append(itemElement);
-    state.items.push({ element: itemElement, asset, x: 0 });
+    state.items.push({ element: itemElement, asset });
   }
 
   while (state.items.length > requiredCount) {
@@ -416,6 +417,10 @@ function ensureRowItems(state) {
     removed.element.remove();
   }
 
+  state.track.style.width = `${state.items.length * state.slotWidth}px`;
+  state.items.forEach((itemState, index) => {
+    itemState.element.style.left = `${index * state.slotWidth}px`;
+  });
   syncRowTargetFactor(state);
   updateRowLayout(state);
 }
@@ -546,18 +551,6 @@ function syncHeroScale(root, metrics = null) {
   root.dataset.heroCreditLayout = clampedScale <= HERO_COMPACT_CREDIT_SCALE ? 'compact' : 'default';
 }
 
-function preloadAssets() {
-  const uniqueAssets = [...new Set(rowPatterns.flat())];
-
-  return Promise.all(uniqueAssets.map(path => new Promise(resolve => {
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => resolve();
-    image.onerror = () => resolve();
-    image.src = toAssetUrl(path);
-  })));
-}
-
 function initMarqueeScene() {
   const stage = document.querySelector('[data-marquee-stage]');
   const startupStylePrompt = document.getElementById('startup-style-prompt');
@@ -594,7 +587,6 @@ function initMarqueeScene() {
     syncRowVerticalLayout(rowStates, stage);
   };
   syncInitialLayout();
-  preloadAssets().finally(syncInitialLayout);
 
   let resizeFrame = 0;
   function handleResize() {
@@ -672,6 +664,7 @@ function initMarqueeScene() {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
+    updateRowLayout,
     advanceRowSpeed,
     createRowPatterns,
     syncRowTargetFactor,
