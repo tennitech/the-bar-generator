@@ -32,8 +32,8 @@ test('Ruler halves, quarters and eighths have a consistent height hierarchy', ()
   expect(ticks.map(tick => tick.height / 18)).toEqual([1, .25, .5, .25, .75, .25, .5, .25, 1]);
 });
 
-test.each(['ruler', 'ticker', 'waveform'])('%s direction flips against the previous default in live and GIF rendering', style => {
-  const sign = style === 'ticker' ? 1 : -1;
+test.each(['ruler', 'ticker', 'waveform'])('%s transport uses the selected direction in live and GIF rendering', style => {
+  const sign = style === 'ruler' ? -1 : 1;
   for (const reverse of [false, true]) {
     const values = { [`${style}Reverse`]: reverse };
     const expected = sign * (reverse ? -1 : 1);

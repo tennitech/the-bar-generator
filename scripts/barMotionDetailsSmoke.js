@@ -43,7 +43,7 @@ async function frames(page) { await page.evaluate(async () => { for (let i = 0; 
           }, prefix);
           await frames(page);
           const phase = await page.evaluate(prefix => prefix === 'quantum' ? quantumControls.values().quantumPhase : liveMotionPhase, prefix);
-          assert.equal(Math.sign(phase - .5), (style === 'ticker' ? 1 : -1) * (reversed ? -1 : 1), `${style} direction ${reversed}`);
+          assert.equal(Math.sign(phase - .5), (['ticker', 'waveform'].includes(style) ? 1 : -1) * (reversed ? -1 : 1), `${style} direction ${reversed}`);
           await toggle(page, loop, false);
           const stopped = await page.evaluate(prefix => prefix === 'quantum' ? quantumControls.values().quantumPhase : liveMotionPhase, prefix);
           await frames(page);

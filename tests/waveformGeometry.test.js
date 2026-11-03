@@ -77,3 +77,22 @@ test('SVG serializes the same exact polygon used by both live renderers', () => 
   expect(main.match(/const geometry = getLiveWaveformGeometry\(/g)).toHaveLength(2);
   expect(drawing).toContain('const geometry = getLiveWaveformGeometry(');
 });
+
+// Assert painted coordinates rather than only transport-clock signs.
+test.each([1, 2, 3])('type %s moves right by default and left with Reverse in live and GIF paths', waveformType => {
+  const { advanceLiveLoopPhase, getLoopingAnimationState, getLoopingGifFramePlan } = require('../js/utils/loopingGif');
+  for (const reverse of [false, true]) {
+    const values = { ...base, waveformType, waveformReverse: reverse, waveformSpeed: .3 };
+    const phase = .37;
+    const beforeTime = getLoopingAnimationState('waveform', values, { phase }).timeSeconds;
+    const afterPhase = advanceLiveLoopPhase(phase, 'waveform', values, 16);
+    const afterTime = getLoopingAnimationState('waveform', values, { phase: afterPhase }).timeSeconds;
+    const plan = getLoopingGifFramePlan('waveform', values);
+    const initialEdges = edges(createWaveformPatternGeometry({ ...values, timeSeconds: beforeTime }).curve);
+    for (const timeSeconds of [afterTime, beforeTime + plan.getTimeSeconds(16 / 1000 / plan.periodSeconds)]) {
+      const next = edges(createWaveformPatternGeometry({ ...values, timeSeconds }).curve);
+      expect(next).toHaveLength(initialEdges.length);
+      next.forEach((x, i) => expect(x - initialEdges[i]).toBeCloseTo((reverse ? -1 : 1) * 250 / 24 * .3 * .016, 8));
+    }
+  }
+});
