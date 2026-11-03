@@ -2600,43 +2600,106 @@ body.has-logo-animation {
   --dropdown-edge-fill-width: 18px;
 }
 
+/* Keep artwork on a literal white/black stage. Neutral chrome supplies depth;
+   RPI red identifies selected controls instead of recoloring the whole shell. */
 :root,
-:is(html, body).theme-black,
-:is(html, body).theme-red,
-:is(html, body).theme-blue,
-:is(html, body).theme-gold {
-  --bg-sidebar: #ffffff;
+:is(html, body):is(.theme-black, .theme-red, .theme-blue, .theme-gold) {
+  --bg-app: #ffffff;
+  --bg-canvas: #ffffff;
+  --bg-header: #f5f5f5;
+  --bg-sidebar: #f5f5f5;
   --surface-panel: #ffffff;
-  --surface-subtle: #f3f6f9;
-  --surface-subtle-hover: #e8edf3;
-  --surface-subtle-strong: #dde5ed;
+  --surface-subtle: #eeeeee;
+  --surface-subtle-hover: #e5e5e5;
+  --surface-subtle-strong: #d4d4d4;
   --text-primary: #111111;
-  --text-secondary: #66717d;
-  --border-color: #d7dee6;
+  --text-secondary: #525252;
+  --text-on-header: #111111;
+  --border-color: #d4d4d4;
   --input-bg: #ffffff;
   --input-focus-bg: #ffffff;
-  --input-border: #d7dee6;
+  --input-border: #8a8a8a;
   --control-surface: #ffffff;
-  --control-surface-hover: #f2f5f8;
-  --control-surface-active: #e8edf3;
-  --control-border: #d7dee6;
+  --control-surface-hover: #eeeeee;
+  --control-surface-active: #e5e5e5;
+  --control-border: #8a8a8a;
   --menu-surface: #ffffff;
-  --menu-border: #d7dee6;
+  --menu-border: #d4d4d4;
+  --menu-option-hover-bg: #eeeeee;
   --menu-option-hover-text: #111111;
-  --toolbar-surface: rgba(255, 255, 255, 0.92);
-  --toolbar-surface-hover: #f1f4f7;
-  --toolbar-border: rgba(20, 28, 38, 0.12);
-  --toolbar-text: #606c79;
-  --toolbar-active-text: #ffffff;
-  --slider-track: #ccd5df;
+  --header-control-bg: #ffffff;
+  --header-control-bg-hover: #e5e5e5;
+  --header-control-border: #8a8a8a;
+  --header-control-text: #111111;
+  --toolbar-surface: #ffffff;
+  --toolbar-surface-hover: #eeeeee;
+  --toolbar-border: #d4d4d4;
+  --toolbar-text: #525252;
+  --slider-track: #a3a3a3;
   --slider-thumb: #111111;
-  --toggle-track: #ced7e0;
+  --toggle-track: #737373;
   --toggle-knob: #ffffff;
+  --accent-color: var(--rpi-red);
+  --menu-option-selected-bg: var(--rpi-red);
+  --menu-option-selected-text: #ffffff;
+  --toolbar-active-bg: var(--rpi-red);
+  --toolbar-active-text: #ffffff;
+  --slider-thumb-hover: var(--rpi-red);
+  --slider-thumb-ring: rgba(214, 0, 28, 0.2);
+  --toggle-track-active: var(--rpi-red);
+  --toggle-knob-active: #ffffff;
+  --toggle-ring: rgba(214, 0, 28, 0.2);
 }
 
-:is(html, body).theme-white,
-:is(html, body).theme-silver,
-:is(html, body).theme-gray,
+:is(html, body):is(.theme-white, .theme-silver, .theme-gray) {
+  --bg-app: #000000;
+  --bg-canvas: #000000;
+  --bg-header: #161616;
+  --bg-sidebar: #161616;
+  --surface-panel: #202020;
+  --surface-subtle: #252525;
+  --surface-subtle-hover: #303030;
+  --surface-subtle-strong: #404040;
+  --text-primary: #ffffff;
+  --text-secondary: #b8b8b8;
+  --text-on-header: #ffffff;
+  --border-color: #404040;
+  --input-bg: #202020;
+  --input-focus-bg: #252525;
+  --input-border: #737373;
+  --control-surface: #202020;
+  --control-surface-hover: #303030;
+  --control-surface-active: #404040;
+  --control-border: #737373;
+  --menu-surface: #202020;
+  --menu-border: #525252;
+  --menu-option-hover-bg: #303030;
+  --menu-option-hover-text: #ffffff;
+  --header-control-bg: #202020;
+  --header-control-bg-hover: #303030;
+  --header-control-border: #737373;
+  --header-control-text: #ffffff;
+  --toolbar-surface: #202020;
+  --toolbar-surface-hover: #303030;
+  --toolbar-border: #525252;
+  --toolbar-text: #b8b8b8;
+  --slider-track: #737373;
+  --slider-thumb: #ffffff;
+  --toggle-track: #737373;
+  --toggle-knob: #ffffff;
+  --accent-color: var(--rpi-red);
+  --menu-option-selected-bg: var(--rpi-red);
+  --menu-option-selected-text: #ffffff;
+  --toolbar-active-bg: var(--rpi-red);
+  --toolbar-active-text: #ffffff;
+  --slider-thumb-hover: var(--rpi-red);
+  --slider-thumb-ring: rgba(214, 0, 28, 0.2);
+  --toggle-track-active: var(--rpi-red);
+  --toggle-knob-active: #ffffff;
+  --toggle-ring: rgba(214, 0, 28, 0.2);
+}
+
+/* Mission Control is an intentional illustrated environment. */
 :is(html, body).theme-lunar {
   --bg-sidebar: #1b232c;
   --surface-panel: #202933;
@@ -2666,154 +2729,6 @@ body.has-logo-animation {
   --slider-thumb: #f4f7fb;
   --toggle-track: #566170;
   --toggle-knob: #ffffff;
-}
-
-:root,
-:is(html, body).theme-black {
-  --bg-app: #f4f7fa;
-  --bg-canvas: #ffffff;
-  --bg-header: #edf2f6;
-  --text-on-header: #111111;
-  --accent-color: #111111;
-  --header-control-bg: #ffffff;
-  --header-control-bg-hover: #eef2f6;
-  --header-control-border: #cfd7df;
-  --header-control-text: #111111;
-  --menu-option-hover-bg: #edf1f5;
-  --menu-option-selected-bg: #111111;
-  --menu-option-selected-text: #ffffff;
-  --toolbar-active-bg: #111111;
-  --slider-thumb-hover: #111111;
-  --slider-thumb-ring: rgba(17, 17, 17, 0.18);
-  --toggle-track-active: #111111;
-  --toggle-knob-active: #ffffff;
-  --toggle-ring: rgba(17, 17, 17, 0.18);
-}
-
-:is(html, body).theme-white {
-  --bg-app: #10161d;
-  --bg-canvas: #10161d;
-  --bg-header: #05070a;
-  --text-on-header: #ffffff;
-  --accent-color: #ffffff;
-  --header-control-bg: #202933;
-  --header-control-bg-hover: #2a3540;
-  --header-control-border: #4a5866;
-  --header-control-text: #f4f7fb;
-  --menu-option-hover-bg: #2b3641;
-  --menu-option-selected-bg: #f4f7fb;
-  --menu-option-selected-text: #111111;
-  --toolbar-active-bg: #f4f7fb;
-  --slider-thumb-hover: #ffffff;
-  --slider-thumb-ring: rgba(255, 255, 255, 0.26);
-  --toggle-track-active: #f4f7fb;
-  --toggle-knob-active: #111111;
-  --toggle-ring: rgba(255, 255, 255, 0.22);
-}
-
-:is(html, body).theme-red {
-  --bg-app: #fff7f8;
-  --bg-canvas: #ffffff;
-  --bg-header: #d6001c;
-  --text-on-header: #ffffff;
-  --accent-color: #d6001c;
-  --header-control-bg: rgba(255, 255, 255, 0.94);
-  --header-control-bg-hover: #ffffff;
-  --header-control-border: rgba(255, 255, 255, 0.68);
-  --header-control-text: #b10018;
-  --menu-option-hover-bg: #fdecef;
-  --menu-option-selected-bg: #d6001c;
-  --menu-option-selected-text: #ffffff;
-  --toolbar-active-bg: #d6001c;
-  --slider-thumb-hover: #d6001c;
-  --slider-thumb-ring: rgba(214, 0, 28, 0.2);
-  --toggle-track-active: #d6001c;
-  --toggle-knob-active: #ffffff;
-  --toggle-ring: rgba(214, 0, 28, 0.18);
-}
-
-:is(html, body).theme-blue {
-  --bg-app: #f5faff;
-  --bg-canvas: #ffffff;
-  --bg-header: #0081ce;
-  --text-on-header: #ffffff;
-  --accent-color: #0081ce;
-  --header-control-bg: rgba(255, 255, 255, 0.94);
-  --header-control-bg-hover: #ffffff;
-  --header-control-border: rgba(255, 255, 255, 0.68);
-  --header-control-text: #006eb0;
-  --menu-option-hover-bg: #eaf4fc;
-  --menu-option-selected-bg: #0081ce;
-  --menu-option-selected-text: #ffffff;
-  --toolbar-active-bg: #0081ce;
-  --slider-thumb-hover: #0081ce;
-  --slider-thumb-ring: rgba(0, 129, 206, 0.2);
-  --toggle-track-active: #0081ce;
-  --toggle-knob-active: #ffffff;
-  --toggle-ring: rgba(0, 129, 206, 0.18);
-}
-
-:is(html, body).theme-gold {
-  --bg-app: #fffaf0;
-  --bg-canvas: #fffdf8;
-  --bg-header: #cdac38;
-  --text-on-header: #111111;
-  --accent-color: #cdac38;
-  --header-control-bg: rgba(255, 252, 244, 0.9);
-  --header-control-bg-hover: #fffef9;
-  --header-control-border: rgba(113, 87, 28, 0.18);
-  --header-control-text: #6c5720;
-  --menu-option-hover-bg: #faf2d9;
-  --menu-option-selected-bg: #cdac38;
-  --menu-option-selected-text: #111111;
-  --toolbar-active-bg: #cdac38;
-  --slider-thumb-hover: #cdac38;
-  --slider-thumb-ring: rgba(205, 172, 56, 0.22);
-  --toggle-track-active: #cdac38;
-  --toggle-knob-active: #ffffff;
-  --toggle-ring: rgba(205, 172, 56, 0.2);
-}
-
-:is(html, body).theme-silver {
-  --bg-app: #11161d;
-  --bg-canvas: #11161d;
-  --bg-header: #dbe6ef;
-  --text-on-header: #111111;
-  --accent-color: #e1edf5;
-  --header-control-bg: rgba(255, 255, 255, 0.84);
-  --header-control-bg-hover: #ffffff;
-  --header-control-border: rgba(78, 96, 111, 0.18);
-  --header-control-text: #23303b;
-  --menu-option-hover-bg: #2c3742;
-  --menu-option-selected-bg: #e1edf5;
-  --menu-option-selected-text: #111111;
-  --toolbar-active-bg: #e1edf5;
-  --slider-thumb-hover: #e1edf5;
-  --slider-thumb-ring: rgba(225, 237, 245, 0.24);
-  --toggle-track-active: #e1edf5;
-  --toggle-knob-active: #111111;
-  --toggle-ring: rgba(225, 237, 245, 0.22);
-}
-
-:is(html, body).theme-gray {
-  --bg-app: #151b21;
-  --bg-canvas: #151b21;
-  --bg-header: #b9ccd8;
-  --text-on-header: #111111;
-  --accent-color: #b9ccd8;
-  --header-control-bg: rgba(255, 255, 255, 0.84);
-  --header-control-bg-hover: #ffffff;
-  --header-control-border: rgba(78, 96, 111, 0.18);
-  --header-control-text: #22303a;
-  --menu-option-hover-bg: #313d48;
-  --menu-option-selected-bg: #b9ccd8;
-  --menu-option-selected-text: #111111;
-  --toolbar-active-bg: #b9ccd8;
-  --slider-thumb-hover: #b9ccd8;
-  --slider-thumb-ring: rgba(185, 204, 216, 0.24);
-  --toggle-track-active: #b9ccd8;
-  --toggle-knob-active: #111111;
-  --toggle-ring: rgba(185, 204, 216, 0.22);
 }
 
 :is(html, body).theme-lunar {
@@ -4170,13 +4085,9 @@ body.theme-lunar .export_menu { min-width: 0; }
   outline: 2px solid var(--accent-color);
   outline-offset: 3px;
 }
-/* Artwork ink is independent of the softer interface text neutrals. */
-:is(html, body).theme-black,
-:is(html, body).theme-gold,
-:is(html, body).theme-silver,
-:is(html, body).theme-gray { --header-artwork-ink: var(--rpi-black); }
-:is(html, body).theme-white,
-:is(html, body).theme-red { --header-artwork-ink: var(--rpi-white); }
+/* Header mark contrasts with neutral chrome, independently of preview ink. */
+:is(html, body):is(.theme-black, .theme-red, .theme-blue, .theme-gold) { --header-artwork-ink: var(--rpi-black); }
+:is(html, body):is(.theme-white, .theme-silver, .theme-gray) { --header-artwork-ink: var(--rpi-white); }
 :is(html, body).theme-lunar { --header-artwork-ink: #f4f7fb; }
 /* The product title is the intro control; the official mark remains Home. */
 .brand_intro-trigger {
