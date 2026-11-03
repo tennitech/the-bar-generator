@@ -91,6 +91,9 @@ async function atRest(page) {
     // Changing motion preferences does not forget the stationary hover target.
     await page.emulateMedia({ reducedMotion: 'reduce' }); await atRest(page);
     await page.emulateMedia({ reducedMotion: 'no-preference' }); await atRest(page);
+    // Resume deliberately without moving the pointer off its stationary bar.
+    await page.locator('#marquee-motion-toggle').evaluate(button => button.click());
+    await atRest(page);
     // Re-grabbing moving content cancels its existing throw immediately.
     let point = await target(page); await page.mouse.move(point.x, point.y);
     await page.mouse.down(); await move(page, point, 120); await page.mouse.up();

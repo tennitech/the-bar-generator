@@ -40,6 +40,36 @@ const ROW_NARROW_CLEARANCE_WIDTH_END = 430;
 const ROW_NARROW_CLEARANCE_BASE_LIFT = 18;
 const ROW_NARROW_CLEARANCE_MAX_LIFT = 56;
 
+const MARQUEE_MOTION_STORAGE_KEY = 'rpi-marquee-motion';
+
+// Storage is optional (for example, in an embedded or private browsing context).
+// An OS pause stays held for this visit until an intentional Resume, even if
+// the OS setting changes back. It never overwrites an explicit saved choice.
+function createMarqueeMotionPreference(getStorage, reduced = false) {
+  let explicitlyPaused = false;
+  try { explicitlyPaused = getStorage().getItem(MARQUEE_MOTION_STORAGE_KEY) === 'paused'; } catch (_) { /* Session-only fallback. */ }
+  let reducedMotion = !!reduced;
+  let systemHold = reducedMotion;
+  return {
+    get paused() { return explicitlyPaused || reducedMotion || systemHold; },
+    get reduced() { return reducedMotion; },
+    setReducedMotion(value) {
+      reducedMotion = !!value;
+      if (reducedMotion) systemHold = true;
+    },
+    setPaused(value) {
+      if (!value && reducedMotion) return false;
+      explicitlyPaused = !!value;
+      if (!explicitlyPaused) systemHold = false;
+      try { getStorage().setItem(MARQUEE_MOTION_STORAGE_KEY, explicitlyPaused ? 'paused' : 'running'); } catch (_) { /* Keep the current visit usable. */ }
+      return true;
+    },
+    // A pause in another tab also stops this page. A remote Resume or storage
+    // removal must not unexpectedly start a field the visitor left still.
+    acceptStoredPause(value) { if (value === 'paused') explicitlyPaused = true; }
+  };
+}
+
 const marqueeCatalogApi = typeof module !== 'undefined' && module.exports
   ? require('./utils/marqueeCatalog') : window.MarqueeCatalog;
 const marqueeCatalog = marqueeCatalogApi.entries;
@@ -423,8 +453,9 @@ function bindAssetInteractions(asset, state) {
     const released = event.type === 'pointerup';
     state.suppressClick = drag.moved || !released;
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    // A held release, cancellation, or reduced-motion preference never throws.
-    state.inertiaVelocity = released && drag.moved && !reduced
+    const paused = document.documentElement?.dataset.marqueeMotionPaused === 'true';
+    // A held release, cancellation, or any motion pause never throws.
+    state.inertiaVelocity = released && drag.moved && !reduced && !paused
       && event.timeStamp - drag.time < 100 ? drag.velocity : 0;
     state.inertiaOrigin = { x: event.clientX, y: event.clientY };
     state.drag = null;
@@ -615,17 +646,16 @@ function syncRowVerticalLayout(rowStates, stage) {
   const rowStep = getRowStepPx(stageHeight, rowStates[0].element.offsetHeight);
   const coveredSpan = (ROW_COUNT - 1) * (ROW_STEP_PERCENT / 100) * stageHeight;
   let neededRows = Math.max(ROW_COUNT, 1 + Math.floor(coveredSpan / rowStep));
-  // Desktop layout follows measured text, not a portrait-aspect threshold.
-  // The old height/width > 1.4 gate left a large empty band just below it.
-  // Compact phone composition remains unchanged.
-  if (viewportWidth >= MOBILE_HERO_BREAKPOINT) {
+  // Fit every viewport to the actual title and unscaled controls. This keeps
+  // phone controls clear too, without squeezing their text or touch targets.
+  {
     const first = rowStates[0].element;
     first.style.top = `${rowStart}px`;
     const fitted = fitRowsAboveHero({
       rowStart, rowStep, rowHeight: first.offsetHeight,
       firstBounds: first.getBoundingClientRect(),
       tiltRadians: parseFloat(getComputedStyle(stage).getPropertyValue('--marquee-tilt')) * Math.PI / 180,
-      heroRects: [...document.querySelectorAll('.hero_brand, .hero_title-line, .hero_credit')]
+      heroRects: [...document.querySelectorAll('.hero_brand, .hero_title-line, .hero_credit, .hero_controls')]
         .map(element => element.getBoundingClientRect())
     });
     if (fitted) { neededRows = fitted.rowCount; rowStart = fitted.rowStart; }
@@ -684,8 +714,13 @@ function syncHeroScale(root, metrics = null) {
   const heroHeight = isCreditHiddenLayout && heroCopy
     ? Math.ceil(heroCopy.scrollHeight || heroCopy.getBoundingClientRect().height || HERO_CLUSTER_HEIGHT)
     : HERO_CLUSTER_HEIGHT;
-  const availableWidth = Math.max(0, viewportWidth - (horizontalPadding * 2));
-  const availableHeight = Math.max(0, viewportHeight - verticalPaddingTop - verticalPaddingBottom);
+  const availableWidth = heroLayout ? heroLayout.clientWidth
+    : Math.max(0, viewportWidth - (horizontalPadding * 2));
+  const controls = document.querySelector('[data-marquee-controls]');
+  const controlsReserve = controls ? controls.offsetHeight + 16 : 0;
+  root.style.setProperty('--marquee-controls-reserve', `${controlsReserve}px`);
+  const layoutHeight = heroLayout ? heroLayout.clientHeight : viewportHeight;
+  const availableHeight = Math.max(0, layoutHeight - verticalPaddingTop - verticalPaddingBottom - controlsReserve);
   const scale = Math.min(
     responsiveMetrics.heroMaxScale * narrowPortraitScaleCap,
     availableWidth / heroWidth,
@@ -704,6 +739,12 @@ function initMarqueeScene() {
   if (!stage) {
     return;
   }
+
+  const reducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  const motion = createMarqueeMotionPreference(() => window.localStorage, reducedMotion?.matches);
+  const motionButton = document.getElementById('marquee-motion-toggle');
+  const motionDescription = document.getElementById('marquee-motion-description');
+  if (motionButton) motionButton.hidden = false;
 
   const rowStates = Array.from({ length: ROW_COUNT }, (_, index) => createRow(index));
   rowStates.forEach(state => stage.append(state.element));
@@ -762,12 +803,14 @@ function initMarqueeScene() {
     window.visualViewport.addEventListener('scroll', handleResize, { passive: true });
   }
 
-  const reducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   let animationFrame = 0;
   let lastTime = performance.now();
   function animateRows(now) {
     animationFrame = 0;
-    if (document.hidden || (reducedMotion && reducedMotion.matches)) return;
+    // A browser can update matches before delivering its change event.
+    // Latch that pause immediately, including the control’s visible state.
+    if (reducedMotion?.matches && !motion.reduced) syncMotionPreference();
+    if (document.hidden || motion.paused) return;
     const dt = Math.min(0.04, (now - lastTime) / 1000);
     lastTime = now;
     if (window.PageEntrance?.isHoldingArtwork?.() || document.body.classList.contains('has-logo-animation')) {
@@ -801,7 +844,19 @@ function initMarqueeScene() {
   }
 
   function syncMotionPreference() {
-    if (document.hidden || (reducedMotion && reducedMotion.matches)) {
+    motion.setReducedMotion(reducedMotion?.matches);
+    root.dataset.marqueeMotionPaused = String(motion.paused);
+    if (motionButton) {
+      motionButton.disabled = motion.reduced;
+      motionButton.title = motion.reduced ? 'Reduced motion is on in your device settings.' : '';
+      motionButton.textContent = motion.reduced ? 'Motion paused' : motion.paused ? 'Resume motion' : 'Pause motion';
+    }
+    if (motionDescription) motionDescription.textContent = motion.reduced
+      ? 'Motion is paused by your device’s reduced motion setting. Dragging still works.'
+      : 'Pauses the moving rows and animated bar previews. Dragging still works.';
+    if (motion.paused) window.PageEntrance?.cancel?.();
+    handleResize();
+    if (document.hidden || motion.paused) {
       if (document.hidden) cancelInteractions();
       else rowStates.forEach(state => {
         state.inertiaVelocity = 0;
@@ -818,6 +873,17 @@ function initMarqueeScene() {
     }
   }
 
+  motionButton?.addEventListener('click', () => {
+    motion.setReducedMotion(reducedMotion?.matches);
+    motion.setPaused(!motion.paused);
+    syncMotionPreference();
+  });
+  window.addEventListener('storage', event => {
+    if (event.key !== MARQUEE_MOTION_STORAGE_KEY || event.newValue !== 'paused') return;
+    motion.acceptStoredPause(event.newValue);
+    syncMotionPreference();
+  });
+
   if (reducedMotion) {
     if (typeof reducedMotion.addEventListener === 'function') {
       reducedMotion.addEventListener('change', syncMotionPreference);
@@ -832,12 +898,18 @@ function initMarqueeScene() {
     animationFrame = 0;
     marqueeAnimation?.hold();
   });
-  window.addEventListener('pageshow', syncMotionPreference);
+  window.addEventListener('pageshow', () => {
+    // A restored back/forward page may have missed a pause saved elsewhere.
+    try { motion.acceptStoredPause(window.localStorage.getItem(MARQUEE_MOTION_STORAGE_KEY)); } catch (_) { /* Retain this visit’s preference. */ }
+    syncMotionPreference();
+  });
   syncMotionPreference();
 }
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
+    MARQUEE_MOTION_STORAGE_KEY,
+    createMarqueeMotionPreference,
     updateRowLayout,
     advanceRowSpeed,
     projectLaneDelta,
