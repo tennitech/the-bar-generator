@@ -119,6 +119,24 @@ function computeRowTopPositions({ rowCount, rowStart, rowStep }) {
   return Array.from({ length: rowCount }, (_, index) => rowStart + (rowStep * index));
 }
 
+// Place the last diagonal lane above the actual brand, title and credits.
+// A sub-lane offset keeps this boundary continuous as the viewport resizes;
+// adding/removing whole lanes alone would leave up to one extra lane of space.
+function fitRowsAboveHero({ rowStart, rowStep, rowHeight, firstBounds, tiltRadians, heroRects }) {
+  const visibleRects = heroRects.filter(rect => rect.width > 0 && rect.height > 0);
+  if (!(rowStep > 0) || !visibleRects.length) return null;
+  const clearance = rowStep * 0.6;
+  const slope = Math.tan(tiltRadians);
+  const shift = Math.min(...visibleRects.map(rect => {
+    const rightEdge = slope >= 0 ? rect.right : rect.left;
+    const firstBottom = firstBounds.top + (rightEdge - firstBounds.left) * slope
+      + rowHeight * Math.cos(tiltRadians);
+    return rect.top - firstBottom - clearance;
+  }));
+  const rowCount = Math.max(1, 1 + Math.ceil(Math.max(0, shift) / rowStep - 1e-7));
+  return { rowCount, rowStart: rowStart + shift - (rowCount - 1) * rowStep };
+}
+
 function getResponsiveMarqueeMetrics(viewportWidth, viewportHeight) {
   const scale = Math.max(1, Math.min(viewportWidth / COMPOSITION_REFERENCE_WIDTH,
     viewportHeight / COMPOSITION_REFERENCE_HEIGHT));
@@ -470,24 +488,24 @@ function syncRowVerticalLayout(rowStates, stage) {
   const stageHeight = stage.getBoundingClientRect().height;
   const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
   const rowLift = getEdgeCaseRowLiftPx(viewportWidth, viewportHeight);
-  const rowStart = ((ROW_START_PERCENT / 100) * stageHeight) - rowLift;
+  let rowStart = ((ROW_START_PERCENT / 100) * stageHeight) - rowLift;
   const rowStep = getRowStepPx(stageHeight, rowStates[0].element.offsetHeight);
   const coveredSpan = (ROW_COUNT - 1) * (ROW_STEP_PERCENT / 100) * stageHeight;
   let neededRows = Math.max(ROW_COUNT, 1 + Math.floor(coveredSpan / rowStep));
-  // A portrait monitor has much more vertical room than a desktop composition.
-  // Extend the field toward the actual heading, keeping one lane of clear space
-  // instead of leaving a large unused band. Compact phone composition stays put.
-  if (viewportWidth >= MOBILE_HERO_BREAKPOINT && viewportHeight > viewportWidth * 1.4) {
-    const hero = document.querySelector('.hero_brand')?.getBoundingClientRect();
-    if (hero) {
-      const first = rowStates[0].element;
-      first.style.top = `${rowStart}px`;
-      const bounds = first.getBoundingClientRect();
-      const angle = parseFloat(getComputedStyle(stage).getPropertyValue('--marquee-tilt')) * Math.PI / 180;
-      const firstBottomAtHero = bounds.top + (hero.left - bounds.left) * Math.tan(angle)
-        + first.offsetHeight * Math.cos(angle);
-      neededRows = Math.max(neededRows, 1 + Math.floor((hero.top - rowStep - firstBottomAtHero) / rowStep));
-    }
+  // Desktop layout follows measured text, not a portrait-aspect threshold.
+  // The old height/width > 1.4 gate left a large empty band just below it.
+  // Compact phone composition remains unchanged.
+  if (viewportWidth >= MOBILE_HERO_BREAKPOINT) {
+    const first = rowStates[0].element;
+    first.style.top = `${rowStart}px`;
+    const fitted = fitRowsAboveHero({
+      rowStart, rowStep, rowHeight: first.offsetHeight,
+      firstBounds: first.getBoundingClientRect(),
+      tiltRadians: parseFloat(getComputedStyle(stage).getPropertyValue('--marquee-tilt')) * Math.PI / 180,
+      heroRects: [...document.querySelectorAll('.hero_brand, .hero_title-line, .hero_credit')]
+        .map(element => element.getBoundingClientRect())
+    });
+    if (fitted) { neededRows = fitted.rowCount; rowStart = fitted.rowStart; }
   }
   while (rowStates.length < neededRows) {
     const state = createRow(rowStates.length);
@@ -669,6 +687,7 @@ if (typeof module !== 'undefined' && module.exports) {
     createRowPatterns,
     syncRowTargetFactor,
     computeRowTopPositions,
+    fitRowsAboveHero,
     getEdgeCaseRowLiftPx,
     getNarrowPortraitHeroScaleCap,
     getMarqueeBarStyle,
