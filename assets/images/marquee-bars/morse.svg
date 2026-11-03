@@ -1,0 +1,12 @@
+<svg viewBox="0 0 250 18" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="color: #000000; overflow: visible;">
+  <defs><clipPath id="bar-bounds-0-0-250-18"><rect x="0" y="0" width="250" height="18"/></clipPath></defs><g clip-path="url(#bar-bounds-0-0-250-18)">
+    <rect x="0" y="0" width="9.25925925925926" height="18" fill="currentColor"/>
+    <rect x="18.51851851851852" y="0" width="27.77777777777778" height="18" fill="currentColor"/>
+    <rect x="55.55555555555556" y="0" width="9.25925925925926" height="18" fill="currentColor"/>
+    <rect x="92.5925925925926" y="0" width="9.25925925925926" height="18" fill="currentColor"/>
+    <rect x="111.11111111111111" y="0" width="27.77777777777778" height="18" fill="currentColor"/>
+    <rect x="148.14814814814815" y="0" width="27.77777777777778" height="18" fill="currentColor"/>
+    <rect x="185.1851851851852" y="0" width="9.25925925925926" height="18" fill="currentColor"/>
+    <rect x="222.22222222222223" y="0" width="9.25925925925926" height="18" fill="currentColor"/>
+    <rect x="240.74074074074076" y="0" width="9.25925925925926" height="18" fill="currentColor"/></g>
+</svg>

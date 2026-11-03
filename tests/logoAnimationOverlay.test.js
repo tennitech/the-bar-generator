@@ -46,7 +46,8 @@ function createMockElement() {
     dataset: {},
     attributes: {},
     classList: createClassList(),
-    style: {},
+    style: { setProperty(name, value) { this[name] = value; } },
+    contentWindow: {},
     focus: jest.fn(),
     remove: jest.fn(),
     addEventListener(type, handler) {
@@ -116,6 +117,7 @@ function createMockWindow() {
   return {
     setTimeout,
     clearTimeout,
+    location: { origin: 'https://example.test' },
     sessionStorage: {
       setItem: jest.fn((key, value) => {
         storage.set(key, value);
@@ -217,7 +219,7 @@ describe('logo animation overlay controller', () => {
     expect(closeEl.disabled).toBe(false);
     expect(closeEl.focus).toHaveBeenCalledTimes(1);
     expect(stageEl.lastChild.tagName).toBe('IFRAME');
-    expect(stageEl.lastChild.src).toBe('animation/index.html');
+    expect(stageEl.lastChild.src).toBe('animation/index.html?overlay=1&foreground=%23d6001c');
   });
 
   test('passes animation state through session storage when provided', async () => {
@@ -238,7 +240,7 @@ describe('logo animation overlay controller', () => {
     expect(windowRef.sessionStorage.setItem).toHaveBeenCalledTimes(1);
     const [stateKey, rawValue] = windowRef.sessionStorage.setItem.mock.calls[0];
     expect(JSON.parse(rawValue)).toEqual(animationState);
-    expect(stageEl.lastChild.src).toContain('animation/index.html?overlay=1&stateKey=');
+    expect(stageEl.lastChild.src).toContain('animation/index.html?overlay=1&foreground=%23d6001c&stateKey=');
     expect(stageEl.lastChild.src).toContain(encodeURIComponent(stateKey));
   });
 
@@ -372,6 +374,7 @@ describe('logo animation overlay controller', () => {
 
     await controller.open();
     windowRef.dispatch('message', {
+      origin: windowRef.location.origin, source: controller.getFrame().contentWindow,
       data: { type: 'rpi-logo-animation-complete' }
     });
 
@@ -428,6 +431,52 @@ describe('logo animation overlay controller', () => {
       source: {}, data: { type: 'rpi-logo-animation-complete' }
     });
     expect(controller.isOpen()).toBe(true);
+  });
+
+  test.each(['rpi-logo-animation-close', 'rpi-logo-animation-ready', 'rpi-logo-animation-complete'])('%s requires the current frame AND exact origin', async type => {
+    const { controller, windowRef, closeEl } = createController();
+    await controller.open();
+    const oldFrame = controller.getFrame();
+    await controller.replay();
+    for (const [origin, source] of [
+      ['https://other.test', controller.getFrame().contentWindow],
+      ['null', controller.getFrame().contentWindow],
+      [windowRef.location.origin, {}],
+      [windowRef.location.origin, oldFrame.contentWindow]
+    ]) {
+      windowRef.dispatch('message', { origin, source, data: { type } });
+      expect(controller.isOpen()).toBe(true);
+      expect(closeEl.disabled).toBe(true);
+    }
+  });
+
+  test.each(Object.entries({ black: '#000000', white: '#ffffff', red: '#d6001c', blue: '#0081ce',
+    gold: '#cdac38', silver: '#e1edf5', gray: '#b9ccd8', lunar: '#f4f7fb' }))('%s captures one coherent palette and frame state per mount', async (colorMode, foreground) => {
+    const capture = jest.fn(() => ({ colorMode, foreground, finalLogoSvg: '<svg/>' }));
+    const { controller, overlayEl, windowRef } = createController({ getAnimationState: capture });
+    await controller.open();
+    expect(capture).toHaveBeenCalledTimes(1);
+    expect(overlayEl.style['--intro-ink']).toBe(foreground);
+    expect(overlayEl.style['--intro-background']).toBe(colorMode === 'black' ? '#ffffff' : '#000000');
+    expect(controller.getFrame().src).toContain(`foreground=${encodeURIComponent(foreground)}`);
+    expect(JSON.parse(windowRef.sessionStorage.setItem.mock.calls[0][1]).foreground).toBe(foreground);
+  });
+
+  test('blocked session storage still sends selected ink without putting SVG/text in URL', async () => {
+    const { controller, windowRef } = createController({ getAnimationState: () => ({
+      foreground: '#000000', finalLogoSvg: '<svg>private text</svg>'
+    }) });
+    windowRef.sessionStorage.setItem.mockImplementation(() => { throw Error('blocked'); });
+    await controller.open();
+    expect(controller.getFrame().src).toBe('animation/index.html?overlay=1&foreground=%23000000');
+    expect(controller.isOpen()).toBe(true);
+  });
+
+  test('failed optional artwork capture retains working fallback and close', async () => {
+    const { controller } = createController({ getAnimationState: () => { throw Error('capture'); } });
+    await expect(controller.open()).resolves.toBe(true);
+    expect(controller.getFrame().src).toContain('foreground=%23d6001c');
+    controller.close(); expect(controller.isOpen()).toBe(false);
   });
 
   test('exit waits for the actual CSS transition and ignores stale completion after reopen', async () => {

@@ -1,0 +1,69 @@
+{
+  "engine": "chromium",
+  "status": "passed",
+  "browserVersion": "151.0.7922.34",
+  "platform": "linux",
+  "release": "6.18.55",
+  "results": [
+    {
+      "caseName": "reduced-desktop-2d",
+      "reduce": true,
+      "touch": false,
+      "fallback": true,
+      "renderer": {
+        "liveCanvasUsesWebGL": false,
+        "contextClass": "CanvasRenderingContext2D",
+        "webglVersion": null,
+        "renderer": null
+      },
+      "zoom": {
+        "zoomChanged": true,
+        "panChanged": true,
+        "restoredFitPixels": true,
+        "restoredFitTransform": true
+      },
+      "memory": null,
+      "exports": 6
+    },
+    {
+      "caseName": "reduced-touch-gpu",
+      "reduce": true,
+      "touch": true,
+      "fallback": false,
+      "renderer": {
+        "liveCanvasUsesWebGL": true,
+        "contextClass": "WebGL2RenderingContext",
+        "webglVersion": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "renderer": "WebKit WebGL"
+      },
+      "zoom": {
+        "zoomChanged": true,
+        "panChanged": true,
+        "restoredFitPixels": true,
+        "restoredFitTransform": true
+      },
+      "memory": null,
+      "exports": 6
+    },
+    {
+      "caseName": "reduced-touch-2d",
+      "reduce": true,
+      "touch": true,
+      "fallback": true,
+      "renderer": {
+        "liveCanvasUsesWebGL": false,
+        "contextClass": "CanvasRenderingContext2D",
+        "webglVersion": null,
+        "renderer": null
+      },
+      "zoom": {
+        "zoomChanged": true,
+        "panChanged": true,
+        "restoredFitPixels": true,
+        "restoredFitTransform": true
+      },
+      "memory": null,
+      "exports": 6
+    }
+  ]
+}

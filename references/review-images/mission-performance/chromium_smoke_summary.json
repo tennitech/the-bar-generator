@@ -1,0 +1,113 @@
+{
+  "engine": "chromium",
+  "browserVersion": "151.0.7922.34",
+  "firstRun": {
+    "passedCases": [
+      {
+        "reduce": false,
+        "touch": false,
+        "fallback": false
+      },
+      {
+        "reduce": false,
+        "touch": false,
+        "fallback": true
+      },
+      {
+        "reduce": false,
+        "touch": true,
+        "fallback": false
+      },
+      {
+        "reduce": false,
+        "touch": true,
+        "fallback": true
+      },
+      {
+        "reduce": true,
+        "touch": false,
+        "fallback": false
+      }
+    ],
+    "terminal": "History fixture assertion: navigation occurred before documented 200 ms URL serialization. Explicit serialized-query precondition added; no application URL change."
+  },
+  "resume": {
+    "engine": "chromium",
+    "status": "passed",
+    "browserVersion": "151.0.7922.34",
+    "platform": "linux",
+    "release": "6.18.55",
+    "results": [
+      {
+        "caseName": "reduced-desktop-2d",
+        "reduce": true,
+        "touch": false,
+        "fallback": true,
+        "renderer": {
+          "liveCanvasUsesWebGL": false,
+          "contextClass": "CanvasRenderingContext2D",
+          "webglVersion": null,
+          "renderer": null
+        },
+        "zoom": {
+          "zoomChanged": true,
+          "panChanged": true,
+          "restoredFitPixels": true,
+          "restoredFitTransform": true
+        },
+        "memory": null,
+        "exports": 6
+      },
+      {
+        "caseName": "reduced-touch-gpu",
+        "reduce": true,
+        "touch": true,
+        "fallback": false,
+        "renderer": {
+          "liveCanvasUsesWebGL": true,
+          "contextClass": "WebGL2RenderingContext",
+          "webglVersion": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "renderer": "WebKit WebGL"
+        },
+        "zoom": {
+          "zoomChanged": true,
+          "panChanged": true,
+          "restoredFitPixels": true,
+          "restoredFitTransform": true
+        },
+        "memory": null,
+        "exports": 6
+      },
+      {
+        "caseName": "reduced-touch-2d",
+        "reduce": true,
+        "touch": true,
+        "fallback": true,
+        "renderer": {
+          "liveCanvasUsesWebGL": false,
+          "contextClass": "CanvasRenderingContext2D",
+          "webglVersion": null,
+          "renderer": null
+        },
+        "zoom": {
+          "zoomChanged": true,
+          "panChanged": true,
+          "restoredFitPixels": true,
+          "restoredFitTransform": true
+        },
+        "memory": null,
+        "exports": 6
+      }
+    ]
+  },
+  "combinedUniqueCases": 8,
+  "pngEncodes": 48,
+  "capturedSVGFiles": 48,
+  "memoryDiagnostic": {
+    "twoFortyRecolorRounds": true,
+    "retainedDOMNodeCountStableAssertionPassed": true,
+    "retainedListenerCountStableAssertionPassed": true,
+    "rawHeapNumbersRetained": false,
+    "note": "First-case PASS followed DOM/listener assertions. Later fixture failure prevented raw numeric heap/counter results from being saved. No numeric memory or zero-leak claim."
+  }
+}

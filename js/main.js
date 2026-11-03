@@ -241,6 +241,8 @@ let lunarCounterHours = null;
 let lunarCounterMinutes = null;
 let lunarCounterSeconds = null;
 let lunarCounterInterval = 0;
+let hasBoundLunarCounterLifecycle = false;
+let lunarCounterPageActive = true;
 let tickerShader1, tickerShader2, binaryShader;
 let currentShader = 1;
 let barBuffer;
@@ -384,21 +386,44 @@ function updateLunarSplashdownCounter(now = Date.now()) {
   const minutes = Math.floor((elapsedSeconds % 3600) / 60);
   const seconds = elapsedSeconds % 60;
 
-  if (lunarCounterDays) lunarCounterDays.textContent = padCounterValue(days, 3);
-  if (lunarCounterHours) lunarCounterHours.textContent = padCounterValue(hours, 2);
-  if (lunarCounterMinutes) lunarCounterMinutes.textContent = padCounterValue(minutes, 2);
-  if (lunarCounterSeconds) lunarCounterSeconds.textContent = padCounterValue(seconds, 2);
-
-  lunarCounterRoot.setAttribute(
-    'aria-label',
-    `Time since Artemis II splashdown: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`
-  );
-  if (lunarCounterToggle) {
-    lunarCounterToggle.setAttribute(
-      'aria-label',
-      `Show Artemis II splashdown details. Elapsed time: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`
-    );
+  for (const [element, value, digits] of [
+    [lunarCounterDays, days, 3], [lunarCounterHours, hours, 2],
+    [lunarCounterMinutes, minutes, 2], [lunarCounterSeconds, seconds, 2]
+  ]) {
+    const text = padCounterValue(value, digits);
+    if (element && element.textContent !== text) element.textContent = text;
   }
+
+  const label = `Time since Artemis II splashdown: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+  if (lunarCounterRoot.getAttribute('aria-label') !== label) lunarCounterRoot.setAttribute('aria-label', label);
+  if (lunarCounterToggle) {
+    const toggleLabel = `Show Artemis II splashdown details. Elapsed time: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+    if (lunarCounterToggle.getAttribute('aria-label') !== toggleLabel) lunarCounterToggle.setAttribute('aria-label', toggleLabel);
+  }
+}
+
+function syncLunarSplashdownCounter() {
+  const active = lunarCounterRoot && lunarCounterPageActive && !document.hidden
+    && isMissionControlThemeActive() && lunarCounterRoot.getClientRects().length > 0;
+  if (!active) {
+    if (lunarCounterInterval) clearInterval(lunarCounterInterval);
+    lunarCounterInterval = 0;
+    return;
+  }
+  updateLunarSplashdownCounter();
+  if (!lunarCounterInterval) lunarCounterInterval = setInterval(updateLunarSplashdownCounter, 1000);
+}
+
+function suspendLunarSplashdownCounter() {
+  lunarCounterPageActive = false;
+  invalidateLunarPreviewFrame();
+  syncLunarSplashdownCounter();
+}
+
+function resumeLunarSplashdownCounter() {
+  lunarCounterPageActive = true;
+  invalidateLunarPreviewFrame();
+  syncLunarSplashdownCounter();
 }
 
 function setupLunarSplashdownCounter() {
@@ -410,7 +435,10 @@ function setupLunarSplashdownCounter() {
   lunarCounterMinutes = document.getElementById('lunar-counter-minutes');
   lunarCounterSeconds = document.getElementById('lunar-counter-seconds');
 
-  if (!lunarCounterRoot) return;
+  if (!lunarCounterRoot) {
+    syncLunarSplashdownCounter();
+    return;
+  }
 
   if (lunarCounterToggle && lunarCounterDetail) {
     lunarCounterToggle.addEventListener('click', toggleLunarCounterDetail);
@@ -418,17 +446,13 @@ function setupLunarSplashdownCounter() {
     document.addEventListener('keydown', handleLunarCounterKeydown);
   }
 
-  updateLunarSplashdownCounter();
-  if (lunarCounterInterval) {
-    clearInterval(lunarCounterInterval);
+  if (!hasBoundLunarCounterLifecycle) {
+    hasBoundLunarCounterLifecycle = true;
+    document.addEventListener('visibilitychange', syncLunarSplashdownCounter);
+    window.addEventListener('pagehide', suspendLunarSplashdownCounter);
+    window.addEventListener('pageshow', resumeLunarSplashdownCounter);
   }
-  lunarCounterInterval = setInterval(updateLunarSplashdownCounter, 1000);
-
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      updateLunarSplashdownCounter();
-    }
-  });
+  syncLunarSplashdownCounter();
 }
 
 function toggleLunarCounterDetail(event) {
@@ -1269,6 +1293,7 @@ function togglePreviewAudio(type) {
 }
 
 function resetStyleParameters(style) {
+  if (!window.ParameterControls.supportsActions(style)) return;
   stopAudio();
 
   switch (style) {
@@ -1280,7 +1305,7 @@ function resetStyleParameters(style) {
       updateRulerRepeatsDisplay();
       updateRulerUnitsDisplay();
       updateRulerSpeedDisplay();
-      setMotionEnabledForStyle('ruler', true);
+
       break;
     case 'binary':
       if (binaryInput) binaryInput.value = 'RPI';
@@ -1303,7 +1328,7 @@ function resetStyleParameters(style) {
       updateTickerRatioDisplay();
       updateTickerWidthRatioDisplay();
       updateTickerSpeedDisplay();
-      setMotionEnabledForStyle('ticker', true);
+
       break;
     case 'waveform':
       if (waveformTypeSlider) waveformTypeSlider.value = 0;
@@ -1322,9 +1347,16 @@ function resetStyleParameters(style) {
       updateWaveformEnvelopeWavesDisplay();
       updateWaveformEnvelopeCenterDisplay();
       updateAudioParameters();
-      setMotionEnabledForStyle('waveform', true);
+
+      break;
+    case 'wave-quantum':
+      document.getElementById('quantum-phase').value = 0;
+      document.getElementById('quantum-speed-slider').value = 1;
+      document.getElementById('quantum-reverse-toggle').checked = false;
+      document.getElementById('quantum-phase').dispatchEvent(new Event('input', { bubbles: true }));
       break;
     case 'circles':
+      sharePatternSeed = 1;
       if (circlesFillSelect) circlesFillSelect.value = 'stroke';
       if (circlesDensitySlider) circlesDensitySlider.value = 50;
       if (circlesSizeVariationSlider) circlesSizeVariationSlider.value = 0;
@@ -1411,6 +1443,7 @@ function resetStyleParameters(style) {
   }
 
   syncMotionToggleState();
+  syncAllCustomSelects();
   updateStaffEffects();
   updateUrlParameters();
   updateAudioControlsUI();
@@ -1421,12 +1454,23 @@ function setupControlGroupResetButtons() {
   window.ParameterControls.prepare(document);
 }
 
+function pickDifferent(options, current) {
+  return pickRandom(options.filter(value => String(value) !== String(current)));
+}
+
+function randomDifferentStep(field, min, max, step = 1) {
+  const options = Array.from({ length: Math.round((max - min) / step) + 1 },
+    (_, index) => Number((min + index * step).toFixed(getStepPrecision(step))));
+  return pickDifferent(options, field.value);
+}
+
 function randomizeStyleParameters(style) {
+  if (!window.ParameterControls.supportsActions(style)) return;
   stopAudio();
 
   switch (style) {
     case 'ruler':
-      if (rulerRepeatsSlider) rulerRepeatsSlider.value = randomStepValue(4, 20, 1);
+      if (rulerRepeatsSlider) rulerRepeatsSlider.value = randomDifferentStep(rulerRepeatsSlider, 4, 20);
       if (rulerUnitsSlider) rulerUnitsSlider.value = pickRandom(['2', '4', '6', '8', '10']);
       if (rulerSpeedSlider) rulerSpeedSlider.value = randomStepValue(Number(rulerSpeedSlider.min), Number(rulerSpeedSlider.max), 0.1);
       if (rulerReverseToggle) rulerReverseToggle.checked = randomChance(0.5);
@@ -1436,19 +1480,19 @@ function randomizeStyleParameters(style) {
       break;
     case 'binary':
       if (binaryInput) {
-        binaryInput.value = pickRandom(SURPRISE_TEXT_OPTIONS);
+        binaryInput.value = pickDifferent(SURPRISE_TEXT_OPTIONS, binaryInput.value);
         handleBinaryInput();
       }
       break;
     case 'morse':
       if (morseInput) {
-        morseInput.value = pickRandom(SURPRISE_TEXT_OPTIONS);
+        morseInput.value = pickDifferent(SURPRISE_TEXT_OPTIONS, morseInput.value);
         updateMorseData(morseInput.value);
       }
       resetSequencePreviewState();
       break;
     case 'ticker':
-      if (tickerSlider) tickerSlider.value = randomStepValue(8, 40, 1);
+      if (tickerSlider) tickerSlider.value = randomDifferentStep(tickerSlider, 8, 40);
       if (tickerRatioSlider) tickerRatioSlider.value = randomStepValue(1, 5, 1);
       if (tickerWidthRatioSlider) {
         applyTickerWidthRatioBounds(tickerRatioSlider, tickerWidthRatioSlider);
@@ -1463,7 +1507,7 @@ function randomizeStyleParameters(style) {
       break;
     case 'waveform':
       if (waveformTypeSlider) waveformTypeSlider.value = pickRandom(['0', '1', '2', '3']);
-      if (waveformFrequencySlider) waveformFrequencySlider.value = randomStepValue(12, 88, 1);
+      if (waveformFrequencySlider) waveformFrequencySlider.value = randomDifferentStep(waveformFrequencySlider, 12, 88);
       if (waveformSpeedSlider) waveformSpeedSlider.value = randomStepValue(Number(waveformSpeedSlider.min), Number(waveformSpeedSlider.max), 0.1);
       if (waveformReverseToggle) waveformReverseToggle.checked = randomChance(0.5);
       if (waveformEnvelopeToggle) waveformEnvelopeToggle.checked = randomChance(0.65);
@@ -1481,7 +1525,14 @@ function randomizeStyleParameters(style) {
       updateWaveformEnvelopeCenterDisplay();
       updateAudioParameters();
       break;
+    case 'wave-quantum': {
+      const phase = document.getElementById('quantum-phase');
+      phase.value = randomDifferentStep({ value: window.quantumModel.normalizePhase(phase.value) }, 0, 0.999, 0.001);
+      phase.dispatchEvent(new Event('input', { bubbles: true }));
+      break;
+    }
     case 'circles':
+      sharePatternSeed = ((sharePatternSeed + Math.floor(Math.random() * 0xfffffffe)) % 0xffffffff) + 1;
       if (circlesFillSelect) circlesFillSelect.value = pickRandom(['stroke', 'fill']);
       resetCirclePatternCache();
       if (circlesDensitySlider) circlesDensitySlider.value = randomStepValue(20, 95, 1);
@@ -1490,22 +1541,26 @@ function randomizeStyleParameters(style) {
       updateCirclesSizeVariationDisplay();
       break;
     case 'numeric':
-      numericSourceSelect.value = 'formula';
-      numericFormulaSelect.value = pickRandom(window.NumericControls.presets).id;
+      if (numericSourceSelect.value === 'formula') {
+        numericFormulaSelect.value = pickDifferent(window.NumericControls.presets.map(preset => preset.id), numericFormulaSelect.value);
+      } else {
+        // Bounded generated data: keep the user's source, encoding and inactive formula.
+        const next = Array.from({ length: 24 }, () => Math.floor(Math.random() * 10)).join('');
+        numericInput.value = next === numericInput.value ? `${(Number(next[0]) + 1) % 10}${next.slice(1)}` : next;
+      }
       window.NumericControls.sync();
-      if (numericModeSelect) numericModeSelect.value = pickRandom(['dotmatrix', 'height']);
       updateNumericData();
       break;
     case 'circles-gradient':
-      if (circlesGradientVariantSlider) circlesGradientVariantSlider.value = randomStepValue(1, 3, 1);
+      if (circlesGradientVariantSlider) circlesGradientVariantSlider.value = randomDifferentStep(circlesGradientVariantSlider, 1, 3);
       updateCirclesGradientVariantDisplay();
       break;
     case 'gradient':
-      if (gradientVariantSlider) gradientVariantSlider.value = randomStepValue(1, 2, 1);
+      if (gradientVariantSlider) gradientVariantSlider.value = randomDifferentStep(gradientVariantSlider, 1, 2);
       updateGradientVariantDisplay();
       break;
     case 'grid':
-      if (gridVariantSlider) gridVariantSlider.value = randomStepValue(1, 3, 1);
+      if (gridVariantSlider) gridVariantSlider.value = randomDifferentStep(gridVariantSlider, 1, 3);
       updateGridVariantDisplay();
       break;
     case 'truss':
@@ -1542,21 +1597,21 @@ function randomizeStyleParameters(style) {
       break;
     }
     case 'lines':
-      if (linesVariantSlider) linesVariantSlider.value = randomStepValue(1, 2, 1);
+      if (linesVariantSlider) linesVariantSlider.value = randomDifferentStep(linesVariantSlider, 1, 2);
       updateLinesVariantDisplay();
       break;
     case 'point-connect':
-      if (pointConnectVariantSlider) pointConnectVariantSlider.value = randomStepValue(1, 2, 1);
+      if (pointConnectVariantSlider) pointConnectVariantSlider.value = randomDifferentStep(pointConnectVariantSlider, 1, 2);
       updatePointConnectVariantDisplay();
       break;
     case 'neural-network':
       setNeuralNetworkControls({ units: randomStepValue(2, 5, 1), input: randomStepValue(0, 100, 1),
-        seed: randomStepValue(1, 16, 1), activation: pickRandom(['tanh', 'sigmoid']), connectivity: pickRandom(['dense', 'local']) });
+        seed: randomDifferentStep(document.getElementById('neural-network-seed-slider'), 1, 16), activation: pickRandom(['tanh', 'sigmoid']), connectivity: pickRandom(['dense', 'local']) });
       if (neuralNetworkHiddenLayersSlider) neuralNetworkHiddenLayersSlider.value = randomStepValue(1, 5, 1);
       updateNeuralNetworkHiddenLayersDisplay();
       break;
     case 'triangle-grid':
-      if (triangleGridVariantSlider) triangleGridVariantSlider.value = randomStepValue(1, 3, 1);
+      if (triangleGridVariantSlider) triangleGridVariantSlider.value = randomDifferentStep(triangleGridVariantSlider, 1, 3);
       updateTriangleGridVariantDisplay();
       break;
     case 'triangles':
@@ -1564,12 +1619,13 @@ function randomizeStyleParameters(style) {
         trianglesDirectionSelect.value = pickRandom(['down-right', 'up-right', 'up-left', 'down-left']);
         trianglesDirectionSelect.dispatchEvent(new Event('change', { bubbles: true }));
       }
-      if (trianglesCountSlider) trianglesCountSlider.value = randomStepValue(6, 28, 1);
+      if (trianglesCountSlider) trianglesCountSlider.value = randomDifferentStep(trianglesCountSlider, 6, 28);
       updateTrianglesCountDisplay();
       break;
   }
 
   syncMotionToggleState();
+  syncAllCustomSelects();
   updateStaffEffects();
   updateUrlParameters();
   updateAudioControlsUI();
@@ -2233,6 +2289,7 @@ function setup() {
 
     canvas.elt.addEventListener('webglcontextrestored', () => {
       console.log('WebGL core context restored. Resuming animation loop.');
+      invalidateLunarPreviewFrame();
       loop();
     });
   }
@@ -3314,7 +3371,7 @@ function setup() {
   setupCustomDropdowns();
   syncLunarColorOptionAvailability();
   syncAllCustomSelects();
-  window.ParameterControls.bindActions({ randomize: randomizeStyleParameters, reset: resetStyleParameters });
+  window.ParameterControls.bindActions({ randomize: randomizeStyleParameters, reset: resetStyleParameters, isDefaultSeed: () => sharePatternSeed === 1 });
   updateHeaderBrandPreview(true);
 
   setupLunarSplashdownCounter();
@@ -3426,6 +3483,7 @@ function setup() {
   };
 
   document.addEventListener('visibilitychange', function () {
+    invalidateLunarPreviewFrame();
     lastAnimationFrameTimestamp = 0;
     if (document.hidden) {
       handleDocumentAudioDeactivation();
@@ -3783,6 +3841,8 @@ function toggleMobileMenu() {
 }
 
 function handleClickOutside(event) {
+  // Modal chrome is not an outside click on the inert background controls.
+  if (document.body.classList.contains('has-logo-animation')) return;
   // Only apply in compact overlay layout where the sidebar covers the workspace.
   if (!isCompactLayoutViewport()) return;
   // Don't close if clicking on the toggle button or inside the sidebar
@@ -3883,6 +3943,7 @@ function syncMissionControlInterfaceCopy() {
     reportProblemBtn.setAttribute('aria-label', `${interfaceCopy.reportProblem} on GitHub`);
   }
   if (!missionControlActive) closeLunarCounterDetail();
+  syncLunarSplashdownCounter();
 }
 
 function syncMissionControlSaveMenu() {
@@ -4438,7 +4499,8 @@ function buildHeaderLogoAnimationState() {
     barSvg: buildCurrentBarOnlySVG(),
     finalLogoSvg: buildHeaderPreviewSVG(),
     style: normalizeStyleValue(styleSelect ? styleSelect.value : 'solid'),
-    colorMode: currentColorMode
+    colorMode: currentColorMode,
+    foreground: colors[currentColorMode].fg
   };
 }
 
@@ -4577,7 +4639,7 @@ async function ensureHeaderLogoAnimationController() {
   }
 
   headerLogoAnimationControllerPromise = (async () => {
-    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261028-circle-controls-integration');
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261028-bar24-26-release');
 
     if (!window.LogoAnimationOverlay
       || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {
@@ -4585,18 +4647,38 @@ async function ensureHeaderLogoAnimationController() {
     }
 
     return window.LogoAnimationOverlay.createLogoAnimationController({
-      triggerEl: headerLogoPreview,
+      triggerEl: document.getElementById('brand-title'),
+      exposeTriggerState: false,
+      getReturnFocus: () => [headerLogoAnimationReturnFocus,
+        document.getElementById('brand-title'), document.getElementById('mobile-secret-title'),
+        document.getElementById('header-logo-preview')]
+        .find(element => {
+          if (!element || !element.isConnected || element.disabled || !element.getClientRects().length
+            || getComputedStyle(element).visibility === 'hidden') return false;
+          const rect = element.getBoundingClientRect();
+          return rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
+        }),
       documentRef: document,
       windowRef: window,
       loadScript: loadExternalScriptOnce,
       getAnimationState: buildHeaderLogoAnimationState
     });
-  })();
+  })().catch(error => {
+    // A failed optional lazy request must not poison every later discovery.
+    headerLogoAnimationControllerPromise = null;
+    throw error;
+  });
 
   return headerLogoAnimationControllerPromise;
 }
 
+let headerLogoAnimationReturnFocus = null;
+
 async function openHeaderLogoAnimation() {
+  if (!document.body.classList.contains('has-logo-animation')) {
+    headerLogoAnimationReturnFocus = document.activeElement && document.activeElement !== document.body
+      ? document.activeElement : document.getElementById('brand-title');
+  }
   if (window.ThemeMotion) window.ThemeMotion.cancel();
   if (headerLogoAnimationLoadPromise) {
     return headerLogoAnimationLoadPromise;
@@ -4624,38 +4706,13 @@ async function openHeaderLogoAnimation() {
 }
 
 function setupHeaderLogoAnimationTrigger() {
-  if (!headerLogoPreview || headerLogoPreview.dataset.animationTriggerReady === 'true') {
-    return;
-  }
-
-  headerLogoPreview.dataset.animationTriggerReady = 'true';
-  headerLogoPreview.classList.add('brand-mark-clickable');
-  headerLogoPreview.setAttribute('role', 'button');
-  headerLogoPreview.setAttribute('tabindex', '0');
-  if (typeof headerLogoPreview.removeAttribute === 'function') {
-    headerLogoPreview.removeAttribute('aria-hidden');
-  } else {
-    headerLogoPreview.setAttribute('aria-hidden', 'false');
-  }
-  headerLogoPreview.setAttribute('aria-label', 'Play full-screen animation');
-  headerLogoPreview.setAttribute('aria-haspopup', 'dialog');
-  headerLogoPreview.setAttribute('aria-expanded', 'false');
-
-  headerLogoPreview.addEventListener('click', () => {
-    void openHeaderLogoAnimation();
-  });
-
-  headerLogoPreview.addEventListener('keydown', (event) => {
-    if (event.key !== 'Enter' && event.key !== ' ') {
-      return;
-    }
-
-    event.preventDefault();
-    void openHeaderLogoAnimation();
-  });
+  window.SecretIntro?.bind({ target: document.getElementById('brand-title'),
+    pointerTargets: [document.getElementById('brand-title'), document.getElementById('mobile-secret-title')],
+    open: openHeaderLogoAnimation });
 }
 
 function requestUpdate() {
+  invalidateLunarPreviewFrame();
   updateHeaderBrandPreview();
 
   if (!isMotionEnabledForStyle(getCurrentMotionStyle())) {
@@ -6018,6 +6075,7 @@ function getUrlParameters() {
 }
 
 function updateUrlParameters() {
+  window.ParameterControls.refresh();
   if (window.barShareController && window.barShareController.syncUrl()) return;
   const params = new URLSearchParams();
   const selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
@@ -6625,6 +6683,8 @@ function updateAudioParameters() {
 }
 
 function windowResized() {
+  invalidateLunarPreviewFrame();
+  syncLunarSplashdownCounter();
   headerMotionColorMode = null;
   headerMotionPixelWidth = 0;
   syncViewportHeightVar();
@@ -6704,12 +6764,28 @@ function setupViewportHeightSync() {
   }
 }
 
+let lastLunarPreviewFrame = '';
+let lastLunarPreviewRenderer = null;
+
+function invalidateLunarPreviewFrame() {
+  lastLunarPreviewFrame = '';
+  lastLunarPreviewRenderer = null;
+}
+
+function getLunarPreviewFrameKey(responsiveLogoScale) {
+  const canvas = window._renderer && window._renderer.canvas;
+  return [width, height, canvas && canvas.width, canvas && canvas.height,
+    responsiveLogoScale, previewControlSpace, zoomLevel, panOffset.x, panOffset.y,
+    currentColorMode, typeof window.createLunarBarVectorFragment].join(':');
+}
+
 function draw() {
   const currentTime = getAnimationNowMs();
   const drawingSuspended = document.hidden || document.body.classList.contains('has-logo-animation') || window.PageEntrance?.isHoldingArtwork?.();
   window.quantumControls.tick(currentTime, drawingSuspended);
   const currentMotionStyle = getCurrentMotionStyle();
   if (drawingSuspended) {
+    invalidateLunarPreviewFrame();
     lastAnimationFrameTimestamp = 0;
     return;
   }
@@ -6735,6 +6811,15 @@ function draw() {
   // Get current color scheme
   const colorScheme = colors[currentColorMode];
   const responsiveLogoScale = getRenderedResponsiveLogoScale();
+
+  // Artemis is static vector artwork. Keep p5's established scheduler for other
+  // families, but do not clear/repaint unchanged letters or touch its SVG each
+  // frame. Size, density, fit, zoom/pan, theme, source readiness and explicit
+  // updates all invalidate this narrow cache. Suspensions/context restore do too.
+  const lunarFrameKey = currentShader === 24 ? getLunarPreviewFrameKey(responsiveLogoScale) : '';
+  if (lunarFrameKey && lunarFrameKey === lastLunarPreviewFrame
+    && window._renderer === lastLunarPreviewRenderer && isLunarBarVectorPreviewReady()) return;
+  if (!lunarFrameKey) invalidateLunarPreviewFrame();
 
   // Keep the canvas transparent so the mark sits directly on the themed workspace.
   clear();
@@ -6780,6 +6865,11 @@ function draw() {
 
   // Draw bottom bar
   drawBottomBar(currentWidth, responsiveLogoScale);
+
+  if (lunarFrameKey && isLunarBarVectorPreviewReady()) {
+    lastLunarPreviewFrame = lunarFrameKey;
+    lastLunarPreviewRenderer = window._renderer;
+  }
 
   if (currentShader === 22) updateHeaderBrandPreview();
   if (isAnimated && isMotionEnabledForStyle(currentMotionStyle)) {
@@ -7790,8 +7880,8 @@ function touchEnded() {
 document.addEventListener('DOMContentLoaded', setupCustomDropdowns);
 
 // Share links bridge the legacy p5 global state without coupling serialization to rendering.
-let sharePatternSeed = typeof crypto !== 'undefined' && crypto.getRandomValues
-  ? crypto.getRandomValues(new Uint32Array(1))[0] : 1;
+// Canonical initial packing matches Reset; explicit shares retain their own seed.
+let sharePatternSeed = 1;
 
 function getSharePatternRandom(...values) {
   let seed = sharePatternSeed;
@@ -7836,10 +7926,13 @@ function setupShareLinks() {
       syncMotionToggleState();
       syncAllCustomSelects();
       updateAudioControlsUI();
+      window.ParameterControls.refresh();
       requestUpdate();
     },
     legacy: () => {
       stopAudio();
+      sharePatternSeed = 1;
+      resetCirclePatternCache();
       currentNoteDuration = 1;
       document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
         button.classList.toggle('active', Number(button.dataset.duration) === 1);
@@ -7855,6 +7948,7 @@ function setupShareLinks() {
       window.quantumControls.sync();
       syncMotionToggleState();
       syncAllCustomSelects();
+      window.ParameterControls.refresh();
     }
   });
 

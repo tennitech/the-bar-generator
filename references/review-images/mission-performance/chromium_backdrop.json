@@ -1,0 +1,86 @@
+{
+  "engine": "chromium",
+  "browserVersion": "151.0.7922.34",
+  "platform": "linux",
+  "osRelease": "6.18.55",
+  "requests": [
+    "lunar-canvas-backdrop.webp",
+    "lunar-canvas-backdrop.png",
+    "lunar-canvas-backdrop.webp",
+    "lunar-canvas-backdrop.webp",
+    "lunar-canvas-backdrop.png",
+    "lunar-canvas-backdrop.png",
+    "lunar-canvas-backdrop.webp",
+    "lunar-canvas-backdrop.png"
+  ],
+  "css": "image-set(url(\"http://127.0.0.1:8783/assets/images/lunar-canvas-backdrop.webp\") 1dppx type(\"image/webp\"), url(\"http://127.0.0.1:8783/assets/images/lunar-canvas-backdrop.png\") 1dppx type(\"image/png\"))",
+  "renderer": {
+    "liveCanvasUsesWebGL": true,
+    "contextClass": "WebGL2RenderingContext",
+    "webglVersion": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+    "renderer": "WebKit WebGL"
+  },
+  "pixelChannelDifferences": 0,
+  "timings": [
+    {
+      "run": 0,
+      "format": "png",
+      "fileBytes": 3802637,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 59.10000002384186,
+      "decodeMs": 55.39999997615814,
+      "drawReadMs": 60.89999997615814
+    },
+    {
+      "run": 0,
+      "format": "webp",
+      "fileBytes": 1852312,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 9.800000071525574,
+      "decodeMs": 70.5,
+      "drawReadMs": 85.10000002384186
+    },
+    {
+      "run": 1,
+      "format": "webp",
+      "fileBytes": 1852312,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 10.800000071525574,
+      "decodeMs": 72.29999995231628,
+      "drawReadMs": 86.29999995231628
+    },
+    {
+      "run": 1,
+      "format": "png",
+      "fileBytes": 3802637,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 11,
+      "decodeMs": 48.89999997615814,
+      "drawReadMs": 64.5
+    },
+    {
+      "run": 2,
+      "format": "png",
+      "fileBytes": 3802637,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 10,
+      "decodeMs": 55.89999997615814,
+      "drawReadMs": 70.29999995231628
+    },
+    {
+      "run": 2,
+      "format": "webp",
+      "fileBytes": 1852312,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 11.399999976158142,
+      "decodeMs": 69.70000004768372,
+      "drawReadMs": 83.39999997615814
+    }
+  ]
+}

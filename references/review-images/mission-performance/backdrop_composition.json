@@ -1,0 +1,24 @@
+[
+  {
+    "engine": "chromium",
+    "dimensions": [
+      1140,
+      844
+    ],
+    "changedRGBPixelCount": 0,
+    "webpScreenshotSha256": "6bb324afd145ced92c0ec50b61f3e8db0d3dbb55828c276aef3ac4cc815c87c1",
+    "pngScreenshotSha256": "6bb324afd145ced92c0ec50b61f3e8db0d3dbb55828c276aef3ac4cc815c87c1",
+    "note": "Byte-identical composited .logo-container screenshots; actual files retained in /tmp/bar-mission-evidence/backdrop during QA."
+  },
+  {
+    "engine": "webkit",
+    "dimensions": [
+      1140,
+      844
+    ],
+    "changedRGBPixelCount": 0,
+    "webpScreenshotSha256": "03a9158178e7c93fb30010315a5fd97bd496b825e794cdab392106a6e2ecd1fb",
+    "pngScreenshotSha256": "03a9158178e7c93fb30010315a5fd97bd496b825e794cdab392106a6e2ecd1fb",
+    "note": "Byte-identical composited .logo-container screenshots; actual files retained in /tmp/bar-mission-evidence/backdrop during QA."
+  }
+]

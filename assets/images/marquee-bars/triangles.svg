@@ -1,0 +1,17 @@
+<svg viewBox="0 0 250 18" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="color: #000000; overflow: visible;">
+  <defs><clipPath id="bar-bounds-0-0-250-18"><rect x="0" y="0" width="250" height="18"/></clipPath></defs><g clip-path="url(#bar-bounds-0-0-250-18)">
+    <polygon points="0,0 17.857142857142858,18 0,18" fill="currentColor"/>
+    <polygon points="17.857142857142858,0 35.714285714285715,18 17.857142857142858,18" fill="currentColor"/>
+    <polygon points="35.714285714285715,0 53.57142857142857,18 35.714285714285715,18" fill="currentColor"/>
+    <polygon points="53.57142857142857,0 71.42857142857143,18 53.57142857142857,18" fill="currentColor"/>
+    <polygon points="71.42857142857143,0 89.28571428571429,18 71.42857142857143,18" fill="currentColor"/>
+    <polygon points="89.28571428571429,0 107.14285714285715,18 89.28571428571429,18" fill="currentColor"/>
+    <polygon points="107.14285714285714,0 125,18 107.14285714285714,18" fill="currentColor"/>
+    <polygon points="125,0 142.85714285714286,18 125,18" fill="currentColor"/>
+    <polygon points="142.85714285714286,0 160.71428571428572,18 142.85714285714286,18" fill="currentColor"/>
+    <polygon points="160.71428571428572,0 178.57142857142858,18 160.71428571428572,18" fill="currentColor"/>
+    <polygon points="178.57142857142858,0 196.42857142857144,18 178.57142857142858,18" fill="currentColor"/>
+    <polygon points="196.42857142857144,0 214.2857142857143,18 196.42857142857144,18" fill="currentColor"/>
+    <polygon points="214.28571428571428,0 232.14285714285714,18 214.28571428571428,18" fill="currentColor"/>
+    <polygon points="232.14285714285714,0 250,18 232.14285714285714,18" fill="currentColor"/></g>
+</svg>

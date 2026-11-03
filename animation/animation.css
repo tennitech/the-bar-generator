@@ -11,14 +11,14 @@ body {
   width: 100%;
   height: 100%;
   margin: 0;
-  color-scheme: dark;
+  color-scheme: inherit;
   background: transparent;
 }
 
 body {
   overflow: hidden;
-  background: #000000;
-  color: #d6001c;
+  background: var(--animation-background, #000000);
+  color: var(--animation-ink, #d6001c);
   font-family: 'RPIGeistMono', monospace;
 }
 
@@ -50,7 +50,7 @@ body.is-overlay {
   height: 100vh;
   display: block;
   overflow: hidden;
-  color: #d6001c;
+  color: var(--animation-ink, #d6001c);
   font-family: 'RPIGeistMono', monospace;
   font-size: 0.5rem;
   line-height: 0.92;
@@ -58,5 +58,5 @@ body.is-overlay {
   white-space: pre;
   text-transform: none;
   user-select: none;
-  text-shadow: 0 0 8px rgba(214, 0, 28, 0.1);
+
 }

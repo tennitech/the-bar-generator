@@ -1,0 +1,86 @@
+{
+  "engine": "webkit",
+  "browserVersion": "26.5",
+  "platform": "linux",
+  "osRelease": "6.18.55",
+  "requests": [
+    "lunar-canvas-backdrop.webp",
+    "lunar-canvas-backdrop.png",
+    "lunar-canvas-backdrop.webp",
+    "lunar-canvas-backdrop.webp",
+    "lunar-canvas-backdrop.png",
+    "lunar-canvas-backdrop.png",
+    "lunar-canvas-backdrop.webp",
+    "lunar-canvas-backdrop.png"
+  ],
+  "css": "image-set(url(\"http://127.0.0.1:8783/assets/images/lunar-canvas-backdrop.webp\") 1dppx type(\"image/webp\"), url(\"http://127.0.0.1:8783/assets/images/lunar-canvas-backdrop.png\") 1dppx type(\"image/png\"))",
+  "renderer": {
+    "liveCanvasUsesWebGL": true,
+    "contextClass": "WebGL2RenderingContext",
+    "webglVersion": "WebGL 2.0",
+    "renderer": "WebKit WebGL"
+  },
+  "pixelChannelDifferences": 0,
+  "timings": [
+    {
+      "run": 0,
+      "format": "png",
+      "fileBytes": 3802637,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 38,
+      "decodeMs": 91,
+      "drawReadMs": 93
+    },
+    {
+      "run": 0,
+      "format": "webp",
+      "fileBytes": 1852312,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 17,
+      "decodeMs": 90,
+      "drawReadMs": 24
+    },
+    {
+      "run": 1,
+      "format": "webp",
+      "fileBytes": 1852312,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 29,
+      "decodeMs": 81,
+      "drawReadMs": 25
+    },
+    {
+      "run": 1,
+      "format": "png",
+      "fileBytes": 3802637,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 35,
+      "decodeMs": 89,
+      "drawReadMs": 26
+    },
+    {
+      "run": 2,
+      "format": "png",
+      "fileBytes": 3802637,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 38,
+      "decodeMs": 78,
+      "drawReadMs": 19
+    },
+    {
+      "run": 2,
+      "format": "webp",
+      "fileBytes": 1852312,
+      "width": 2048,
+      "height": 2592,
+      "fetchBodyMs": 27,
+      "decodeMs": 85,
+      "drawReadMs": 16
+    }
+  ]
+}

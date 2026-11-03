@@ -137,9 +137,16 @@ function drawSVGPathOnGraphics(pg, pathData) {
 // never passes through a fixed-size image/texture before zooming.
 let lunarBarVectorPreview = null;
 let lunarBarVectorPreviewSource = '';
+let lunarBarVectorPreviewColor = '';
+let lunarBarVectorPreviewTransform = '';
 
 function syncLunarBarVectorPreviewVisibility(isLunar) {
   if (lunarBarVectorPreview) lunarBarVectorPreview.hidden = !isLunar;
+}
+
+function isLunarBarVectorPreviewReady() {
+  return !!(lunarBarVectorPreview && lunarBarVectorPreview.isConnected
+    && !lunarBarVectorPreview.hidden && lunarBarVectorPreview.firstElementChild);
 }
 
 function projectLunarBarPoint(renderer, x, y) {
@@ -172,16 +179,30 @@ function drawLunarBarPattern(target, barStartX, barY, exactBarWidth, barHeight, 
     renderer.canvas.parentElement.append(lunarBarVectorPreview);
   }
   lunarBarVectorPreview.hidden = currentShader !== 24;
-  const sourceKey = `${exactBarWidth}:${barHeight}:${fgColor}:${colorMode}`;
+  // Theme colors inherit through currentColor. White and Mission Control share
+  // one supplied source: recoloring must not rebuild thousands of SVG nodes.
+  const sourceFamily = window.shouldUseWhiteLunarBarSource(colorMode) ? 'white' : 'black';
+  const sourceKey = `${exactBarWidth}:${barHeight}:${sourceFamily}`;
   if (lunarBarVectorPreviewSource !== sourceKey) {
-    const source = window.createLunarBarVectorFragment(0, 0, exactBarWidth, barHeight, fgColor, colorMode);
+    const source = window.createLunarBarVectorFragment(0, 0, exactBarWidth, barHeight, 'currentColor', colorMode);
     lunarBarVectorPreview.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${exactBarWidth}" height="${barHeight}" style="position:absolute;transform-origin:0 0;overflow:hidden">${source}</svg>`;
     lunarBarVectorPreviewSource = sourceKey;
+    lunarBarVectorPreviewColor = '';
+    lunarBarVectorPreviewTransform = '';
+  }
+  const svg = lunarBarVectorPreview.firstElementChild;
+  if (lunarBarVectorPreviewColor !== fgColor) {
+    svg.style.color = fgColor;
+    lunarBarVectorPreviewColor = fgColor;
   }
   const origin = projectLunarBarPoint(renderer, barStartX, barY);
   const right = projectLunarBarPoint(renderer, barStartX + exactBarWidth, barY);
   const bottom = projectLunarBarPoint(renderer, barStartX, barY + barHeight);
-  lunarBarVectorPreview.firstElementChild.style.transform = `matrix(${(right[0] - origin[0]) / exactBarWidth},${(right[1] - origin[1]) / exactBarWidth},${(bottom[0] - origin[0]) / barHeight},${(bottom[1] - origin[1]) / barHeight},${origin[0]},${origin[1]})`;
+  const transform = `matrix(${(right[0] - origin[0]) / exactBarWidth},${(right[1] - origin[1]) / exactBarWidth},${(bottom[0] - origin[0]) / barHeight},${(bottom[1] - origin[1]) / barHeight},${origin[0]},${origin[1]})`;
+  if (lunarBarVectorPreviewTransform !== transform) {
+    svg.style.transform = transform;
+    lunarBarVectorPreviewTransform = transform;
+  }
 }
 
 function drawMusicHeadOnGraphics(pg, shape, x, y, rx, ry, filled, fgColor) {

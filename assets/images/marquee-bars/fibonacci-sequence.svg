@@ -1,0 +1,11 @@
+<svg viewBox="0 0 250 18" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="color: #000000; overflow: visible;">
+  <defs><clipPath id="bar-bounds-0-0-250-18"><rect x="0" y="0" width="250" height="18"/></clipPath></defs><g clip-path="url(#bar-bounds-0-0-250-18)">
+    <rect x="0" y="0" width="94.66322988505746" height="18" fill="currentColor"/>
+    <rect x="95.77372988505746" y="0" width="58.46846551724138" height="18" fill="currentColor"/>
+    <rect x="155.35269540229885" y="0" width="36.194764367816084" height="18" fill="currentColor"/>
+    <rect x="192.65795977011493" y="0" width="22.273701149425285" height="18" fill="currentColor"/>
+    <rect x="216.0421609195402" y="0" width="13.921063218390804" height="18" fill="currentColor"/>
+    <rect x="231.073724137931" y="0" width="8.352637931034483" height="18" fill="currentColor"/>
+    <rect x="240.5368620689655" y="0" width="5.568425287356321" height="18" fill="currentColor"/>
+    <rect x="247.2157873563218" y="0" width="2.784212643678188" height="18" fill="currentColor"/></g>
+</svg>

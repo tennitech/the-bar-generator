@@ -1,0 +1,30 @@
+{
+  "assets/images/lunar-canvas-backdrop.png": {
+    "bytes": 3802637,
+    "sha256": "4667ad87180aac9444a155f533b1c5c93ded5b00f112e525d2d2d640b31a8ac5",
+    "size": [
+      2048,
+      2592
+    ],
+    "rgba_sha256": "77745d92db6e1d87c31504e9181f54fc770a832cb64d3c5d39713cb0e400f238"
+  },
+  "assets/images/lunar-canvas-backdrop.webp": {
+    "bytes": 1852312,
+    "sha256": "315b1c89d4ede18d0951542b91e3b0bd3ba0df060872851306486823ec880388",
+    "size": [
+      2048,
+      2592
+    ],
+    "rgba_sha256": "77745d92db6e1d87c31504e9181f54fc770a832cb64d3c5d39713cb0e400f238"
+  },
+  "derivation": {
+    "tool": "Pillow12.3.0",
+    "libwebp": "1.6.0",
+    "arguments": {
+      "lossless": true,
+      "exact": true,
+      "method": 6
+    },
+    "note": "Original supplied PNG retained; transport derivative only. Existing asset permission questions and Maeve Marshall/BOROMIR credits remain unchanged."
+  }
+}

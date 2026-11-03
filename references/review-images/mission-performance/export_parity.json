@@ -1,0 +1,374 @@
+[
+  {
+    "engine": "webkit",
+    "mode": "black",
+    "size": "standard",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "e71b37053679a5a2d8c21f96bbc0cce6664346008f1c3517c231c67ae6ac6455"
+    ],
+    "svgSha256": [
+      "6364b0d86b80a3f957fde066106d6f782e5b4e6ba337ca703a5b9bd5b3aa6ccb"
+    ],
+    "dimensions": [
+      1160,
+      762
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      0,
+      0,
+      0
+    ],
+    "maxOpaqueRGBChannelDifference": 0,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "webkit",
+    "mode": "black",
+    "size": "large",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "10a47ab202a9f6545be1938e850b8597fc083b0a27cfabd5e8765755d04daf5d"
+    ],
+    "svgSha256": [
+      "6364b0d86b80a3f957fde066106d6f782e5b4e6ba337ca703a5b9bd5b3aa6ccb"
+    ],
+    "dimensions": [
+      2320,
+      1524
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      0,
+      0,
+      0
+    ],
+    "maxOpaqueRGBChannelDifference": 0,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "webkit",
+    "mode": "white",
+    "size": "standard",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "6c365d83b3cc993753578dcffc155ad6eeff564852a56d6019935bf79446f6e9"
+    ],
+    "svgSha256": [
+      "7c7dd97224fcda6b0ec9422865f41288cdae341d75f68531bbd26174128b21ae"
+    ],
+    "dimensions": [
+      1160,
+      762
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      255,
+      255,
+      255
+    ],
+    "maxOpaqueRGBChannelDifference": 0,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "webkit",
+    "mode": "white",
+    "size": "large",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "ee7936c56284a8528968661235923a89b19102c2cde4de5931b7315f71c4b108"
+    ],
+    "svgSha256": [
+      "7c7dd97224fcda6b0ec9422865f41288cdae341d75f68531bbd26174128b21ae"
+    ],
+    "dimensions": [
+      2320,
+      1524
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      255,
+      255,
+      255
+    ],
+    "maxOpaqueRGBChannelDifference": 0,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "webkit",
+    "mode": "lunar",
+    "size": "standard",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "2b5d0f87a7c55d6cf4ea46b1e933ed72871e433b12701bb45e9dba79d0c5c473"
+    ],
+    "svgSha256": [
+      "aa25fef81c98b7ff1e285769a9431a6aafaf592ab0be1fe58078e32c7c3f0da4"
+    ],
+    "dimensions": [
+      1160,
+      762
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      244,
+      247,
+      251
+    ],
+    "maxOpaqueRGBChannelDifference": 1,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "webkit",
+    "mode": "lunar",
+    "size": "large",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "26150d8a1afbc2ecf6fdc584b64f3e23305a7072838143587045328baf9a0e72"
+    ],
+    "svgSha256": [
+      "aa25fef81c98b7ff1e285769a9431a6aafaf592ab0be1fe58078e32c7c3f0da4"
+    ],
+    "dimensions": [
+      2320,
+      1524
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      244,
+      247,
+      251
+    ],
+    "maxOpaqueRGBChannelDifference": 1,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "chromium",
+    "mode": "black",
+    "size": "standard",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "2ee6ed4662f9f6bc83aec8ac0551d25e355a7b390f16891a44298e648bb176f6"
+    ],
+    "svgSha256": [
+      "6364b0d86b80a3f957fde066106d6f782e5b4e6ba337ca703a5b9bd5b3aa6ccb"
+    ],
+    "dimensions": [
+      1160,
+      762
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      0,
+      0,
+      0
+    ],
+    "maxOpaqueRGBChannelDifference": 0,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "chromium",
+    "mode": "black",
+    "size": "large",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "82dcd19eb706d170fb95ebb3b8db9c5e25d3848d8f518a52e9fa3da51b7dd213"
+    ],
+    "svgSha256": [
+      "6364b0d86b80a3f957fde066106d6f782e5b4e6ba337ca703a5b9bd5b3aa6ccb"
+    ],
+    "dimensions": [
+      2320,
+      1524
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      0,
+      0,
+      0
+    ],
+    "maxOpaqueRGBChannelDifference": 0,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "chromium",
+    "mode": "white",
+    "size": "standard",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "f2bded20f170174e9b168634553ad9e217803fbefeb82d3e17ebd3cba4d8d92a"
+    ],
+    "svgSha256": [
+      "7c7dd97224fcda6b0ec9422865f41288cdae341d75f68531bbd26174128b21ae"
+    ],
+    "dimensions": [
+      1160,
+      762
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      255,
+      255,
+      255
+    ],
+    "maxOpaqueRGBChannelDifference": 0,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "chromium",
+    "mode": "white",
+    "size": "large",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "ede3c232c061c44879f067209a49f9d58b5369ea993d5b194781493814e9ea5e"
+    ],
+    "svgSha256": [
+      "7c7dd97224fcda6b0ec9422865f41288cdae341d75f68531bbd26174128b21ae"
+    ],
+    "dimensions": [
+      2320,
+      1524
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      255,
+      255,
+      255
+    ],
+    "maxOpaqueRGBChannelDifference": 0,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "chromium",
+    "mode": "lunar",
+    "size": "standard",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "076297d281fe8fc6ba2f64c1bec31d007a8e5f6770b7da7864e09426c16f1640"
+    ],
+    "svgSha256": [
+      "aa25fef81c98b7ff1e285769a9431a6aafaf592ab0be1fe58078e32c7c3f0da4"
+    ],
+    "dimensions": [
+      1160,
+      762
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      244,
+      247,
+      251
+    ],
+    "maxOpaqueRGBChannelDifference": 1,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  },
+  {
+    "engine": "chromium",
+    "mode": "lunar",
+    "size": "large",
+    "pngCases": 8,
+    "svgCases": 8,
+    "pngSha256": [
+      "f54aae00c8440aaf96bfd2ebca719b31d5518d47dca2ff4ea6891beef678caba"
+    ],
+    "svgSha256": [
+      "aa25fef81c98b7ff1e285769a9431a6aafaf592ab0be1fe58078e32c7c3f0da4"
+    ],
+    "dimensions": [
+      2320,
+      1524
+    ],
+    "samePNGBytes": true,
+    "sameSVGBytes": true,
+    "sourceForegroundRGB": [
+      244,
+      247,
+      251
+    ],
+    "maxOpaqueRGBChannelDifference": 1,
+    "hasTransparentPadding": true,
+    "barEdgeColumnsPainted": [
+      true,
+      true
+    ],
+    "barPixelsOutsideHorizontalDomain": 0
+  }
+]

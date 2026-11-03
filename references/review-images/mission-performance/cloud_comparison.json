@@ -1,0 +1,356 @@
+{
+  "scope": "Same-host pre-WebP runtime comparison; no overall startup-speedup claim",
+  "metadata": {
+    "engine": "webkit",
+    "browserVersion": "26.5",
+    "platform": "linux",
+    "osRelease": "6.18.55",
+    "arch": "x64",
+    "nodeVersion": "v22.23.4",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "reducedMotion": "no-preference",
+    "network": "local HTTP; no explicit throttling",
+    "idleMs": 1200
+  },
+  "baseline": {
+    "runs": [
+      {
+        "run": 0,
+        "page_errors": [],
+        "cold_artwork_ready_ms": 6044,
+        "warm_artwork_ready_ms": 1275,
+        "idle": {
+          "window_ms": 1200,
+          "draw_calls": 68,
+          "wrapped_draw_ms": 172,
+          "canvas_repaints": 68,
+          "letter_path_draws": 204
+        },
+        "selections": [
+          {
+            "theme": "lunar",
+            "settled_ms": 1120,
+            "transition_ready_ms": 392,
+            "apply_color_ms": 11,
+            "vector_builds": 1,
+            "overlay_mutations": 0
+          },
+          {
+            "theme": "black",
+            "settled_ms": 851,
+            "transition_ready_ms": 179,
+            "apply_color_ms": 33,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 878,
+            "transition_ready_ms": 223,
+            "apply_color_ms": 34,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          },
+          {
+            "theme": "white",
+            "settled_ms": 865,
+            "transition_ready_ms": 241,
+            "apply_color_ms": 30,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 919,
+            "transition_ready_ms": 248,
+            "apply_color_ms": 25,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          }
+        ]
+      },
+      {
+        "run": 1,
+        "page_errors": [],
+        "cold_artwork_ready_ms": 5827,
+        "warm_artwork_ready_ms": 1306,
+        "idle": {
+          "window_ms": 1200,
+          "draw_calls": 69,
+          "wrapped_draw_ms": 181,
+          "canvas_repaints": 69,
+          "letter_path_draws": 207
+        },
+        "selections": [
+          {
+            "theme": "lunar",
+            "settled_ms": 1155,
+            "transition_ready_ms": 397,
+            "apply_color_ms": 18,
+            "vector_builds": 1,
+            "overlay_mutations": 0
+          },
+          {
+            "theme": "black",
+            "settled_ms": 845,
+            "transition_ready_ms": 182,
+            "apply_color_ms": 38,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 903,
+            "transition_ready_ms": 224,
+            "apply_color_ms": 34,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          },
+          {
+            "theme": "white",
+            "settled_ms": 890,
+            "transition_ready_ms": 261,
+            "apply_color_ms": 25,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 864,
+            "transition_ready_ms": 217,
+            "apply_color_ms": 24,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          }
+        ]
+      },
+      {
+        "run": 2,
+        "page_errors": [],
+        "cold_artwork_ready_ms": 5840,
+        "warm_artwork_ready_ms": 1323,
+        "idle": {
+          "window_ms": 1200,
+          "draw_calls": 64,
+          "wrapped_draw_ms": 165,
+          "canvas_repaints": 64,
+          "letter_path_draws": 192
+        },
+        "selections": [
+          {
+            "theme": "lunar",
+            "settled_ms": 1173,
+            "transition_ready_ms": 421,
+            "apply_color_ms": 17,
+            "vector_builds": 1,
+            "overlay_mutations": 0
+          },
+          {
+            "theme": "black",
+            "settled_ms": 910,
+            "transition_ready_ms": 233,
+            "apply_color_ms": 33,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 991,
+            "transition_ready_ms": 251,
+            "apply_color_ms": 36,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          },
+          {
+            "theme": "white",
+            "settled_ms": 1008,
+            "transition_ready_ms": 322,
+            "apply_color_ms": 38,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 924,
+            "transition_ready_ms": 280,
+            "apply_color_ms": 25,
+            "vector_builds": 2,
+            "overlay_mutations": 2
+          }
+        ]
+      }
+    ]
+  },
+  "after": {
+    "runs": [
+      {
+        "run": 0,
+        "page_errors": [],
+        "cold_artwork_ready_ms": 6338,
+        "warm_artwork_ready_ms": 1238,
+        "idle": {
+          "window_ms": 1200,
+          "draw_calls": 69,
+          "wrapped_draw_ms": 4,
+          "canvas_repaints": 0,
+          "letter_path_draws": 0
+        },
+        "selections": [
+          {
+            "theme": "lunar",
+            "settled_ms": 1103,
+            "transition_ready_ms": 380,
+            "apply_color_ms": 9,
+            "vector_builds": 1,
+            "overlay_mutations": 0
+          },
+          {
+            "theme": "black",
+            "settled_ms": 800,
+            "transition_ready_ms": 156,
+            "apply_color_ms": 28,
+            "vector_builds": 2,
+            "overlay_mutations": 3
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 865,
+            "transition_ready_ms": 243,
+            "apply_color_ms": 38,
+            "vector_builds": 2,
+            "overlay_mutations": 3
+          },
+          {
+            "theme": "white",
+            "settled_ms": 831,
+            "transition_ready_ms": 213,
+            "apply_color_ms": 11,
+            "vector_builds": 1,
+            "overlay_mutations": 1
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 923,
+            "transition_ready_ms": 266,
+            "apply_color_ms": 42,
+            "vector_builds": 1,
+            "overlay_mutations": 1
+          }
+        ]
+      },
+      {
+        "run": 1,
+        "page_errors": [],
+        "cold_artwork_ready_ms": 6193,
+        "warm_artwork_ready_ms": 1261,
+        "idle": {
+          "window_ms": 1200,
+          "draw_calls": 72,
+          "wrapped_draw_ms": 5,
+          "canvas_repaints": 0,
+          "letter_path_draws": 0
+        },
+        "selections": [
+          {
+            "theme": "lunar",
+            "settled_ms": 1098,
+            "transition_ready_ms": 426,
+            "apply_color_ms": 9,
+            "vector_builds": 1,
+            "overlay_mutations": 0
+          },
+          {
+            "theme": "black",
+            "settled_ms": 854,
+            "transition_ready_ms": 170,
+            "apply_color_ms": 27,
+            "vector_builds": 2,
+            "overlay_mutations": 3
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 901,
+            "transition_ready_ms": 243,
+            "apply_color_ms": 40,
+            "vector_builds": 2,
+            "overlay_mutations": 3
+          },
+          {
+            "theme": "white",
+            "settled_ms": 838,
+            "transition_ready_ms": 221,
+            "apply_color_ms": 12,
+            "vector_builds": 1,
+            "overlay_mutations": 1
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 895,
+            "transition_ready_ms": 215,
+            "apply_color_ms": 8,
+            "vector_builds": 1,
+            "overlay_mutations": 1
+          }
+        ]
+      },
+      {
+        "run": 2,
+        "page_errors": [],
+        "cold_artwork_ready_ms": 6351,
+        "warm_artwork_ready_ms": 1329,
+        "idle": {
+          "window_ms": 1200,
+          "draw_calls": 51,
+          "wrapped_draw_ms": 3,
+          "canvas_repaints": 0,
+          "letter_path_draws": 0
+        },
+        "selections": [
+          {
+            "theme": "lunar",
+            "settled_ms": 1111,
+            "transition_ready_ms": 400,
+            "apply_color_ms": 12,
+            "vector_builds": 1,
+            "overlay_mutations": 0
+          },
+          {
+            "theme": "black",
+            "settled_ms": 854,
+            "transition_ready_ms": 177,
+            "apply_color_ms": 32,
+            "vector_builds": 2,
+            "overlay_mutations": 3
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 901,
+            "transition_ready_ms": 245,
+            "apply_color_ms": 37,
+            "vector_builds": 2,
+            "overlay_mutations": 3
+          },
+          {
+            "theme": "white",
+            "settled_ms": 900,
+            "transition_ready_ms": 248,
+            "apply_color_ms": 21,
+            "vector_builds": 1,
+            "overlay_mutations": 1
+          },
+          {
+            "theme": "lunar",
+            "settled_ms": 1052,
+            "transition_ready_ms": 220,
+            "apply_color_ms": 13,
+            "vector_builds": 1,
+            "overlay_mutations": 1
+          }
+        ]
+      }
+    ]
+  }
+}

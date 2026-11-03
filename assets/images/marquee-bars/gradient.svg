@@ -1,0 +1,27 @@
+<svg viewBox="0 0 250 18" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="color: #000000; overflow: visible;">
+  <defs><clipPath id="bar-bounds-0-0-250-18"><rect x="0" y="0" width="250" height="18"/></clipPath></defs><g clip-path="url(#bar-bounds-0-0-250-18)">
+    <rect x="0" y="0" width="9.166666666666666" height="18" rx="0" fill="currentColor"/>
+    <rect x="10.788043478260867" y="0" width="8.84963768115942" height="18" rx="0" fill="currentColor"/>
+    <rect x="21.57608695652174" y="0" width="8.532608695652174" height="18" rx="0" fill="currentColor"/>
+    <rect x="32.36413043478261" y="0" width="8.215579710144926" height="18" rx="0" fill="currentColor"/>
+    <rect x="43.15217391304348" y="0" width="7.898550724637681" height="18" rx="0" fill="currentColor"/>
+    <rect x="53.940217391304344" y="0" width="7.581521739130435" height="18" rx="0" fill="currentColor"/>
+    <rect x="64.72826086956522" y="0" width="7.2644927536231885" height="18" rx="0" fill="currentColor"/>
+    <rect x="75.5163043478261" y="0" width="6.9474637681159415" height="18" rx="0" fill="currentColor"/>
+    <rect x="86.30434782608695" y="0" width="6.630434782608695" height="18" rx="0" fill="currentColor"/>
+    <rect x="97.09239130434783" y="0" width="6.313405797101449" height="18" rx="0" fill="currentColor"/>
+    <rect x="107.88043478260867" y="0" width="5.996376811594204" height="18" rx="0" fill="currentColor"/>
+    <rect x="118.66847826086955" y="0" width="5.679347826086957" height="18" rx="0" fill="currentColor"/>
+    <rect x="129.45652173913044" y="0" width="5.36231884057971" height="18" rx="0" fill="currentColor"/>
+    <rect x="140.2445652173913" y="0" width="5.045289855072464" height="18" rx="0" fill="currentColor"/>
+    <rect x="151.03260869565221" y="0" width="4.728260869565218" height="18" rx="0" fill="currentColor"/>
+    <rect x="161.82065217391303" y="0" width="4.411231884057971" height="18" rx="0" fill="currentColor"/>
+    <rect x="172.6086956521739" y="0" width="4.094202898550725" height="18" rx="0" fill="currentColor"/>
+    <rect x="183.39673913043475" y="0" width="3.777173913043479" height="18" rx="0" fill="currentColor"/>
+    <rect x="194.18478260869566" y="0" width="3.4601449275362324" height="18" rx="0" fill="currentColor"/>
+    <rect x="204.97282608695653" y="0" width="3.1431159420289854" height="18" rx="0" fill="currentColor"/>
+    <rect x="215.76086956521738" y="0" width="2.8260869565217397" height="18" rx="0" fill="currentColor"/>
+    <rect x="226.54891304347825" y="0" width="2.509057971014493" height="18" rx="0" fill="currentColor"/>
+    <rect x="237.33695652173913" y="0" width="2.192028985507246" height="18" rx="0" fill="currentColor"/>
+    <rect x="248.125" y="0" width="1.8750000000000004" height="18" rx="0" fill="currentColor"/></g>
+</svg>

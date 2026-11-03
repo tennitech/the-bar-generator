@@ -76,12 +76,15 @@
       byId('export-cancel').setAttribute('aria-disabled', 'true');
       active.controller.abort();
     });
-    byId('save-menu')?.addEventListener('keydown', event => {
-      if (event.key !== 'Escape') return;
+    const dismiss = event => {
+      if (event.key !== 'Escape' || byId('save-menu')?.classList.contains('hidden')) return;
       event.preventDefault(); event.stopPropagation();
       if (typeof hideSaveMenu === 'function') hideSaveMenu();
       byId('save-button')?.focus();
-    });
+    };
+    byId('save-menu')?.addEventListener('keydown', dismiss);
+    // Opening the dialog leaves focus on its trigger, which must also dismiss it.
+    byId('save-button')?.addEventListener('keydown', dismiss);
     sync(false);
   }
   root.logoExportUI = { size, sync, begin, report, message, finish, isBusy: () => !!active };

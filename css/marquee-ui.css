@@ -112,10 +112,7 @@ img {
 .section_marquee_hero {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 15% 78%, rgba(214, 0, 28, 0.08), transparent 28%),
-    radial-gradient(circle at 80% 18%, rgba(255, 255, 255, 0.05), transparent 24%),
-    var(--rpi-black);
+  background: var(--rpi-black);
 }
 
 .marquee_scene {

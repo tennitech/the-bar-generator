@@ -3,7 +3,35 @@
 **Last Updated:** 2026-10-28
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
-## Ready local integration — October 28, 2026
+## October 28 feature integration
+
+The marquee now uses all 21 implemented families captured from the shared
+renderer, with exact-black supporting surfaces. The header mark is a native Home
+link. A deliberate hidden heading/keyboard gesture opens the selected-color
+ASCII intro with contrasting surfaces, reduced-motion choice, modal focus and
+background isolation, retry and storage recovery. Official geometry, model math
+and raster sizing are unchanged.
+
+The wider sidebar and bounded export/credits panels share usable desktop widths
+while retaining compact portrait/landscape layouts. All 16 configurable families
+have logical Randomize/Reset; five fixed-artwork families have neither. Defaults,
+Circles' canonical seed 1, Numeric inactive data and running/paused Quantum stay
+consistent through controls and sharing. Explicit shared seeds remain supported.
+
+Mission Control skips unchanged Artemis canvas painting, reuses same-source SVG
+nodes and runs its wall-time counter only when relevant and visible. Same-host
+idle wrapped draw work was 172 → 4 ms per 1.2 seconds; this is not an overall CPU
+or startup claim. A pixel-identical WebP is 51.3% smaller than the unchanged PNG
+source/fallback. Credits and unresolved asset permissions are retained.
+
+Combined source passes 494 unit tests in 45 suites and all ten bounded final
+Chromium/WebKit integration checks, including both normal-motion lifecycles and
+the complete WebKit action/layout matrix. Precise scope and remaining limits
+are recorded in [integration QA](bar24_26_integration_qa.md).
+Software verification does not establish physical-device, screen-reader,
+final-size owner or formal RPI/asset approval.
+
+## Earlier integration verification — October 28, 2026
 
 The motion audit, circle bounds/alignment, Numeric modes, sticky grouped headings
 and short-window footer, Quantum Dynamic category and Neural Network redesign

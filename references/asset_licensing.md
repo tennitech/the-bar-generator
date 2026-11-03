@@ -65,3 +65,35 @@ captures and an actual-size sheet generated from the new original mathematical
 primitives. No external image, replacement identity asset or font is added.
 Existing identity/font permissions and RPI approval questions remain unchanged.
 See the validation record in that directory for capture conditions.
+
+## Mission Control lossless transport derivative
+
+`assets/images/lunar-canvas-backdrop.webp` is a lossless transport derivative of
+this repository's unchanged supplied `lunar-canvas-backdrop.png`, not replacement
+artwork. The PNG remains the source and CSS fallback. Dimensions remain
+2048 × 2592; exact decoded RGBA identity was verified in Pillow, Chromium151 and
+WebKit26.5. Tool versions, hashes and settings are recorded in
+`review-images/mission-performance/backdrop_derivation.json`; browser and
+composited-pixel evidence is linked from `cloud_validation.md` there. Existing
+Maeve Marshall thesis imagery / BOROMIR credits are unchanged. This conversion
+adds no permission or institutional approval and does not close the outstanding
+Artemis artwork/audio/source licensing questions above.
+## Marquee samples — October 28, 2026
+
+`assets/images/marquee-bars/` contains captured SVG stills from this repository's
+shared generator preview/export functions. `scripts/generateMarqueeAssets.js`
+records the reproducible capture route, fixed seed and motion/source-color setup.
+No external artwork, identity replacement or font was added. Artemis reuses the
+existing supplied white-source asset; its unresolved rights/approval questions
+remain. These captures do not establish formal approval of existing gradient,
+club or mission treatments. See `marquee_home_handoff.md` for checkpoint limits.
+
+
+## Marquee/Home cloud review evidence
+
+October 28 cloud application screenshots and rescaled contact sheets remain in
+`/tmp/marquee-home-evidence/`, not as new repository image assets. They reuse
+existing identity/font/artwork assets; no external image, replacement artwork
+or font was added or relicensed. The source tree retains only the validation
+record and structured browser results under `references/review-images/marquee-home/`.
+Existing permission and approval questions remain unchanged.

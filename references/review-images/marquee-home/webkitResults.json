@@ -1,0 +1,186 @@
+[
+  {
+    "touch": false,
+    "inventory": {
+      "styles": [
+        "binary",
+        "circles",
+        "circles-gradient",
+        "fibonacci-sequence",
+        "gradient",
+        "grid",
+        "lines",
+        "lunar",
+        "morse",
+        "neural-network",
+        "numeric",
+        "point-connect",
+        "ruler",
+        "runway",
+        "solid",
+        "ticker",
+        "triangle-grid",
+        "triangles",
+        "union",
+        "wave-quantum",
+        "waveform"
+      ],
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "sourceCount": 21,
+      "count": 240,
+      "overflow": false
+    }
+  },
+  {
+    "touch": false,
+    "navigation": true,
+    "secret": true
+  },
+  {
+    "touch": true,
+    "inventory": {
+      "styles": [
+        "binary",
+        "circles",
+        "circles-gradient",
+        "fibonacci-sequence",
+        "gradient",
+        "grid",
+        "lines",
+        "lunar",
+        "morse",
+        "neural-network",
+        "numeric",
+        "point-connect",
+        "ruler",
+        "runway",
+        "solid",
+        "ticker",
+        "triangle-grid",
+        "triangles",
+        "union",
+        "wave-quantum",
+        "waveform"
+      ],
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "sourceCount": 21,
+      "count": 240,
+      "overflow": false
+    }
+  },
+  {
+    "touch": true,
+    "navigation": true,
+    "secret": true
+  },
+  {
+    "mode": "black",
+    "fg": "#000000",
+    "source": true,
+    "px": [
+      0,
+      0,
+      0,
+      255
+    ],
+    "ascii": true,
+    "background": "#ffffff"
+  },
+  {
+    "mode": "white",
+    "fg": "#ffffff",
+    "source": true,
+    "px": [
+      255,
+      255,
+      255,
+      255
+    ],
+    "ascii": true,
+    "background": "#000000"
+  },
+  {
+    "mode": "red",
+    "fg": "#d6001c",
+    "source": true,
+    "px": [
+      214,
+      0,
+      28,
+      255
+    ],
+    "ascii": true,
+    "background": "#000000"
+  },
+  {
+    "mode": "blue",
+    "fg": "#0081ce",
+    "source": true,
+    "px": [
+      0,
+      129,
+      206,
+      255
+    ],
+    "ascii": true,
+    "background": "#000000"
+  },
+  {
+    "mode": "gold",
+    "fg": "#cdac38",
+    "source": true,
+    "px": [
+      205,
+      172,
+      56,
+      255
+    ],
+    "ascii": true,
+    "background": "#000000"
+  },
+  {
+    "mode": "silver",
+    "fg": "#e1edf5",
+    "source": true,
+    "px": [
+      225,
+      237,
+      245,
+      255
+    ],
+    "ascii": true,
+    "background": "#000000"
+  },
+  {
+    "mode": "gray",
+    "fg": "#b9ccd8",
+    "source": true,
+    "px": [
+      185,
+      204,
+      216,
+      255
+    ],
+    "ascii": true,
+    "background": "#000000"
+  },
+  {
+    "mode": "lunar",
+    "fg": "#f4f7fb",
+    "source": true,
+    "px": [
+      244,
+      247,
+      251,
+      255
+    ],
+    "ascii": true,
+    "background": "#000000"
+  },
+  {
+    "lazyRetry": true,
+    "blockedStorageInk": true
+  }
+]
