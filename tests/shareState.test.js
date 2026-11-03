@@ -55,8 +55,7 @@ test('legacy motion rates migrate narrowly before strict share validation', () =
   global.loopingGifUtils = motion;
   try {
     const manifest = {
-      'ruler-speed-slider': { type: 'range', min: 0.2, max: 0.6, step: 0.1 },
-      'ticker-speed-slider': { type: 'range', min: 0.2, max: 0.8, step: 0.1 },
+        'ticker-speed-slider': { type: 'range', min: 0.2, max: 0.8, step: 0.1 },
       'waveform-speed-slider': { type: 'range', min: 0.2, max: 1, step: 0.1 },
       'triangles-count-slider': { type: 'range', min: 6, max: 28, step: 1 }
     };
@@ -64,7 +63,8 @@ test('legacy motion rates migrate narrowly before strict share validation', () =
       'waveform-speed-slider': '0.35', 'triangles-count-slider': '14' };
     const raw = '#bar=' + Buffer.from(JSON.stringify({ v: 1, controls })).toString('base64url');
     const decoded = decodeState(raw, manifest);
-    expect(decoded.controls).toEqual({ ...controls, 'ruler-speed-slider': '0.6',
+    const { 'ruler-speed-slider': obsoleteRulerSpeed, ...currentControls } = controls;
+    expect(decoded.controls).toEqual({ ...currentControls,
       'ticker-speed-slider': '0.8', 'waveform-speed-slider': '0.4' });
     const invalid = '#bar=' + Buffer.from(JSON.stringify({ v: 1,
       controls: { ...controls, 'triangles-count-slider': '999' } })).toString('base64url');

@@ -268,23 +268,6 @@ function createExportGraphicsBuffer(scale) {
   return graphics;
 }
 
-function drawLoopingRulerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX) {
-  const rulerGeometry = createBoundedTickGeometry({ shader: 1,
-    barStartX,
-    barY,
-    exactBarWidth,
-    barHeight: rectHeight,
-    rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
-    rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
-    loopOffsetX
-  });
-
-  for (let i = 0; i < rulerGeometry.rects.length; i++) {
-    const rect = rulerGeometry.rects[i];
-    pg.rect(rect.x, rect.y, rect.width, rect.height);
-  }
-}
-
 function drawLoopingTickerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, loopOffsetX) {
   const tickerGeometry = createBoundedTickGeometry({ shader: 2,
     barStartX,
@@ -359,7 +342,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     : null;
   const loopOffsetX = typeof options.loopOffsetX === 'number'
     ? options.loopOffsetX
-    : ((currentShader === 1 || currentShader === 2) && fallbackLoopState ? fallbackLoopState.loopOffsetX : null);
+    : (currentShader === 2 && fallbackLoopState ? fallbackLoopState.loopOffsetX : null);
   const timeSeconds = typeof options.timeSeconds === 'number'
     ? options.timeSeconds
     : (currentShader === 4 && fallbackLoopState ? fallbackLoopState.timeSeconds : null);
@@ -379,7 +362,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       barHeight: rectHeight,
       rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
       rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
-      loopOffsetX
+      rulerThickness: rulerThicknessSlider ? rulerThicknessSlider.value : 1
     });
 
     for (let i = 0; i < rulerGeometry.rects.length; i++) {
@@ -1067,9 +1050,12 @@ function escapeExportXML(value) {
 
 function captureLogoExportSnapshot() {
   const foreground = colors[currentColorMode] ? colors[currentColorMode].fg : '#000000';
-  const values = JSON.parse(JSON.stringify({ ...getCurrentBarPatternValues(REFERENCE_WIDTH), ...getLoopRuntimeValues() }));
+  // Still files and clipboard images always use the default resting phase.
+  // GIF adds its full cycle to this same captured origin without changing live playback.
+  const values = JSON.parse(JSON.stringify({ ...getCurrentBarPatternValues(REFERENCE_WIDTH), ...getLoopRuntimeValues(),
+    loopOffsetX: 0, timeSeconds: 0, quantumPhase: 0 }));
   const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
-  const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground });
+  const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
   const rawTitle = window.barShareController?.getName?.() || '';
   const safeName = typeof sanitizeBarText === 'function' ? sanitizeBarText(rawTitle) : rawTitle;
@@ -1138,7 +1124,7 @@ function createCapturedGifRenderer(snapshot, framePlan) {
     ctx.save(); ctx.scale(dimensions.scale, dimensions.scale); ctx.translate(geometry.exportPadding, geometry.exportPadding);
     ctx.fillStyle = foreground; letters.forEach(path => ctx.fill(path));
     ctx.beginPath(); ctx.rect(0, geometry.barY, geometry.width, geometry.barHeight); ctx.clip();
-    if (snapshot.currentShader === 1 || snapshot.currentShader === 2) {
+    if (snapshot.currentShader === 2) {
       const pattern = createBoundedTickGeometry({ ...values, shader: snapshot.currentShader,
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight });
       pattern.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));

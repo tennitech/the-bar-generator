@@ -14,6 +14,11 @@
     // restoring that setting; other unsupported values use the decimal scale.
     return number === 6 ? 8 : DIVISIONS.includes(number) ? number : DEFAULT_DIVISIONS;
   }
+  function normalizeThickness(value) {
+    const number = Number(value);
+    return Number.isFinite(number) && number > 0
+      ? Math.round(Math.max(0.5, Math.min(3, number)) * 10) / 10 : 1;
+  }
   function tickLevel(index, divisions) {
     const count = normalizeDivisions(divisions);
     const position = ((index % count) + count) % count;
@@ -26,7 +31,7 @@
     return 4;
   }
   const api = Object.freeze({ DIVISIONS, DEFAULT_UNITS, DEFAULT_DIVISIONS,
-    normalizeUnits, normalizeDivisions, tickLevel });
+    normalizeUnits, normalizeDivisions, normalizeThickness, tickLevel });
   scope.RulerScale = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

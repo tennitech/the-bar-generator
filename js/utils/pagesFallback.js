@@ -37,7 +37,8 @@
     'trianglesVariant',
     'rulerRepeats',
     'rulerUnits',
-    'rulerSpeed',
+    'rulerThickness',
+    'rulerSpeed', // Legacy URLs still route to the static Ruler.
     'rulerReverse',
     'tickerRepeats',
     'tickerRatio',

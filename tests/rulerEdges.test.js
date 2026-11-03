@@ -31,11 +31,11 @@ test.each([[250, 18, 0, 132.4885], [500, 36, -25, 40], [125, 9, 20, -18]])(
   }
 );
 
-test('Ruler allows a natural gap at either edge without changing spacing', () => {
+test('Ruler ignores historical motion offsets and keeps complete scale endpoints', () => {
   const options = { shader: 1, exactBarWidth: 250, barHeight: 18, rulerRepeats: 10, rulerUnits: 4 };
   const natural = createRulerPatternGeometry(options);
   const shifted = context.createBoundedTickGeometry({ ...options, loopOffsetX: natural.tickWidth });
-  expect(Math.min(...shifted.rects.map(rect => rect.x))).toBeGreaterThan(0);
+  expect(shifted).toEqual(natural);
   expect(shifted.tickSpacing).toBe(natural.tickSpacing);
   expect(shifted.tickWidth).toBe(natural.tickWidth);
   expect(context.createBoundedTickGeometry({ shader: 2 }).rects.filter(rect => rect.isBoundary)).toHaveLength(0);

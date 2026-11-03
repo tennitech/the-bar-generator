@@ -141,9 +141,9 @@ test.each(active)('%s: every directly edited parameter enables Reset and manuall
   }
 });
 
-test.each([false, true])('Reset and Randomize preserve explicit LOOP=%s for all four dynamic transport families', looping => {
+test.each([false, true])('Reset and Randomize preserve explicit LOOP=%s for all three animated transport families', looping => {
   const h = fixture();
-  for (const style of ['ruler', 'ticker', 'waveform', 'wave-quantum']) {
+  for (const style of ['ticker', 'waveform', 'wave-quantum']) {
     const toggle = h.fields[`${style === 'wave-quantum' ? 'quantum' : style}-motion-toggle`];
     toggle.checked = looping;
     h.context.randomizeStyleParameters(style); expect(toggle.checked).toBe(looping);
@@ -207,7 +207,8 @@ test('same-page shared and legacy restoration refresh action state after the com
   Object.assign(h.context, {
     BarShareState: { initialize: next => { bridge = next; } },
     sanitizeBarText: value => value, liveMotionPhase: 0, currentStaffNotes: [], currentNoteDuration: 1,
-    animationTime: 0, DEFAULT_MOTION_ENABLED: false, MOTION_ENABLED_BY_STYLE: { ruler: false, ticker: false, waveform: false },
+    animationTime: 0, DEFAULT_MOTION_ENABLED: false, MOTION_ENABLED_BY_STYLE: { ticker: false, waveform: false },
+    styleSupportsMotion: style => ['ticker', 'waveform'].includes(style),
     matchMedia: () => ({ matches: false }), location: { search: '' },
     resetAnimationClock: jest.fn(), quantumModel: require('../js/utils/quantumModel'),
     quantumControls: { select: () => {}, pause: jest.fn(), sync: jest.fn() },
@@ -241,5 +242,5 @@ test('same-page shared and legacy restoration refresh action state after the com
   expect(h.buttons.circles.disabled).toBe(true);
   h.context.matchMedia = () => ({ matches: true });
   bridge.legacy();
-  expect(Object.values(h.context.MOTION_ENABLED_BY_STYLE)).toEqual([false, false, false]);
+  expect(Object.values(h.context.MOTION_ENABLED_BY_STYLE)).toEqual([false, false]);
 });

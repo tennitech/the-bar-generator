@@ -309,27 +309,27 @@ function createRulerPatternGeometry(options = {}) {
   const barHeight = Math.max(1, Number(options.barHeight || 18));
   const rulerRepeats = rulerScaleModel.normalizeUnits(options.rulerRepeats);
   const rulerUnits = rulerScaleModel.normalizeDivisions(options.rulerUnits);
-  // Whole units span the fixed domain, so zero phase begins and ends on a
-  // major mark. Motion translates this same ruler; the ends are never pinned.
-  const repeatWidth = exactBarWidth / rulerRepeats;
-  const tickSpacing = repeatWidth / rulerUnits;
-  const tickWidth = Math.min(barHeight / 18, tickSpacing * 0.35);
-  const offset = Number.isFinite(options.loopOffsetX) ? options.loopOffsetX : 0;
-  const wrappedOffset = ((offset % repeatWidth) + repeatWidth) % repeatWidth;
+  // Place every tick, including the two whole-unit endpoints, on one scale.
+  // The scale's endpoints are stroke centers inset by half a major stroke, so
+  // every major mark is complete and identical instead of clipped to half width.
+  const divisions = rulerRepeats * rulerUnits;
+  const thickness = rulerScaleModel.normalizeThickness(options.rulerThickness);
+  const nominalSpacing = exactBarWidth / divisions;
+  const tickWidth = Math.min(barHeight / 18, nominalSpacing * 0.35)
+    * thickness / (1 + 0.35 * thickness / divisions);
+  const tickSpacing = (exactBarWidth - tickWidth) / divisions;
+  const repeatWidth = tickSpacing * rulerUnits;
   const heights = [1, 0.7, 0.5, 0.35, 0.22];
   const widths = [1, 0.8, 0.65, 0.55, 0.5];
   const rects = [];
-  const first = Math.floor((wrappedOffset - tickWidth / 2) / tickSpacing);
-  const last = Math.ceil((exactBarWidth + wrappedOffset + tickWidth / 2) / tickSpacing);
-  for (let index = first; index <= last; index++) {
+  for (let index = 0; index <= divisions; index++) {
     const level = rulerScaleModel.tickLevel(index, rulerUnits);
     const height = barHeight * heights[level];
     const width = tickWidth * widths[level];
-    const rect = clipTickerRectToBar({
-      x: barStartX + index * tickSpacing - wrappedOffset - width / 2,
+    rects.push({
+      x: barStartX + tickWidth / 2 + index * tickSpacing - width / 2,
       y: barY + barHeight - height, width, height
-    }, barStartX, barY, exactBarWidth, barHeight);
-    if (rect) rects.push(rect);
+    });
   }
   return { rects, repeatWidth, tickWidth, tickSpacing };
 }
@@ -1557,7 +1557,7 @@ function createBarPatternSVG(config) {
       barHeight,
       rulerRepeats: values.rulerRepeats,
       rulerUnits: values.rulerUnits,
-      loopOffsetX: values.loopOffsetX
+      rulerThickness: values.rulerThickness
     });
 
     for (let i = 0; i < rulerGeometry.rects.length; i++) {

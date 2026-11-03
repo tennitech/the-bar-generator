@@ -59,3 +59,9 @@ test('Ruler query controls share the conventional scale normalizer', () => {
   expect(read('?rulerRepeats=99&rulerUnits=6','/generator/ruler/')).toMatchObject({rulerRepeats:20,rulerUnits:8});
   expect(read('?rulerRepeats=-1&rulerUnits=99','/generator/ruler/')).toMatchObject({rulerRepeats:10,rulerUnits:10});
 });
+
+test('ruler thickness restores with bounds and obsolete motion query keys are ignored', () => {
+  expect(read('?rulerThickness=2.4&rulerSpeed=5&rulerReverse=true', '/generator/ruler/')).toMatchObject({rulerThickness:2.4});
+  expect(read('?rulerThickness=99', '/generator/ruler/').rulerThickness).toBe(3);
+  expect(read('?rulerSpeed=5', '/generator/ruler/').rulerSpeed).toBeUndefined();
+});

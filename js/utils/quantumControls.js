@@ -40,7 +40,10 @@
     // Obsolete quantumView query/share fields are ignored; every snapshot uses projections.
     const commit = () => { root.updateUrlParameters(); root.requestUpdate(); };
     select(); // Default motion, with reduced-motion and shared-state overrides below.
-    el('quantum-motion-toggle').addEventListener('change', () => { lastTimestamp = null; commit(); });
+    el('quantum-motion-toggle').addEventListener('change', () => {
+      if (!el('quantum-motion-toggle').checked) el('quantum-phase').value = 0;
+      lastTimestamp = null; sync(); commit();
+    });
     el('quantum-reverse-toggle').addEventListener('change', () => { lastTimestamp = null; commit(); });
     el('quantum-speed-slider').addEventListener('input', () => { lastTimestamp = null; sync(); commit(); });
     // Seeking changes model time, not the user's explicit LOOP selection.
@@ -87,7 +90,7 @@
     if (!active) { lastTimestamp = null; return; }
     if (lastTimestamp !== null) {
       el('quantum-phase').value = root.quantumModel.advancePhase(values().quantumPhase, timestamp - lastTimestamp, {
-        speed: el('quantum-speed-slider').value, reverse: !el('quantum-reverse-toggle').checked
+        speed: el('quantum-speed-slider').value, reverse: el('quantum-reverse-toggle').checked
       });
       updatePhaseLabel();
     }

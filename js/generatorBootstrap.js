@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261103-ruler-scale';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261103-resting-motion-ruler';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
@@ -20,7 +20,7 @@
       return window.GeneratorRoutes;
     }
 
-    await loadScript('js/utils/generatorRoutes.js?v=20261103-save-removal');
+    await loadScript('js/utils/generatorRoutes.js?v=20261103-resting-motion-ruler');
     return window.GeneratorRoutes || null;
   }
 

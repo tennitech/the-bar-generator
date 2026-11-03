@@ -151,9 +151,9 @@ async function main() {
   const records = [];
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
-    for (const family of ['ruler', 'ticker', 'waveform']) for (const size of ['standard', 'large']) {
+    for (const family of ['ticker', 'waveform']) for (const size of ['standard', 'large']) {
       await configure(page, family, size);
-      if (family === 'ruler' && size === 'standard') {
+      if (family === 'ticker' && size === 'standard') {
         await checkUI(page);
         if (process.env.RPI_EXPORT_UI_ONLY === '1') { console.log(`${engine}: export focus/cancel/retry, busy Feather mask and reduced motion passed`); return; }
       }

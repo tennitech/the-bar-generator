@@ -25,10 +25,8 @@ let rulerGroup;
 let rulerRepeatsSlider;
 let rulerRepeatsDisplay;
 let rulerDivisionsSelect;
-let rulerMotionToggle;
-let rulerReverseToggle;
-let rulerSpeedSlider;
-let rulerSpeedDisplay;
+let rulerThicknessSlider;
+let rulerThicknessDisplay;
 let tickerSlider;
 let tickerDisplay;
 let tickerGroup;
@@ -567,7 +565,6 @@ const DEFAULT_MOTION_ENABLED = !(typeof window !== 'undefined'
   && window.matchMedia
   && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 const MOTION_ENABLED_BY_STYLE = {
-  ruler: DEFAULT_MOTION_ENABLED,
   ticker: DEFAULT_MOTION_ENABLED,
   waveform: DEFAULT_MOTION_ENABLED
 };
@@ -1012,13 +1009,11 @@ function getStyleDisplayName(style) {
 
 function styleSupportsMotion(style) {
   const normalizedStyle = normalizeStyleValue(style);
-  return normalizedStyle === 'ruler' || normalizedStyle === 'ticker' || normalizedStyle === 'waveform';
+  return normalizedStyle === 'ticker' || normalizedStyle === 'waveform';
 }
 
 function getCurrentMotionStyle() {
   switch (currentShader) {
-    case 1:
-      return 'ruler';
     case 2:
       return 'ticker';
     case 4:
@@ -1030,14 +1025,6 @@ function getCurrentMotionStyle() {
 
 function getMotionControlConfig(style) {
   const normalizedStyle = normalizeStyleValue(style);
-  if (normalizedStyle === 'ruler') {
-    return {
-      toggle: rulerMotionToggle,
-      speedSlider: rulerSpeedSlider,
-      speedDisplay: rulerSpeedDisplay
-    };
-  }
-
   if (normalizedStyle === 'ticker') {
     return {
       toggle: tickerMotionToggle,
@@ -1065,8 +1052,7 @@ function getLoopRuntimeValues() {
   return {
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
     rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
-    rulerSpeed: normalizeLoopSpeed('ruler', rulerSpeedSlider ? rulerSpeedSlider.value : undefined),
-    rulerReverse: rulerReverseToggle ? rulerReverseToggle.checked : false,
+    rulerThickness: rulerThicknessSlider ? rulerThicknessSlider.value : 1,
     tickerRepeats: tickerSlider ? tickerSlider.value : 34,
     tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
     tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
@@ -1132,7 +1118,7 @@ function getCurrentLoopAnimationState(barWidth = REFERENCE_WIDTH) {
 }
 
 function syncMotionToggleState() {
-  ['ruler', 'ticker', 'waveform'].forEach((style) => {
+  ['ticker', 'waveform'].forEach((style) => {
     const { toggle } = getMotionControlConfig(style);
     if (toggle) {
       toggle.checked = isMotionEnabledForStyle(style);
@@ -1147,7 +1133,7 @@ function setMotionEnabledForStyle(style, enabled, options = {}) {
   }
 
   MOTION_ENABLED_BY_STYLE[normalizedStyle] = !!enabled;
-  if (options.resetPhase === true) {
+  if (!enabled || options.resetPhase === true) {
     resetAnimationClock();
   }
 
@@ -1292,11 +1278,10 @@ function resetStyleParameters(style) {
       liveMotionPhase = 0;
       if (rulerRepeatsSlider) rulerRepeatsSlider.value = 10;
       if (rulerDivisionsSelect) rulerDivisionsSelect.value = 10;
-      if (rulerSpeedSlider) rulerSpeedSlider.value = getDefaultLoopSpeed('ruler');
-      if (rulerReverseToggle) rulerReverseToggle.checked = false;
+      if (rulerThicknessSlider) rulerThicknessSlider.value = 1;
       updateRulerRepeatsDisplay();
       updateRulerUnitsDisplay();
-      updateRulerSpeedDisplay();
+      updateRulerThicknessDisplay();
 
       break;
     case 'binary':
@@ -1465,11 +1450,10 @@ function randomizeStyleParameters(style) {
       liveMotionPhase = 0;
       if (rulerRepeatsSlider) rulerRepeatsSlider.value = randomDifferentStep(rulerRepeatsSlider, 1, 20);
       if (rulerDivisionsSelect) rulerDivisionsSelect.value = pickRandom(['2', '4', '8', '10', '16']);
-      if (rulerSpeedSlider) rulerSpeedSlider.value = randomStepValue(Number(rulerSpeedSlider.min), Number(rulerSpeedSlider.max), 0.1);
-      if (rulerReverseToggle) rulerReverseToggle.checked = randomChance(0.5);
+      if (rulerThicknessSlider) rulerThicknessSlider.value = randomDifferentStep(rulerThicknessSlider, 0.5, 3);
       updateRulerRepeatsDisplay();
       updateRulerUnitsDisplay();
-      updateRulerSpeedDisplay();
+      updateRulerThicknessDisplay();
       break;
     case 'binary':
       if (binaryInput) {
@@ -2312,10 +2296,8 @@ function setup() {
   rulerRepeatsSlider = document.getElementById('ruler-repeats-slider');
   rulerRepeatsDisplay = document.getElementById('ruler-repeats-display');
   rulerDivisionsSelect = document.getElementById('ruler-divisions-select');
-  rulerMotionToggle = document.getElementById('ruler-motion-toggle');
-  rulerReverseToggle = document.getElementById('ruler-reverse-toggle');
-  rulerSpeedSlider = document.getElementById('ruler-speed-slider');
-  rulerSpeedDisplay = document.getElementById('ruler-speed-display');
+  rulerThicknessSlider = document.getElementById('ruler-thickness-slider');
+  rulerThicknessDisplay = document.getElementById('ruler-thickness-display');
   tickerSlider = document.getElementById('ticker-slider');
   tickerDisplay = document.getElementById('ticker-display');
   tickerGroup = document.getElementById('ticker-group');
@@ -2519,27 +2501,14 @@ function setup() {
     updateUrlParameters();
     requestUpdate();
   });
-  if (rulerSpeedSlider) {
-    rulerSpeedSlider.addEventListener('input', function () {
-      updateRulerSpeedDisplay();
-      updateUrlParameters();
-      requestUpdate();
-    });
-  }
-  if (rulerMotionToggle) {
-    rulerMotionToggle.addEventListener('change', function () {
-      setMotionEnabledForStyle('ruler', this.checked);
-    });
-  }
-  if (rulerReverseToggle) {
-    rulerReverseToggle.addEventListener('change', function () {
-      updateUrlParameters();
-      requestUpdate();
-    });
-  }
+  rulerThicknessSlider.addEventListener('input', function () {
+    updateRulerThicknessDisplay();
+    updateUrlParameters();
+    requestUpdate();
+  });
   updateRulerRepeatsDisplay(); // Set initial value
   updateRulerUnitsDisplay(); // Set initial value
-  updateRulerSpeedDisplay();
+  updateRulerThicknessDisplay();
 
   // Setup ticker slider with display update
   tickerSlider.addEventListener('input', function () {
@@ -3176,11 +3145,11 @@ function setup() {
       ariaLabel: 'Set ruler whole units'
     },
     {
-      slider: rulerSpeedSlider,
-      display: rulerSpeedDisplay,
-      refreshDisplay: updateRulerSpeedDisplay,
-      commit: () => { updateRulerSpeedDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set ruler motion speed'
+      slider: rulerThicknessSlider,
+      display: rulerThicknessDisplay,
+      refreshDisplay: updateRulerThicknessDisplay,
+      commit: () => { updateRulerThicknessDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set ruler mark thickness'
     },
     {
       slider: tickerSlider,
@@ -3535,11 +3504,11 @@ function updateRulerUnitsDisplay() {
   rulerDivisionsSelect.value = String(window.RulerScale.normalizeDivisions(rulerDivisionsSelect.value));
 }
 
-function updateRulerSpeedDisplay() {
-  if (!rulerSpeedSlider || !rulerSpeedDisplay) return;
-  rulerSpeedSlider.value = String(normalizeLoopSpeed('ruler', rulerSpeedSlider.value));
-  rulerSpeedDisplay.textContent = parseFloat(rulerSpeedSlider.value).toFixed(1);
-  rulerSpeedSlider.setAttribute('aria-valuetext', `${rulerSpeedDisplay.textContent} units per second`);
+function updateRulerThicknessDisplay() {
+  if (!rulerThicknessSlider || !rulerThicknessDisplay) return;
+  rulerThicknessSlider.value = String(window.RulerScale.normalizeThickness(rulerThicknessSlider.value));
+  rulerThicknessDisplay.textContent = parseFloat(rulerThicknessSlider.value).toFixed(1);
+  rulerThicknessSlider.setAttribute('aria-valuetext', `${rulerThicknessDisplay.textContent} times default thickness`);
 }
 
 function updateTickerDisplay() {
@@ -4117,7 +4086,6 @@ function handleStyleChange() {
     switch (selectedStyle) {
       case 'ruler':
         rulerGroup.style.display = 'block';
-        isAnimated = true;
         break;
       case 'ticker':
         tickerGroup.style.display = 'block';
@@ -4256,6 +4224,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     ...window.quantumControls.values(),
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
     rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
+    rulerThickness: rulerThicknessSlider ? rulerThicknessSlider.value : 1,
     tickerRepeats: tickerSlider ? tickerSlider.value : 34,
     tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
     tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
@@ -4317,7 +4286,8 @@ function buildCurrentBarPatternSVGFragment({
   barY = REFERENCE_BAR_Y,
   exactBarWidth = REFERENCE_WIDTH,
   barHeight = REFERENCE_BAR_HEIGHT,
-  fgColor = 'currentColor'
+  fgColor = 'currentColor',
+  values = getCurrentBarPatternValues(exactBarWidth)
 } = {}) {
   if (currentShader === 0) {
     // Preserve the supplied official solid path, including its rounded source coordinates.
@@ -4328,7 +4298,6 @@ function buildCurrentBarPatternSVGFragment({
     return '';
   }
 
-  const values = getCurrentBarPatternValues(exactBarWidth);
   let markup;
   if (currentShader === 1 || currentShader === 2) {
     const geometry = createBoundedTickGeometry({ ...values, shader: currentShader,
@@ -4447,8 +4416,8 @@ function renderHeaderMotionPreview() {
       ctx.closePath();
       ctx.fill();
     }
-  } else if (style === 'ruler' || style === 'ticker') {
-    const geometry = createBoundedTickGeometry({ shader: style === 'ruler' ? 1 : 2,
+  } else if (style === 'ticker') {
+    const geometry = createBoundedTickGeometry({ shader: 2,
       ...values, barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH,
       barHeight: REFERENCE_BAR_HEIGHT, loopOffsetX: state.loopOffsetX
     });
@@ -6068,11 +6037,8 @@ function updateUrlParameters() {
     if (rulerDivisionsSelect && parseInt(rulerDivisionsSelect.value) !== 10) {
       params.set('rulerUnits', rulerDivisionsSelect.value);
     }
-    if (rulerSpeedSlider && parseFloat(rulerSpeedSlider.value) !== getDefaultLoopSpeed('ruler')) {
-      params.set('rulerSpeed', rulerSpeedSlider.value);
-    }
-    if (rulerReverseToggle && rulerReverseToggle.checked) {
-      params.set('rulerReverse', 'true');
+    if (rulerThicknessSlider && parseFloat(rulerThicknessSlider.value) !== 1) {
+      params.set('rulerThickness', rulerThicknessSlider.value);
     }
   }
 
@@ -6322,11 +6288,8 @@ function applyUrlParameters() {
   if (rulerDivisionsSelect) {
     rulerDivisionsSelect.value = params.rulerUnits;
   }
-  if (rulerSpeedSlider) {
-    rulerSpeedSlider.value = params.rulerSpeed;
-  }
-  if (rulerReverseToggle) {
-    rulerReverseToggle.checked = params.rulerReverse;
+  if (rulerThicknessSlider) {
+    rulerThicknessSlider.value = params.rulerThickness;
   }
 
   // Apply ticker parameters
@@ -6404,7 +6367,7 @@ function updateAllDisplays() {
   // Update all slider displays
   updateRulerRepeatsDisplay();
   updateRulerUnitsDisplay();
-  updateRulerSpeedDisplay();
+  updateRulerThicknessDisplay();
   updateTickerDisplay();
   updateTickerRatioDisplay();
   updateTickerWidthRatioDisplay();
@@ -6820,7 +6783,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       barHeight: rectHeight,
       rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
       rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
-      loopOffsetX: currentMotionStyle === 'ruler' && loopAnimationState ? loopAnimationState.loopOffsetX : 0
+      rulerThickness: rulerThicknessSlider ? rulerThicknessSlider.value : 1
     });
 
     for (let i = 0; i < rulerGeometry.rects.length; i++) {
@@ -7675,12 +7638,13 @@ function setupShareLinks() {
       currentStaffNotes = state.notes;
       currentNoteDuration = state.duration;
       resetAnimationClock(state.time);
-      liveMotionPhase = state.phase;
+      liveMotionPhase = styleSupportsMotion(styleSelect.value) ? state.phase : 0;
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) {
         const toggle = document.getElementById(`${style}-motion-toggle`);
         MOTION_ENABLED_BY_STYLE[style] = !!(toggle && toggle.checked && !reduce);
         if (toggle) toggle.checked = MOTION_ENABLED_BY_STYLE[style];
+        if (styleSelect.value === style && !MOTION_ENABLED_BY_STYLE[style]) resetAnimationClock();
       }
       document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
         button.classList.toggle('active', Number(button.dataset.duration) === state.duration);
