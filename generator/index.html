@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261103-custom-size-picker" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261103-intro-dropdown" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
   <script src="js/utils/generatorRoutes.js?v=20261103-resting-motion-ruler"></script>
@@ -867,8 +867,15 @@
           <button id="report-problem-btn" class="sidebar-feedback-btn" type="button">
             <span id="report-problem-label">Report a Problem</span>
           </button>
-          <button id="ascii-intro-trigger" class="sidebar_intro-trigger" type="button" aria-label="Play ASCII intro"
-            aria-haspopup="dialog" aria-expanded="false" aria-controls="logo-animation-overlay" title="Play ASCII intro">1824</button>
+          <details id="sidebar-more" class="sidebar_more">
+            <summary id="sidebar-more-toggle" class="sidebar_more-toggle" aria-label="More options" title="More options">
+              <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+            </summary>
+            <div class="sidebar_more-panel">
+              <button id="ascii-intro-trigger" class="sidebar_more-option" type="button"
+                aria-haspopup="dialog" aria-expanded="false" aria-controls="logo-animation-overlay">Why not...</button>
+            </div>
+          </details>
           </div>
         </div>
       </div>
@@ -972,8 +979,8 @@
   <script src="js/utils/barInformation.js?v=20261103-resting-motion-ruler"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
-  <script src="js/utils/secretIntro.js?v=20261103-header-home"></script>
-  <script src="js/main.js?v=20261103-animation-buttons"></script>
+  <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
+  <script src="js/main.js?v=20261103-intro-dropdown"></script>
   <script src="js/utils/logoClipboard.js?v=20261103-export-hierarchy"></script>
   <script src="js/drawing.js?v=20261103-resting-motion-ruler"></script>
   <script>

@@ -26,15 +26,43 @@ const evidence = process.env.RPI_HEADER_EVIDENCE || '/tmp/bar-header-home-eviden
    assert.equal(await page.locator('.brand_title-text').evaluate(e=>getComputedStyle(e).textDecorationLine),'none');
    await page.screenshot({path:`${evidence}/${engine}-${width}-${theme}.png`,scale:'css'});
    if(width<900) await page.locator('#mobile-menu-toggle').click();
-   const trigger=page.locator('#ascii-intro-trigger');await trigger.scrollIntoViewIfNeeded();
+   const trigger=page.locator('#ascii-intro-trigger'), more=page.locator('#sidebar-more-toggle');
+   assert.equal(await trigger.isVisible(),false);
+   assert.equal(await trigger.textContent(),'Why not...');
+   await more.scrollIntoViewIfNeeded();
+   await page.locator('#report-problem-btn').focus(); await page.keyboard.press('Tab');
+   assert.equal(await page.evaluate(()=>document.activeElement.id),'sidebar-more-toggle');
+   assert.ok((await more.boundingBox()).height>=44);
+   await more.focus(); await page.keyboard.press('Enter');
+   await trigger.waitFor({state:'visible'});
+   const menu=await page.locator('.sidebar_more-panel').boundingBox(), summary=await more.boundingBox();
+   assert.ok(menu.x>=0 && menu.x+menu.width<=width && menu.y+menu.height<summary.y,JSON.stringify({menu,summary}));
+   await page.keyboard.press('Tab'); assert.equal(await page.evaluate(()=>document.activeElement.id),'ascii-intro-trigger');
+   await page.keyboard.press('Escape'); assert.equal(await trigger.isVisible(),false);
+   assert.equal(await page.evaluate(()=>document.activeElement.id),'sidebar-more-toggle');
+   if(width<900) assert.equal(await page.locator('#mobile-controls-close').isVisible(),true);
+   await more.click(); await page.locator('#bar-information-title').click();
+   assert.equal(await trigger.isVisible(),false);
+   await more.click(); await page.screenshot({path:`${evidence}/${engine}-${width}-${theme}-dropdown.png`,scale:'css'});
+   await more.click();
    for(const key of ['Enter','Space']) {
+    await more.focus(); await page.keyboard.press(key); await trigger.waitFor({state:'visible'});
     await trigger.focus(); await page.keyboard.press(key);
     await page.locator('.logo_animation_static-artwork > svg').waitFor();
     await page.keyboard.press('Escape');await page.locator('#logo-animation-overlay').waitFor({state:'hidden'});
-    assert.equal(await page.evaluate(()=>document.activeElement.id),'ascii-intro-trigger');
+    assert.equal(await page.evaluate(()=>document.activeElement.id),'sidebar-more-toggle');
+    assert.equal(await trigger.isVisible(),false);
     assert.equal(await trigger.getAttribute('aria-expanded'),'false');
    }
-   if(width<900) await page.locator('#mobile-controls-close').click();
+   if(width<900) {
+    await more.tap(); await trigger.tap();
+    await page.locator('.logo_animation_static-artwork > svg').waitFor();
+    await page.locator('#logo-animation-close').tap();
+    await page.locator('#logo-animation-overlay').waitFor({state:'hidden'});
+    assert.equal(await page.evaluate(()=>document.activeElement.id),'sidebar-more-toggle');
+    assert.equal(await trigger.isVisible(),false);
+    await page.locator('#mobile-controls-close').click();
+   }
    await page.locator('#brand-title').click();await page.waitForURL(`${base}/`);
    await page.goBack();await page.locator('#brand-title').waitFor();
    assert.ok(page.url().includes('/generator/'));
@@ -44,6 +72,6 @@ const evidence = process.env.RPI_HEADER_EVIDENCE || '/tmp/bar-header-home-eviden
    assert.deepEqual(errors,[]);results.push({width,theme,...measure});await page.close();
   }
   await fs.writeFile(`${evidence}/${engine}-results.json`,JSON.stringify(results,null,2));
-  console.log(`${engine}: ${results.length} layout/theme cases with repeated keyboard intro, Home and Back passed.`);
+  console.log(`${engine}: ${results.length} layout/theme cases with dropdown dismissal, repeated keyboard intro, Home and Back passed.`);
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
