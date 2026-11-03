@@ -1,5 +1,5 @@
 const fs = require('node:fs');
-const { DIVISIONS, normalizeUnits, normalizeDivisions, tickLevel } = require('../js/utils/rulerScale');
+const { DIVISIONS, normalizeUnits, normalizeDivisions, normalizeThickness, tickLevel } = require('../js/utils/rulerScale');
 const { createRulerPatternGeometry, createBarPatternSVG } = require('../js/utils/barPattern');
 const { getLoopingGifFramePlan, advanceLiveLoopPhase } = require('../js/utils/loopingGif');
 const { normalizeState } = require('../js/utils/shareState');
@@ -33,7 +33,7 @@ test('fractional ruler gives halves, quarters, eighths and sixteenths distinct h
   for (let i = 0; i <= 16; i++) expect(ticks[i].height).toBe(ticks[16 - i].height);
 });
 
-test.each(DIVISIONS)('%s subdivisions preserve exact major endpoints, equal coordinates and seamless loops', divisions => {
+test.each(DIVISIONS)('%s subdivisions preserve exact major endpoints, equal coordinates and fixed geometry', divisions => {
   for (const units of [1, 4, 10, 20]) {
     const values = { rulerRepeats: units, rulerUnits: divisions };
     const geometry = createRulerPatternGeometry(values);
@@ -44,7 +44,7 @@ test.each(DIVISIONS)('%s subdivisions preserve exact major endpoints, equal coor
     expect(last.height).toBe(18);
     for (let i = 1; i < geometry.rects.length - 1; i++) {
       const tick = geometry.rects[i];
-      expect(tick.x + tick.width / 2).toBeCloseTo(i * 250 / (units * divisions));
+      expect(tick.x + tick.width / 2).toBeCloseTo(geometry.tickWidth / 2 + i * geometry.tickSpacing);
     }
     expect(createRulerPatternGeometry({ ...values, loopOffsetX: geometry.repeatWidth })).toEqual(geometry);
     for (const phase of [.13, .51, .99]) {
@@ -52,17 +52,6 @@ test.each(DIVISIONS)('%s subdivisions preserve exact major endpoints, equal coor
       const b = createRulerPatternGeometry({ ...values, loopOffsetX: (phase + 1) * geometry.repeatWidth });
       a.rects.forEach((rect, i) => { expect(rect.x).toBeCloseTo(b.rects[i].x); expect(rect.height).toBeCloseTo(b.rects[i].height); });
     }
-  }
-});
-
-test('dense GIF plans and live frames retain the nominal quarter-division motion bound', () => {
-  for (const divisions of DIVISIONS) for (const rulerSpeed of [.2, .3, .6]) {
-    const values = { rulerUnits: divisions, rulerSpeed };
-    const plan = getLoopingGifFramePlan('ruler', values);
-    expect(divisions / plan.frameCount).toBeLessThanOrEqual(.25);
-    expect(plan.frameCount).toBeLessThanOrEqual(72);
-    expect(plan.periodSeconds).toBeCloseTo(1 / rulerSpeed);
-    expect(Math.abs(advanceLiveLoopPhase(.5, 'ruler', values, 100) - .5) * divisions).toBeLessThanOrEqual(.25 + 1e-12);
   }
 });
 
@@ -89,12 +78,30 @@ test('route bootstrap loads scale normalizers before motion, shared state, and i
 });
 
 
-test('GIF centisecond rounding retains duration and stays below half a subdivision per frame', () => {
-  const { frameTiming } = require('../js/utils/transparentGif');
-  for (const rulerUnits of DIVISIONS) for (const rulerSpeed of [.2,.3,.4,.5,.6]) {
-    const plan = getLoopingGifFramePlan('ruler', {rulerUnits,rulerSpeed});
-    const timing = frameTiming(plan.periodSeconds,plan.frameCount);
-    expect(timing.durationMs).toBe(Math.round(plan.periodSeconds*100)*10);
-    for(const delay of timing.delays) expect(delay/timing.durationMs*rulerUnits).toBeLessThan(.5);
+test('thickness controls all marks, including complete equal-width major endpoints', () => {
+  for (const divisions of DIVISIONS) for (const units of [1,10,20]) {
+    let previous = 0;
+    for (const rulerThickness of [.5,1,2,3]) {
+      const geometry = createRulerPatternGeometry({rulerUnits:divisions,rulerRepeats:units,rulerThickness});
+      expect(geometry.tickWidth).toBeGreaterThan(previous); previous = geometry.tickWidth;
+      const major = geometry.rects.filter(rect => rect.height === 18);
+      expect(major).toHaveLength(units + 1);
+      major.forEach(rect => expect(rect.width).toBe(major[0].width));
+      expect(major[0].x).toBe(0);
+      expect(major.at(-1).x + major.at(-1).width).toBeCloseTo(250);
+      const centers = geometry.rects.map(rect => rect.x + rect.width/2);
+      centers.slice(1).forEach((center,i) => expect(center-centers[i]).toBeCloseTo(geometry.tickSpacing));
+    }
   }
+  expect(normalizeThickness()).toBe(1); expect(normalizeThickness('bad')).toBe(1);
+  expect(normalizeThickness(100)).toBe(3); expect(normalizeThickness(.01)).toBe(.5);
+});
+
+test('standalone SVG renderer uses the same selected thickness and complete endpoint marks', () => {
+ for (const thickness of [.5,1,3]) {
+  const values = {rulerRepeats:4,rulerUnits:8,rulerThickness:thickness};
+  const geometry = createRulerPatternGeometry({...values,barY:132.4885});
+  const svg = createBarPatternSVG({currentShader:1,barStartX:0,barY:132.4885,exactBarWidth:250,barHeight:18,fgColor:'#000000',values});
+  for (const rect of geometry.rects) expect(svg).toContain(`x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}"`);
+ }
 });

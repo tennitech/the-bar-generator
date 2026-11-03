@@ -10,7 +10,7 @@ async function main() {
     const page = await browser.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    for (const style of ['ruler', 'ticker', 'waveform']) {
+    for (const style of ['ticker', 'waveform']) {
       await page.goto(`${baseUrl}/generator/${style}/?${style}Speed=5&rulerUnits=10&tickerRatio=5`);
       await page.locator('#header-logo-preview canvas').waitFor();
       // The captured entrance intentionally holds artwork; measure steady live motion afterward.
@@ -60,10 +60,11 @@ async function main() {
         : ((state.timeSeconds / state.periodSeconds) % 1 + 1) % 1;
       assert.ok(Math.abs(position(result.beforeReverse) - position(result.afterReverse)) < 1e-9,
         `${style}: reverse change jumped position`);
+      assert.equal(result.paused, 0, `${style}: Loop off did not return to rest`);
       assert.equal(result.paused, result.afterPause, `${style}: paused phase advanced`);
       assert.equal(result.paused, result.afterResume, `${style}: resume reset phase`);
-      const direction = style === 'ruler' ? -1 : 1;
-      const subdivisions = style === 'ruler' ? 10 : style === 'ticker' ? 5 : 1;
+      const direction = style === 'ticker' ? -1 : 1;
+      const subdivisions = style === 'ticker' ? 5 : 1;
       for (let i = 1; i < result.phases.length; i++) {
         const step = ((result.phases[i] - result.phases[i - 1]) * direction + 1) % 1;
         assert.ok(step <= 0.25 / subdivisions + 1e-9, `${style}: unsafe phase step ${step}`);

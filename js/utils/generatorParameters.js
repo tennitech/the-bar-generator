@@ -55,8 +55,7 @@ function read() {
     // Ruler parameters
     rulerRepeats: window.RulerScale.normalizeUnits(params.get('rulerRepeats')),
     rulerUnits: window.RulerScale.normalizeDivisions(params.get('rulerUnits')),
-    rulerSpeed: window.loopingGifUtils.normalizeLoopSpeed('ruler', params.get('rulerSpeed')),
-    rulerReverse: params.get('rulerReverse') === 'true',
+    rulerThickness: window.RulerScale.normalizeThickness(params.get('rulerThickness')),
 
     // Ticker parameters
     tickerRepeats: parseInt(params.get('tickerRepeats')) || 34,

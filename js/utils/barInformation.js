@@ -7,7 +7,7 @@
   },
   "ruler": {
     "title": "Ruler",
-    "text": "Whole-unit marks are longest, with shorter marks for halves and finer divisions, just like a ruler. Choose decimal tenths or fractional divisions; both ends start on whole marks, and the scale is not calibrated to physical screen length."
+    "text": "A stationary ruler with whole, half and smaller marks. Adjust units, divisions and thickness. This dimensionless scale does not measure physical screen length."
   },
   "ticker": {
     "title": "Ticker",

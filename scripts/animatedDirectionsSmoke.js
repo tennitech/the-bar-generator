@@ -11,7 +11,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR || `/tmp/animated-directions-${eng
   const browser = await ({ chromium, webkit }[engine]).launch();
   const results = [];
   try {
-    for (const style of ['ruler', 'ticker', 'waveform', 'wave-quantum']) {
+    for (const style of ['ticker', 'waveform', 'wave-quantum']) {
       const quantum = style === 'wave-quantum', prefix = quantum ? 'quantum' : style;
       const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
       const errors = []; page.on('pageerror', e => errors.push(e.message));
@@ -64,14 +64,20 @@ const evidence = process.env.RPI_EVIDENCE_DIR || `/tmp/animated-directions-${eng
         assert.equal(before.phase, positionBeforeToggle.phase, `${style}: Reverse preserves phase`);
         assert.equal(before.hash, positionBeforeToggle.hash, `${style}: Reverse preserves actual painted pixels`);
         await page.screenshot({ path: `${evidence}/${style}-${reverse ? 'reverse' : 'default'}-before.png` });
-        await motion(true); await page.waitForTimeout(250); await motion(false);
+        await motion(true); await page.waitForTimeout(250);
+        // Freeze only for pixel measurement. The user-facing Loop-off reset is
+        // exercised separately in restingMotionSmoke; it must not erase this frame.
+        await page.evaluate(({style,quantum}) => {
+          if (quantum) quantumControls.pause();
+          else { MOTION_ENABLED_BY_STYLE[style] = false; syncMotionToggleState(); requestUpdate(); }
+        }, {style,quantum});
         const after = await capture();
         await page.screenshot({ path: `${evidence}/${style}-${reverse ? 'reverse' : 'default'}-after.png` });
         assert.notEqual(after.hash, before.hash, `${style}: artwork actually moved`);
-        if (quantum) assert.equal(Math.sign(after.phase - before.phase), reverse ? 1 : -1, 'Quantum earlier/later model time');
+        if (quantum) assert.equal(Math.sign(after.phase - before.phase), reverse ? -1 : 1, 'Quantum earlier/later model time');
         const deltas = quantum ? [] : before.edges.filter(x => x > before.width * .2 && x < before.width * .8)
           .map(x => after.edges.reduce((nearest, current) => Math.abs(current - x) < Math.abs(nearest - x) ? current : nearest) - x);
-        const expected = (style === 'ticker' ? -1 : 1) * (reverse ? -1 : 1);
+        const expected = reverse ? -1 : 1;
         if (!quantum) {
           assert.ok(deltas.length >= 3, JSON.stringify({ style, before, after }));
           assert.ok(deltas.every(delta => Math.sign(delta) === expected), JSON.stringify({ style, reverse, deltas, before, after }));

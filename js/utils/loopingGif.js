@@ -7,9 +7,7 @@
 
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  const rulerScale = typeof module !== 'undefined' && module.exports
-    ? require('./rulerScale') : globalThis.RulerScale;
-  const LOOPING_GIF_STYLE_SET = new Set(['ruler', 'ticker', 'waveform']);
+  const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform']);
   const DEFAULT_CAPTURE_FPS = 24;
   const MIN_CAPTURE_FPS = 12;
   const MAX_CAPTURE_FPS = 30;
@@ -22,9 +20,8 @@
   const MAX_LIVE_RENDER_FPS = 1000;
   const MAX_LIVE_FRAME_DELTA_MS = 1000 / 20;
   // Speeds are major-pattern recurrences per display second, not physical units.
-  // Ruler has up to sixteen minor ticks per recurrence; ticker has up to five.
+  // Ticker has up to five minor ticks per recurrence.
   const LOOP_SPEED_LIMITS = Object.freeze({
-    ruler: Object.freeze({ min: 0.2, max: 0.6, step: 0.1, default: 0.3 }),
     ticker: Object.freeze({ min: 0.2, max: 0.8, step: 0.1, default: 0.4 }),
     waveform: Object.freeze({ min: 0.2, max: 1, step: 0.1, default: 0.3 })
   });
@@ -32,7 +29,6 @@
     Object.entries(LOOP_SPEED_LIMITS).map(([style, limits]) => [style, limits.default])
   ));
   const DEFAULT_LOOP_REVERSE = {
-    ruler: false,
     ticker: false,
     waveform: false
   };
@@ -102,10 +98,6 @@
 
   function getLoopSpeed(style, values = {}) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
-    if (normalizedStyle === 'ruler') {
-      return normalizeLoopSpeed(normalizedStyle, values.rulerSpeed);
-    }
-
     if (normalizedStyle === 'ticker') {
       return normalizeLoopSpeed(normalizedStyle, values.tickerSpeed);
     }
@@ -120,11 +112,10 @@
   function getLoopReverse(style, values = {}) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
     if (!LOOPING_GIF_STYLE_SET.has(normalizedStyle)) return false;
-    // Reverse is relative to the owner-corrected default for each family.
-    // Waveform moves toward increasing screen x by default; Ruler's drawing
-    // coordinates require the opposite transport sign. Ticker is unchanged.
+    // Both translating patterns move toward increasing screen x by default.
+    // Ticker subtracts its offset; Waveform subtracts temporal phase.
     const checked = normalizeLoopReverse(normalizedStyle, values[`${normalizedStyle}Reverse`]);
-    return normalizedStyle === 'ruler' ? !checked : checked;
+    return normalizedStyle === 'ticker' ? !checked : checked;
   }
 
   function getFrameCountForPeriod(periodSeconds, fps) {
@@ -163,9 +154,8 @@
 
   function advanceLiveLoopPhase(phase, style, values = {}, deltaMs = 0) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
-    const subdivisions = normalizedStyle === 'ruler'
-      ? rulerScale.normalizeDivisions(values.rulerUnits)
-      : normalizedStyle === 'ticker' ? Math.max(1, Number(values.tickerRatio) || 2) : 1;
+    if (!isLoopingGifEligibleStyle(normalizedStyle)) return 0;
+    const subdivisions = normalizedStyle === 'ticker' ? Math.max(1, Number(values.tickerRatio) || 2) : 1;
     // Keep each frame below a quarter of the smallest repeating tick interval.
     // A delayed frame slows the preview instead of sampling an apparent reversal.
     const step = Math.min(getLoopSpeed(normalizedStyle, values)
@@ -191,28 +181,6 @@
       MAX_CAPTURE_FPS
     );
     const barWidth = toPositiveNumber(options.barWidth, 250);
-
-    if (normalizedStyle === 'ruler') {
-      const repeats = rulerScale.normalizeUnits(values.rulerRepeats);
-      const speed = getLoopSpeed(normalizedStyle, values);
-      const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
-      const repeatWidth = barWidth / repeats;
-      const periodSeconds = 1 / speed;
-      // At least four samples per subdivision before GIF delay quantization.
-      const frameCount = Math.max(getFrameCountForPeriod(periodSeconds, fps),
-        4 * rulerScale.normalizeDivisions(values.rulerUnits));
-
-      return {
-        style: normalizedStyle,
-        frameCount,
-        frameDelayMs: Math.round((periodSeconds * 1000) / frameCount),
-        repeatWidth,
-        periodSeconds,
-        getLoopOffsetX(progress) {
-          return repeatWidth * progress * direction;
-        }
-      };
-    }
 
     if (normalizedStyle === 'ticker') {
       const speed = getLoopSpeed(normalizedStyle, values);

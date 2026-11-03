@@ -228,7 +228,7 @@
         return;
       }
 
-      script.src = `${basePath}js/utils/pagesFallback.js?v=20261103-display-motion-embed`;
+      script.src = `${basePath}js/utils/pagesFallback.js?v=20261103-resting-motion-ruler`;
       script.onload = function onFallbackScriptLoad() {
         const redirectUrl = window.PagesFallback && typeof window.PagesFallback.getPagesFallbackRedirectUrl === 'function'
           ? window.PagesFallback.getPagesFallbackRedirectUrl(window.location.pathname, window.location.search, {

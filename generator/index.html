@@ -13,22 +13,22 @@
   <link href="css/style.css?v=20261103-export-hierarchy" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261103-save-removal"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/themeMode.js?v=20261103-save-removal"></script>
   <script src="js/utils/selectorPreviews.js?v=20261103-ruler-scale"></script>
   <script src="js/utils/customDropdowns.js?v=20261103-save-removal"></script>
   <script src="js/utils/parameterControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/rulerScale.js?v=20261103-ruler-scale"></script>
-  <script src="js/utils/loopingGif.js?v=20261103-ruler-scale"></script>
+  <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
+  <script src="js/utils/loopingGif.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/featherIcons.js?v=20261103-save-removal"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
   <script src="js/utils/shareState.js?v=20261103-ruler-scale"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/barPattern.js?v=20261103-ruler-scale"></script>
+  <script src="js/utils/barPattern.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/quantumModel.js"></script>
-  <script src="js/utils/generatorParameters.js?v=20261103-ruler-scale"></script>
+  <script src="js/utils/generatorParameters.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/generatorInitialState.js?v=20261103-save-removal"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
@@ -262,28 +262,9 @@
             </select>
             <p id="ruler-units-hint" class="control-hint">Whole units have the longest marks. Divisions split each unit equally.</p>
           </div>
-          <div class="runtime_section motion_section">
-            <div class="control-header">MOTION</div>
-            <div class="control control_row control_row-toggle">
-              <label for="ruler-motion-toggle" class="control-label control_row-label">LOOP</label>
-              <label class="switch">
-                <input type="checkbox" id="ruler-motion-toggle" checked>
-                <span class="slider round"></span>
-              </label>
-            </div>
-            <div class="control control_row control_row-toggle">
-              <label for="ruler-reverse-toggle" class="control-label control_row-label">REVERSE</label>
-              <label class="switch">
-                <input type="checkbox" id="ruler-reverse-toggle" data-url-parameter="rulerReverse">
-                <span class="slider round"></span>
-              </label>
-            </div>
-            <div class="control slider-control runtime_speed-control">
-              <label for="ruler-speed-slider" class="control-label">SPEED <span id="ruler-speed-display" data-slider-value>0.3</span></label>
-              <input type="range" id="ruler-speed-slider" data-url-parameter="rulerSpeed" min="0.2" max="0.6" step="0.1" value="0.3" class="control-slider"
-                aria-label="Ruler Motion Speed" aria-describedby="ruler-speed-unit">
-              <p id="ruler-speed-unit" class="control-hint">units / s</p>
-            </div>
+          <div class="control slider-control">
+            <label for="ruler-thickness-slider" class="control-label">THICKNESS <span id="ruler-thickness-display" data-slider-value>1.0</span>×</label>
+            <input type="range" id="ruler-thickness-slider" data-url-parameter="rulerThickness" min="0.5" max="3" step="0.1" value="1" class="control-slider" aria-label="Ruler mark thickness">
           </div>
         </div>
 
@@ -962,7 +943,7 @@
   <div id="toast-container"></div>
   <script>GeneratorInitialState.apply(document.body); setupCustomDropdowns(); ParameterControls.prepare(document);</script>
   <script src="third_party/gif.js/gif.js"></script>
-  <script src="js/utils/quantumControls.js?v=20261103-save-removal"></script>
+  <script src="js/utils/quantumControls.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/previewControls.js?v=20261103-save-removal"></script>
   <script src="js/utils/viewportZoom.js?v=20261103-save-removal"></script>
   <script src="js/utils/viewerTouch.js"></script>
@@ -971,17 +952,17 @@
   <script src="js/ui.js?v=20261103-save-removal"></script>
   <script src="js/utils/logoGeometry.js?v=20261103-save-removal"></script>
   <script src="js/utils/urlState.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportOptions.js?v=20261103-export-menu"></script>
+  <script src="js/utils/exportOptions.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportUi.js?v=20261103-export-hierarchy"></script>
-  <script src="js/utils/barInformation.js?v=20261103-ruler-scale"></script>
+  <script src="js/utils/barInformation.js?v=20261103-resting-motion-ruler"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-ascii-discovery"></script>
-  <script src="js/main.js?v=20261103-export-hierarchy"></script>
+  <script src="js/main.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/logoClipboard.js?v=20261103-export-hierarchy"></script>
-  <script src="js/drawing.js?v=20261103-export-menu"></script>
+  <script src="js/drawing.js?v=20261103-resting-motion-ruler"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

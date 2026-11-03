@@ -7,14 +7,14 @@ const { normalizeState } = require('../js/utils/shareState');
 for (const divisions of [2, 4, 8, 10, 16]) test(`Ruler ${divisions} divisions represent exact fractions without duplicate ticks`, () => {
   const options = { rulerRepeats: 10, rulerUnits: divisions, exactBarWidth: 250, barHeight: 18 };
   const still = createRulerPatternGeometry(options);
-  expect(still.repeatWidth).toBe(25);
-  expect(still.tickSpacing).toBe(25 / divisions);
+  expect(still.repeatWidth).toBeCloseTo((250 - still.tickWidth) / 10);
+  expect(still.tickSpacing).toBeCloseTo(still.repeatWidth / divisions);
   expect(still.rects).toHaveLength(10 * divisions + 1);
   expect(still.rects.filter(tick => tick.height === 18)).toHaveLength(11);
-  expect(still.rects[0].width).toBeCloseTo(still.tickWidth / 2);
-  expect(still.rects.at(-1).width).toBeCloseTo(still.tickWidth / 2);
+  expect(still.rects[0].width).toBeCloseTo(still.tickWidth);
+  expect(still.rects.at(-1).width).toBeCloseTo(still.tickWidth);
   expect(createRulerPatternGeometry({ ...options, loopOffsetX: 0 })).toEqual(still);
-  expect(getLoopingGifFramePlan('ruler', options).repeatWidth).toBe(still.repeatWidth);
+  expect(getLoopingGifFramePlan('ruler', options)).toBeNull();
   for (const phase of [-.31, 0, .17, .5, .99, 1]) {
     const moving = createRulerPatternGeometry({ ...options, loopOffsetX: phase * still.repeatWidth });
     const positions = moving.rects.map(tick => tick.x.toFixed(8));
@@ -32,8 +32,8 @@ test('Ruler halves, quarters and eighths have a consistent height hierarchy', ()
   ticks.forEach((tick, index) => expect(tick.height / 18).toBeCloseTo([1, .35, .5, .35, .7, .35, .5, .35, 1][index]));
 });
 
-test.each(['ruler', 'ticker', 'waveform'])('%s transport uses the selected direction in live and GIF rendering', style => {
-  const sign = style === 'ruler' ? -1 : 1;
+test.each(['ticker', 'waveform'])('%s transport uses the selected direction in live and GIF rendering', style => {
+  const sign = style === 'ticker' ? -1 : 1;
   for (const reverse of [false, true]) {
     const values = { [`${style}Reverse`]: reverse };
     const expected = sign * (reverse ? -1 : 1);
@@ -75,17 +75,15 @@ test('canonical render paths do not add synthetic side or bottom paint or force 
 });
 
 
-test.each([false, true])('Ruler visible major ticks move %s against the reversed control', reverse => {
-  const values = { rulerRepeats: 10, rulerUnits: 4, rulerSpeed: 0.3, rulerReverse: reverse };
+test.each([false, true])('Ticker major ticks move right by default and left with reverse=%s', reverse => {
+  const { createTickerPatternGeometry } = require('../js/utils/barPattern');
+  const values = { tickerRepeats: 10, tickerRatio: 2, tickerSpeed: .4, tickerReverse: reverse };
   const positions = phase => {
-    const motion = getLoopingAnimationState('ruler', values, { phase });
-    return createRulerPatternGeometry({ ...values, loopOffsetX: motion.loopOffsetX }).rects
-      .filter(rect => rect.height === 18 && rect.x > 100 && rect.x < 130)
-      .map(rect => rect.x + rect.width / 2);
+    const motion = getLoopingAnimationState('ticker', values, { phase });
+    return createTickerPatternGeometry({ ...values, loopOffsetX: motion.loopOffsetX }).rects
+      .filter(rect => rect.y === 9 && rect.x > 100 && rect.x < 125).map(rect => rect.x);
   };
-  const before = positions(0.5);
-  const after = positions(advanceLiveLoopPhase(0.5, 'ruler', values, 16));
-  expect(before).toHaveLength(1);
-  expect(after).toHaveLength(1);
+  const before = positions(.5), after = positions(advanceLiveLoopPhase(.5, 'ticker', values, 16));
+  expect(before).toHaveLength(1); expect(after).toHaveLength(1);
   expect(Math.sign(after[0] - before[0])).toBe(reverse ? -1 : 1);
 });
