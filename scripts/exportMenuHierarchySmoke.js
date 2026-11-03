@@ -21,7 +21,10 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       assert.equal(await page.locator('#export-copy-label').textContent(), 'Copy');
       assert.deepEqual(await page.locator('.export_download-actions .option-label').allTextContents(), ['PNG', 'SVG', 'GIF']);
       assert.deepEqual(await page.locator('.export_copy-actions .option-label').allTextContents(), ['PNG', 'SVG']);
-      assert.equal(await page.locator('#save-menu .export_action-icon').count(), 0);
+      assert.equal(await page.locator('.export_group-label svg[aria-hidden="true"]').count(), 2);
+      const [download, copy] = await page.evaluate(() => ['.export_download-actions', '.export_copy-actions'].map(selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width }; }));
+      assert.equal(download.y, copy.y);
+      assert(copy.x > download.x + download.width);
       assert.equal((await page.locator('#save-menu').innerText()).match(/\bDownload\b/g)?.length, 1);
       for (const [id, verb, format] of [['save-png', 'Download', 'PNG'], ['save-svg', 'Download', 'SVG'], ['save-loop-gif', 'Download', 'GIF'], ['copy-svg', 'Copy', 'SVG'], ['copy-png', 'Copy', 'PNG']]) {
         assert.match(await page.locator(`#${id}`).getAttribute('aria-label'), new RegExp(`^${verb} ${format}:`));
@@ -48,7 +51,11 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
     for (const [width, height] of [[320, 568], [375, 812], [844, 390]]) {
       await page.setViewportSize({ width, height }); await page.waitForTimeout(300);
       if (!await page.locator('#save-menu').isVisible()) await page.locator('#save-button').click();
-      const box = await page.locator('#save-menu').boundingBox();
+      // Read all boxes in one frame: opening/viewport transitions must not mix timestamps.
+      const [box, left, right] = await page.evaluate(() => ['save-menu', 'save-png', 'copy-png'].map(id => { const r = document.getElementById(id).getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }));
+      assert.equal(left.y, right.y);
+      assert(right.x > left.x + left.width);
+      assert.equal(await page.locator('#save-menu').evaluate(el => el.scrollWidth <= el.clientWidth), true);
       assert(box.x >= 0 && box.x + box.width <= width + 1);
       assert(box.y >= 0 && box.y + box.height <= height + 1);
       for (const id of ['save-png', 'save-svg', 'save-loop-gif', 'copy-png']) {
@@ -60,6 +67,11 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       assert.equal(await page.locator('#save-menu').isVisible(), false);
       assert.equal(await page.evaluate(() => document.activeElement.id), 'save-button');
     }
+    await page.evaluate(() => { window.__clipboardBlocked = embedSupport.clipboardBlocked; embedSupport.clipboardBlocked = () => true; logoClipboard.sync(); });
+    assert.equal(await page.locator('#copy-png').isDisabled(), true);
+    assert.equal(await page.locator('#copy-png .option-desc').textContent(), 'Blocked by site');
+    assert.match(await page.locator('#copy-png').getAttribute('aria-label'), /Blocked by this site/);
+    await page.evaluate(() => { embedSupport.clipboardBlocked = window.__clipboardBlocked; logoClipboard.sync(); });
     await page.setViewportSize({ width: 1440, height: 900 }); await page.waitForTimeout(300);
     await page.locator('#save-button').focus(); await page.keyboard.press('Enter');
     await page.keyboard.press('Tab');

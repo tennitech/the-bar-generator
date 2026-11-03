@@ -30,7 +30,8 @@
           : format === 'svg' ? 'Scalable vector'
             : dimensions ? `${dimensions.width} × ${dimensions.height} px` : 'Transparent image';
       button.querySelector('.option-label').textContent = format.toUpperCase();
-      button.querySelector('.option-desc').textContent = description;
+      button.querySelector('.option-desc').textContent = unavailable ? (root.embedSupport?.clipboardBlocked() ? 'Blocked by site' : 'Use download') : (format === 'svg' ? 'Scalable vector' : 'Transparent image');
+      button.title = unavailable ? description : '';
       button.setAttribute('aria-label', `${label}: ${description}`);
       button.setAttribute('aria-disabled', String(unavailable));
       button.disabled = unavailable || Boolean(root.logoExportUI?.isBusy());
