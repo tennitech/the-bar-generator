@@ -202,7 +202,7 @@ const DEFAULT_SAVE_MENU_COPY = {
 };
 const DEFAULT_INTERFACE_COPY = {
   styleLabel: 'BAR STYLE',
-  colorLabel: 'COLOR THEME',
+  colorLabel: 'LOGO COLOR',
   reportProblem: 'Report a Problem'
 };
 const MISSION_CONTROL_INTERFACE_COPY = {
