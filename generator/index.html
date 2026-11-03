@@ -10,25 +10,25 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261103-waveform-parameters" rel="stylesheet" type="text/css" />
-  <link href="css/page-entrance.css?v=20261103-waveform-parameters" rel="stylesheet" type="text/css">
-  <script src="js/utils/pageEntrance.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/themeMode.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/selectorPreviews.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/customDropdowns.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/parameterControls.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/loopingGif.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/featherIcons.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/numericControls.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/shareState.js?v=20261103-waveform-parameters"></script>
+  <link href="css/style.css?v=20261103-header-order" rel="stylesheet" type="text/css" />
+  <link href="css/page-entrance.css?v=20261103-header-order" rel="stylesheet" type="text/css">
+  <script src="js/utils/pageEntrance.js?v=20261103-header-order"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261103-header-order"></script>
+  <script src="js/utils/themeMode.js?v=20261103-header-order"></script>
+  <script src="js/utils/selectorPreviews.js?v=20261103-header-order"></script>
+  <script src="js/utils/customDropdowns.js?v=20261103-header-order"></script>
+  <script src="js/utils/parameterControls.js?v=20261103-header-order"></script>
+  <script src="js/utils/loopingGif.js?v=20261103-header-order"></script>
+  <script src="js/utils/featherIcons.js?v=20261103-header-order"></script>
+  <script src="js/utils/numericControls.js?v=20261103-header-order"></script>
+  <script src="js/utils/shareState.js?v=20261103-header-order"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/barPattern.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/barPattern.js?v=20261103-header-order"></script>
   <script src="js/utils/tickerDisplay.js"></script>
-  <script src="js/utils/profanityFilter.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/profanityFilter.js?v=20261103-header-order"></script>
   <script src="js/utils/quantumModel.js"></script>
-  <script src="js/utils/generatorParameters.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/generatorInitialState.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/generatorParameters.js?v=20261103-header-order"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261103-header-order"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
 </head>
@@ -82,17 +82,11 @@
         rel="noopener noreferrer" aria-label="View project repository on GitHub" title="View project repository">
         <svg data-feather="github" class="header_icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
       </a>
-      <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open design controls" aria-expanded="false"
-        aria-controls="app-sidebar">
-        <svg data-feather="menu" class="menu-toggle_icon menu-toggle_icon-menu" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        <svg data-feather="x" class="menu-toggle_icon menu-toggle_icon-close" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
       <div class="save-section">
         <button id="save-button" class="save-button primary-button" aria-haspopup="dialog" aria-expanded="false"
           aria-controls="save-menu">
           <span id="save-button-label">Download Asset</span>
           <svg data-feather="download" class="icon-right icon-download" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <svg data-feather="book-open" class="icon-right icon-book" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         </button>
         <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Export asset">
           <div id="export-settings" class="export_settings">
@@ -125,6 +119,11 @@
           </div>
         </div>
       </div>
+      <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open design controls" aria-expanded="false"
+        aria-controls="app-sidebar">
+        <svg data-feather="menu" class="menu-toggle_icon menu-toggle_icon-menu" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg data-feather="x" class="menu-toggle_icon menu-toggle_icon-close" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
   </header>
 
@@ -835,6 +834,14 @@
             <span class="bar_information-kicker">ABOUT THIS BAR</span>
             <h2 id="bar-information-title">Solid</h2>
             <p id="bar-information-description"></p>
+            <details id="artemis-information" class="bar_information-details" hidden>
+              <summary>Learn about RPI × Artemis II</summary>
+              <ul class="bar_information-people">
+                <li><a href="https://news.rpi.edu/2026/04/13/engineers-who-reached-moon-how-rpi-became-launchpad-stars" target="_blank" rel="noopener noreferrer">Reid Wiseman '97</a><span>Commander</span></li>
+                <li><a href="https://news.rpi.edu/2026/03/31/meet-rpi-engineers-guiding-artemis-ii-moon-and-back" target="_blank" rel="noopener noreferrer">Maeve Marshall '23, M.Eng. '24</a><span>GNC Engineer</span></li>
+                <li><a href="https://news.rpi.edu/2026/03/31/meet-rpi-engineers-guiding-artemis-ii-moon-and-back" target="_blank" rel="noopener noreferrer">Paul McKee '17, MS '18, Ph.D. '23</a><span>Orion Optical Navigation Engineer</span></li>
+              </ul>
+            </details>
             <p class="bar_information-credit">Mission Control surface: thesis imagery by Maeve Marshall.
               <a href="https://github.com/the-astronot/boromir/blob/main/README.md" target="_blank"
                 rel="noopener noreferrer">View BOROMIR source code</a>
@@ -929,26 +936,26 @@
   <div id="toast-container"></div>
   <script>GeneratorInitialState.apply(document.body); setupCustomDropdowns(); ParameterControls.prepare(document);</script>
   <script src="third_party/gif.js/gif.js"></script>
-  <script src="js/utils/quantumControls.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/previewControls.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/viewportZoom.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/quantumControls.js?v=20261103-header-order"></script>
+  <script src="js/utils/previewControls.js?v=20261103-header-order"></script>
+  <script src="js/utils/viewportZoom.js?v=20261103-header-order"></script>
   <script src="js/utils/viewerTouch.js"></script>
   <script src="js/utils/headerMotionSurface.js"></script>
   <script src="js/utils/themeMotion.js"></script>
-  <script src="js/ui.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/logoGeometry.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/urlState.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/exportOptions.js?v=20261103-waveform-parameters"></script>
+  <script src="js/ui.js?v=20261103-header-order"></script>
+  <script src="js/utils/logoGeometry.js?v=20261103-header-order"></script>
+  <script src="js/utils/urlState.js?v=20261103-header-order"></script>
+  <script src="js/utils/exportOptions.js?v=20261103-header-order"></script>
   <script src="js/utils/transparentGif.js"></script>
-  <script src="js/utils/embedSupport.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/exportUi.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/barInformation.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/embedSupport.js?v=20261103-header-order"></script>
+  <script src="js/utils/exportUi.js?v=20261103-header-order"></script>
+  <script src="js/utils/barInformation.js?v=20261103-header-order"></script>
   <script>BarInformation.sync();</script>
-  <script src="js/utils/animationPalette.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/secretIntro.js?v=20261103-waveform-parameters"></script>
-  <script src="js/main.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/logoClipboard.js?v=20261103-waveform-parameters"></script>
-  <script src="js/drawing.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/animationPalette.js?v=20261103-header-order"></script>
+  <script src="js/utils/secretIntro.js?v=20261103-header-order"></script>
+  <script src="js/main.js?v=20261103-header-order"></script>
+  <script src="js/utils/logoClipboard.js?v=20261103-header-order"></script>
+  <script src="js/drawing.js?v=20261103-header-order"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =
@@ -993,8 +1000,8 @@
     <div id="save-preview-error" class="save-preview_error" hidden><p id="save-preview-error-text"></p><button id="save-preview-retry" type="button">Try again</button></div>
     <footer class="save-preview_footer"><p id="save-preview-status" role="status" aria-live="polite" aria-atomic="true">Image ready.</p><button id="save-preview-done" class="save-preview_done" type="button">Back to design</button></footer>
   </dialog>
-  <script src="js/utils/manualSavePreview.js?v=20261103-waveform-parameters"></script>
-  <script src="js/utils/mobileBrowser.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/manualSavePreview.js?v=20261103-header-order"></script>
+  <script src="js/utils/mobileBrowser.js?v=20261103-header-order"></script>
 </body>
 
 </html>

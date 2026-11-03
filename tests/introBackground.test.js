@@ -1,7 +1,7 @@
 const fs=require('node:fs');
 const vm=require('node:vm');
 const main=fs.readFileSync(require.resolve('../js/main'),'utf8');
-const source=main.slice(main.indexOf('function handleClickOutside(event)'),main.indexOf('function isMissionControlCreditsMenuActive()'));
+const source=main.slice(main.indexOf('function handleClickOutside(event)'),main.indexOf('function hideSaveMenu()'));
 test.each([true,false])('intro modal open=%s prevents background sidebar dismissal only while open', open=>{
  const toggleMobileMenu=jest.fn();
  const context={document:{body:{classList:{contains:()=>open}}},isCompactLayoutViewport:()=>true,
