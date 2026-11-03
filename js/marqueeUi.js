@@ -8,9 +8,10 @@ const ROW_REFERENCE_VIEWPORT_HEIGHT = 822;
 const ROW_LEFT = '-44vw';
 const ROW_WIDTH = '220vw';
 const MEASUREMENT_EPSILON = 0.5;
-const HOVER_SPEED_FACTOR = 0;
+const HOVER_SPEED_FACTOR = 0.08;
 const PRESS_SPEED_FACTOR = 0;
 const EASE_RATE = 5.2;
+const BRAKE_RATE = 28;
 const STARTUP_STYLE_PROMPT_DELAY = 5000;
 const BASE_SPEEDS = [24, 28, 26, 30, 27, 29, 25, 28, 26, 30];
 const HERO_CLUSTER_WIDTH = 960;
@@ -36,17 +37,22 @@ const ROW_NARROW_CLEARANCE_WIDTH_END = 430;
 const ROW_NARROW_CLEARANCE_BASE_LIFT = 18;
 const ROW_NARROW_CLEARANCE_MAX_LIFT = 56;
 
-const marqueeCatalog = typeof module !== 'undefined' && module.exports
-  ? require('./utils/marqueeCatalog').entries : window.MarqueeCatalog.entries;
+const marqueeCatalogApi = typeof module !== 'undefined' && module.exports
+  ? require('./utils/marqueeCatalog') : window.MarqueeCatalog;
+const marqueeCatalog = marqueeCatalogApi.entries;
 // A coprime stride distributes every family through short repeating lanes.
 // Seven slots per row keep both wrapping DOM and image decoding bounded.
-const rowPatterns = Array.from({ length: ROW_COUNT }, (_, row) =>
-  Array.from({ length: 7 }, (_, slot) => marqueeCatalog[(row * 7 + slot * 5) % marqueeCatalog.length].path));
+function createRowPatterns(entries) {
+  return Array.from({ length: ROW_COUNT }, (_, row) =>
+    Array.from({ length: 7 }, (_, slot) => entries[(row * 7 + slot * 5) % entries.length].path));
+}
+// Choose the small static sample set once. Resize and every animation frame reuse it.
+const rowPatterns = createRowPatterns(marqueeCatalogApi.selectEntries());
 
 function toAssetUrl(path) { return encodeURI(path); }
 
 function getMarqueeBarStyle(path) {
-  const entry = marqueeCatalog.find(item => item.path === path);
+  const entry = marqueeCatalogApi.samples.find(item => item.path === path);
   if (entry) return entry;
   // Historical reference filenames remain recognized by external consumers.
   const name = String(path || '').split('/').pop() || '';
@@ -56,12 +62,11 @@ function getMarqueeBarStyle(path) {
   return marqueeCatalog.find(item => item.value === (match ? match[1] : 'solid'));
 }
 
-function getGeneratorHref(style = 'solid') {
-  if (window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorPath === 'function') {
-    return window.GeneratorRoutes.buildGeneratorPath(style, window.location.pathname);
-  }
-
-  return `generator/${style}/`;
+function getGeneratorHref(style = 'solid', query = '') {
+  const route = window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorPath === 'function'
+    ? window.GeneratorRoutes.buildGeneratorPath(style, window.location.pathname)
+    : `generator/${style}/`;
+  return query ? `${route}?${query}` : route;
 }
 
 function getViewportMetrics() {
@@ -195,7 +200,8 @@ function createAssetElement(path) {
   const style = getMarqueeBarStyle(path);
   asset.className = 'bar_asset_wrap';
   asset.style.setProperty('--asset-width', 'var(--marquee-asset-width)');
-  asset.href = getGeneratorHref(style.value);
+  asset.href = getGeneratorHref(style.value, style.query);
+  asset.dataset.barVariant = style.variant;
   asset.dataset.barStyle = style.value;
   asset.setAttribute('aria-label', `Open ${style.label} in the generator`);
   asset.tabIndex = -1;
@@ -221,9 +227,15 @@ function syncRowTargetFactor(state) {
     : state.isHovered
       ? HOVER_SPEED_FACTOR
       : 1;
-  // Stop immediately so the link cannot slide out from under a stationary pointer.
-  // Only resume is eased, making the paused state unambiguous.
-  if (state.isHovered || state.isPressed) state.currentFactor = 0;
+  // A deliberate press locks the link for selection. Hover instead brakes
+  // quickly to a slow crawl, retaining motion rather than abruptly stopping.
+  if (state.isPressed) state.currentFactor = PRESS_SPEED_FACTOR;
+}
+
+function advanceRowSpeed(currentFactor, targetFactor, dt) {
+  const rate = targetFactor < currentFactor ? BRAKE_RATE : EASE_RATE;
+  const ease = 1 - Math.exp(-rate * dt);
+  return currentFactor + (targetFactor - currentFactor) * ease;
 }
 
 function setHoveredAsset(state, asset) {
@@ -282,29 +294,28 @@ function bindAssetInteractions(asset, state) {
     asset.setPointerCapture(event.pointerId);
   });
 
-  asset.addEventListener('pointerup', event => {
-    if (asset.hasPointerCapture(event.pointerId)) {
+  function finishPress(event) {
+    if (event.type === 'lostpointercapture' && state.pressedAsset !== asset) return;
+    state.isPressed = false;
+    setPressedAsset(state, null);
+    // Hit-test the actual release point: :hover can stay stale after pointer
+    // capture or a native link drag, particularly in WebKit.
+    const hit = document.elementFromPoint(event.clientX, event.clientY);
+    state.isHovered = event.type !== 'lostpointercapture' && event.pointerType !== 'touch'
+      && hit?.closest('.bar_asset_wrap') === asset;
+    if (!state.isHovered) setHoveredAsset(state, null);
+    syncRowTargetFactor(state);
+    if (Number.isInteger(event.pointerId) && asset.hasPointerCapture(event.pointerId)) {
       asset.releasePointerCapture(event.pointerId);
     }
+  }
 
-    state.isPressed = false;
-    setPressedAsset(state, null);
-    state.isHovered = event.pointerType !== 'touch' && asset.matches(':hover');
-    if (!state.isHovered) {
-      setHoveredAsset(state, null);
-    }
-    syncRowTargetFactor(state);
-  });
-
-  asset.addEventListener('pointercancel', event => {
-    state.isPressed = false;
-    setPressedAsset(state, null);
-    state.isHovered = event.pointerType !== 'touch' && asset.matches(':hover');
-    if (!state.isHovered) {
-      setHoveredAsset(state, null);
-    }
-    syncRowTargetFactor(state);
-  });
+  asset.addEventListener('pointerup', finishPress);
+  asset.addEventListener('pointercancel', finishPress);
+  asset.addEventListener('lostpointercapture', finishPress);
+  // Native link drag can replace pointerup/cancel with dragend. Do not leave
+  // the entire lane stuck in its pressed state after that interrupted selection.
+  asset.addEventListener('dragend', finishPress);
 }
 
 function createTrackItem(state, path, isMeasure = false) {
@@ -350,7 +361,8 @@ function createRow(index) {
     rowHeight: 0,
     slotWidth: 0,
     patternSpan: 0,
-    travel: index * 73,
+    travel: 0,
+    initialOffset: Math.random(),
     items: [],
     measureItem: null
   };
@@ -438,7 +450,7 @@ function syncRowMeasurements(rowStates, force = false) {
     state.patternSpan = state.slotWidth * state.pattern.length;
     state.travel = previousSlotWidth > 0
       ? (state.travel / previousSlotWidth) * nextSlotWidth
-      : state.travel;
+      : state.initialOffset * state.patternSpan;
 
     ensureRowItems(state);
     updateRowLayout(state);
@@ -627,8 +639,7 @@ function initMarqueeScene() {
         return;
       }
 
-      const ease = 1 - Math.exp(-EASE_RATE * dt);
-      state.currentFactor += (state.targetFactor - state.currentFactor) * ease;
+      state.currentFactor = advanceRowSpeed(state.currentFactor, state.targetFactor, dt);
       state.travel += state.baseSpeed * state.currentFactor * dt
         * speedScale;
       updateRowLayout(state);
@@ -661,6 +672,9 @@ function initMarqueeScene() {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
+    advanceRowSpeed,
+    createRowPatterns,
+    syncRowTargetFactor,
     computeRowTopPositions,
     getEdgeCaseRowLiftPx,
     getNarrowPortraitHeroScaleCap,

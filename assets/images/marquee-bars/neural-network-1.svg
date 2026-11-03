@@ -1,0 +1,65 @@
+<svg viewBox="0 0 250 18" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="color: #000000; overflow: visible;">
+  <defs><clipPath id="bar-bounds-0-0-250-18"><rect x="0" y="0" width="250" height="18"/></clipPath></defs><g clip-path="url(#bar-bounds-0-0-250-18)">
+    <path d="M 4.0602857142857145 2.435142857142857 L 81.67990476190477 2.435142857142857" fill="none" stroke="currentColor" stroke-width="0.4228855748511851" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 4.0531157506813 8.820313673200065 L 81.68707472550918 2.614829183942791" fill="none" stroke="currentColor" stroke-width="0.543486665641889" stroke-linecap="round"/>
+    <path d="M 4.032009353346924 15.208858667851594 L 81.70818112284356 2.7911413321484058" fill="none" stroke="currentColor" stroke-width="0.3050933997407556" stroke-linecap="round"/>
+    <path d="M 4.0570906048838555 2.5551455553070777 L 81.68309987130662 6.691711587550065" fill="none" stroke="currentColor" stroke-width="0.5541693156380206" stroke-linecap="round"/>
+    <path d="M 4.059485662099533 8.939934836531338 L 81.68070481409094 6.871779449182948" fill="none" stroke="currentColor" stroke-width="0.5729217892102898" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 4.047586149374067 15.325864701031666 L 81.69260432681641 7.050706727539763" fill="none" stroke="currentColor" stroke-width="0.49778057700209316" stroke-linecap="round"/>
+    <path d="M 4.047586149374067 2.6741352989683342 L 81.69260432681641 10.949293272460237" fill="none" stroke="currentColor" stroke-width="0.3260997563302517" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 4.059485662099533 9.060065163468662 L 81.68070481409094 11.128220550817051" fill="none" stroke="currentColor" stroke-width="0.569939777707681" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 4.0570906048838555 15.444854444692922 L 81.68309987130662 11.308288412449935" fill="none" stroke="currentColor" stroke-width="0.5575230433233083" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 4.032009353346924 2.7911413321484058 L 81.70818112284356 15.208858667851594" fill="none" stroke="currentColor" stroke-width="0.5992781048621982" stroke-linecap="round"/>
+    <path d="M 4.0531157506813 9.179686326799935 L 81.68707472550918 15.385170816057208" fill="none" stroke="currentColor" stroke-width="0.590461585007608" stroke-linecap="round"/>
+    <path d="M 4.0602857142857145 15.564857142857143 L 81.67990476190477 15.564857142857143" fill="none" stroke="currentColor" stroke-width="0.24075062309391798" stroke-linecap="round"/>
+    <path d="M 86.19019047619048 2.435142857142857 L 163.80980952380955 2.435142857142857" fill="none" stroke="currentColor" stroke-width="0.25412876170501114" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 86.18699536678862 6.691711587550065 L 163.81300463321142 2.5551455553070777" fill="none" stroke="currentColor" stroke-width="0.2538888008426875" stroke-linecap="round"/>
+    <path d="M 86.17749091127884 10.949293272460237 L 163.8225090887212 2.6741352989683342" fill="none" stroke="currentColor" stroke-width="0.29918850888311865" stroke-linecap="round"/>
+    <path d="M 86.16191411525169 15.208858667851594 L 163.83808588474835 2.7911413321484058" fill="none" stroke="currentColor" stroke-width="0.435714507529512" stroke-linecap="round"/>
+    <path d="M 86.18699536678862 2.5551455553070777 L 163.81300463321142 6.691711587550065" fill="none" stroke="currentColor" stroke-width="0.4376113955341279" stroke-linecap="round"/>
+    <path d="M 86.19019047619048 6.811714285714285 L 163.80980952380955 6.811714285714285" fill="none" stroke="currentColor" stroke-width="0.2808827211800963" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 86.18699536678862 11.068283016121493 L 163.81300463321142 6.9317169838785055" fill="none" stroke="currentColor" stroke-width="0.23650646524876356" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 86.17749091127884 15.325864701031666 L 163.8225090887212 7.050706727539763" fill="none" stroke="currentColor" stroke-width="0.49489763632602984" stroke-linecap="round"/>
+    <path d="M 86.17749091127884 2.6741352989683342 L 163.8225090887212 10.949293272460237" fill="none" stroke="currentColor" stroke-width="0.32492858059331775" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 86.18699536678862 6.9317169838785055 L 163.81300463321142 11.068283016121493" fill="none" stroke="currentColor" stroke-width="0.2306462577302009" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 86.19019047619048 11.188285714285714 L 163.80980952380955 11.188285714285714" fill="none" stroke="currentColor" stroke-width="0.5391825281381607" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 86.18699536678862 15.444854444692922 L 163.81300463321142 11.308288412449935" fill="none" stroke="currentColor" stroke-width="0.41331666254438454" stroke-linecap="round"/>
+    <path d="M 86.16191411525169 2.7911413321484058 L 163.83808588474835 15.208858667851594" fill="none" stroke="currentColor" stroke-width="0.4806875262670218" stroke-linecap="round"/>
+    <path d="M 86.17749091127884 7.050706727539763 L 163.8225090887212 15.325864701031666" fill="none" stroke="currentColor" stroke-width="0.3283745508883148" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 86.18699536678862 11.308288412449935 L 163.81300463321142 15.444854444692922" fill="none" stroke="currentColor" stroke-width="0.47035153777152294" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 86.19019047619048 15.564857142857143 L 163.80980952380955 15.564857142857143" fill="none" stroke="currentColor" stroke-width="0.5975566901732235" stroke-linecap="round"/>
+    <path d="M 168.32009523809526 2.435142857142857 L 245.9397142857143 2.435142857142857" fill="none" stroke="currentColor" stroke-width="0.5153235804699361" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 168.3169001286934 6.691711587550065 L 245.94290939511617 2.5551455553070777" fill="none" stroke="currentColor" stroke-width="0.25181588594801724" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 168.3073956731836 10.949293272460237 L 245.95241385062596 2.6741352989683347" fill="none" stroke="currentColor" stroke-width="0.25059178890287875" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 168.29181887715646 15.208858667851594 L 245.9679906466531 2.7911413321484058" fill="none" stroke="currentColor" stroke-width="0.5264577297773212" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 168.29181887715646 2.7911413321484058 L 245.9679906466531 15.208858667851594" fill="none" stroke="currentColor" stroke-width="0.521691761109978" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 168.3073956731836 7.050706727539763 L 245.95241385062596 15.325864701031666" fill="none" stroke="currentColor" stroke-width="0.31230424842797216" stroke-linecap="round"/>
+    <path d="M 168.3169001286934 11.308288412449935 L 245.94290939511617 15.444854444692922" fill="none" stroke="currentColor" stroke-width="0.43208040491491556" stroke-linecap="round"/>
+    <path d="M 168.32009523809526 15.564857142857143 L 245.9397142857143 15.564857142857143" fill="none" stroke="currentColor" stroke-width="0.5450431656818837" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <circle cx="1.8051428571428572" cy="2.435142857142857" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="1.8051428571428572" cy="2.435142857142857" r="0.9741854283639921" fill="currentColor"/>
+    <circle cx="1.8051428571428572" cy="9" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="1.8051428571428572" cy="9" r="0.8811838751222757" fill="currentColor"/>
+    <circle cx="1.8051428571428572" cy="15.564857142857143" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="1.8051428571428572" cy="15.564857142857143" r="0.8647116960382266" fill="currentColor"/>
+    <circle cx="83.93504761904762" cy="2.435142857142857" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="83.93504761904762" cy="2.435142857142857" r="0.7644705143690333" fill="currentColor"/>
+    <circle cx="83.93504761904762" cy="6.811714285714285" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="83.93504761904762" cy="6.811714285714285" r="0.8962275258399847" fill="currentColor"/>
+    <circle cx="83.93504761904762" cy="11.188285714285714" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="83.93504761904762" cy="11.188285714285714" r="0.4783812449640372" fill="currentColor"/>
+    <circle cx="83.93504761904762" cy="15.564857142857143" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="83.93504761904762" cy="15.564857142857143" r="0.9944370157092799" fill="currentColor"/>
+    <circle cx="166.0649523809524" cy="2.435142857142857" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="166.0649523809524" cy="2.435142857142857" r="0.851774542594929" fill="currentColor"/>
+    <circle cx="166.0649523809524" cy="6.811714285714285" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="166.0649523809524" cy="6.811714285714285" r="0.8956282581590678" fill="currentColor"/>
+    <circle cx="166.0649523809524" cy="11.188285714285714" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="166.0649523809524" cy="11.188285714285714" r="0.9642634121271247" fill="currentColor"/>
+    <circle cx="166.0649523809524" cy="15.564857142857143" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="166.0649523809524" cy="15.564857142857143" r="0.9857792224712772" fill="currentColor"/>
+    <circle cx="248.19485714285716" cy="2.435142857142857" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="248.19485714285716" cy="2.435142857142857" r="0.42953058670554556" fill="currentColor"/>
+    <circle cx="248.19485714285716" cy="15.564857142857143" r="1.6071428571428572" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="248.19485714285716" cy="15.564857142857143" r="0.6209953866864508" fill="currentColor"/></g>
+</svg>

@@ -158,7 +158,7 @@ img {
   border-radius: 999px;
   border: 2px solid rgba(214, 0, 28, 0.92);
   background:
-    linear-gradient(180deg, rgba(42, 42, 42, 0.28), rgba(6, 6, 6, 0.46) 46%, rgba(10, 10, 10, 0.36));
+    linear-gradient(180deg, rgba(42, 42, 42, 0.9), rgba(6, 6, 6, 0.94) 46%, rgba(10, 10, 10, 0.92));
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
     0 6px 14px rgba(0, 0, 0, 0.18),
@@ -205,7 +205,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25rem clamp(0.625rem, 1vw, 1rem);
+  padding: 0.75rem 1.5rem;
   color: var(--rpi-white);
   font-family: 'RPIGeist', 'Geist', sans-serif;
   font-size: clamp(0.75rem, calc(0.875rem * var(--composition-scale)), 1.25rem);
@@ -498,7 +498,7 @@ img {
   }
 
   .startup_prompt_text {
-    padding: 0.25rem 0.625rem;
+    padding: 0.625rem 1.25rem;
     font-size: 0.75rem;
   }
 
@@ -529,7 +529,7 @@ img {
   }
 
   .startup_prompt_text {
-    padding: 0.25rem 0.625rem;
+    padding: 0.625rem 1.25rem;
     font-size: 0.75rem;
     white-space: normal;
   }

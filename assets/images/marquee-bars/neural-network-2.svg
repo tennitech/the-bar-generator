@@ -1,0 +1,109 @@
+<svg viewBox="0 0 250 18" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="color: #000000; overflow: visible;">
+  <defs><clipPath id="bar-bounds-0-0-250-18"><rect x="0" y="0" width="250" height="18"/></clipPath></defs><g clip-path="url(#bar-bounds-0-0-250-18)">
+    <path d="M 3.4174285714285713 2.113714285714286 L 48.956514285714285 2.113714285714286" fill="none" stroke="currentColor" stroke-width="0.421043925717473" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 3.398914928151295 8.733059111441541 L 48.975027928991565 2.3806551742727455" fill="none" stroke="currentColor" stroke-width="0.2494890423025936" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 3.412749867696844 2.24814888773595 L 48.96119298944601 5.422422540835479" fill="none" stroke="currentColor" stroke-width="0.493928913557902" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 3.412749867696844 8.865565397978337 L 48.96119298944601 5.691291744878807" fill="none" stroke="currentColor" stroke-width="0.5738741322979332" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 3.376503763909617 15.490559887470535 L 48.99743909323324 5.952582969672322" fill="none" stroke="currentColor" stroke-width="0.34109738260321315" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 3.398914928151295 2.3806551742727455 L 48.975027928991565 8.733059111441541" fill="none" stroke="currentColor" stroke-width="0.5701882210560143" stroke-linecap="round"/>
+    <path d="M 3.4174285714285713 9 L 48.956514285714285 9" fill="none" stroke="currentColor" stroke-width="0.25561909669451416" stroke-linecap="round"/>
+    <path d="M 3.398914928151295 15.619344825727255 L 48.975027928991565 9.266940888558459" fill="none" stroke="currentColor" stroke-width="0.5161087293326855" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 3.412749867696844 9.134434602021663 L 48.96119298944601 12.308708255121195" fill="none" stroke="currentColor" stroke-width="0.370565865945071" stroke-linecap="round"/>
+    <path d="M 3.412749867696844 15.75185111226405 L 48.96119298944601 12.577577459164521" fill="none" stroke="currentColor" stroke-width="0.3269780537690968" stroke-linecap="round"/>
+    <path d="M 3.398914928151295 9.266940888558459 L 48.975027928991565 15.619344825727255" fill="none" stroke="currentColor" stroke-width="0.40707385636679827" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 3.4174285714285713 15.886285714285714 L 48.956514285714285 15.886285714285714" fill="none" stroke="currentColor" stroke-width="0.5921968895830215" stroke-linecap="round"/>
+    <path d="M 52.82394285714286 2.113714285714286 L 98.36302857142857 2.113714285714286" fill="none" stroke="currentColor" stroke-width="0.2745990131925792" stroke-linecap="round"/>
+    <path d="M 52.81926415341113 5.422422540835479 L 98.3677072751603 2.24814888773595" fill="none" stroke="currentColor" stroke-width="0.373400212302804" stroke-linecap="round"/>
+    <path d="M 52.81926415341113 2.24814888773595 L 98.3677072751603 5.422422540835479" fill="none" stroke="currentColor" stroke-width="0.22311676961928606" stroke-linecap="round"/>
+    <path d="M 52.82394285714286 5.556857142857143 L 98.36302857142857 5.556857142857143" fill="none" stroke="currentColor" stroke-width="0.49991637662239374" stroke-linecap="round"/>
+    <path d="M 52.81926415341113 8.865565397978337 L 98.3677072751603 5.691291744878807" fill="none" stroke="currentColor" stroke-width="0.5222367755882442" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 52.81926415341113 5.691291744878807 L 98.3677072751603 8.865565397978337" fill="none" stroke="currentColor" stroke-width="0.43365034453198315" stroke-linecap="round"/>
+    <path d="M 52.82394285714286 9 L 98.36302857142857 9" fill="none" stroke="currentColor" stroke-width="0.2826979337241501" stroke-linecap="round"/>
+    <path d="M 52.81926415341113 12.308708255121195 L 98.3677072751603 9.134434602021663" fill="none" stroke="currentColor" stroke-width="0.5970980253741145" stroke-linecap="round"/>
+    <path d="M 52.81926415341113 9.134434602021663 L 98.3677072751603 12.308708255121195" fill="none" stroke="currentColor" stroke-width="0.5279688601344824" stroke-linecap="round"/>
+    <path d="M 52.82394285714286 12.443142857142858 L 98.36302857142857 12.443142857142858" fill="none" stroke="currentColor" stroke-width="0.40611881621740764" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 52.81926415341113 15.75185111226405 L 98.3677072751603 12.577577459164521" fill="none" stroke="currentColor" stroke-width="0.487598445866257" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 52.81926415341113 12.577577459164521 L 98.3677072751603 15.75185111226405" fill="none" stroke="currentColor" stroke-width="0.3398754725642502" stroke-linecap="round"/>
+    <path d="M 52.82394285714286 15.886285714285714 L 98.36302857142857 15.886285714285714" fill="none" stroke="currentColor" stroke-width="0.24006415689177812" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 102.23045714285715 2.113714285714286 L 147.76954285714288 2.113714285714286" fill="none" stroke="currentColor" stroke-width="0.41221554753184314" stroke-linecap="round"/>
+    <path d="M 102.22577843912542 5.422422540835479 L 147.7742215608746 2.24814888773595" fill="none" stroke="currentColor" stroke-width="0.3352212757710367" stroke-linecap="round"/>
+    <path d="M 102.22577843912542 2.24814888773595 L 147.7742215608746 5.422422540835479" fill="none" stroke="currentColor" stroke-width="0.4909435737859458" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 102.23045714285715 5.556857142857143 L 147.76954285714288 5.556857142857143" fill="none" stroke="currentColor" stroke-width="0.40919021689519286" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 102.22577843912542 8.865565397978337 L 147.7742215608746 5.691291744878807" fill="none" stroke="currentColor" stroke-width="0.5508116364050656" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 102.22577843912542 5.691291744878807 L 147.7742215608746 8.865565397978337" fill="none" stroke="currentColor" stroke-width="0.3450149239841849" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 102.23045714285715 9 L 147.76954285714288 9" fill="none" stroke="currentColor" stroke-width="0.2606210591867566" stroke-linecap="round"/>
+    <path d="M 102.22577843912542 12.308708255121195 L 147.7742215608746 9.134434602021663" fill="none" stroke="currentColor" stroke-width="0.3035086705405265" stroke-linecap="round"/>
+    <path d="M 102.22577843912542 9.134434602021663 L 147.7742215608746 12.308708255121195" fill="none" stroke="currentColor" stroke-width="0.47036796336807307" stroke-linecap="round"/>
+    <path d="M 102.23045714285715 12.443142857142858 L 147.76954285714288 12.443142857142858" fill="none" stroke="currentColor" stroke-width="0.6028089236207306" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 102.22577843912542 15.75185111226405 L 147.7742215608746 12.577577459164521" fill="none" stroke="currentColor" stroke-width="0.5113760378267616" stroke-linecap="round"/>
+    <path d="M 102.22577843912542 12.577577459164521 L 147.7742215608746 15.75185111226405" fill="none" stroke="currentColor" stroke-width="0.23574048625119032" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 102.23045714285715 15.886285714285714 L 147.76954285714288 15.886285714285714" fill="none" stroke="currentColor" stroke-width="0.36608857195079325" stroke-linecap="round"/>
+    <path d="M 151.63697142857143 2.113714285714286 L 197.17605714285716 2.113714285714286" fill="none" stroke="currentColor" stroke-width="0.4791922286543995" stroke-linecap="round"/>
+    <path d="M 151.63229272483971 5.422422540835479 L 197.18073584658887 2.24814888773595" fill="none" stroke="currentColor" stroke-width="0.39936679884418846" stroke-linecap="round"/>
+    <path d="M 151.63229272483971 2.24814888773595 L 197.18073584658887 5.422422540835479" fill="none" stroke="currentColor" stroke-width="0.2571057462282479" stroke-linecap="round"/>
+    <path d="M 151.63697142857143 5.556857142857143 L 197.17605714285716 5.556857142857143" fill="none" stroke="currentColor" stroke-width="0.273206408796832" stroke-linecap="round"/>
+    <path d="M 151.63229272483971 8.865565397978337 L 197.18073584658887 5.691291744878807" fill="none" stroke="currentColor" stroke-width="0.5325683812201023" stroke-linecap="round"/>
+    <path d="M 151.63229272483971 5.691291744878807 L 197.18073584658887 8.865565397978337" fill="none" stroke="currentColor" stroke-width="0.6108862075433136" stroke-linecap="round"/>
+    <path d="M 151.63697142857143 9 L 197.17605714285716 9" fill="none" stroke="currentColor" stroke-width="0.2884231315981597" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 151.63229272483971 12.308708255121195 L 197.18073584658887 9.134434602021663" fill="none" stroke="currentColor" stroke-width="0.6098424077667296" stroke-linecap="round"/>
+    <path d="M 151.63229272483971 9.134434602021663 L 197.18073584658887 12.308708255121195" fill="none" stroke="currentColor" stroke-width="0.5734286502040922" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 151.63697142857143 12.443142857142858 L 197.17605714285716 12.443142857142858" fill="none" stroke="currentColor" stroke-width="0.2949848678167909" stroke-linecap="round"/>
+    <path d="M 151.63229272483971 15.75185111226405 L 197.18073584658887 12.577577459164521" fill="none" stroke="currentColor" stroke-width="0.5339314215704798" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 151.63229272483971 12.577577459164521 L 197.18073584658887 15.75185111226405" fill="none" stroke="currentColor" stroke-width="0.5664557358026505" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 151.63697142857143 15.886285714285714 L 197.17605714285716 15.886285714285714" fill="none" stroke="currentColor" stroke-width="0.30667107225023216" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 201.0434857142857 2.113714285714286 L 246.58257142857144 2.113714285714286" fill="none" stroke="currentColor" stroke-width="0.4484285169057548" stroke-linecap="round"/>
+    <path d="M 201.038807010554 5.422422540835479 L 246.58725013230315 2.24814888773595" fill="none" stroke="currentColor" stroke-width="0.239931613991037" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <path d="M 201.02497207100845 9.266940888558459 L 246.6010850718487 15.619344825727255" fill="none" stroke="currentColor" stroke-width="0.4442595220003277" stroke-linecap="round"/>
+    <path d="M 201.038807010554 12.577577459164521 L 246.58725013230315 15.75185111226405" fill="none" stroke="currentColor" stroke-width="0.2998234299682081" stroke-linecap="round"/>
+    <path d="M 201.0434857142857 15.886285714285714 L 246.58257142857144 15.886285714285714" fill="none" stroke="currentColor" stroke-width="0.47426633396185935" stroke-linecap="round" stroke-dasharray="1.5 1.2"/>
+    <circle cx="1.4837142857142858" cy="2.113714285714286" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="1.4837142857142858" cy="2.113714285714286" r="0.6822334299331626" fill="currentColor"/>
+    <circle cx="1.4837142857142858" cy="9" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="1.4837142857142858" cy="9" r="0.6171033563251421" fill="currentColor"/>
+    <circle cx="1.4837142857142858" cy="15.886285714285714" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="1.4837142857142858" cy="15.886285714285714" r="0.6055676969857732" fill="currentColor"/>
+    <circle cx="50.89022857142857" cy="2.113714285714286" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="50.89022857142857" cy="2.113714285714286" r="0.4421739748769281" fill="currentColor"/>
+    <circle cx="50.89022857142857" cy="5.556857142857143" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="50.89022857142857" cy="5.556857142857143" r="0.3205280267170482" fill="currentColor"/>
+    <circle cx="50.89022857142857" cy="9" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="50.89022857142857" cy="9" r="0.6112974190490337" fill="currentColor"/>
+    <circle cx="50.89022857142857" cy="12.443142857142858" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="50.89022857142857" cy="12.443142857142858" r="0.5790954263672441" fill="currentColor"/>
+    <circle cx="50.89022857142857" cy="15.886285714285714" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="50.89022857142857" cy="15.886285714285714" r="0.557098125372101" fill="currentColor"/>
+    <circle cx="100.29674285714286" cy="2.113714285714286" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="100.29674285714286" cy="2.113714285714286" r="0.4669894138330752" fill="currentColor"/>
+    <circle cx="100.29674285714286" cy="5.556857142857143" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="100.29674285714286" cy="5.556857142857143" r="0.37483448011945136" fill="currentColor"/>
+    <circle cx="100.29674285714286" cy="9" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="100.29674285714286" cy="9" r="0.5073964234529529" fill="currentColor"/>
+    <circle cx="100.29674285714286" cy="12.443142857142858" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="100.29674285714286" cy="12.443142857142858" r="0.550558631007205" fill="currentColor"/>
+    <circle cx="100.29674285714286" cy="15.886285714285714" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="100.29674285714286" cy="15.886285714285714" r="0.5418999703087989" fill="currentColor"/>
+    <circle cx="149.70325714285715" cy="2.113714285714286" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="149.70325714285715" cy="2.113714285714286" r="0.47464564602320247" fill="currentColor"/>
+    <circle cx="149.70325714285715" cy="5.556857142857143" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="149.70325714285715" cy="5.556857142857143" r="0.6177947792695505" fill="currentColor"/>
+    <circle cx="149.70325714285715" cy="9" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="149.70325714285715" cy="9" r="0.5648471521969327" fill="currentColor"/>
+    <circle cx="149.70325714285715" cy="12.443142857142858" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="149.70325714285715" cy="12.443142857142858" r="0.5105332509607068" fill="currentColor"/>
+    <circle cx="149.70325714285715" cy="15.886285714285714" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="149.70325714285715" cy="15.886285714285714" r="0.5335454922940298" fill="currentColor"/>
+    <circle cx="199.10977142857143" cy="2.113714285714286" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="199.10977142857143" cy="2.113714285714286" r="0.5371805765524522" fill="currentColor"/>
+    <circle cx="199.10977142857143" cy="5.556857142857143" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="199.10977142857143" cy="5.556857142857143" r="0.5580737821429302" fill="currentColor"/>
+    <circle cx="199.10977142857143" cy="9" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="199.10977142857143" cy="9" r="0.5801370149606311" fill="currentColor"/>
+    <circle cx="199.10977142857143" cy="12.443142857142858" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="199.10977142857143" cy="12.443142857142858" r="0.5014409053501754" fill="currentColor"/>
+    <circle cx="199.10977142857143" cy="15.886285714285714" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="199.10977142857143" cy="15.886285714285714" r="0.5443479304621756" fill="currentColor"/>
+    <circle cx="248.51628571428571" cy="2.113714285714286" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="248.51628571428571" cy="2.113714285714286" r="0.5328818033362335" fill="currentColor"/>
+    <circle cx="248.51628571428571" cy="15.886285714285714" r="1.2857142857142858" fill="none" stroke="currentColor" stroke-width="0.39599999999999996"/>
+    <circle cx="248.51628571428571" cy="15.886285714285714" r="0.544561062103098" fill="currentColor"/></g>
+</svg>

@@ -1,0 +1,23 @@
+<svg viewBox="0 0 250 18" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="color: #000000; overflow: visible;">
+  <defs><clipPath id="bar-bounds-0-0-250-18"><rect x="0" y="0" width="250" height="18"/></clipPath></defs><g clip-path="url(#bar-bounds-0-0-250-18)">
+    <polygon points="0,18 12.5,0 0,0" fill="currentColor"/>
+    <polygon points="12.5,18 25,0 12.5,0" fill="currentColor"/>
+    <polygon points="25,18 37.5,0 25,0" fill="currentColor"/>
+    <polygon points="37.5,18 50,0 37.5,0" fill="currentColor"/>
+    <polygon points="50,18 62.5,0 50,0" fill="currentColor"/>
+    <polygon points="62.5,18 75,0 62.5,0" fill="currentColor"/>
+    <polygon points="75,18 87.5,0 75,0" fill="currentColor"/>
+    <polygon points="87.5,18 100,0 87.5,0" fill="currentColor"/>
+    <polygon points="100,18 112.5,0 100,0" fill="currentColor"/>
+    <polygon points="112.5,18 125,0 112.5,0" fill="currentColor"/>
+    <polygon points="125,18 137.5,0 125,0" fill="currentColor"/>
+    <polygon points="137.5,18 150,0 137.5,0" fill="currentColor"/>
+    <polygon points="150,18 162.5,0 150,0" fill="currentColor"/>
+    <polygon points="162.5,18 175,0 162.5,0" fill="currentColor"/>
+    <polygon points="175,18 187.5,0 175,0" fill="currentColor"/>
+    <polygon points="187.5,18 200,0 187.5,0" fill="currentColor"/>
+    <polygon points="200,18 212.5,0 200,0" fill="currentColor"/>
+    <polygon points="212.5,18 225,0 212.5,0" fill="currentColor"/>
+    <polygon points="225,18 237.5,0 225,0" fill="currentColor"/>
+    <polygon points="237.5,18 250,0 237.5,0" fill="currentColor"/></g>
+</svg>

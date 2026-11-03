@@ -1,4 +1,7 @@
 const {
+  advanceRowSpeed,
+  createRowPatterns,
+  syncRowTargetFactor,
   computeRowTopPositions,
   getEdgeCaseRowLiftPx,
   getNarrowPortraitHeroScaleCap,
@@ -89,5 +92,59 @@ describe('marquee row layout helpers', () => {
 
   test('does not shrink the hero early for wider layouts', () => {
     expect(getNarrowPortraitHeroScaleCap(760, 879)).toBe(1);
+  });
+});
+
+
+describe('marquee hover motion and fixed per-load samples', () => {
+  test('hover brakes hard without stopping or teleporting its speed', () => {
+    const state = { isHovered: true, isPressed: false, currentFactor: 1 };
+    syncRowTargetFactor(state);
+    expect(state.targetFactor).toBe(0.08);
+    expect(state.currentFactor).toBe(1);
+    const afterOneFrame = advanceRowSpeed(state.currentFactor, state.targetFactor, 1 / 60);
+    const after100ms = advanceRowSpeed(1, state.targetFactor, 0.1);
+    const after200ms = advanceRowSpeed(1, state.targetFactor, 0.2);
+    expect(afterOneFrame).toBeLessThan(1);
+    expect(afterOneFrame).toBeGreaterThan(after100ms);
+    expect(after100ms).toBeLessThan(0.15);
+    expect(after200ms).toBeGreaterThan(0.08);
+    expect(after200ms).toBeLessThan(0.09);
+  });
+
+  test('press locks a moving link, release returns to crawl, and leaving resumes smoothly', () => {
+    const state = { isHovered: true, isPressed: true, currentFactor: 0.7 };
+    syncRowTargetFactor(state);
+    expect(state.targetFactor).toBe(0);
+    expect(state.currentFactor).toBe(0);
+    state.isPressed = false;
+    syncRowTargetFactor(state);
+    expect(state.targetFactor).toBe(0.08);
+    expect(advanceRowSpeed(0, state.targetFactor, 0.2)).toBeGreaterThan(0);
+    state.isHovered = false;
+    syncRowTargetFactor(state);
+    expect(state.targetFactor).toBe(1);
+    const resumed = advanceRowSpeed(0.08, state.targetFactor, 0.2);
+    expect(resumed).toBeGreaterThan(0.5);
+    expect(resumed).toBeLessThan(1);
+  });
+
+  test('braking and resume are frame-rate independent', () => {
+    for (const [start, target] of [[1, 0.08], [0.08, 1]]) {
+      const simulate = hz => Array.from({ length: hz / 2 }).reduce(
+        speed => advanceRowSpeed(speed, target, 1 / hz), start);
+      expect(simulate(60)).toBeCloseTo(simulate(120), 12);
+      expect(simulate(120)).toBeCloseTo(simulate(240), 12);
+    }
+  });
+
+  test('bounded lane patterns cover every selected family without altering the sample set', () => {
+    const entries = Array.from({ length: 21 }, (_, i) => ({ path: `sample-${i}` }));
+    const patterns = createRowPatterns(entries);
+    expect(patterns).toHaveLength(10);
+    expect(patterns.every(row => row.length === 7 && new Set(row).size === 7)).toBe(true);
+    expect(new Set(patterns.flat())).toEqual(new Set(entries.map(entry => entry.path)));
+    expect(createRowPatterns(entries)).toEqual(patterns);
+    expect(createRowPatterns([...entries].reverse())).not.toEqual(patterns);
   });
 });
