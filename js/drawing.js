@@ -427,80 +427,14 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       }
     }
   } else if (currentShader === 4) {
-    // Waveform pattern
-    const frequency = parseInt(waveformFrequencySlider.value);
-    const waveType = parseFloat(waveformTypeSlider.value);
-    const speed = parseFloat(waveformSpeedSlider.value);
     const time = timeSeconds !== null
       ? timeSeconds
       : (typeof window.animationTime !== 'undefined' ? window.animationTime : millis() / 1000.0);
-    const points = typeof getWaveformRenderPointCount === 'function'
-      ? getWaveformRenderPointCount(exactBarWidth, frequency)
-      : Math.max(240, Math.min(1200, Math.max(Math.ceil(exactBarWidth * 2), frequency * 12)));
-    const envelopeSettings = typeof getWaveformEnvelopeSettings === 'function'
-      ? getWaveformEnvelopeSettings()
-      : {
-        applyEnvelope: !!(waveformEnvelopeToggle && waveformEnvelopeToggle.checked),
-        envType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
-        envWaves: waveformEnvelopeWavesSlider ? Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)) : 1,
-        envCenter: waveformEnvelopeCenterSlider ? parseFloat(waveformEnvelopeCenterSlider.value) : 0,
-        bipolar: !!(waveformEnvelopeBipolarToggle && waveformEnvelopeBipolarToggle.checked)
-      };
-
+    const geometry = getLiveWaveformGeometry(barStartX, barY, exactBarWidth, rectHeight, time);
     pg.fill(fgColor);
     pg.noStroke();
-
-    // Draw as a filled polygon
     pg.beginShape();
-
-    // Start from bottom-left corner
-    pg.vertex(barStartX, barY + rectHeight);
-
-    // Generate the waveform curve
-    for (let i = 0; i <= points; i++) {
-      const xPortion = i / points;
-      const x = xPortion * exactBarWidth;
-
-      // Standard rolling phase calculation (horizontal movement only)
-      let rawPhase = (xPortion * frequency) - (time * speed);
-
-      // Fix tiny floating point inaccuracies
-      rawPhase = Math.round(rawPhase * 1000000) / 1000000;
-
-      let wave = typeof generateWaveformValue === 'function'
-        ? generateWaveformValue(rawPhase, waveType)
-        : (() => {
-          const wrappedPhase = ((rawPhase % 1) + 1) % 1;
-          const sine = (Math.sin(wrappedPhase * 2 * Math.PI - Math.PI / 2) + 1) * 0.5;
-          const saw = wrappedPhase;
-          const square = wrappedPhase > 0.5 ? 1.0 : 0.0;
-          const pulse = wrappedPhase > 0.8 ? 1.0 : 0.0;
-          if (waveType < 1.0) return sine + (saw - sine) * waveType;
-          if (waveType < 2.0) return saw + (square - saw) * (waveType - 1.0);
-          return square + (pulse - square) * (waveType - 2.0);
-        })();
-
-      if (typeof applyWaveformEnvelope === 'function') {
-        wave = applyWaveformEnvelope(wave, {
-          applyEnvelope: envelopeSettings.applyEnvelope,
-          envType: envelopeSettings.envType,
-          envWaves: envelopeSettings.envWaves,
-          bipolar: envelopeSettings.bipolar,
-          xPortion
-        });
-      }
-
-      const normalizedY = typeof mapWaveformToBarYFraction === 'function'
-        ? mapWaveformToBarYFraction(wave, envelopeSettings.envCenter)
-        : (1.0 - Math.max(0, Math.min(1, wave)));
-      const y = barY + rectHeight * normalizedY;
-
-      pg.vertex(barStartX + x, y);
-    }
-
-    // Complete the polygon by going to bottom-right corner
-    pg.vertex(barStartX + exactBarWidth, barY + rectHeight);
-
+    geometry.polygon.forEach(point => pg.vertex(point.x, point.y));
     pg.endShape(pg.CLOSE);
 
   } else if (currentShader === 5) {

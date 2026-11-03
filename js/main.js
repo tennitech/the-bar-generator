@@ -1180,6 +1180,22 @@ function generateRandomStaffPattern() {
   return basePattern.map(note => ({ ...note }));
 }
 
+function getLiveWaveformGeometry(barStartX, barY, exactBarWidth, barHeight, timeSeconds) {
+  const envelope = getWaveformEnvelopeSettings();
+  return createWaveformPatternGeometry({
+    barStartX, barY, exactBarWidth, barHeight, timeSeconds,
+    waveformType: Number(waveformTypeSlider.value),
+    waveformFrequency: Number(waveformFrequencySlider.value),
+    waveformSpeed: Number(waveformSpeedSlider.value),
+    waveformPoints: getWaveformRenderPointCount(exactBarWidth, waveformFrequencySlider.value),
+    waveformEnvelope: envelope.applyEnvelope,
+    waveformEnvelopeType: envelope.envType,
+    waveformEnvelopeWaves: envelope.envWaves,
+    waveformEnvelopeCenter: envelope.envCenter,
+    waveformEnvelopeBipolar: envelope.bipolar
+  });
+}
+
 function getCurrentAudioPreviewType() {
   switch (currentShader) {
     case 2:
@@ -4521,23 +4537,11 @@ function renderHeaderMotionPreview() {
     });
     geometry.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
   } else if (style === 'waveform') {
-    const frequency = Number(waveformFrequencySlider.value);
-    const type = Number(waveformTypeSlider.value);
-    const speed = Number(waveformSpeedSlider.value);
-    const envelope = getWaveformEnvelopeSettings();
-    const points = getWaveformRenderPointCount(REFERENCE_WIDTH, frequency);
+    const geometry = getLiveWaveformGeometry(0, 0, REFERENCE_WIDTH,
+      REFERENCE_BAR_HEIGHT, state.timeSeconds);
     ctx.beginPath();
-    ctx.moveTo(0, REFERENCE_BAR_HEIGHT);
-    for (let i = 0; i <= points; i++) {
-      const xPortion = i / points;
-      const phase = Math.round((xPortion * frequency - state.timeSeconds * speed) * 1000000) / 1000000;
-      let wave = generateWaveformValue(phase, type);
-      if (typeof applyWaveformEnvelope === 'function') wave = applyWaveformEnvelope(wave, { ...envelope, xPortion });
-      const fraction = typeof mapWaveformToBarYFraction === 'function'
-        ? mapWaveformToBarYFraction(wave, envelope.envCenter) : 1 - Math.max(0, Math.min(1, wave));
-      ctx.lineTo(xPortion * REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT * fraction);
-    }
-    ctx.lineTo(REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT);
+    geometry.polygon.forEach((point, index) =>
+      index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
     ctx.closePath();
     ctx.fill();
 
@@ -6968,68 +6972,14 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       }
     }
   } else if (currentShader === 4) {
-    // Waveform mode - draw a procedural waveform within the bar area
     resetShader();
-
-    const frequency = parseInt(waveformFrequencySlider.value);
-    const waveType = parseFloat(waveformTypeSlider.value);
-    const speed = parseFloat(waveformSpeedSlider.value);
     const time = currentMotionStyle === 'waveform' && loopAnimationState
-      ? loopAnimationState.timeSeconds
-      : 0;
-    const points = getWaveformRenderPointCount(exactBarWidth, frequency);
-    const {
-      applyEnvelope,
-      envType,
-      envWaves,
-      envCenter,
-      bipolar
-    } = getWaveformEnvelopeSettings();
-
-    // Use fill instead of stroke for smoother rendering at high frequencies
+      ? loopAnimationState.timeSeconds : 0;
+    const geometry = getLiveWaveformGeometry(barStartX, 0, exactBarWidth, rectHeight, time);
     fill(fgColor);
     noStroke();
-
-    // Draw as a filled polygon for ultra-smooth appearance
     beginShape();
-
-    // Start from bottom-left corner
-    vertex(barStartX, rectHeight);
-
-    // Generate the waveform curve
-    for (let i = 0; i <= points; i++) {
-      const xPortion = i / points;
-      const x = xPortion * exactBarWidth;
-
-      // Standard rolling phase calculation (horizontal movement only)
-      let rawPhase = (xPortion * frequency) - (time * speed);
-
-      // Fix tiny floating point inaccuracies
-      rawPhase = Math.round(rawPhase * 1000000) / 1000000;
-
-      // Generate smooth waveform value
-      let wave = generateWaveformValue(rawPhase, waveType);
-      if (typeof applyWaveformEnvelope === 'function') {
-        wave = applyWaveformEnvelope(wave, {
-          applyEnvelope,
-          envType,
-          envWaves,
-          bipolar,
-          xPortion
-        });
-      }
-
-      const normalizedY = typeof mapWaveformToBarYFraction === 'function'
-        ? mapWaveformToBarYFraction(wave, envCenter)
-        : (1.0 - Math.max(0, Math.min(1, wave)));
-      const y = rectHeight * normalizedY;
-
-      vertex(barStartX + x, y);
-    }
-
-    // Complete the polygon by going to bottom-right corner
-    vertex(barStartX + exactBarWidth, rectHeight);
-
+    geometry.polygon.forEach(point => vertex(point.x, point.y));
     endShape(CLOSE);
 
   } else if (currentShader === 5) {

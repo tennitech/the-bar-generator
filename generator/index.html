@@ -10,25 +10,25 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261103-save-preview" rel="stylesheet" type="text/css" />
-  <link href="css/page-entrance.css?v=20261103-save-preview" rel="stylesheet" type="text/css">
-  <script src="js/utils/pageEntrance.js?v=20261103-save-preview"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261103-save-preview"></script>
-  <script src="js/utils/themeMode.js?v=20261103-save-preview"></script>
-  <script src="js/utils/selectorPreviews.js?v=20261103-save-preview"></script>
-  <script src="js/utils/customDropdowns.js?v=20261103-save-preview"></script>
-  <script src="js/utils/parameterControls.js?v=20261103-save-preview"></script>
-  <script src="js/utils/loopingGif.js?v=20261103-save-preview"></script>
-  <script src="js/utils/featherIcons.js?v=20261103-save-preview"></script>
-  <script src="js/utils/numericControls.js?v=20261103-save-preview"></script>
-  <script src="js/utils/shareState.js?v=20261103-save-preview"></script>
+  <link href="css/style.css?v=20261103-waveform-parameters" rel="stylesheet" type="text/css" />
+  <link href="css/page-entrance.css?v=20261103-waveform-parameters" rel="stylesheet" type="text/css">
+  <script src="js/utils/pageEntrance.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/themeMode.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/selectorPreviews.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/customDropdowns.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/parameterControls.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/loopingGif.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/featherIcons.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/numericControls.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/shareState.js?v=20261103-waveform-parameters"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/barPattern.js?v=20261103-save-preview"></script>
+  <script src="js/utils/barPattern.js?v=20261103-waveform-parameters"></script>
   <script src="js/utils/tickerDisplay.js"></script>
-  <script src="js/utils/profanityFilter.js?v=20261103-save-preview"></script>
+  <script src="js/utils/profanityFilter.js?v=20261103-waveform-parameters"></script>
   <script src="js/utils/quantumModel.js"></script>
-  <script src="js/utils/generatorParameters.js?v=20261103-save-preview"></script>
-  <script src="js/utils/generatorInitialState.js?v=20261103-save-preview"></script>
+  <script src="js/utils/generatorParameters.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261103-waveform-parameters"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
 </head>
@@ -226,7 +226,6 @@
         <!-- Dynamic Control Groups -->
         <div id="ruler-group" data-parameter-actions="ruler" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
-          <p class="control-hint">Each repeat is one visual unit, split into equal divisions. Not a physical ruler.</p>
           <div class="control slider-control">
             <label for="ruler-repeats-slider" class="control-label">REPEATS <span
                 id="ruler-repeats-display" data-slider-value>10</span></label>
@@ -295,7 +294,6 @@
 
         <div id="ticker-group" data-parameter-actions="ticker" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
-          <p class="control-hint">Repeating ticks move through a fixed frame with natural gaps at the edges.</p>
           <div class="control slider-control">
             <label for="ticker-slider" class="control-label">REPEATS <span id="ticker-display" data-slider-value>34</span></label>
             <input type="range" id="ticker-slider" data-url-parameter="tickerRepeats" min="5" max="40" value="34" class="control-slider"
@@ -374,17 +372,16 @@
             <div class="control slider-control">
               <label for="quantum-phase" class="control-label">PHASE <span id="quantum-phase-display" data-slider-value>0.0%</span></label>
               <input id="quantum-phase" type="range" min="0" max="1" step="any" value="0" class="control-slider" aria-label="Quantum phase as fraction of recurrence" aria-describedby="quantum-description">
+              <p id="quantum-description" class="control-hint">Position within one full recurrence.</p>
             </div>
-            <div id="quantum-description" class="control-hint">Three projections of one wavefunction on a ring. The curves show amplitude, not particle paths or probabilities.</div>
           </div>
         </div>
 
         <div id="waveform-group" data-parameter-actions="waveform" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
-          <p class="control-hint">A filled synthetic waveform follows the selected shape and envelope.</p>
           <div class="control slider-control">
             <label for="waveform-type-slider" class="control-label">TYPE <span
-                id="waveform-type-display">SINE</span></label>
+                id="waveform-type-display" data-slider-label>SINE</span></label>
             <input type="range" id="waveform-type-slider" data-url-parameter="waveformType" min="0" max="3" step="0.01" value="0" class="control-slider"
               aria-label="Waveform Type">
           </div>
@@ -397,15 +394,14 @@
           </div>
 
           <div class="control control_row control_row-toggle">
-            <label for="waveform-envelope-toggle" class="control-label" style="margin-bottom: 0;">ENVELOPE</label>
+            <label for="waveform-envelope-toggle" class="control-label control_row-label">ENVELOPE</label>
             <label class="switch">
               <input type="checkbox" id="waveform-envelope-toggle" data-url-parameter="waveformEnvelope">
               <span class="slider round"></span>
             </label>
           </div>
 
-          <div id="envelope-settings-group"
-            style="display: none; padding-left: 12px; border-left: 2px solid var(--border-color); margin-top: 8px; margin-bottom: 16px;">
+          <div id="envelope-settings-group" class="control_subgroup" style="display: none;">
             <div class="control">
               <label for="waveform-envelope-type" class="control-label">SHAPE</label>
               <select id="waveform-envelope-type" data-url-parameter="waveformEnvelopeType" class="control-select" aria-label="Envelope Shape">
@@ -427,9 +423,8 @@
               <input type="range" id="waveform-envelope-center-slider" data-url-parameter="waveformEnvelopeCenter" min="-0.5" max="0.5" step="0.1" value="0"
                 class="control-slider" aria-label="Envelope Center Offset">
             </div>
-            <div class="control control_row control_row-toggle" style="margin-top: 8px;">
-              <label for="waveform-envelope-bipolar-toggle" class="control-label"
-                style="margin-bottom: 0;">BIPOLAR</label>
+            <div class="control control_row control_row-toggle">
+              <label for="waveform-envelope-bipolar-toggle" class="control-label control_row-label">BIPOLAR</label>
               <label class="switch">
                 <input type="checkbox" id="waveform-envelope-bipolar-toggle" data-url-parameter="waveformEnvelopeBipolar">
                 <span class="slider round"></span>
@@ -502,7 +497,6 @@
 
         <div id="numeric-group" data-parameter-actions="numeric" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
-          <p class="control-hint">Each cell encodes a digit; zero cells can remain empty in Dot Matrix.</p>
           <div class="control">
             <label for="numeric-source-select" class="control-label">DIGIT SOURCE</label>
             <div class="select-wrapper">
@@ -608,15 +602,15 @@
               </select>
             </div>
           </div>
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="staff-reverb-toggle" class="control-label" style="margin-bottom: 0;">REVERB</label>
+          <div class="control control_row control_row-toggle">
+            <label for="staff-reverb-toggle" class="control-label control_row-label">REVERB</label>
             <label class="switch">
               <input type="checkbox" id="staff-reverb-toggle" data-url-parameter="staffReverb">
               <span class="slider round"></span>
             </label>
           </div>
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="staff-tremolo-toggle" class="control-label" style="margin-bottom: 0;">TREMOLO</label>
+          <div class="control control_row control_row-toggle">
+            <label for="staff-tremolo-toggle" class="control-label control_row-label">TREMOLO</label>
             <label class="switch">
               <input type="checkbox" id="staff-tremolo-toggle" data-url-parameter="staffTremolo">
               <span class="slider round"></span>
@@ -660,7 +654,7 @@
                 <div class="key white" data-note="C5"></div>
               </div>
             </div>
-            <div class="control-hint" style="margin-top: 8px;">Click keys to add notes (max 4 measures)</div>
+            <div class="control-hint">Click keys to add notes (max 4 measures)</div>
           </div>
           <div class="runtime_section audio_section">
             <div class="control-header">PREVIEW</div>
@@ -682,14 +676,14 @@
               aria-label="Graph Text Input">
             <div class="control-hint">Type to generate line graph values</div>
           </div>
-          <div class="control" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="graph-multi-toggle" class="control-label" style="margin-bottom: 0;">MULTI STREAMS (NO FILL)</label>
+          <div class="control control_row control_row-toggle">
+            <label for="graph-multi-toggle" class="control-label control_row-label">MULTI STREAMS (NO FILL)</label>
             <label class="switch">
               <input type="checkbox" id="graph-multi-toggle" data-url-parameter="graphMulti">
               <span class="slider round"></span>
             </label>
           </div>
-          <div id="graph-multi-inputs" class="graph-multi-inputs" style="display: none;">
+          <div id="graph-multi-inputs" class="graph-multi-inputs control_subgroup" style="display: none;">
             <div class="control">
               <label for="graph-input-2" class="control-label">STREAM 2</label>
               <input type="text" id="graph-input-2" data-url-parameter="graphText2" placeholder="OPTIONAL..." class="control-input"
@@ -754,7 +748,7 @@
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
             <label for="lines-variant-slider" class="control-label">VARIANT <span
-                id="lines-variant-display">MD</span></label>
+                id="lines-variant-display" data-slider-label>MD</span></label>
             <input type="range" id="lines-variant-slider" data-url-parameter="linesVariant" min="1" max="2" value="2" class="control-slider"
               aria-label="Lines Variant">
           </div>
@@ -798,7 +792,6 @@
             <label for="neural-network-activation-select" class="control-label">ACTIVATION</label>
             <select id="neural-network-activation-select" data-url-parameter="neuralNetworkActivation" class="control-select"><option value="tanh">Tanh</option><option value="sigmoid">Sigmoid</option></select>
           </div>
-          <p class="control-hint">Left to right: 3 inputs → hidden layers → 2 outputs. Larger filled centers mean higher activation; thicker links mean larger weights. Dashed links have negative weights.</p>
           <p id="neural-network-readout" class="control-hint" aria-label="Network output values"></p>
           <details class="neural_model-details"><summary>How this network works</summary>
             <p class="control-hint">Input mix t sets [t, 1 − t, 2t − 1]. Each unit applies the selected activation to its weighted input sum, with zero bias. Tanh center areas map −1 to +1; sigmoid areas map 0 to 1. Input areas always map −1 to +1.</p>
@@ -936,26 +929,26 @@
   <div id="toast-container"></div>
   <script>GeneratorInitialState.apply(document.body); setupCustomDropdowns(); ParameterControls.prepare(document);</script>
   <script src="third_party/gif.js/gif.js"></script>
-  <script src="js/utils/quantumControls.js?v=20261103-save-preview"></script>
-  <script src="js/utils/previewControls.js?v=20261103-save-preview"></script>
-  <script src="js/utils/viewportZoom.js?v=20261103-save-preview"></script>
+  <script src="js/utils/quantumControls.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/previewControls.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/viewportZoom.js?v=20261103-waveform-parameters"></script>
   <script src="js/utils/viewerTouch.js"></script>
   <script src="js/utils/headerMotionSurface.js"></script>
   <script src="js/utils/themeMotion.js"></script>
-  <script src="js/ui.js?v=20261103-save-preview"></script>
-  <script src="js/utils/logoGeometry.js?v=20261103-save-preview"></script>
-  <script src="js/utils/urlState.js?v=20261103-save-preview"></script>
-  <script src="js/utils/exportOptions.js?v=20261103-save-preview"></script>
+  <script src="js/ui.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/logoGeometry.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/urlState.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/exportOptions.js?v=20261103-waveform-parameters"></script>
   <script src="js/utils/transparentGif.js"></script>
-  <script src="js/utils/embedSupport.js?v=20261103-save-preview"></script>
-  <script src="js/utils/exportUi.js?v=20261103-save-preview"></script>
-  <script src="js/utils/barInformation.js?v=20261103-save-preview"></script>
+  <script src="js/utils/embedSupport.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/exportUi.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/barInformation.js?v=20261103-waveform-parameters"></script>
   <script>BarInformation.sync();</script>
-  <script src="js/utils/animationPalette.js?v=20261103-save-preview"></script>
-  <script src="js/utils/secretIntro.js?v=20261103-save-preview"></script>
-  <script src="js/main.js?v=20261103-save-preview"></script>
-  <script src="js/utils/logoClipboard.js?v=20261103-save-preview"></script>
-  <script src="js/drawing.js?v=20261103-save-preview"></script>
+  <script src="js/utils/animationPalette.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/secretIntro.js?v=20261103-waveform-parameters"></script>
+  <script src="js/main.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/logoClipboard.js?v=20261103-waveform-parameters"></script>
+  <script src="js/drawing.js?v=20261103-waveform-parameters"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =
@@ -1000,8 +993,8 @@
     <div id="save-preview-error" class="save-preview_error" hidden><p id="save-preview-error-text"></p><button id="save-preview-retry" type="button">Try again</button></div>
     <footer class="save-preview_footer"><p id="save-preview-status" role="status" aria-live="polite" aria-atomic="true">Image ready.</p><button id="save-preview-done" class="save-preview_done" type="button">Back to design</button></footer>
   </dialog>
-  <script src="js/utils/manualSavePreview.js?v=20261103-save-preview"></script>
-  <script src="js/utils/mobileBrowser.js?v=20261103-save-preview"></script>
+  <script src="js/utils/manualSavePreview.js?v=20261103-waveform-parameters"></script>
+  <script src="js/utils/mobileBrowser.js?v=20261103-waveform-parameters"></script>
 </body>
 
 </html>
