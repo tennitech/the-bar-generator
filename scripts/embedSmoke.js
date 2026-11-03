@@ -29,6 +29,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       } } });
     });
     const page = await context.newPage();
+    assert.equal((await page.request.get(`${base}/preview/manual-save.html`)).status(), 404, 'prototype route removed');
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     let popups = 0; page.on('popup', () => { popups++; });
     async function open(mode) {
@@ -38,6 +39,8 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       assert(frame, 'cross-origin child loaded');
       await frame.waitForFunction(() => window.barShareController && window.logoClipboard && document.querySelector('#p5-container canvas'));
       assert.equal(await frame.locator('#share-button, #share-popover, #share-name, #share-copy').count(), 0);
+      assert.equal(await frame.locator('#save-preview-dialog, #save-preview-image, script[src*=manualSavePreview]').count(), 0);
+      assert.equal(await frame.evaluate(() => typeof window.manualSavePreview), 'undefined');
       await frame.locator('#save-button').click();
       assert.equal(await frame.locator('#export-open-standalone, #export-embed-help, #save-menu a[target="_blank"]').count(), 0);
       return frame;

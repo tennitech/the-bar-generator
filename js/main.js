@@ -3813,7 +3813,7 @@ function toggleMobileMenu() {
 
 function handleClickOutside(event) {
   // Modal chrome is not an outside click on the inert background controls.
-  if (document.body.classList.contains('has-logo-animation') || document.body.classList.contains('has-save-preview')) return;
+  if (document.body.classList.contains('has-logo-animation')) return;
   // Only apply in compact overlay layout where the sidebar covers the workspace.
   if (!isCompactLayoutViewport()) return;
   // Don't close if clicking on the toggle button or inside the sidebar
@@ -3833,7 +3833,6 @@ function handleClickOutside(event) {
 }
 
 function hideSaveMenu() {
-  window.logoExportUI?.cancelPendingPreview();
   if (saveMenu) {
     saveMenu.classList.add('hidden');
     saveMenu.style.position = '';
@@ -3990,7 +3989,7 @@ function handleStyleChange() {
   }
 
   if (selectedStyle === 'lunar' && typeof window.getLunarBarSVGSourceForColorMode !== 'function') {
-    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20261103-save-preview')
+    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20261103-save-removal')
       .then(() => {
         if (styleSelect && styleSelect.value === 'lunar') {
           requestUpdate();
@@ -4529,7 +4528,7 @@ async function ensureHeaderLogoAnimationController() {
   }
 
   headerLogoAnimationControllerPromise = (async () => {
-    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261103-save-preview');
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261103-save-removal');
 
     if (!window.LogoAnimationOverlay
       || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {
