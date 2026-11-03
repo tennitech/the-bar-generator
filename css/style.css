@@ -107,7 +107,7 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-fast: 150ms;
   --duration-normal: 250ms;
-  --duration-theme-scan: 420ms;
+  --duration-theme-scan: 120ms;
   --intro-enter-duration: 2.1s;
   --intro-exit-duration: 0.72s;
   --intro-enter-ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -4002,32 +4002,9 @@ body { min-height: 0; }
   color: var(--rpi-red);
   font: 10px/16px 'RPIGeistMono', monospace;
   opacity: 0.5;
-  view-transition-name: theme-scan;
-}
-::view-transition { pointer-events: none; }
-::view-transition-group(root), ::view-transition-group(theme-scan) { animation: none; }
-::view-transition-group(root) { z-index: 0; }
-::view-transition-group(theme-scan) { z-index: 1; animation: theme-scan var(--duration-theme-scan) steps(24, end) both; }
-::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-::view-transition-old(root) {
-  z-index: 2;
-  mix-blend-mode: normal;
-  animation: theme-reveal var(--duration-theme-scan) steps(24, end) both;
-}
-/* The glyph field is identical in both snapshots; retain both for browser parity. */
-::view-transition-old(theme-scan), ::view-transition-new(theme-scan) { animation: none; mix-blend-mode: normal; }
-@keyframes theme-reveal {
-  from { clip-path: polygon(0 0,100% 0,100% 100%,0 100%,0 75%,0 75%,0 50%,0 50%,0 25%,0 25%); }
-  to { clip-path: polygon(100% 0,100% 0,100% 100%,100% 100%,100% 75%,100% 75%,100% 50%,100% 50%,100% 25%,100% 25%); }
-}
-@keyframes theme-scan {
-  0% { transform: translateX(-100%); opacity: 0; }
-  12%, 85% { opacity: 1; }
-  100% { transform: translateX(calc(100vw - 100%)); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .theme_scan { display: none; }
-  ::view-transition-old(root), ::view-transition-group(theme-scan) { animation: none; }
 }
 
 /* Motion changes only the bar; the official vector lettermark remains persistent. */
