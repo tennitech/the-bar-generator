@@ -143,6 +143,14 @@ describe('native-link and gesture lifecycle', () => {
     send('pointerup', { timeStamp: 50 }); expect(state.inertiaVelocity).toBe(0);
   });
 
+  test('an explicit motion pause permits direct dragging but never inertia', () => {
+    const { state, send } = fixture();
+    document.documentElement = { dataset: { marqueeMotionPaused: 'true' } };
+    send('pointerdown'); send('pointermove', { clientX: 180, timeStamp: 40 });
+    expect(state.travel).not.toBe(400);
+    send('pointerup', { timeStamp: 50 }); expect(state.inertiaVelocity).toBe(0);
+  });
+
   test('vertical touch intent cancels without blocking native pan or pinch', () => {
     const { state, send } = fixture();
     send('pointerdown', { pointerType: 'touch' });

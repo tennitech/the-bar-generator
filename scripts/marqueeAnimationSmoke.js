@@ -49,6 +49,7 @@ async function frozen(page, action, undo) {
       assert.notEqual(await page.locator('.is-animated canvas').first().evaluate(canvas => canvas.toDataURL()), initialPixels, 'visible sample pixels animate');
       const after = await phases(page); after.forEach((phase, i) => assert.notEqual(phase, before[i]));
       await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.getByRole('button', { name: 'Motion paused', exact: true }).waitFor();
       const held = await phases(page); await page.waitForTimeout(180); assert.deepEqual(await phases(page), held);
       assert.equal(await page.evaluate(() => [...document.querySelectorAll('.is-animated canvas')].every(canvas => {
         const state = [...marqueeAnimation.settings.values()].find(state => state.style === canvas.dataset.motionPreview);
@@ -56,6 +57,7 @@ async function frozen(page, action, undo) {
       })), true, 'every visible copy has the shared complete frame');
       await page.screenshot({ path: path.join(evidence, `${engine}-${width}.png`), scale: 'css' });
       await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await page.getByRole('button', { name: 'Resume motion', exact: true }).click();
       const choices = inventory.settings.map(({style, query}) => ({style, query}));
       await page.setViewportSize({ width: 800, height: 700 }); await page.waitForTimeout(100);
       await page.setViewportSize({ width, height }); await page.waitForTimeout(100);

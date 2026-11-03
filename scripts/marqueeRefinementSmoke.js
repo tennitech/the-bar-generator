@@ -187,8 +187,10 @@ async function movement(page, duration = 400) {
     point = await visibleLink(page); await page.mouse.move(point.x, point.y);
     assert.equal((await movement(page, 250)).distance, 0, 'hover does not override reduced motion');
     await page.emulateMedia({ reducedMotion: 'no-preference' });
+    assert.equal((await movement(page, 200)).distance, 0, 'OS preference removal waits for explicit Resume');
+    await page.getByRole('button', { name: 'Resume motion', exact: true }).click();
     await page.mouse.move(20, 880); await page.waitForTimeout(400);
-    assert.ok((await movement(page)).distance > 1, 'motion preference recovery resumes');
+    assert.ok((await movement(page)).distance > 1, 'explicit motion Resume restarts the lane');
     results.push({ normal, slowed, hoverRatio: ratio, pressed, resumed, repeatedHover: true, reducedMotion: true });
 
     // Native clicks restore a shown variant. Keyboard users retain the stable skip link.

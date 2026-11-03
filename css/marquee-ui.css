@@ -32,6 +32,7 @@
   --page-padding: clamp(1.5rem, 2.8vw, 3rem);
   --marquee-tilt: 17deg;
   --hero-scale: 1;
+  --marquee-controls-reserve: 60px;
   --composition-scale: 1;
   --viewport-height: 100vh;
   --marquee-asset-width: 28rem;
@@ -331,15 +332,15 @@ img {
 
 .hero_layout {
   position: relative;
-  height: var(--viewport-height);
-  min-height: var(--viewport-height);
+  height: calc(var(--viewport-height) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  min-height: 0;
   padding-block: clamp(1.5rem, 2vw, 2.25rem) clamp(2rem, 3vw, 3rem);
 }
 
 .hero_cluster {
   position: absolute;
   left: 0;
-  bottom: 0;
+  bottom: var(--marquee-controls-reserve);
   width: 960px;
   height: 330px;
   transform-origin: left bottom;
@@ -565,4 +566,77 @@ img {
 }
 .marquee_row.is-dragging .bar_asset_wrap.is-pressed .bar_asset {
   opacity: 1;
+}
+
+/* Keep navigation and motion choices readable rather than scaling them with
+   the expressive hero. Native controls retain their keyboard/touch behavior. */
+.hero_controls {
+  position: absolute;
+  left: 0;
+  bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  max-width: 100%;
+  pointer-events: auto;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.hero_browse-link,
+.hero_motion-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--rpi-white);
+  background: var(--rpi-black);
+  font: inherit;
+  white-space: nowrap;
+}
+
+.hero_browse-link {
+  text-underline-offset: 0.25rem;
+}
+
+.hero_motion-control {
+  /* Reserve the longest label so Pause/Resume never reflows the composition. */
+  min-width: 9rem;
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.hero_motion-control:disabled { cursor: default; }
+.hero_motion-control[hidden] { display: none; }
+.hero_browse-link:hover { text-decoration-thickness: 2px; }
+.hero_motion-control:hover:not(:disabled) {
+  color: var(--rpi-black);
+  background: var(--rpi-white);
+}
+
+.hero_browse-link:focus-visible,
+.hero_motion-control:focus-visible {
+  outline: 2px solid var(--rpi-white);
+  outline-offset: 0.25rem;
+}
+
+.marquee_visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+[data-marquee-motion-paused='true'] .marquee_page *,
+[data-marquee-motion-paused='true'] .marquee_page *::before,
+[data-marquee-motion-paused='true'] .marquee_page *::after {
+  animation: none !important;
+  transition: none !important;
 }
