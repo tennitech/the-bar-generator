@@ -10,7 +10,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261103-save-removal" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261103-ascii-discovery" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
   <script src="js/utils/generatorRoutes.js?v=20261103-save-removal"></script>
@@ -21,7 +21,7 @@
   <script src="js/utils/loopingGif.js?v=20261103-save-removal"></script>
   <script src="js/utils/featherIcons.js?v=20261103-save-removal"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261103-save-removal"></script>
+  <script src="js/utils/shareState.js?v=20261103-ascii-discovery"></script>
   <script src="js/utils/musicStyle.js"></script>
   <script src="js/utils/barPattern.js?v=20261103-save-removal"></script>
   <script src="js/utils/tickerDisplay.js"></script>
@@ -40,7 +40,12 @@
     <div class="header-brand">
       <a id="header-logo-preview" class="brand-mark" href="./" aria-label="RPI — Home"><span class="brand_initial-mark" aria-hidden="true"></span></a>
       <span class="brand-divider">|</span>
-      <span id="brand-title" class="brand-title" tabindex="-1"><span class="brand_title-text"><span>The Bar</span> <span>Generator</span></span></span>
+      <button id="brand-title" class="brand-title brand_intro-trigger" type="button"
+        aria-label="The Bar Generator: Play ASCII intro" aria-haspopup="dialog" aria-expanded="false"
+        aria-controls="logo-animation-overlay" data-action-title="Play ASCII intro" title="Play ASCII intro">
+        <span class="brand_title-text"><span>The Bar</span> <span>Generator</span></span>
+        <svg class="brand_intro-icon" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3m6 0h4"/></svg>
+      </button>
     </div>
     <section id="lunar-splashdown-counter" class="lunar_counter" aria-label="Time since Artemis II splashdown">
       <button id="lunar-counter-detail-toggle" class="lunar_counter-toggle" type="button" aria-expanded="false"
@@ -131,7 +136,7 @@
     <!-- Sidebar Controls -->
     <aside id="app-sidebar" class="app-sidebar" data-page-entrance role="region" aria-label="Design Controls">
       <div class="mobile_controls-header">
-        <h2 id="mobile-secret-title" tabindex="-1">Design controls</h2>
+        <h2>Design controls</h2>
         <button id="mobile-controls-close" type="button">Done</button>
       </div>
       <div id="sidebar-scroll" class="sidebar-scroll">
@@ -952,8 +957,8 @@
   <script src="js/utils/barInformation.js?v=20261103-save-removal"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
-  <script src="js/utils/secretIntro.js?v=20261103-save-removal"></script>
-  <script src="js/main.js?v=20261103-save-removal"></script>
+  <script src="js/utils/secretIntro.js?v=20261103-ascii-discovery"></script>
+  <script src="js/main.js?v=20261103-ascii-discovery"></script>
   <script src="js/utils/logoClipboard.js?v=20261103-save-removal"></script>
   <script src="js/drawing.js?v=20261103-save-removal"></script>
   <script>

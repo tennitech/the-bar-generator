@@ -4537,9 +4537,8 @@ async function ensureHeaderLogoAnimationController() {
 
     return window.LogoAnimationOverlay.createLogoAnimationController({
       triggerEl: document.getElementById('brand-title'),
-      exposeTriggerState: false,
       getReturnFocus: () => [headerLogoAnimationReturnFocus,
-        document.getElementById('brand-title'), document.getElementById('mobile-secret-title'),
+        document.getElementById('brand-title'),
         document.getElementById('header-logo-preview')]
         .find(element => {
           if (!element || !element.isConnected || element.disabled || !element.getClientRects().length
@@ -4596,7 +4595,6 @@ async function openHeaderLogoAnimation() {
 
 function setupHeaderLogoAnimationTrigger() {
   window.SecretIntro?.bind({ target: document.getElementById('brand-title'),
-    pointerTargets: [document.getElementById('brand-title'), document.getElementById('mobile-secret-title')],
     open: openHeaderLogoAnimation });
 }
 

@@ -1567,7 +1567,9 @@ body {
 .brand-mark {
   height: 36.25px;
   aspect-ratio: 250 / 150.911;
-  width: auto;
+  /* Keep intrinsic animated SVG sizing out of the header's flex basis.
+     WebKit otherwise reserves 300px despite painting this same 60px mark. */
+  width: calc(36.25px * 250 / 150.911);
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -4178,7 +4180,30 @@ body.theme-lunar .export_menu { min-width: 0; }
 :is(html, body).theme-white,
 :is(html, body).theme-red { --header-artwork-ink: var(--rpi-white); }
 :is(html, body).theme-lunar { --header-artwork-ink: #f4f7fb; }
-#brand-title, #mobile-secret-title { touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+/* The product title is the intro control; the official mark remains Home. */
+.brand_intro-trigger {
+  position: relative;
+  appearance: none;
+  min-height: 2.75rem;
+  justify-content: center;
+  padding: 0 1.5rem 0 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.brand_intro-icon {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  transform: translateY(-50%);
+}
+.brand_intro-trigger:hover .brand_title-text { text-decoration: underline; text-underline-offset: 0.2em; }
+.brand_intro-trigger:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 
 /* Keep the complete product title beside the official mark at compact widths.
    The optional repository link yields space before primary controls or the name. */

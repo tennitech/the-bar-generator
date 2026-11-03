@@ -146,7 +146,7 @@
     nameContext.hidden = !name;
     const brandTitle = root.querySelector('.brand-title');
     brandTitle.classList.toggle('has-document-name', !!name);
-    brandTitle.title = name;
+    brandTitle.title = [name, brandTitle.dataset.actionTitle].filter(Boolean).join(' · ');
     return nameContext;
   }
 
@@ -177,7 +177,7 @@
       loadedName.textContent = name;
       nameContext.hidden = !name;
       brandTitle.classList.toggle('has-document-name', !!name);
-      brandTitle.title = name || '';
+      brandTitle.title = [name, brandTitle.dataset.actionTitle].filter(Boolean).join(' · ');
       document.title = name ? `${name} · ${baseDocumentTitle}` : baseDocumentTitle;
     }
     const sanitize = value => bridge.sanitize ? bridge.sanitize(value) : value;
