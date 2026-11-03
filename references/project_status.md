@@ -3,6 +3,27 @@
 **Last Updated:** 2026-11-03
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 3 compact export actions
+
+Download and Copy now sit side by side, with distinct tray and overlapping-sheet
+icons and outlined format buttons. The columns retain 44 px minimum targets,
+full action names for assistive technology, and the Large/Standard picker.
+Unavailable copy actions use a short visible reason plus the full explanation
+in the accessible name and tooltip, avoiding duplicate paragraphs. Export
+payloads, host permissions, dimensions and geometry are unchanged.
+
+The Color-page guidance also omits the visible “opens in a new tab” suffix,
+while keeping the external link behavior and screen-reader warning.
+
+Validation: all 641 unit tests pass after integrating the preceding animation
+spacing and footer-dropdown releases. Chromium and WebKit cover side-by-side
+layout, three themes and contrast, 320 px/375 px/landscape viewports, keyboard
+focus, unavailable-copy explanations, real PNG downloads, and copy recovery.
+Chromium verifies native PNG/SVG clipboard payloads; WebKit uses the existing
+clipboard adapter. The picker still exports both PNG sizes and supports touch,
+arrow keys and reopening. These checks do not establish physical-device or
+screen-reader certification, host permission repair, or owner testing.
+
 ## November 3 custom image-size picker
 
 The export menu now presents custom-styled Large and Standard choices instead
