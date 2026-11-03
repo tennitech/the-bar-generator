@@ -70,9 +70,9 @@ async function geometry(page) {
         await page.locator('.bar_asset.is-entrance-ready').first().waitFor({ state: 'attached' });
         if (!reduced) {
           await page.waitForFunction(() => PageEntrance.isHoldingArtwork());
-          const positions = await page.locator('.marquee_item').evaluateAll(items => items.slice(0, 4).map(e => e.style.transform));
+          const positions = await page.locator('.marquee_track').evaluateAll(items => items.slice(0, 4).map(e => e.style.transform));
           await page.waitForTimeout(100);
-          assert.deepEqual(await page.locator('.marquee_item').evaluateAll(items => items.slice(0, 4).map(e => e.style.transform)), positions, 'marquee must hold its captured position');
+          assert.deepEqual(await page.locator('.marquee_track').evaluateAll(items => items.slice(0, 4).map(e => e.style.transform)), positions, 'marquee must hold its captured position');
         }
         await page.locator('[data-entrance-plane].is-entry-complete').waitFor();
         await page.waitForFunction(() => !window.PageEntrance.isActive());

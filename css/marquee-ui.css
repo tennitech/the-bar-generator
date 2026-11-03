@@ -245,6 +245,9 @@ img {
   position: relative;
   width: 100%;
   height: 100%;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .marquee_item {
@@ -255,9 +258,6 @@ img {
   align-items: center;
   width: calc(var(--asset-width, 26rem) + var(--row-gap, 3rem));
   height: 100%;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
 .marquee_item.is-measure {
@@ -313,7 +313,6 @@ img {
   filter: brightness(0) invert(1);
   user-select: none;
   pointer-events: none;
-  transform: translateZ(0);
   transition:
     opacity 180ms ease,
     filter 180ms ease;

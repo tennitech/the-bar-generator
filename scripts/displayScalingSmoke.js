@@ -87,7 +87,7 @@ async function metrics(page) {
     });
     assert.ok(point,'visible bar link');
     await motion.mouse.move(point.x,point.y);
-    const pos=()=>motion.locator('#hover-test').evaluate(e=>e.parentElement.style.transform);
+    const pos=()=>motion.locator('#hover-test').evaluate(e=>e.closest('.marquee_track').style.transform);
     await motion.waitForTimeout(250);
     const stopped=await pos(); await motion.waitForTimeout(450);
     assert.notEqual(await pos(),stopped,'hover must retain a slow crawl');

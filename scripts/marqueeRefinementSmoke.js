@@ -18,8 +18,10 @@ async function inventory(page) {
     samples: [...new Map([...document.querySelectorAll('[data-bar-style]')].map(link => [link.dataset.barStyle,
       { value: link.dataset.barStyle, variant: link.dataset.barVariant, href: link.getAttribute('href'), path: link.querySelector('img').dataset.assetPath }])).values()],
     order: [...document.querySelectorAll('.marquee_row')].slice(0, 3).map(row => [...row.querySelectorAll('.marquee_item:not(.is-measure) img')].slice(0, 7).map(image => image.dataset.assetPath)),
-    offsets: [...document.querySelectorAll('.marquee_row')].map(row => row.querySelector('.marquee_item:not(.is-measure)').style.transform),
+    offsets: [...document.querySelectorAll('.marquee_row')].map(row => row.querySelector('.marquee_track').style.transform),
     sources: [...new Set([...document.images].map(image => image.src))],
+    completeLaneBounds: [...document.querySelectorAll('.marquee_track')].every(track =>
+      [...track.querySelectorAll('.marquee_item:not(.is-measure)')].every(item => item.offsetLeft + item.offsetWidth <= track.offsetWidth + 2)),
     count: document.images.length,
     overflow: document.documentElement.scrollWidth > innerWidth,
     heavy: [...document.scripts].some(script => /\/p5|\/main\.js|\/drawing\.js/.test(script.src)),
@@ -46,7 +48,7 @@ async function visibleLink(page) {
 }
 async function movement(page, duration = 400) {
   return page.locator('#marquee-motion-test').evaluate((link, duration) => new Promise(resolve => {
-    const x = () => new DOMMatrixReadOnly(link.parentElement.style.transform).m41;
+    const x = () => new DOMMatrixReadOnly(link.closest('.marquee_track').style.transform).m41;
     requestAnimationFrame(started => {
       const before = x();
       let previous = started, steps = 0, simulatedSeconds = 0;
@@ -73,15 +75,20 @@ async function movement(page, duration = 400) {
     for (const [width, height] of (process.argv.includes('--motion-only') ? [] : [[1440, 900], [390, 844], [320, 568], [3840, 2160]])) {
       const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
       const page = await context.newPage();
-      const errors = [], requests = new Set();
+      const errors = [], requests = new Set(), heavyRequests = [];
       page.on('pageerror', error => errors.push(error.message));
-      page.on('request', request => { if (request.url().includes('/marquee-bars/')) requests.add(request.url()); });
+      page.on('request', request => {
+        if (request.url().includes('/marquee-bars/')) requests.add(request.url());
+        if (/\/third_party\/p5\/|\/js\/(main|drawing)\.js/.test(request.url())) heavyRequests.push(request.url());
+      });
       await page.goto(base); await ready(page);
       const current = await inventory(page);
       assert.deepEqual(current.samples.map(sample => sample.value).sort(), entries.map(entry => entry.value).sort());
       assert.equal(current.sources.length, 21); assert.equal(requests.size, 21);
       assert.equal(current.heavy, false); assert.equal(current.canvases, 0);
+      assert.deepEqual(heavyRequests, [], 'home does not request the generator renderer');
       assert.equal(current.overflow, false); assert.ok(current.count < 300);
+      assert.equal(current.completeLaneBounds, true, 'moving lane contains every repeated bar');
       for (const item of current.samples) {
         const sample = samples.find(sample => sample.path === item.path);
         assert.ok(sample, 'sample is pre-rendered from the catalog');
@@ -121,6 +128,24 @@ async function movement(page, duration = 400) {
     const page = await context.newPage(); const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(base); await ready(page);
+    await page.waitForTimeout(100);
+    const writes = await page.evaluate(() => new Promise(resolve => {
+      let items = 0, tracks = 0, frames = 0;
+      const observer = new MutationObserver(records => records.forEach(record => {
+        if (record.target.classList.contains('marquee_item')) items++;
+        if (record.target.classList.contains('marquee_track')) tracks++;
+      }));
+      observer.observe(document.querySelector('[data-marquee-stage]'), { subtree: true, attributes: true, attributeFilter: ['style'] });
+      function sample() {
+        if (++frames < 20) return requestAnimationFrame(sample);
+        observer.disconnect();
+        resolve({ items, tracks, frames, rows: document.querySelectorAll('.marquee_row').length });
+      }
+      requestAnimationFrame(sample);
+    }));
+    assert.equal(writes.items, 0, 'animation must not rewrite individual repeated bars');
+    assert.ok(writes.tracks > 0 && writes.tracks <= writes.frames * writes.rows, 'at most one transform per lane per frame');
+    results.push({ laneWrites: writes });
     let point = await visibleLink(page);
     const normal = await movement(page);
     await page.mouse.move(point.x, point.y);
