@@ -1,7 +1,9 @@
 /* Numeric digit sources. No source text is executed. Browser/CommonJS compatibility. */
 (function (scope) {
-  const DEFAULT_VALUE = '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679';
-  const MAX_LENGTH = 200;
+  const DEFAULT_VALUE = '3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706';
+  // In the 250-unit bar, 100 columns give dots a width of 250 / 100 - 1 = 1.5,
+  // equal to their height. More columns would squeeze them narrower than circles.
+  const MAX_LENGTH = 100;
   const presets = Object.freeze([
     { id: 'pi', label: 'Pi · π', value: String(Math.PI), description: 'π ≈ 3.14159 — circumference divided by diameter.' },
     { id: 'e', label: 'Euler’s number · e', value: String(Math.E), description: 'e ≈ 2.71828 — the base of natural logarithms.' },
@@ -27,7 +29,8 @@
   // Bounded arithmetic parser only for historical links. New UI never accepts expressions.
   function legacyValue(source) {
     if (typeof source !== 'string' || source.length > 4096) return null;
-    if (isValue(source)) return source;
+    // Never reinterpret an over-limit decimal as arithmetic and round away digits.
+    if (/^[+-]?[0-9]*(?:\.[0-9]*)?$/.test(source)) return isValue(source) ? source : null;
     if (!source.trim() || source.length > 512) return null;
     const text = source.replace(/Math\./g, '').replace(/\*\*/g, '^');
     const tokens = text.match(/(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?|[A-Za-z]+|[()+*/^,\-]/g) || [];

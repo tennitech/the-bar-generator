@@ -683,3 +683,22 @@ test('tiny ticker rows use exact coverage when display pixels cannot resolve the
   expect(sparse.top.resolved).toBe(true);
   expect(sparse.bottom.resolved).toBe(true);
 });
+
+
+test('Numeric dot-matrix reaches circles at 100 columns and keeps shorter values stretched', () => {
+  const dimensions = count => {
+    const svg = createBarPatternSVG(makeBaseConfig({ currentShader: 6,
+      // Inspect the unchanged geometry just beyond the validation boundary too.
+      parseNumericString: () => Array(count).fill(1),
+      values: { numericValue: '1'.repeat(count), numericMode: 'dotmatrix' } }));
+    const rect = svg.match(/<rect[^>]+>/)[0];
+    return Object.fromEntries(['width', 'height', 'rx'].map(key =>
+      [key, Number(rect.match(new RegExp(key + '="([^" ]+)"'))[1])]));
+  };
+  expect(dimensions(100)).toEqual({ width: 1.5, height: 1.5, rx: 0.75 });
+  for (const count of [1, 24, 99]) {
+    expect(dimensions(count).width).toBeCloseTo(250 / count - 1, 12);
+    expect(dimensions(count).width).toBeGreaterThan(dimensions(count).height);
+  }
+  expect(dimensions(101).width).toBeLessThan(dimensions(101).height);
+});

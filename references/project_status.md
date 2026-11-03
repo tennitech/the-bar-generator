@@ -821,3 +821,10 @@ Implementation is saved locally on `codex/feat-neural-network`, based on publish
 preserved. No merge or deployment is included. Physical devices, Safari app,
 screen readers, final-size owner acceptance and formal RPI approval remain
 unverified; secondary themes were exercised only for legacy-state compatibility.
+
+
+## Numeric character limit — November 3, 2026
+
+Numeric now accepts at most 100 total characters in its field, decimal validation and query/share restore. This is the exact Dot Matrix circle threshold: `250 / 100 - 1 = 1.5` units wide, matching the existing 1.5-unit dot height. Shorter entries retain their horizontal stretching; 101 encoded columns would be narrower than a circle. The sign is unencoded but counts toward the input limit. The π default and export fallback now retain its first 100 characters, and Reset uses the shared default. Historical over-limit decimals are not rounded into shorter replacement values. Rendering geometry, the two encoding modes, formula presets and official logo geometry are unchanged.
+
+Integrated-release verification passed all 536 unit tests in 47 suites and `scripts/numericLimitSmoke.js` in Chromium and WebKit. Browser coverage includes 24/99/100-column geometry, typing/inserted-text limits, synthetic-input rejection, exact 100-character historical snapshot restoration, over-limit current/legacy URLs, Reset, actual downloaded SVG/PNG pixel parity and a 390px touch layout. Desktop and touch screenshots were inspected. Route shells and changed runtime files use a new cache version. Broader browser aggregate suites were not rerun for this narrow change; physical devices, owner acceptance and formal RPI approval remain separate. See [Numeric threshold details](numeric_modes.md#circle-threshold--november-3-2026).

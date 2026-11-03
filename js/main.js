@@ -1360,7 +1360,7 @@ function resetStyleParameters(style) {
       updateCirclesSizeVariationDisplay();
       break;
     case 'numeric':
-      if (numericInput) numericInput.value = '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679';
+      if (numericInput) numericInput.value = window.NumericControls.DEFAULT_VALUE;
       if (numericModeSelect) numericModeSelect.value = 'dotmatrix';
       numericSourceSelect.value = 'values';
       numericFormulaSelect.value = 'pi';

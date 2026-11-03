@@ -1,12 +1,18 @@
 # Numeric digit sources — October 28, 2026
 
-Numeric now separates **Enter values** and **Select a formula** with the same dropdown controls used elsewhere. Only one source drives the pattern. Switching sources preserves the inactive decimal value and formula choice. Reset restores decimal entry with the existing long π default and Dot Matrix; Randomize selects a curated formula and an encoding. No new library or runtime framework is introduced. `main.js` retains the existing p5 global-state structure; validation, fixed presets and historical migration live in `js/utils/numericControls.js`.
+Numeric now separates **Enter values** and **Select a formula** with the same dropdown controls used elsewhere. Only one source drives the pattern. Switching sources preserves the inactive decimal value and formula choice. Reset restores decimal entry with the existing long π default and Dot Matrix; Randomize preserves the selected source and encoding: Values generates 24 digits, while Formula chooses a different curated preset without changing the inactive decimal value. No new library or runtime framework is introduced. `main.js` retains the existing p5 global-state structure; validation, fixed presets and historical migration live in `js/utils/numericControls.js`.
 
 ## Values
 
-The text field uses a decimal mobile keyboard and accepts ASCII decimal digits, one point, and an optional leading sign, up to 200 characters. Keeping it as text preserves leading zeros and long decimal precision; a native number field would admit exponent letters and coerce data. The sign is explicitly not encoded. Arbitrary letters, exponent notation, commas, extra points, NaN and Infinity reject the complete edit instead of silently deleting characters and inventing a different value. The input event covers typing and inserted/pasted text. Normal temporary states such as an empty field, `-`, or `.` remain editable and render no digit pattern. Leaving an incomplete value shows recovery guidance. A valid edit clears that guidance.
+The text field uses a decimal mobile keyboard and accepts ASCII decimal digits, one point, and an optional leading sign, up to 100 characters. Keeping it as text preserves leading zeros and long decimal precision; a native number field would admit exponent letters and coerce data. The sign is explicitly not encoded. Arbitrary letters, exponent notation, commas, extra points, NaN and Infinity reject the complete edit instead of silently deleting characters and inventing a different value. The input event covers typing and inserted/pasted text. Normal temporary states such as an empty field, `-`, or `.` remain editable and render no digit pattern. Leaving an incomplete value shows recovery guidance. A valid edit clears that guidance.
 
 The existing two visualization methods, decimal-point mapping, zero-ink recovery remain unchanged; the November 3 owner correction removes artificial side references without changing encoded cells. The old fallback from an empty field to π is removed, so preview and exports cannot silently substitute a different value. Existing profanity protections for text encoders and names remain intact.
+
+### Circle threshold — November 3, 2026
+
+The 100-character cap is the exact circle threshold for the existing Dot Matrix geometry: in the 250-unit reference bar, each column has width `250 / N`, the gap is 1 unit, and each dot is 1.5 units high. At 100 encoded columns, `250 / 100 - 1 = 1.5`, making each dot circular. At 99 columns the dot width is about 1.52525; at 101 it would be about 1.47525, narrower than its height. Shorter entries keep their existing horizontal stretching. No renderer geometry changes are needed. The decimal point counts as a column; the optional sign counts toward the input limit but is not encoded, so signed values remain slightly wider at the limit.
+
+The HTML input and shared validator enforce the same 100-character bound in both visualization modes. Over-limit explicit query values recover as empty input and explicit shares are rejected. Historical over-limit decimal strings also recover as empty input rather than passing through the arithmetic parser and losing precision. The π default is shortened from 102 total characters to the first 100, and Reset uses the shared default. All formula presets remain within the limit.
 
 ## Presets and sources
 
@@ -37,4 +43,4 @@ Historical v1 shares without a source control and old query links migrate explic
 
 ## Validation
 
-See `scripts/numericSmoke.js` and the Numeric tests. Browser evidence and limitations are recorded in project status when the feature checks complete. No physical-device, screen-reader or formal RPI approval is implied.
+See `scripts/numericSmoke.js`, the focused `scripts/numericLimitSmoke.js`, and the Numeric tests. Browser evidence and limitations are recorded in project status when the feature checks complete. No physical-device, screen-reader or formal RPI approval is implied.
