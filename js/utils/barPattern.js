@@ -27,6 +27,30 @@ function getTickerHeaderSampling(options = {}) {
   };
 }
 
+// Equal adjacent bits occupy the same rows. Paint their union once so a raster
+// renderer cannot antialias an internal cell boundary into a hairline seam.
+function createBinaryPatternGeometry(options = {}) {
+  const bits = options.bits || [];
+  if (!bits.length) return { rects: [] };
+  const startX = Number(options.barStartX) || 0;
+  const startY = Number(options.barY) || 0;
+  const width = Math.max(0, Number(options.exactBarWidth) || 250);
+  const rowHeight = Math.max(0, Number(options.barHeight) || 18) / 3;
+  const rects = [];
+  let start = 0;
+  for (let end = 1; end <= bits.length; end++) {
+    if (end < bits.length && bits[end] === bits[start]) continue;
+    const left = startX + width * start / bits.length;
+    const right = startX + width * end / bits.length;
+    for (const row of bits[start] === 1 ? [0, 2] : [1]) {
+      rects.push({ x: left, y: startY + row * rowHeight,
+        width: right - left, height: rowHeight });
+    }
+    start = end;
+  }
+  return { rects };
+}
+
 function generateWaveValue(phase, type) {
   const normalizedPhase = phase - Math.floor(phase);
   const wrappedPhase = normalizedPhase < 0 ? normalizedPhase + 1 : normalizedPhase;
@@ -1564,23 +1588,12 @@ function createBarPatternSVG(config) {
   }
 
   if (currentShader === 3) {
-    const binaryText = values.binaryText || 'RPI';
-    const binaryDataArray = textToBinary(binaryText);
-    if (binaryDataArray.length === 0) {
-      return pattern;
-    }
-
-    const bitWidth = exactBarWidth / binaryDataArray.length;
-    const rowHeight = barHeight / 3;
-
-    for (let i = 0; i < binaryDataArray.length; i++) {
-      const x = barStartX + i * bitWidth;
-      if (binaryDataArray[i] === 1) {
-        pattern += `\n    <rect x="${x}" y="${barY}" width="${bitWidth}" height="${rowHeight}" fill="${fgColor}"/>`;
-        pattern += `\n    <rect x="${x}" y="${barY + rowHeight * 2}" width="${bitWidth}" height="${rowHeight}" fill="${fgColor}"/>`;
-      } else {
-        pattern += `\n    <rect x="${x}" y="${barY + rowHeight}" width="${bitWidth}" height="${rowHeight}" fill="${fgColor}"/>`;
-      }
+    const geometry = createBinaryPatternGeometry({
+      bits: textToBinary(values.binaryText || 'RPI'),
+      barStartX, barY, exactBarWidth, barHeight
+    });
+    for (const rect of geometry.rects) {
+      pattern += `\n    <rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" fill="${fgColor}"/>`;
     }
     return pattern;
   }
@@ -2077,6 +2090,7 @@ if (typeof window !== 'undefined') {
   window.normalizeTrianglePatternDirection = normalizeTrianglePatternDirection;
   window.createUnionPatternGeometry = createUnionPatternGeometry;
   window.createBarPatternSVG = createBarPatternSVG;
+  window.createBinaryPatternGeometry = createBinaryPatternGeometry;
   window.createWaveQuantumPatternGeometry = createWaveQuantumPatternGeometry;
   window.createWaveformPatternGeometry = createWaveformPatternGeometry;
   window.mapWaveformToBarYFraction = mapWaveformToBarYFraction;
@@ -2091,6 +2105,7 @@ if (typeof module !== 'undefined' && module.exports) {
     generateWaveValue,
     getTickerHeaderSampling,
     createBarPatternSVG,
+    createBinaryPatternGeometry,
     createCirclesGradientPatternGeometry,
     createBoundedCirclePatternGeometry,
     createFibonacciPatternGeometry,

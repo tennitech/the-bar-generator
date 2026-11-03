@@ -403,29 +403,12 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       pg.rect(rect.x, rect.y, rect.width, rect.height);
     }
   } else if (currentShader === 3) {
-    // Binary pattern
-    const binaryText = binaryInput.value || "RPI";
-    const binaryDataArray = textToBinary(binaryText);
+    const geometry = createBinaryPatternGeometry({
+      bits: textToBinary(binaryInput.value || 'RPI'),
+      barStartX, barY, exactBarWidth, barHeight: rectHeight
+    });
+    geometry.rects.forEach(item => pg.rect(item.x, item.y, item.width, item.height));
 
-    if (binaryDataArray.length > 0) {
-      const bitWidth = exactBarWidth / binaryDataArray.length;
-      const binaryRowHeight = rectHeight / 3;
-      const binaryTopRowY = barY;
-      const binaryMiddleRowY = barY + binaryRowHeight;
-      const binaryBottomRowY = barY + binaryRowHeight * 2;
-
-      for (let i = 0; i < binaryDataArray.length; i++) {
-        const x = barStartX + i * bitWidth;
-
-        if (binaryDataArray[i] === 1) {
-          pg.rect(x, binaryTopRowY, bitWidth, binaryRowHeight);
-          pg.rect(x, binaryBottomRowY, bitWidth, binaryRowHeight);
-        } else {
-          // 0 = single bar in middle row
-          pg.rect(x, binaryMiddleRowY, bitWidth, binaryRowHeight);
-        }
-      }
-    }
   } else if (currentShader === 4) {
     const time = timeSeconds !== null
       ? timeSeconds
