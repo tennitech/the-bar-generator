@@ -1,6 +1,7 @@
 /* Current implemented families only. Every still is captured offline from the
    shared preview/export path by scripts/generateMarqueeAssets.js. The homepage
-   chooses URLs, never builds patterns or imports the generator. */
+   selects these URLs once; optional live previews reuse shared model utilities
+   without importing the generator runtime. */
 (function (scope) {
   // Deliberately bounded, real controls, not arbitrary decorative mutations.
   // Fixed-art families retain their sole canonical sample. Circle packing keeps
