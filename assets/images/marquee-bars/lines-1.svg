@@ -1,0 +1,23 @@
+<svg viewBox="0 0 250 18" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="color: #000000; overflow: visible;">
+  <defs><clipPath id="bar-bounds-0-0-250-18"><rect x="0" y="0" width="250" height="18"/></clipPath></defs><g clip-path="url(#bar-bounds-0-0-250-18)">
+    <rect x="0" y="0" width="5.75" height="18" fill="currentColor"/>
+    <rect x="12.855263157894736" y="0.7050785554420393" width="5.75" height="16.58984288911592" fill="currentColor"/>
+    <rect x="25.710526315789473" y="2.650353274983802" width="5.75" height="12.699293450032396" fill="currentColor"/>
+    <rect x="38.565789473684205" y="5.366910828986855" width="5.75" height="7.266178342026291" fill="currentColor"/>
+    <rect x="51.421052631578945" y="3.5000817657801306" width="5.75" height="10.999836468439739" fill="currentColor"/>
+    <rect x="64.27631578947368" y="1.2335280200310983" width="5.75" height="15.532943959937803" fill="currentColor"/>
+    <rect x="77.13157894736841" y="0.07978637509407527" width="5.75" height="17.84042724981185" fill="currentColor"/>
+    <rect x="89.98684210526315" y="0.31696913605128607" width="5.75" height="17.366061727897428" fill="currentColor"/>
+    <rect x="102.84210526315789" y="1.8879028059894125" width="5.75" height="14.224194388021175" fill="currentColor"/>
+    <rect x="115.69736842105263" y="4.413909900226325" width="5.75" height="9.17218019954735" fill="currentColor"/>
+    <rect x="128.55263157894737" y="4.413909900226328" width="5.75" height="9.172180199547345" fill="currentColor"/>
+    <rect x="141.4078947368421" y="1.8879028059894143" width="5.75" height="14.224194388021171" fill="currentColor"/>
+    <rect x="154.26315789473682" y="0.3169691360512896" width="5.75" height="17.36606172789742" fill="currentColor"/>
+    <rect x="167.11842105263156" y="0.07978637509407349" width="5.75" height="17.840427249811853" fill="currentColor"/>
+    <rect x="179.9736842105263" y="1.2335280200310965" width="5.75" height="15.532943959937807" fill="currentColor"/>
+    <rect x="192.82894736842104" y="3.500081765780126" width="5.75" height="10.999836468439748" fill="currentColor"/>
+    <rect x="205.68421052631578" y="5.366910828986862" width="5.75" height="7.266178342026277" fill="currentColor"/>
+    <rect x="218.53947368421052" y="2.650353274983801" width="5.75" height="12.699293450032398" fill="currentColor"/>
+    <rect x="231.39473684210526" y="0.7050785554420393" width="5.75" height="16.58984288911592" fill="currentColor"/>
+    <rect x="244.25" y="0" width="5.75" height="18" fill="currentColor"/></g>
+</svg>

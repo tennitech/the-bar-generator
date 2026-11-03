@@ -1,0 +1,11 @@
+<svg viewBox="0 0 250 18" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false" aria-hidden="true" style="color: #000000; overflow: visible;">
+  <defs><clipPath id="bar-bounds-0-0-250-18"><rect x="0" y="0" width="250" height="18"/></clipPath></defs><g clip-path="url(#bar-bounds-0-0-250-18)">
+    <polygon points="31.25,18 0,0 31.25,0" fill="currentColor"/>
+    <polygon points="62.5,18 31.25,0 62.5,0" fill="currentColor"/>
+    <polygon points="93.75,18 62.5,0 93.75,0" fill="currentColor"/>
+    <polygon points="125,18 93.75,0 125,0" fill="currentColor"/>
+    <polygon points="156.25,18 125,0 156.25,0" fill="currentColor"/>
+    <polygon points="187.5,18 156.25,0 187.5,0" fill="currentColor"/>
+    <polygon points="218.75,18 187.5,0 218.75,0" fill="currentColor"/>
+    <polygon points="250,18 218.75,0 250,0" fill="currentColor"/></g>
+</svg>

@@ -88,13 +88,14 @@ async function metrics(page) {
     assert.ok(point,'visible bar link');
     await motion.mouse.move(point.x,point.y);
     const pos=()=>motion.locator('#hover-test').evaluate(e=>e.parentElement.style.transform);
+    await motion.waitForTimeout(250);
     const stopped=await pos(); await motion.waitForTimeout(450);
-    assert.equal(await pos(),stopped,'hover must pause immediately');
+    assert.notEqual(await pos(),stopped,'hover must retain a slow crawl');
     await motion.mouse.move(20,880); await motion.waitForTimeout(450);
     assert.notEqual(await pos(),stopped,'pointer leave resumes the lane');
     await motion.emulateMedia({reducedMotion:'reduce'}); const reduced=await pos();
     await motion.waitForTimeout(250); assert.equal(await pos(),reduced);
-    results.push({hoverPause:true,resume:true,reducedMotion:true}); await motion.close();
+    results.push({hoverSlowdown:true,resume:true,reducedMotion:true}); await motion.close();
 
     for (const style of ['solid','circles','neural-network','numeric']) {
       for(const reducedMotion of ['reduce','no-preference']) {
