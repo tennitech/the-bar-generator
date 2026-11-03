@@ -3,6 +3,22 @@
 **Last Updated:** 2026-11-03
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 3 custom image-size picker
+
+The export menu now presents custom-styled Large and Standard choices instead
+of opening the browser's native select popup. Native radio semantics preserve
+arrow-key selection and one Tab stop, with visible focus and 44 px touch rows.
+Large remains recommended and selected by default. Both choices lock during
+export and recover afterward. Existing PNG/GIF dimensions, transparent clear
+space, and SVG geometry are unchanged. The hidden select remains an internal
+compatibility state for existing export integrations.
+
+Validation: all 636 unit tests pass. Focused Chromium checks cover three themes and compact layouts. Chromium and
+WebKit both pass keyboard, touch emulation, repeated opening and both actual PNG
+sizes at desktop, 390 px and 320 px widths. The existing Chromium export suite
+also verifies Large GIF dimensions, progress and completion. Browser automation
+is not physical-device or screen-reader certification.
+
 ## November 3 combined release validation
 
 The combined candidate includes responsive display and complete first-frame

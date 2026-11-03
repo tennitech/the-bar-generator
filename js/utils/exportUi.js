@@ -1,7 +1,7 @@
 (function (root) {
   let active = null, nextId = 0, lastProgressAt = 0;
   const byId = id => document.getElementById(id);
-  const controls = () => ['save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'copy-svg', 'copy-png'].map(byId).filter(Boolean);
+  const controls = () => ['save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'export-size-large', 'export-size-standard', 'copy-svg', 'copy-png'].map(byId).filter(Boolean);
   const text = (id, value) => { const element = byId(id); if (element) element.textContent = value; };
   function size() { return byId('export-size-select')?.value === 'standard' ? 'standard' : 'large'; }
   function pixelSize(dimensions) { return `${dimensions.width} × ${dimensions.height} px`; }
@@ -10,6 +10,10 @@
     return bytes < 1000000 ? `${Math.round(bytes / 1000)} KB` : `${(bytes / 1000000).toFixed(1)} MB`;
   }
   function sync(credits = false) {
+    for (const value of ['large', 'standard']) {
+      const option = byId(`export-size-${value}`);
+      if (option) option.checked = size() === value;
+    }
     if (byId('export-settings')) byId('export-settings').hidden = credits;
     if (byId('export-host-note')) byId('export-host-note').hidden = credits || !root.embedSupport?.isEmbedded();
     if (!credits && root.RPI_LOGO_GEOMETRY && root.logoExportOptions) {
@@ -122,6 +126,13 @@
     }
   }
   function init() {
+    for (const value of ['large', 'standard']) {
+      byId(`export-size-${value}`)?.addEventListener('change', event => {
+        if (!event.target.checked || active) return;
+        byId('export-size-select').value = value;
+        sync(false);
+      });
+    }
     byId('export-size-select')?.addEventListener('change', () => sync(false));
     byId('export-cancel')?.addEventListener('click', () => {
       if (!active || active.controller.signal.aborted) return;

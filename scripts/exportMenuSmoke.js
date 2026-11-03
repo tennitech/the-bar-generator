@@ -19,7 +19,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
     await open();
     assert.equal(await page.locator('#export-dimensions').textContent(), '2320 × 1524 px');
     for (const [size, width, height] of [['large', 2320, 1524], ['standard', 1160, 762]]) {
-      await page.locator('#export-size-select').selectOption(size);
+      await page.locator(`#export-size-${size}`).check();
       assert.equal(await page.locator('#export-dimensions').textContent(), `${width} × ${height} px`);
       assert.match(await page.locator('#copy-png').textContent(), new RegExp(`${width} × ${height}`));
       const wait = page.waitForEvent('download'); await page.locator('#save-png').click();
@@ -31,7 +31,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       assert.equal(await page.locator('#export-message').textContent(), 'PNG download requested.');
       assert.match(await page.locator('#export-detail').textContent(), new RegExp(`${width} × ${height} px.*[BK]B?.*Check your browser`));
     }
-    await page.locator('#export-size-select').selectOption('large');
+    await page.locator('#export-size-large').check();
     // Observe actual GIF encoder reports, not simulated time-based progress.
     await page.evaluate(() => {
       window.__exportReports = [];
