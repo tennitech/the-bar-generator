@@ -32,6 +32,7 @@
   --page-padding: clamp(1.5rem, 2.8vw, 3rem);
   --marquee-tilt: 17deg;
   --hero-scale: 1;
+  --composition-scale: 1;
   --viewport-height: 100vh;
   --marquee-asset-width: 28rem;
   --marquee-row-height: 3.9rem;
@@ -129,10 +130,10 @@ img {
 
 .startup_prompt {
   position: absolute;
-  top: clamp(22px, 2.1vw, 30px);
+  top: clamp(0.75rem, 2vh, 1.5rem);
   left: 50%;
-  width: fit-content;
-  max-width: calc(100% - 72px);
+  width: max-content;
+  max-width: min(32rem, calc(100% - 2rem));
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -153,7 +154,7 @@ img {
 
 .startup_prompt_inner {
   position: relative;
-  min-height: clamp(20px, 1.7vw, 25px);
+  min-height: 0;
   border-radius: 999px;
   border: 2px solid rgba(214, 0, 28, 0.92);
   background:
@@ -197,21 +198,23 @@ img {
 }
 
 .startup_prompt_text {
+  margin: 0;
   position: relative;
   z-index: 1;
   min-height: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 clamp(14px, 1.2vw, 20px);
+  padding: 0.25rem clamp(0.625rem, 1vw, 1rem);
   color: var(--rpi-white);
   font-family: 'RPIGeist', 'Geist', sans-serif;
-  font-size: clamp(0.9rem, 0.98vw, 1.02rem);
+  font-size: clamp(0.75rem, calc(0.875rem * var(--composition-scale)), 1.25rem);
   font-weight: 400;
-  line-height: 1.05;
+  line-height: 1.3;
   letter-spacing: 0;
   text-align: center;
-  white-space: nowrap;
+  white-space: normal;
+  text-wrap: balance;
   text-shadow: 0 1px 4px rgba(255, 255, 255, 0.05);
 }
 
@@ -304,8 +307,8 @@ img {
 .bar_asset {
   display: block;
   width: 100%;
-  height: calc(100% - 0.9rem);
-  margin-block: 0.45rem;
+  height: calc(100% - 0.9rem * var(--composition-scale));
+  margin-block: calc(0.45rem * var(--composition-scale));
   object-fit: contain;
   filter: brightness(0) invert(1);
   user-select: none;
@@ -485,18 +488,18 @@ img {
 @media (max-width: 900px) {
   .startup_prompt {
     top: 16px;
-    width: auto;
+    width: max-content;
     max-width: calc(100% - 24px);
   }
 
   .startup_prompt_inner {
-    min-height: clamp(18px, 4vw, 23px);
+    min-height: 0;
     border-width: 2px;
   }
 
   .startup_prompt_text {
-    padding: 0 9px;
-    font-size: clamp(0.72rem, 2.1vw, 0.84rem);
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
   }
 
   .section_marquee_hero,
@@ -526,8 +529,8 @@ img {
   }
 
   .startup_prompt_text {
-    padding: 0 8px;
-    font-size: clamp(0.68rem, 3vw, 0.78rem);
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
     white-space: normal;
   }
 }
@@ -542,8 +545,8 @@ img {
   .marquee_page *,
   .marquee_page *::before,
   .marquee_page *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition: none !important;
   }
 }
 

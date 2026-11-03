@@ -25,6 +25,11 @@
     lastTimestamp = null;
     sync();
   }
+  function select() {
+    el('quantum-motion-toggle').checked = !root.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    lastTimestamp = null;
+    sync();
+  }
   function setup() {
     if (initialized || !el('quantum-group')) return;
     initialized = true;
@@ -34,7 +39,7 @@
     el('quantum-reverse-toggle').checked = query.get('quantumReverse') === 'true';
     // Obsolete quantumView query/share fields are ignored; every snapshot uses projections.
     const commit = () => { root.updateUrlParameters(); root.requestUpdate(); };
-    pause(); // Never auto-start shared/reloaded state, including with reduced motion.
+    select(); // Default motion, with reduced-motion and shared-state overrides below.
     el('quantum-motion-toggle').addEventListener('change', () => { lastTimestamp = null; commit(); });
     el('quantum-reverse-toggle').addEventListener('change', () => { lastTimestamp = null; commit(); });
     el('quantum-speed-slider').addEventListener('input', () => { lastTimestamp = null; sync(); commit(); });
@@ -67,7 +72,10 @@
       commit: seek, ariaLabel: 'Set quantum phase percent'
     };
     root.registerSliderValueEditor(phaseEditor);
-    el('style-select').addEventListener('change', () => { lastTimestamp = null; sync(); });
+    el('style-select').addEventListener('change', () => {
+      if (el('style-select').value === 'wave-quantum') select();
+      else { lastTimestamp = null; sync(); }
+    });
     root.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => { if (event.matches) pause(); });
     document.addEventListener('visibilitychange', () => { lastTimestamp = null; });
     sync();
@@ -79,11 +87,11 @@
     if (!active) { lastTimestamp = null; return; }
     if (lastTimestamp !== null) {
       el('quantum-phase').value = root.quantumModel.advancePhase(values().quantumPhase, timestamp - lastTimestamp, {
-        speed: el('quantum-speed-slider').value, reverse: el('quantum-reverse-toggle').checked
+        speed: el('quantum-speed-slider').value, reverse: !el('quantum-reverse-toggle').checked
       });
       updatePhaseLabel();
     }
     lastTimestamp = timestamp;
   }
-  root.quantumControls = { setup, sync, values, tick, pause };
+  root.quantumControls = { setup, sync, values, tick, pause, select };
 })(window);

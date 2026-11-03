@@ -1,5 +1,10 @@
 # Clipboard exports
 
+November 3 update: public Share controls are removed. Embedded image-copy
+actions now detect explicit Permissions Policy denials and keep retry feedback
+on the current page. See [Frontify compatibility and host requirements](frontify_exports.md).
+The October 27 record below describes the retained native image formats.
+
 October 27, 2026. Implementation and browser evidence do not establish institutional approval or native-app paste acceptance.
 
 ## Native image formats

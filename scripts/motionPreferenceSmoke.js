@@ -114,7 +114,7 @@ async function main() {
     const embedded = host.frameLocator('iframe[title="Embedded generator"]');
     await embedded.locator('#p5-container canvas').waitFor();
     assert.equal(await embedded.locator('#ruler-motion-toggle').isChecked(), false);
-    await embedded.evaluate(() => { const title = document.getElementById('brand-title'); (title.getClientRects().length ? title : document.getElementById('header-logo-preview')).focus(); return openHeaderLogoAnimation(); });
+    await embedded.locator('body').evaluate(() => { const title = document.getElementById('brand-title'); (title.getClientRects().length ? title : document.getElementById('header-logo-preview')).focus(); return openHeaderLogoAnimation(); });
     await embedded.getByRole('button', { name: 'Play animation once' }).click();
     const ascii = embedded.frameLocator('.logo_animation_frame').locator('#animation-projection');
     await ascii.filter({ hasText: /\S/ }).waitFor();

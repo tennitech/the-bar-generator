@@ -30,7 +30,7 @@ function read() {
     colorMode,
 
     // Binary parameters
-    binaryText: params.get('binaryText') || 'RPI',
+    binaryText: normalizeBinaryText(params.get('binaryText') || 'RPI'),
 
     // Numeric parameters
     ...window.NumericControls.readQuery(params),

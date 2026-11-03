@@ -10,7 +10,7 @@ const styles = ['solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles', 'nu
   'triangle-grid', 'triangles', 'fibonacci-sequence', 'union', 'wave-quantum', 'runway', 'lunar'];
 
 async function inspectRenderedMark(page) {
-  return page.evaluate(async () => {
+  return page.evaluate(async browserName => {
     const g = RPI_LOGO_GEOMETRY;
     let snapshotAspectError = 0;
     if (![1, 2, 4].includes(currentShader)) {
@@ -36,7 +36,7 @@ async function inspectRenderedMark(page) {
     ctx.drawImage(image, 0, 0);
     const expected = ctx.getImageData(0, 0, reference.width, reference.height);
     const bounds = { x: Infinity, y: Infinity, right: -1, bottom: -1 };
-    let painted = 0, difference = 0, expectedPaint = 0, outside = 0;
+    let painted = 0, difference = 0, expectedPaint = 0, outside = 0, matchedBoundaryFringe = 0;
     const minY = Math.floor((g.barY + 20) * 4), maxY = Math.ceil((g.totalHeight + 20) * 4);
     for (let y = 0; y < pg.height; y++) for (let x = 0; x < pg.width; x++) {
       const i = (y * pg.width + x) * 4;
@@ -45,7 +45,14 @@ async function inspectRenderedMark(page) {
       if (alpha > 8) {
         painted++; bounds.x = Math.min(bounds.x, x); bounds.y = Math.min(bounds.y, y);
         bounds.right = Math.max(bounds.right, x); bounds.bottom = Math.max(bounds.bottom, y);
-        if (x < 79 || x > 1080 || y >= maxY) outside++;
+        if (x < 79 || x > 1080 || y >= maxY) {
+          // Published main and the independent header SVG share one faint
+          // WebKit pixel below Artemis's fractional bottom edge. Keep the
+          // global alpha threshold and reject stronger or farther paint.
+          if (browserName === 'webkit' && currentShader === 24 && y === maxY
+            && x >= 80 && x <= 1079 && alpha <= 12 && alpha === other) matchedBoundaryFringe++;
+          else outside++;
+        }
       }
       if (other > 8) expectedPaint++;
       difference += Math.abs(alpha - other) / 255;
@@ -107,7 +114,7 @@ async function inspectRenderedMark(page) {
       Math.min(live.height - Math.max(0, Math.floor(startY)), Math.ceil(g.barHeight * scale * ratio))).data;
     let previewPaint = 0;
     for (let i = 3; i < pixels.length; i += 4) if (pixels[i] > 8) previewPaint++;
-    const result = { hasStaticHorizontalFit: buildCurrentBarPatternSVGFragment().includes('data-bar-edge-fit'), painted, expectedPaint, difference: difference / Math.max(1, expectedPaint), differenceArea: difference / (1000 * 72), outside, bounds,
+    const result = { hasStaticHorizontalFit: buildCurrentBarPatternSVGFragment().includes('data-bar-edge-fit'), painted, expectedPaint, difference: difference / Math.max(1, expectedPaint), differenceArea: difference / (1000 * 72), outside, matchedBoundaryFringe, bounds,
       previewPaint, snapshotAspectError, vectorDOMAlignmentError,
       previewEdgeError: Math.max(Math.abs(liveMinX - Math.floor(startX)),
         Math.abs(liveMaxX - (Math.ceil(startX + g.width * scale * ratio) - 1))),
@@ -116,7 +123,7 @@ async function inspectRenderedMark(page) {
       previewDifferenceArea: previewDifference / (g.width * g.barHeight * scale * scale * ratio * ratio), dimensions: [pg.width, pg.height], barY: g.barY, gap: g.barY - g.letterHeight };
     pg.remove();
     return result;
-  });
+  }, browserName);
 }
 
 async function main() {
@@ -146,11 +153,12 @@ async function main() {
         // Normalize antialiasing error over the full design rectangle; keep position strict.
         assert.ok(result.previewDifferenceArea < 0.08, `${label}: preview/header position or paint mismatch ${result.previewDifference}`);
         assert.ok(result.snapshotAspectError < 1e-9, `${label}: SVG snapshot changed the bar aspect ratio`);
-        if (style !== 'ruler') assert.ok(result.previewEdgeError <= 1, `${label}: preview painted edge inset ${result.previewEdgeError}px`);
+        assert.equal(result.hasStaticHorizontalFit, false, `${label}: artificial painted-edge fitting`);
         assert.ok(result.previewPositionError < 1.5, `${label}: live bar displacement ${result.previewPositionError}px`);
-        if (style !== 'ruler') assert.equal(result.bounds.x, 80, `${label}: painted left edge inset`);
-        if (style !== 'ruler') assert.equal(result.bounds.right, 1079, `${label}: painted right edge inset`);
+        assert.ok(result.bounds.x >= 80, `${label}: paint escapes left edge`);
+        assert.ok(result.bounds.right <= 1079, `${label}: paint escapes right edge`);
         assert.equal(result.outside, 0, `${label}: stroke/fill escapes official rectangle`);
+        assert.ok(result.matchedBoundaryFringe <= 1, `${label}: unexpected reference-matched edge coverage`);
         assert.ok(result.differenceArea < 0.08, `${label}: PNG/header pixel mismatch ${result.difference}`);
         assert.deepEqual(result.dimensions, [1160, 762], `${label}: scaled export margins`);
         assert.ok(Math.abs(result.gap - 21) < 1e-9, `${label}: official spacing`);

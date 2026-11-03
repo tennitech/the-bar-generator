@@ -18,12 +18,8 @@ async function checkEdges(page, label) {
     pg.remove();
     return { left, right, ruler: currentShader === 1 };
   });
-  if (result.ruler) {
-    assert.ok(result.left >= 80 && result.right <= 1079 && result.right > result.left, `${label}: ruler paint escapes its fixed viewport`);
-    return;
-  }
-  assert.equal(result.left, 80, `${label}: left painted extent ${result.left}`);
-  assert.equal(result.right, 1079, `${label}: right painted extent ${result.right}`);
+  assert.ok(result.left >= 80 && result.right <= 1079 && result.right > result.left,
+    `${label}: paint escapes its fixed viewport`);
 }
 async function main() {
   const browser = await chromium.launch({ headless: true });
@@ -36,16 +32,6 @@ async function main() {
       await page.locator('#p5-container canvas').waitFor({ state: 'attached' });
       if (style === 'lunar') await page.waitForFunction(() => !!window.LUNAR_BAR_SVG_SOURCE);
       await checkEdges(page, style); checked++;
-      if (style === 'solid') {
-        const fitting = await page.evaluate(() => {
-          const line = '<line x1="0.5" y1="9" x2="249.5" y2="9" stroke="black" stroke-width="1"/>';
-          const inset = '<defs><clipPath id="non-painting-frame"><rect width="250" height="18"/></clipPath></defs><rect x="5" width="240" height="18"/>';
-          return { strokePreserved: fitBarSVGToEdges(line, 0, 0, 250, 18) === line,
-            containerIgnored: fitBarSVGToEdges(inset, 0, 0, 250, 18).includes('data-bar-edge-fit="true"') };
-        });
-        assert.ok(fitting.strokePreserved, 'Centered stroke already spans both edges and must not be stretched');
-        assert.ok(fitting.containerIgnored, 'A clip container must not conceal an actual painted inset');
-      }
       const controls = await page.locator('input[type="range"]:visible').evaluateAll(inputs => inputs.map(input => ({
         id: input.id, min: input.min, max: input.max, value: input.value
       })));
@@ -74,7 +60,7 @@ async function main() {
             hasFrameScale: /scale\(/.test(buildCurrentBarPatternSVGFragment()) };
         });
         assert.ok(motion.unchanged, `${style}: fitting changed interior tick positions or widths`);
-        if (style === 'ruler') assert.deepEqual(motion.markers, [], 'Ruler must not add forced end caps');
+        assert.deepEqual(motion.markers, [], `${style}: must not add forced end caps`);
         assert.equal(motion.hasFrameScale, false, `${style}: phase-dependent spatial scaling`);
         if (referenceMarkers) assert.deepEqual(motion.markers, referenceMarkers, `${style}: boundary marks breathe with phase`);
         referenceMarkers = motion.markers;

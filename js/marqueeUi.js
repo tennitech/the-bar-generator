@@ -8,23 +8,20 @@ const ROW_REFERENCE_VIEWPORT_HEIGHT = 822;
 const ROW_LEFT = '-44vw';
 const ROW_WIDTH = '220vw';
 const MEASUREMENT_EPSILON = 0.5;
-const HOVER_SPEED_FACTOR = 0.16;
-const PRESS_SPEED_FACTOR = 0.08;
+const HOVER_SPEED_FACTOR = 0;
+const PRESS_SPEED_FACTOR = 0;
 const EASE_RATE = 5.2;
 const STARTUP_STYLE_PROMPT_DELAY = 5000;
-const BASE_SPEEDS = [62, 66, 64, 68, 65, 69, 63, 67, 64, 68];
+const BASE_SPEEDS = [24, 28, 26, 30, 27, 29, 25, 28, 26, 30];
 const HERO_CLUSTER_WIDTH = 960;
 const HERO_CLUSTER_HEIGHT = 330;
 const MOBILE_HERO_BREAKPOINT = 550;
 const HERO_MIN_SCALE = 0.4;
 const HERO_COMPACT_CREDIT_SCALE = 0.76;
-const HERO_BASE_MAX_SCALE = 1;
-const LARGE_DESKTOP_BREAKPOINT = 1920;
-const LARGE_DESKTOP_HEIGHT_BREAKPOINT = 1080;
-const LARGE_DESKTOP_HERO_SCALE = 1.16;
-const LARGE_DESKTOP_BAR_ASSET_WIDTH = '32rem';
-const LARGE_DESKTOP_ROW_HEIGHT = '4.45rem';
-const LARGE_DESKTOP_ROW_GAP = '1.7rem';
+// CSS-pixel viewport dimensions already incorporate browser/OS display scaling.
+// DPR affects raster sharpness, never the composition's physical size twice.
+const COMPOSITION_REFERENCE_WIDTH = 1440;
+const COMPOSITION_REFERENCE_HEIGHT = 900;
 const NARROW_PORTRAIT_SCALE_HEIGHT_MIN = 760;
 const NARROW_PORTRAIT_SCALE_WIDTH_START = 700;
 const NARROW_PORTRAIT_SCALE_WIDTH_END = 520;
@@ -118,13 +115,15 @@ function computeRowTopPositions({ rowCount, rowStart, rowStep }) {
 }
 
 function getResponsiveMarqueeMetrics(viewportWidth, viewportHeight) {
-  const isLargeDesktop = viewportWidth >= LARGE_DESKTOP_BREAKPOINT && viewportHeight >= LARGE_DESKTOP_HEIGHT_BREAKPOINT;
-
+  const scale = Math.max(1, Math.min(viewportWidth / COMPOSITION_REFERENCE_WIDTH,
+    viewportHeight / COMPOSITION_REFERENCE_HEIGHT));
+  const scaledRem = value => `${Number((parseFloat(value) * scale).toFixed(4))}rem`;
   return {
-    assetWidth: isLargeDesktop ? LARGE_DESKTOP_BAR_ASSET_WIDTH : BAR_ASSET_WIDTH,
-    rowHeight: isLargeDesktop ? LARGE_DESKTOP_ROW_HEIGHT : ROW_HEIGHT,
-    rowGap: isLargeDesktop ? LARGE_DESKTOP_ROW_GAP : ROW_GAP,
-    heroMaxScale: isLargeDesktop ? LARGE_DESKTOP_HERO_SCALE : HERO_BASE_MAX_SCALE
+    assetWidth: scaledRem(BAR_ASSET_WIDTH),
+    rowHeight: scaledRem(ROW_HEIGHT),
+    rowGap: scaledRem(ROW_GAP),
+    heroMaxScale: scale,
+    scale
   };
 }
 
@@ -180,10 +179,11 @@ function getNarrowPortraitHeroScaleCap(viewportWidth, viewportHeight) {
   return 1 - ((1 - NARROW_PORTRAIT_SCALE_MIN) * easedFactor);
 }
 
-function getRowStepPx(stageHeight) {
+function getRowStepPx(stageHeight, rowHeight = resolveCssLengthToPx(ROW_HEIGHT)) {
   const referenceRowStep = (ROW_STEP_PERCENT / 100) * ROW_REFERENCE_VIEWPORT_HEIGHT;
   const responsiveRowStep = (ROW_STEP_PERCENT / 100) * stageHeight;
-  return Math.max(referenceRowStep, responsiveRowStep);
+  // Tall screens get more lanes, not ever-growing gaps between fixed-size bars.
+  return Math.min(rowHeight * 1.32, Math.max(referenceRowStep, responsiveRowStep));
 }
 
 function wrap(value, length) {
@@ -221,6 +221,9 @@ function syncRowTargetFactor(state) {
     : state.isHovered
       ? HOVER_SPEED_FACTOR
       : 1;
+  // Stop immediately so the link cannot slide out from under a stationary pointer.
+  // Only resume is eased, making the paused state unambiguous.
+  if (state.isHovered || state.isPressed) state.currentFactor = 0;
 }
 
 function setHoveredAsset(state, asset) {
@@ -286,17 +289,17 @@ function bindAssetInteractions(asset, state) {
 
     state.isPressed = false;
     setPressedAsset(state, null);
-    state.isHovered = asset.matches(':hover');
+    state.isHovered = event.pointerType !== 'touch' && asset.matches(':hover');
     if (!state.isHovered) {
       setHoveredAsset(state, null);
     }
     syncRowTargetFactor(state);
   });
 
-  asset.addEventListener('pointercancel', () => {
+  asset.addEventListener('pointercancel', event => {
     state.isPressed = false;
     setPressedAsset(state, null);
-    state.isHovered = asset.matches(':hover');
+    state.isHovered = event.pointerType !== 'touch' && asset.matches(':hover');
     if (!state.isHovered) {
       setHoveredAsset(state, null);
     }
@@ -401,6 +404,7 @@ function ensureRowItems(state) {
     removed.element.remove();
   }
 
+  syncRowTargetFactor(state);
   updateRowLayout(state);
 }
 
@@ -411,9 +415,9 @@ function syncRowMeasurements(rowStates, force = false) {
       state.track.append(state.measureItem);
     }
 
-    const nextRowWidth = state.element.getBoundingClientRect().width;
-    const nextRowHeight = state.element.getBoundingClientRect().height;
-    const nextSlotWidth = state.measureItem.getBoundingClientRect().width;
+    const nextRowWidth = state.element.offsetWidth;
+    const nextRowHeight = state.element.offsetHeight;
+    const nextSlotWidth = state.measureItem.offsetWidth;
 
     if (!nextRowWidth || !nextRowHeight || !nextSlotWidth) {
       return;
@@ -450,7 +454,31 @@ function syncRowVerticalLayout(rowStates, stage) {
   const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
   const rowLift = getEdgeCaseRowLiftPx(viewportWidth, viewportHeight);
   const rowStart = ((ROW_START_PERCENT / 100) * stageHeight) - rowLift;
-  const rowStep = getRowStepPx(stageHeight);
+  const rowStep = getRowStepPx(stageHeight, rowStates[0].element.offsetHeight);
+  const coveredSpan = (ROW_COUNT - 1) * (ROW_STEP_PERCENT / 100) * stageHeight;
+  let neededRows = Math.max(ROW_COUNT, 1 + Math.floor(coveredSpan / rowStep));
+  // A portrait monitor has much more vertical room than a desktop composition.
+  // Extend the field toward the actual heading, keeping one lane of clear space
+  // instead of leaving a large unused band. Compact phone composition stays put.
+  if (viewportWidth >= MOBILE_HERO_BREAKPOINT && viewportHeight > viewportWidth * 1.4) {
+    const hero = document.querySelector('.hero_brand')?.getBoundingClientRect();
+    if (hero) {
+      const first = rowStates[0].element;
+      first.style.top = `${rowStart}px`;
+      const bounds = first.getBoundingClientRect();
+      const angle = parseFloat(getComputedStyle(stage).getPropertyValue('--marquee-tilt')) * Math.PI / 180;
+      const firstBottomAtHero = bounds.top + (hero.left - bounds.left) * Math.tan(angle)
+        + first.offsetHeight * Math.cos(angle);
+      neededRows = Math.max(neededRows, 1 + Math.floor((hero.top - rowStep - firstBottomAtHero) / rowStep));
+    }
+  }
+  while (rowStates.length < neededRows) {
+    const state = createRow(rowStates.length);
+    rowStates.push(state);
+    stage.append(state.element);
+  }
+  while (rowStates.length > neededRows) rowStates.pop().element.remove();
+  syncRowMeasurements(rowStates);
   const rowPositions = computeRowTopPositions({
     rowCount: rowStates.length,
     rowStart,
@@ -469,6 +497,8 @@ function syncMarqueeSizing(root) {
   root.style.setProperty('--marquee-asset-width', metrics.assetWidth);
   root.style.setProperty('--marquee-row-height', metrics.rowHeight);
   root.style.setProperty('--marquee-row-gap', metrics.rowGap);
+  root.style.setProperty('--composition-scale', String(metrics.scale));
+  root.style.setProperty('--content-width', `${1400 * metrics.scale}px`);
 
   return metrics;
 }
@@ -494,8 +524,7 @@ function syncHeroScale(root, metrics = null) {
   const availableWidth = Math.max(0, viewportWidth - (horizontalPadding * 2));
   const availableHeight = Math.max(0, viewportHeight - verticalPaddingTop - verticalPaddingBottom);
   const scale = Math.min(
-    responsiveMetrics.heroMaxScale,
-    narrowPortraitScaleCap,
+    responsiveMetrics.heroMaxScale * narrowPortraitScaleCap,
     availableWidth / heroWidth,
     availableHeight / heroHeight
   );
@@ -572,6 +601,7 @@ function initMarqueeScene() {
   }
 
   window.addEventListener('resize', handleResize);
+  document.fonts?.ready.then(handleResize);
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', handleResize, { passive: true });
     window.visualViewport.addEventListener('scroll', handleResize, { passive: true });
@@ -590,6 +620,8 @@ function initMarqueeScene() {
       return;
     }
 
+    const viewport = getViewportMetrics();
+    const speedScale = getResponsiveMarqueeMetrics(viewport.width, viewport.height).scale;
     rowStates.forEach(state => {
       if (!state.slotWidth || !state.items.length) {
         return;
@@ -597,7 +629,8 @@ function initMarqueeScene() {
 
       const ease = 1 - Math.exp(-EASE_RATE * dt);
       state.currentFactor += (state.targetFactor - state.currentFactor) * ease;
-      state.travel += state.baseSpeed * state.currentFactor * dt;
+      state.travel += state.baseSpeed * state.currentFactor * dt
+        * speedScale;
       updateRowLayout(state);
     });
 

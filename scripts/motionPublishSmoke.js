@@ -20,7 +20,7 @@ async function main(){
         quantumPlaying:document.querySelector('#quantum-motion-toggle').checked};
     },{family,style});
     assert.equal(result.value,expected,`${entry} ${field}=${value}`);assert.ok(Math.abs(result.period-(family==='quantum'?120:1)/expected)<1e-8);
-    if(family==='quantum')assert.equal(result.quantumPlaying,false);
+    if(family==='quantum')assert.equal(result.quantumPlaying,true,'fresh route defaults to Loop');
     results.push({style,entry,input:value,...result});
    }
   }

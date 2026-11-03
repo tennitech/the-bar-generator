@@ -502,8 +502,6 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
     pg.vertex(barStartX + exactBarWidth, barY + rectHeight);
 
     pg.endShape(pg.CLOSE);
-    const axis = createWaveformBaselineGeometry(barStartX, barY, exactBarWidth, rectHeight);
-    pg.rect(axis.x, axis.y, axis.width, axis.height);
 
   } else if (currentShader === 5) {
     // Circles pattern
@@ -1156,7 +1154,7 @@ function captureLogoExportSnapshot() {
   const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
-  const rawTitle = document.getElementById('share-name')?.value || '';
+  const rawTitle = window.barShareController?.getName?.() || '';
   const safeName = typeof sanitizeBarText === 'function' ? sanitizeBarText(rawTitle) : rawTitle;
   const title = Array.from(String(safeName).normalize('NFC').replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, '').trim()).slice(0, 80).join('');
   const geometry = RPI_LOGO_GEOMETRY;
@@ -1231,8 +1229,6 @@ function createCapturedGifRenderer(snapshot, framePlan) {
       const path = markup.match(/<path\s+d="([^"]+)"/);
       if (!path) throw new Error('The waveform could not be rendered.');
       ctx.fill(new Path2D(path[1]));
-      const axis = createWaveformBaselineGeometry(0, geometry.barY, geometry.width, geometry.barHeight);
-      ctx.fillRect(axis.x, axis.y, axis.width, axis.height);
     }
     ctx.restore();
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -1243,6 +1239,8 @@ function createCapturedGifRenderer(snapshot, framePlan) {
 function startLogoDownload(blob, filename) {
   const url = URL.createObjectURL(blob), link = document.createElement('a');
   link.href = url; link.download = filename;
+  // The synthetic link is not a user click outside the export dialog.
+  link.addEventListener('click', event => event.stopPropagation());
   document.body.appendChild(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -1275,8 +1273,12 @@ async function runLogoExport(format) {
     throwIfExportCancelled(job.controller.signal);
     window.logoExportUI.message(job, 'Starting download…');
     startLogoDownload(blob, filename);
-    window.logoExportUI.finish(job, 'started', `${format.toUpperCase()} download started.`);
-    Toast.show(`${format.toUpperCase()} download started`, 'success');
+    // A synthetic anchor click has no completion signal. Sandboxed hosts can
+    // silently deny it, so never claim a verified download from an iframe.
+    const embedded = window.embedSupport?.isEmbedded();
+    const message = `${format.toUpperCase()} download requested.`;
+    window.logoExportUI.finish(job, embedded ? 'requested' : 'started', message);
+    Toast.show(message, 'info');
     return { filename, metrics: { ...metrics, bytes: blob.size, width: format === 'svg' ? null : snapshot.dimensions.width,
       height: format === 'svg' ? null : snapshot.dimensions.height, elapsedMs: performance.now() - started } };
   } catch (error) {
@@ -1329,6 +1331,11 @@ function createNumericTexture(digits) {
 // header, and PNG variants identical without duplicating every pattern renderer.
 const canonicalBarImages = new Map();
 const readyCanonicalBarImages = new Map();
+let canonicalBarPreviewError = null;
+function clearCanonicalBarPreviewError() {
+  canonicalBarPreviewError?.remove();
+  canonicalBarPreviewError = null;
+}
 function getCanonicalBarImage(pixelWidth = 1000, maxPixelWidth = Infinity) {
   // 250:18 simplifies to125:9. Integer raster dimensions prevent SVG engines
   // from letterboxing a fractional intrinsic height (visible in WebKit at zoom).
@@ -1342,7 +1349,7 @@ function getCanonicalBarImage(pixelWidth = 1000, maxPixelWidth = Infinity) {
     exactBarWidth: REFERENCE_WIDTH, barHeight: REFERENCE_BAR_HEIGHT, fgColor });
   const key = `${pixelWidth}:${markup}`;
   if (canonicalBarImages.has(key)) return canonicalBarImages.get(key);
-  const entry = { image: null, ready: null, markup };
+  const entry = { image: null, ready: null, error: null, markup };
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${pixelWidth}" height="${pixelWidth * REFERENCE_BAR_HEIGHT / REFERENCE_WIDTH}" viewBox="0 0 ${REFERENCE_WIDTH} ${REFERENCE_BAR_HEIGHT}">${markup}</svg>`;
   entry.ready = new Promise((resolve, reject) => {
     loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`, image => {
@@ -1352,7 +1359,11 @@ function getCanonicalBarImage(pixelWidth = 1000, maxPixelWidth = Infinity) {
       if (readyCanonicalBarImages.size > 8) readyCanonicalBarImages.delete(readyCanonicalBarImages.keys().next().value);
       resolve(image);
       requestUpdate();
-    }, error => reject(new Error('Unable to render the selected bar SVG.', { cause: error })));
+    }, error => {
+      entry.error = new Error('Unable to render the selected bar SVG.', { cause: error });
+      reject(entry.error);
+      requestUpdate();
+    });
   });
   // Preview failures are reported; savePNG also awaits and handles the rejection.
   entry.ready.catch(error => console.error(error));
@@ -1361,7 +1372,7 @@ function getCanonicalBarImage(pixelWidth = 1000, maxPixelWidth = Infinity) {
   return entry;
 }
 
-function drawCanonicalBarPattern(target, x, y, width, height) {
+function getReadyCanonicalBarImage(target) {
   const pixelWidth = target === window
     ? REFERENCE_WIDTH * getRenderedResponsiveLogoScale() * zoomLevel * (window.devicePixelRatio || 1)
     : 1000;
@@ -1370,7 +1381,37 @@ function drawCanonicalBarPattern(target, x, y, width, height) {
   const entry = getCanonicalBarImage(pixelWidth, maxPixelWidth);
   // A cached export/previous renderer snapshot may exceed this renderer's limit.
   const previous = readyCanonicalBarImages.get(entry.markup);
-  const image = entry.image || (previous && previous.width <= maxPixelWidth ? previous : null);
+  if (target === window && typeof document !== 'undefined') {
+    let alert = canonicalBarPreviewError;
+    if (entry.error && !alert) {
+      window.PageEntrance?.cancel();
+      alert = document.createElement('div');
+      canonicalBarPreviewError = alert;
+      alert.id = 'bar-preview-error';
+      alert.className = 'generator_error generator_preview-error';
+      alert.setAttribute('role', 'alert');
+      const message = document.createElement('p');
+      message.textContent = 'The selected bar could not be rendered. Try again.';
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.textContent = 'Retry';
+      retry.addEventListener('click', () => {
+        canonicalBarImages.clear();
+        clearCanonicalBarPreviewError();
+        requestUpdate();
+      });
+      alert.append(message, retry);
+      // Keep interactive recovery outside the preview's role=img subtree.
+      document.getElementById('p5-container')?.parentElement?.append(alert);
+    } else if (!entry.error && alert) {
+      clearCanonicalBarPreviewError();
+    }
+  }
+  return entry.image || (previous && previous.width <= maxPixelWidth ? previous : null);
+}
+
+function drawCanonicalBarPattern(target, x, y, width, height, readyImage = null) {
+  const image = readyImage || getReadyCanonicalBarImage(target);
   if (!image) return;
   target.push();
   target.imageMode(CORNER);
@@ -1396,32 +1437,7 @@ function requirePaintedBarForExport() {
   }
 }
 
-// Ruler uses only its natural repeating ticks, including whitespace at the edges.
-// Ticker retains fixed references; neither family changes coordinates per frame.
+// Keep a fixed viewport without inserting edge paint or changing phase coordinates.
 function createBoundedTickGeometry(options) {
-  const geometry = (options.shader === 1 ? createRulerPatternGeometry : createTickerPatternGeometry)(options);
-  if (options.shader === 1) return geometry;
-  const x = Number(options.barStartX || 0), y = Number(options.barY || 0);
-  const width = Number(options.exactBarWidth || REFERENCE_WIDTH);
-  const height = Number(options.barHeight || REFERENCE_BAR_HEIGHT);
-  const markerWidth = Math.min(height / 18, geometry.topTickWidth);
-  const markers = [];
-  for (const edgeX of [x, x + width - markerWidth]) {
-    for (const row of ['top', 'bottom']) markers.push({ x: edgeX,
-      y: y + (row === 'top' ? 0 : height / 2), width: markerWidth, height: height / 2, row, isBoundary: true });
-  }
-  return { ...geometry, rects: geometry.rects.concat(markers) };
-}
-
-// A visible zero reference line keeps the waveform's domain fixed even when
-// its data starts/ends at zero. It is an axis, not an invented signal sample.
-function createWaveformBaselineGeometry(x, y, width, height) {
-  const thickness = height / 18;
-  return { x, y: y + height - thickness, width, height: thickness };
-}
-
-// Reference bounds do not replace empty encoded cells or alter digit spacing.
-function createEncodedBarBoundaryGeometry(x, y, width, height, cells) {
-  const markerWidth = Math.min(height / 18, width / Math.max(1, cells) / 4);
-  return [x, x + width - markerWidth].map(edgeX => ({ x: edgeX, y, width: markerWidth, height }));
+  return (options.shader === 1 ? createRulerPatternGeometry : createTickerPatternGeometry)(options);
 }

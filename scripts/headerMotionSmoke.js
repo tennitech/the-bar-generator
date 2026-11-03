@@ -32,7 +32,7 @@ async function main() {
             else setMotionEnabledForStyle(style,enabled);
           };
           const phase=()=>quantum?quantumControls.values().quantumPhase:liveMotionPhase;
-          if(quantum){if(document.querySelector('#quantum-motion-toggle').checked)throw new Error('Quantum autoplayed imported state');setPlaying(true);}
+          if(quantum && !document.querySelector('#quantum-motion-toggle').checked) throw new Error('Fresh Quantum route must default to Loop');
           const markup=letters.outerHTML,ctx=canvas.getContext('2d');
           let mutations=0;const observer=new MutationObserver(events=>mutations+=events.length);
           observer.observe(root,{childList:true,subtree:true,attributes:true});

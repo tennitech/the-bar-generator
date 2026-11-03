@@ -6,7 +6,7 @@
   root.logoClipboard = api;
 })(typeof window !== 'undefined' ? window : globalThis, function (root) {
   function native(mime) {
-    if (!root.isSecureContext || !root.navigator?.clipboard?.write || !root.ClipboardItem) return false;
+    if (!root.isSecureContext || !root.navigator?.clipboard?.write || !root.ClipboardItem || root.embedSupport?.clipboardBlocked()) return false;
     try {
       return typeof root.ClipboardItem.supports === 'function'
         ? root.ClipboardItem.supports(mime) : mime === 'image/png';
@@ -23,7 +23,8 @@
     for (const format of ['svg', 'png']) {
       const button = document.getElementById(`copy-${format}`), unavailable = mode(format) === 'unavailable';
       const label = unavailable ? `${format.toUpperCase()} copy unavailable` : `Copy ${format.toUpperCase()}`;
-      const description = unavailable ? `Use ${format.toUpperCase()} download` : format === 'svg' ? 'Vector format' : 'Transparent · selected raster size';
+      const description = root.embedSupport?.clipboardBlocked() ? 'Blocked by this page’s embedding permissions'
+        : unavailable ? `Use ${format.toUpperCase()} download` : format === 'svg' ? 'Vector format' : 'Transparent · selected raster size';
       button.querySelector('.option-label').innerHTML = root.FeatherIcons.getIconMarkup('copy', 'export_copy-icon') + label;
       button.querySelector('.option-desc').textContent = description;
       button.setAttribute('aria-label', `${label}: ${description}`);
@@ -59,7 +60,7 @@
       return { mime, width: format === 'svg' ? null : snapshot.dimensions.width, height: format === 'svg' ? null : snapshot.dimensions.height };
     } catch (error) {
       job.controller.abort();
-      const message = error.name === 'NotAllowedError' ? 'Copy was blocked. Focus this page and try again, or download the asset.'
+      const message = error.name === 'NotAllowedError' ? (root.embedSupport?.isEmbedded() ? 'Copy was blocked by the browser or brand portal. Focus this page and try again. If it stays blocked, the portal’s clipboard permissions may need updating.' : 'Copy was blocked. Focus this page and try again, or download the asset.')
         : `Copy failed: ${error.message} Try again or use a download.`;
       root.logoExportUI.finish(job, 'error', message);
       Toast.show(message, 'error');

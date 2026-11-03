@@ -18,14 +18,17 @@ const evidence = process.env.RPI_ICON_EVIDENCE;
       await page.goto(`${base}/generator/ticker/`);
       await page.waitForFunction(() => window.barShareController && window.FeatherIcons);
       for (const theme of ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray', 'lunar']) {
-        await page.selectOption('#style-select', theme === 'lunar' ? 'lunar' : 'ticker', { force: true });
-        await page.selectOption('#color-mode-select', theme, { force: true });
+        // Secondary colors are disabled for new selection; inspect their retained legacy appearance.
+        await page.evaluate(theme => {
+          const state = barShareController.capture();
+          state.controls['style-select'] = theme === 'lunar' ? 'lunar' : 'ticker';
+          state.controls['color-mode-select'] = theme;
+          history.replaceState({}, '', location.href.split('#')[0] + BarShareState.encodeState(state, barShareController.manifest));
+          dispatchEvent(new PopStateEvent('popstate'));
+        }, theme);
         if (theme === 'lunar') await page.waitForFunction(() => !!window.LUNAR_BAR_SVG_SOURCE);
         await page.waitForTimeout(80);
-        await page.click('#share-button');
-        await page.locator('#share-popover').evaluate(async menu => {
-          await Promise.all(menu.getAnimations().map(animation => animation.finished.catch(() => {})));
-        });
+        assert.equal(await page.locator('#share-button, #share-popover').count(), 0);
         const measured = await page.evaluate(() => {
           const signature = element => JSON.stringify(Array.from(element.children, child => ({
             tag: child.localName, attributes: Array.from(child.attributes, attr => [attr.name, attr.value]).sort(),
@@ -48,7 +51,7 @@ const evidence = process.env.RPI_ICON_EVIDENCE;
             directionLabels: Array.from(document.getElementById('triangles-direction-select').options, option => option.textContent.trim()) };
         });
         assert.equal(measured.overflow, false);
-        assert.equal(measured.buttons.length, 4);
+        assert.equal(measured.buttons.length, 3);
         for (const button of measured.buttons) assert.ok(button.height >= (touch ? 44 : 38));
         for (const icon of measured.icons) {
           assert.ok(icon.source, 'Action SVG differs from the pinned source');
@@ -58,10 +61,7 @@ const evidence = process.env.RPI_ICON_EVIDENCE;
           if (icon.visible) assert.ok(Math.abs(icon.width - icon.height) <= 1 / 64, JSON.stringify(icon));
         }
         assert.deepEqual(measured.directionLabels, ['Down right', 'Up right', 'Up left', 'Down left']);
-        assert.equal(await page.evaluate(() => document.activeElement.id), 'share-copy');
-        if (evidence) await page.screenshot({ path: path.join(evidence, `${engine}-${viewport.width}-${theme}-share.png`) });
-        await page.keyboard.press('Escape');
-        assert.equal(await page.evaluate(() => document.activeElement.id), 'share-button');
+        if (evidence) await page.screenshot({ path: path.join(evidence, `${engine}-${viewport.width}-${theme}-toolbar.png`) });
         if (touch && theme !== 'lunar') {
           await page.click('#save-button');
           await page.locator('#save-menu').evaluate(async menu => {

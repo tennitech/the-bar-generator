@@ -57,3 +57,25 @@ test('2D export snapshots keep their resolution independently of viewer zoom', a
   r.drawCanonicalBarPattern(target, 20, 30, 250, 18);
   expect(target.image.mock.calls.at(-1)[0].width).toBe(1000);
 });
+
+
+test('first preview waits for the exact image and changes remain atomic', async () => {
+  const r = renderer(4096);
+  expect(r.getReadyCanonicalBarImage(r)).toBeNull();
+  expect(r.image).not.toHaveBeenCalled();
+  await Promise.resolve();
+  expect(r.getReadyCanonicalBarImage(r)).toBeTruthy();
+  r.buildCurrentBarPatternSVGFragment = () => '<path d="M0 0h250v18H0z"/>';
+  expect(r.getReadyCanonicalBarImage(r)).toBeNull();
+  await Promise.resolve();
+  expect(r.getReadyCanonicalBarImage(r).svg).toContain('h250v18');
+});
+
+test('the committed draw reuses its prepared image without rebuilding the snapshot', () => {
+  const r = renderer(4096);
+  const prepared = { width: 1000, height: 72 };
+  r.loadImage = jest.fn();
+  r.drawCanonicalBarPattern(r, 0, 0, 250, 18, prepared);
+  expect(r.image).toHaveBeenCalledWith(prepared, 0, 0, 250, 18);
+  expect(r.loadImage).not.toHaveBeenCalled();
+});

@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { RPI_LOGO_GEOMETRY: geometry, clipBarSVG, getBarEdgeTransform } = require('../js/utils/logoGeometry');
+const { RPI_LOGO_GEOMETRY: geometry, clipBarSVG } = require('../js/utils/logoGeometry');
 
 test('letter commands preserve the complete official vector at uniform half scale', () => {
   const source = fs.readFileSync(path.join(__dirname, '../assets/images/RPI Logo.svg'), 'utf8');
@@ -28,14 +28,9 @@ test('stroke-inclusive SVG clipping preserves caller bounds and fragment', () =>
   expect(clipped).toMatch(/<g clip-path="url\(#bar-bounds-/);
 });
 
-test('fits real painted extents to both edges at translated and scaled sizes', () => {
-  for (const width of [60, 250, 500]) for (const start of [-20, 0, 37]) {
-    const left = start + width * 0.02, right = start + width * 0.98;
-    const fit = getBarEdgeTransform(left, right, start, width);
-    expect(left * fit.scale + fit.offset).toBeCloseTo(start, 10);
-    expect(right * fit.scale + fit.offset).toBeCloseTo(start + width, 10);
-    // Uniform horizontal mapping preserves the relative data/spacing ratios.
-    expect((right - left) * fit.scale).toBeCloseTo(width, 10);
-  }
-  expect(getBarEdgeTransform(0, 0, 0, 250)).toEqual({ offset: 0, scale: 1 });
+test('natural inset artwork keeps its coordinates inside the fixed viewport', () => {
+  const fragment = '<rect x="5" y="2" width="240" height="14"/>';
+  const clipped = clipBarSVG(fragment, 0, 0, 250, 18);
+  expect(clipped).toContain(fragment);
+  expect(clipped).not.toMatch(/transform|data-bar-edge-fit/);
 });

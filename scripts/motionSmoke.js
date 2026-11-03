@@ -62,7 +62,7 @@ async function main() {
         `${style}: reverse change jumped position`);
       assert.equal(result.paused, result.afterPause, `${style}: paused phase advanced`);
       assert.equal(result.paused, result.afterResume, `${style}: resume reset phase`);
-      const direction = style === 'ticker' ? -1 : 1;
+      const direction = style === 'ticker' ? 1 : -1;
       const subdivisions = style === 'ruler' ? 10 : style === 'ticker' ? 5 : 1;
       for (let i = 1; i < result.phases.length; i++) {
         const step = ((result.phases[i] - result.phases[i - 1]) * direction + 1) % 1;

@@ -8,6 +8,11 @@ PNG and GIF exports share Standard (1000 px logo) and Large (2000 px logo) choic
 
 **[Open the site](https://tennitech.github.io/the-bar-generator/)** · **[Report a bug](https://github.com/tennitech/the-bar-generator/issues/new/choose)** · **[Contribute](contributing.md)**
 
+Public Share controls are currently unavailable. Existing snapshot links still
+load. Downloads and image copying stay in the embedded generator; access
+still depends on the host's iframe permissions.
+See [embedded export requirements and test coverage](references/frontify_exports.md).
+
 ## Project intent and reading map
 
 The tool is a place to explore meaningful systems with technical precision. Keep the controls calm and clear so the generated bar can be expressive. Use RPI's curious, humble, genuine, resilient, offbeat, and relatable voice. Explain the pattern's actual rule and use specific evidence.
@@ -134,18 +139,20 @@ GitHub Pages publishes the root of `main`. A merge to `main` can update the publ
 
 Project software uses the [MIT license](LICENSE). Retain [third-party notices](THIRD_PARTY_NOTICES.md) and their license files. RPI trademark rights and bundled font, artwork, and audio permissions need separate review. See the [asset permission record](references/asset_licensing.md). The software license does not establish approval for every generated mark.
 
-Additional focused rendering, sharing and interaction checks:
+Additional focused rendering, legacy-snapshot and interaction checks:
 
 ```sh
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:integration
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/triangleShareSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/shareSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/embedSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/geometrySmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/geometryEdgesSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/quantumIntegrationSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/firstPaintSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/pageEntranceSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/headerMotionSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/headerLayoutSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/introLifecycleSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/iconsSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/exportSnapshotSmoke.js
@@ -153,6 +160,7 @@ RPI_SITE_URL=http://127.0.0.1:8000 node scripts/urlStateSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/colorPickerSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/neuralNetworkSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/selectorSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/displayScalingSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/marqueeHomeSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit node scripts/marqueeHomeSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_MARQUEE_CHECK=1 node scripts/generateMarqueeAssets.js

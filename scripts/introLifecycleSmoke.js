@@ -23,7 +23,13 @@ async function main(){
   assert.ok(entrance.length<300);assert.equal(entrance[0].disabled,true);
   assert.ok(entrance.some(f=>f.chrome>0.05&&f.chrome<0.95));
   entrance.forEach(f=>{assert.ok(Math.abs(f.chrome-f.background)<0.035);assert.ok(Math.abs(f.chrome-f.stage)<0.02)});
-  const rects=await page.evaluate(()=>['#logo-animation-replay','.header-actions a[aria-label*="GitHub"]','#logo-animation-close','#mobile-menu-toggle'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return[r.x,r.y,r.width,r.height]}));
+  const rects=await page.evaluate(()=>{
+   const github=document.querySelector('.header-actions a[aria-label*="GitHub"]');
+   const r=github.getBoundingClientRect();
+   const replayAnchor=r.width>0&&r.height>0?github:document.querySelector('#save-button');
+   return [document.querySelector('#logo-animation-replay'),replayAnchor,document.querySelector('#logo-animation-close'),document.querySelector('#mobile-menu-toggle')].map(el=>{const r=el.getBoundingClientRect();return[r.x,r.y,r.width,r.height]});
+  });
+  assert.ok(rects[0][2]>=(touch?40:30)&&rects[0][3]>=(touch?40:30),`Replay retains a usable target: ${JSON.stringify(rects[0])}`);
   assert.deepEqual(rects[0],rects[1]);assert.deepEqual(rects[2],rects[3]);
   const exit=await page.evaluate(async()=>{
    const controller=await ensureHeaderLogoAnimationController();controller.close();
@@ -32,7 +38,7 @@ async function main(){
    return{frames,hidden:o.hidden,focus:document.activeElement.id,bodyFlag:document.body.classList.contains('has-logo-animation')};
   });
   if(evidence)await fs.writeFile(path.join(evidence,`${engine}-intro-timing-${touch?'phone':'desktop'}.json`),JSON.stringify({entrance,exit},null,2));
-  assert.equal(exit.hidden,true);assert.equal(exit.focus,touch?'header-logo-preview':'brand-title');assert.equal(exit.bodyFlag,false);
+  assert.equal(exit.hidden,true);assert.equal(exit.focus,'brand-title');assert.equal(exit.bodyFlag,false);
   assert.ok(exit.frames.some(f=>f.chrome>0.05&&f.chrome<0.95));
   exit.frames.forEach(f=>{assert.equal(f.disabled,true);assert.equal(f.inert,true);assert.ok(Math.abs(f.chrome-f.background)<0.035);assert.ok(Math.abs(f.chrome-f.stage)<0.02)});
   await page.evaluate(async()=>{const c=await ensureHeaderLogoAnimationController();for(let i=0;i<8;i++){await c.open();c.close();}await c.open();});

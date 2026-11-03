@@ -14,7 +14,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8765';
         const controls = {...state.controls, 'style-select':style, 'color-mode-select':'gold',
           'waveform-envelope-toggle':true, 'waveform-frequency-slider':'37',
           'waveform-type-slider':'3', 'ticker-ratio-slider':'5', 'ticker-width-ratio-slider':'10',
-          'quantum-phase':'0.35', 'quantum-speed-slider':'0.8', 'quantum-reverse-toggle':true};
+          'neural-network-input-slider':'33', 'quantum-phase':'0.35', 'quantum-speed-slider':'0.8', 'quantum-reverse-toggle':true};
         return {style, fragment:BarShareState.encodeState({...state,name:'Exploration α',controls},barShareController.manifest)};
       });
     });
@@ -34,26 +34,17 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8765';
         name:document.querySelector('#share-loaded-name').textContent,
         toolbar:Array.from(document.querySelectorAll('.header-actions > button,.header-actions > .save-section > button'),field=>{const r=field.getBoundingClientRect();return {id:field.id,x:r.x,y:r.y,width:r.width,height:r.height};})
       }));
+      assert.equal(await page.locator('#share-button, #share-popover').count(), 0);
       const early = await state();
       assert.equal(early.theme,'gold','validated fragment overrides query theme');
       assert.equal(early.name,'Exploration α');
+      assert.equal(early.labels.find(label => label.id === 'neural-network-input-display').text, '33%');
       await navigation;
       await page.waitForFunction(() => window.barShareController);
       assert.deepEqual(await state(),early,`${width}px reduced=${reduced} ${snapshot.style}: complete startup state stays stable`);
       await context.close();
       passed++;
     }
-    // An early Share click is honored once its existing runtime dialog is ready.
-    const context = await browser.newContext();
-    await context.route('**/js/main.js*',async route=>{await new Promise(resolve=>setTimeout(resolve,1000));await route.continue();});
-    const page = await context.newPage();
-    const navigation = page.goto(`${base}/generator/solid/`);
-    await page.locator('#share-button').click();
-    assert.equal(await page.locator('#p5-container canvas').count(),0);
-    await navigation;
-    await page.locator('#share-popover').waitFor();
-    assert.equal(await page.locator('#share-button').getAttribute('aria-expanded'),'true');
-    await context.close();
-    console.log(`Passed ${passed} shared first-paint states and early Share intent.`);
+    console.log(`Passed ${passed} legacy shared first-paint states with Share controls removed.`);
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

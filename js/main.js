@@ -15,7 +15,6 @@ let headerLogoAnimationLoadPromise = null;
 let headerLogoAnimationControllerPromise = null;
 let binaryInput;
 let binaryGroup;
-let binaryAudioBtn;
 let morseInput;
 let morseGroup;
 let morseAudioBtn;
@@ -593,7 +592,7 @@ const MOTION_ENABLED_BY_STYLE = {
   waveform: DEFAULT_MOTION_ENABLED
 };
 const DEFAULT_ZOOM_LEVEL = 1;
-const HEADER_ACTION_COLLAPSE_BUFFER = 96;
+const HEADER_ACTION_COLLAPSE_BUFFER = 16;
 
 let zoomLevel = DEFAULT_ZOOM_LEVEL;
 let zoomTargetLevel = DEFAULT_ZOOM_LEVEL;
@@ -774,7 +773,6 @@ function renderPreviewButton(button, kind, options = {}) {
 
 function initializePreviewButtons() {
   [
-    [binaryAudioBtn, 'audio'],
     [morseAudioBtn, 'audio'],
     [lunarAudioBtn, 'audio'],
     [tickerAudioBtn, 'audio'],
@@ -1186,8 +1184,6 @@ function getCurrentAudioPreviewType() {
   switch (currentShader) {
     case 2:
       return 'ticker';
-    case 3:
-      return 'binary';
     case 4:
       return 'waveform';
     case 7:
@@ -1237,7 +1233,6 @@ function getWaveformEnvelopeSettings() {
 
 function getAudioButtonConfig() {
   return [
-    { type: 'binary', button: binaryAudioBtn, currentShader: 3 },
     { type: 'morse', button: morseAudioBtn, currentShader: 7 },
     { type: 'ticker', button: tickerAudioBtn, currentShader: 2 },
     { type: 'waveform', button: waveformAudioBtn, currentShader: 4 },
@@ -1866,8 +1861,7 @@ function textToBinary(text) {
 
   // UTF-8 preserves the user's text; the old ASCII fallback silently encoded
   // every non-ASCII character as "A".
-  text = Array.from(sanitizeBarText(text).replace(/[\t\n\r]/g, ''))
-    .slice(0, 100).join('');
+  text = normalizeBinaryText(sanitizeBarText(normalizeBinaryText(text)));
 
   let binary = [];
   const bytes = new TextEncoder().encode(text);
@@ -2311,7 +2305,6 @@ function setup() {
   colorModeSelect = document.getElementById('color-mode-select');
   binaryInput = document.getElementById('binary-input');
   binaryGroup = document.getElementById('binary-group');
-  binaryAudioBtn = document.getElementById('binary-audio-btn');
   morseInput = document.getElementById('morse-input');
   morseGroup = document.getElementById('morse-group');
   morseAudioBtn = document.getElementById('morse-audio-btn');
@@ -2846,6 +2839,9 @@ function setup() {
 
   // Setup style selector
   styleSelect.addEventListener('change', function () {
+    // A deliberate menu selection starts its motion; restored snapshots keep their transport.
+    const style = normalizeStyleValue(styleSelect.value);
+    if (styleSupportsMotion(style)) setMotionEnabledForStyle(style, !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     handleStyleChange();
     updateUrlParameters();
   });
@@ -2899,13 +2895,6 @@ function setup() {
     lunarAudioBtn.addEventListener('click', function (e) {
       e.preventDefault();
       togglePreviewAudio('lunar');
-    });
-  }
-
-  if (binaryAudioBtn) {
-    binaryAudioBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      togglePreviewAudio('binary');
     });
   }
 
@@ -3376,7 +3365,7 @@ function setup() {
 
   setupLunarSplashdownCounter();
   setupShareLinks();
-  window.addEventListener('urlstateerror', () => Toast.show('The address could not update. Use Share to copy the current bar.', 'error'));
+  window.addEventListener('urlstateerror', () => Toast.show('The address could not update. Keep this page open to preserve your current bar.', 'error'));
 
   // Add global keyboard event listener for more reliable shift detection
   document.addEventListener('keydown', function (event) {
@@ -3497,8 +3486,7 @@ function setup() {
 }
 
 function handleBinaryInput() {
-  const text = binaryInput.value || "RPI";
-  updateBinaryData(text);
+  updateBinaryData(binaryInput.value);
 }
 
 function handleMorseInput() {
@@ -3506,23 +3494,9 @@ function handleMorseInput() {
 }
 
 function updateBinaryData(text) {
-  // Use profanity filter if available
-  let cleanText = text;
-  if (window.ProfanityFilter && typeof window.ProfanityFilter.sanitizeText === 'function') {
-    cleanText = window.ProfanityFilter.sanitizeText(text);
-    if (cleanText !== text) {
-      console.log('Profanity filtered from binary input');
-      // Update input field if it matches current text to show user the filtered version
-      if (binaryInput && binaryInput.value === text) {
-        binaryInput.value = cleanText;
-      }
-    }
-  }
-
-  binaryData = {
-    text: cleanText,
-    binary: textToBinary(cleanText)
-  };
+  const cleanText = normalizeBinaryText(sanitizeBarText(normalizeBinaryText(text)));
+  if (binaryInput) binaryInput.value = cleanText;
+  binaryData = { text: cleanText, binary: textToBinary(cleanText) };
   binaryLength = binaryData.binary.length;
 }
 
@@ -4066,6 +4040,7 @@ function handleSidebarTransitionEnd(event) {
 }
 
 function handleStyleChange() {
+  if (typeof clearCanonicalBarPreviewError === 'function') clearCanonicalBarPreviewError();
   if (window.BarInformation) window.BarInformation.sync();
   // Get the selected style from dropdown
   const selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
@@ -4074,7 +4049,7 @@ function handleStyleChange() {
   }
 
   if (selectedStyle === 'lunar' && typeof window.getLunarBarSVGSourceForColorMode !== 'function') {
-    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20261027-artemis-vector')
+    loadExternalScriptOnce('js/utils/lunarBarAsset.js?v=20261103-display-motion-embed')
       .then(() => {
         if (styleSelect && styleSelect.value === 'lunar') {
           requestUpdate();
@@ -4351,7 +4326,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
     tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
     loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
-    binaryText: binaryInput ? sanitizeBarText(binaryInput.value || 'RPI') : 'RPI',
+    binaryText: binaryInput ? normalizeBinaryText(sanitizeBarText(normalizeBinaryText(binaryInput.value || 'RPI'))) : 'RPI',
     waveformPoints: getWaveformRenderPointCount(exactBarWidth, waveformFrequencySlider ? Number(waveformFrequencySlider.value) : 24),
     waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
     waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
@@ -4432,21 +4407,9 @@ function buildCurrentBarPatternSVGFragment({
       generateStaticPackedCircles: getCachedBarCircleGeometry, values
     });
   }
-  if (currentShader === 6 && markup.trim()) {
-    const digits = parseNumericString(values.numericValue);
-    for (const marker of createEncodedBarBoundaryGeometry(barStartX, barY, exactBarWidth, barHeight, digits.length)) {
-      markup += `<rect x="${marker.x}" y="${marker.y}" width="${marker.width}" height="${marker.height}" fill="${fgColor}"/>`;
-    }
-  }
-  if (currentShader === 4) {
-    const axis = createWaveformBaselineGeometry(barStartX, barY, exactBarWidth, barHeight);
-    markup += `<rect x="${axis.x}" y="${axis.y}" width="${axis.width}" height="${axis.height}" fill="${fgColor}"/>`;
-  }
   if (!markup.trim()) return '';
-  // Data/reference geometry, bounded circles and nested artwork retain fixed domains.
-  const fittedMarkup = [1, 2, 3, 4, 5, 6, 7, 12, 16, 22, 23, 24].includes(currentShader)
-    ? markup : fitBarSVGToEdges(markup, barStartX, barY, exactBarWidth, barHeight);
-  return clipBarSVG(fittedMarkup, barStartX, barY, exactBarWidth, barHeight);
+  // Natural gaps are valid. A viewport contains paint without inventing it.
+  return clipBarSVG(markup, barStartX, barY, exactBarWidth, barHeight);
 }
 
 function buildCurrentBarOnlySVG() {
@@ -4576,8 +4539,6 @@ function renderHeaderMotionPreview() {
     ctx.lineTo(REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT);
     ctx.closePath();
     ctx.fill();
-    const axis = createWaveformBaselineGeometry(0, 0, REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT);
-    ctx.fillRect(axis.x, axis.y, axis.width, axis.height);
 
   }
   ctx.restore();
@@ -4639,7 +4600,7 @@ async function ensureHeaderLogoAnimationController() {
   }
 
   headerLogoAnimationControllerPromise = (async () => {
-    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261028-bar24-26-release');
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261103-display-motion-embed');
 
     if (!window.LogoAnimationOverlay
       || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {
@@ -5431,8 +5392,6 @@ async function startAudio() {
 
       if (requestedType === 'waveform') {
         startWaveformAudio();
-      } else if (requestedType === 'binary') {
-        startSequenceAudio('binary');
       } else if (requestedType === 'morse') {
         startSequenceAudio('morse');
       } else if (requestedType === 'ticker') {
@@ -5653,7 +5612,7 @@ function stopWaveformAudio() {
 }
 
 function startSequenceAudio(type) {
-  if (sequenceContext.active) return;
+  if (!['morse', 'ticker', 'staff'].includes(type) || sequenceContext.active) return;
   const previousType = sequenceContext.type;
   sequenceContext.active = true;
   isAudioPlaying = true;
@@ -5681,8 +5640,6 @@ function startSequenceAudio(type) {
     sequenceContext.osc1.type = 'triangle'; // Top ticker
     sequenceContext.osc2.type = 'square';   // Bottom ticker
     sequenceContext.osc2.start(audioContext.currentTime);
-  } else if (type === 'binary') {
-    sequenceContext.osc1.type = 'sine'; // FSK
   } else if (type === 'morse') {
     sequenceContext.osc1.type = 'sine'; // CW
   }
@@ -5776,8 +5733,6 @@ function scheduleSequenceLoop() {
   while (sequenceContext.active && sequenceContext.nextNoteTime < t + lookahead) {
     if (sequenceContext.type === 'morse') {
       scheduleMorseNote();
-    } else if (sequenceContext.type === 'binary') {
-      scheduleBinaryNote();
     } else if (sequenceContext.type === 'ticker') {
       scheduleTickerNote();
     } else if (sequenceContext.type === 'staff') {
@@ -5827,40 +5782,6 @@ function scheduleMorseNote() {
 
   sequenceContext.nextNoteTime += unitDuration;
   sequenceContext.currentNote++;
-}
-
-function scheduleBinaryNote() {
-  const data = binaryData.binary;
-  if (!data || data.length === 0) {
-    sequenceContext.nextNoteTime += 1.0;
-    return;
-  }
-
-  const bitDuration = 0.15; // 150ms per bit (baud rate)
-  const idx = sequenceContext.currentNote % data.length;
-  const bit = data[idx];
-
-  const time = sequenceContext.nextNoteTime;
-  const gain = sequenceContext.gain1.gain;
-  const osc = sequenceContext.osc1.frequency;
-
-  // FSK modulation: 400Hz for 0, 800Hz for 1
-  const freq = bit === '1' ? 800 : 400;
-
-  // Small envelope for clicks and framing
-  gain.setValueAtTime(0, time);
-  gain.linearRampToValueAtTime(0.3, time + 0.01);
-  osc.setValueAtTime(freq, time);
-
-  gain.setValueAtTime(0.3, time + bitDuration - 0.01);
-  gain.linearRampToValueAtTime(0, time + bitDuration);
-
-  sequenceContext.nextNoteTime += bitDuration;
-  sequenceContext.currentNote++;
-
-  if (sequenceContext.currentNote % data.length === 0) {
-    sequenceContext.nextNoteTime += 1.5; // 1.5s pause before repeating
-  }
 }
 
 function scheduleTickerNote() {
@@ -6821,6 +6742,14 @@ function draw() {
     && window._renderer === lastLunarPreviewRenderer && isLunarBarVectorPreviewReady()) return;
   if (!lunarFrameKey) invalidateLunarPreviewFrame();
 
+  // Commit a complete mark, never a letters-only frame while an SVG decodes.
+  // Firefox can finish the image asynchronously after the initial p5 draw. Keep
+  // the previous complete canvas during parameter/size changes until ready.
+  const usesCanonicalImage = ![1, 2, 4, 22, 24].includes(currentShader);
+  const readyBarImage = usesCanonicalImage ? getReadyCanonicalBarImage(window) : null;
+  if (usesCanonicalImage && !readyBarImage) return;
+  if (currentShader === 24 && typeof window.createLunarBarVectorFragment !== 'function') return;
+
   // Keep the canvas transparent so the mark sits directly on the themed workspace.
   clear();
 
@@ -6864,7 +6793,13 @@ function draw() {
   pop();
 
   // Draw bottom bar
-  drawBottomBar(currentWidth, responsiveLogoScale);
+  drawBottomBar(currentWidth, responsiveLogoScale, readyBarImage);
+
+  const previewCanvas = window._renderer?.canvas;
+  if (previewCanvas?.dataset && previewCanvas.dataset.previewReady !== 'true') {
+    previewCanvas.dataset.previewReady = 'true';
+    window.PageEntrance?.revealGenerator?.();
+  }
 
   if (lunarFrameKey && isLunarBarVectorPreviewReady()) {
     lastLunarPreviewFrame = lunarFrameKey;
@@ -6877,7 +6812,7 @@ function draw() {
   }
 }
 
-function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsiveLogoScale()) {
+function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsiveLogoScale(), readyBarImage = null) {
   // Static preview and raster exports consume the same clipped SVG as the header.
   // Motion keeps its immediate shared geometry, avoiding asynchronous frame lag.
   if (![1, 2, 4, 22].includes(currentShader)) {
@@ -6893,7 +6828,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       drawLunarBarPattern(null, 0, 0, REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT,
         scheme ? scheme.fg : '#000000', currentColorMode);
     } else {
-      drawCanonicalBarPattern(window, 0, 0, REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT);
+      drawCanonicalBarPattern(window, 0, 0, REFERENCE_WIDTH, REFERENCE_BAR_HEIGHT, readyBarImage);
     }
     pop();
     return;
@@ -7095,8 +7030,6 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
     vertex(barStartX + exactBarWidth, rectHeight);
 
     endShape(CLOSE);
-    const axis = createWaveformBaselineGeometry(barStartX, 0, exactBarWidth, rectHeight);
-    rect(axis.x, axis.y, axis.width, axis.height);
 
   } else if (currentShader === 5) {
     // Circles mode - draw circle patterns within the bar area
@@ -7938,14 +7871,13 @@ function setupShareLinks() {
         button.classList.toggle('active', Number(button.dataset.duration) === 1);
       });
       resetAnimationClock();
-      for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = DEFAULT_MOTION_ENABLED;
+      for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       applyUrlParameters();
       const quantumQuery = new URLSearchParams(location.search);
       document.getElementById('quantum-phase').value = quantumModel.normalizePhase(quantumQuery.get('quantumPhase') || 0);
       document.getElementById('quantum-speed-slider').value = quantumModel.normalizeSpeed(quantumQuery.has('quantumSpeed') ? quantumQuery.get('quantumSpeed') : 1);
       document.getElementById('quantum-reverse-toggle').checked = quantumQuery.get('quantumReverse') === 'true';
-      window.quantumControls.pause();
-      window.quantumControls.sync();
+      window.quantumControls.select();
       syncMotionToggleState();
       syncAllCustomSelects();
       window.ParameterControls.refresh();
