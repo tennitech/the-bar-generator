@@ -14,36 +14,69 @@ class Toast {
         } else {
             this.container = document.getElementById('toast-container');
         }
+        for (const [id, role] of [['toast-status', 'status'], ['toast-alert', 'alert']]) {
+            if (document.getElementById(id)) continue;
+            const live = document.createElement('div');
+            live.id = id;
+            live.className = 'u-sr-only';
+            live.setAttribute('role', role);
+            live.setAttribute('aria-atomic', 'true');
+            document.body.appendChild(live);
+        }
     }
 
-    static show(message, type = 'info', duration = 3000) {
+    static show(message, type = 'info', duration = type === 'error' ? 6000 : 4000) {
         if (!this.container) this.init();
-
+        // Repeat outcomes replace themselves rather than piling up identical notices.
+        for (const previous of Array.from(this.container.children)) {
+            if (previous.querySelector('.toast-message')?.textContent === String(message)) previous.remove();
+        }
+        while (this.container.children.length >= 3) this.container.firstElementChild.remove();
         const toast = document.createElement('div');
+        const previousFocus = document.activeElement;
         toast.className = `toast ${type}`;
-
-        // Icon based on type
+        const icon = document.createElement('span');
+        icon.className = 'toast-icon';
+        icon.setAttribute('aria-hidden', 'true');
         const iconName = type === 'success' ? 'check' : type === 'error' ? 'x-circle' : 'info';
-        const iconSvg = window.FeatherIcons.getIconMarkup(iconName, 'toast_icon');
-
-        toast.innerHTML = `
-      <div class="toast-icon">${iconSvg}</div>
-      <div class="toast-message">${message}</div>
-    `;
-
+        icon.innerHTML = window.FeatherIcons.getIconMarkup(iconName, 'toast_icon');
+        const text = document.createElement('div');
+        text.className = 'toast-message';
+        const dismiss = document.createElement('button');
+        dismiss.type = 'button';
+        dismiss.className = 'toast_dismiss';
+        dismiss.setAttribute('aria-label', 'Dismiss message');
+        dismiss.textContent = '×';
+        toast.append(icon, text, dismiss);
         this.container.appendChild(toast);
-
-        // Remove after duration
-        setTimeout(() => {
-            toast.style.animation = 'fadeOutRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards';
-            toast.addEventListener('animationend', () => {
-                if (toast.parentNode) {
-                    toast.parentNode.removeChild(toast);
-                }
-            });
-        }, duration);
+        // Keep a persistent live region; a newly inserted status with content
+        // is not announced consistently. The visible message remains immediate.
+        text.textContent = String(message);
+        const live = document.getElementById(type === 'error' ? 'toast-alert' : 'toast-status');
+        live.textContent = '';
+        requestAnimationFrame(() => { if (toast.isConnected) live.textContent = String(message); });
+        let timer;
+        const remove = () => {
+            clearTimeout(timer);
+            const restoreFocus = toast.contains(document.activeElement);
+            toast.remove();
+            if (restoreFocus && previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+        };
+        const schedule = () => {
+            clearTimeout(timer);
+            if (duration > 0) timer = setTimeout(remove, duration);
+        };
+        dismiss.addEventListener('click', remove);
+        toast.addEventListener('pointerenter', () => clearTimeout(timer));
+        toast.addEventListener('pointerleave', () => { if (!toast.contains(document.activeElement)) schedule(); });
+        toast.addEventListener('focusin', () => clearTimeout(timer));
+        toast.addEventListener('focusout', event => { if (!toast.contains(event.relatedTarget)) schedule(); });
+        schedule();
     }
+
 }
 
 // Expose globally
 window.Toast = Toast;
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => Toast.init(), { once: true });
+else Toast.init();

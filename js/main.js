@@ -2652,25 +2652,17 @@ function setup() {
     requestUpdate();
   });
 
-  // Setup circles sliders with display updates and debouncing
-  let circleUpdateTimeout;
-
-  function debouncedCircleUpdate() {
-    clearTimeout(circleUpdateTimeout);
-    circleUpdateTimeout = setTimeout(() => {
-      // Force redraw after parameter changes
-      redraw();
-      updateUrlParameters();
-    }, 50); // 50ms debounce
-  }
-
+  // Match the other controls: update state and preview on every input, without
+  // waiting for the user to stop dragging.
   circlesDensitySlider.addEventListener('input', () => {
     updateCirclesDensityDisplay();
-    debouncedCircleUpdate();
+    updateUrlParameters();
+    requestUpdate();
   });
   circlesSizeVariationSlider.addEventListener('input', () => {
     updateCirclesSizeVariationDisplay();
-    debouncedCircleUpdate();
+    updateUrlParameters();
+    requestUpdate();
   });
 
   updateCirclesDensityDisplay(); // Set initial value
@@ -2679,6 +2671,7 @@ function setup() {
   // Setup circles fill selector
   circlesFillSelect.addEventListener('change', function () {
     updateUrlParameters();
+    requestUpdate();
   });
 
   // Setup mobile menu toggle

@@ -244,3 +244,19 @@ test('same-page shared and legacy restoration refresh action state after the com
   bridge.legacy();
   expect(Object.values(h.context.MOTION_ENABLED_BY_STYLE)).toEqual([false, false]);
 });
+
+test('default descriptions reflect authored values, not the current edited value', () => {
+  const h = fixture();
+  const describe = h.context.ParameterControls.defaultValueLabel;
+  expect(describe(h.fields['waveform-type-slider'])).toBe('Sine');
+  expect(describe(h.fields['lines-variant-slider'])).toBe('MD');
+  expect(describe(h.fields['ticker-ratio-slider'])).toBe('2:1');
+  expect(describe(h.fields['ticker-width-ratio-slider'])).toBe('1:2');
+  expect(describe(h.fields['quantum-phase'])).toBe('0.0%');
+  expect(describe(h.fields['waveform-envelope-toggle'])).toBe('Off');
+  h.fields['ticker-ratio-slider'].value = 5;
+  expect(describe(h.fields['ticker-ratio-slider'])).toBe('2:1');
+  expect(describe({ type: 'text', defaultValue: '' })).toBe('Empty');
+  expect(describe({ tagName: 'SELECT', options: [{ value: 'one', textContent: 'One' },
+    { value: 'two', textContent: 'Two', defaultSelected: true }] })).toBe('Two');
+});
