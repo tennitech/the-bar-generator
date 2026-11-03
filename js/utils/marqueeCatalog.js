@@ -12,7 +12,7 @@
     ['union', 'Union'], ['wave-quantum', 'Quantum'],
     ['runway', 'Runway — RPI Flying Club'], ['lunar', 'Artemis II']
   ].map(([value, label]) => Object.freeze({ value, label,
-    path: `assets/images/marquee-bars/${value}.svg?v=20261103-waveform-parameters` }));
+    path: `assets/images/marquee-bars/${value}.svg?v=20261103-header-order` }));
   const api = Object.freeze({ entries: Object.freeze(entries) });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   scope.MarqueeCatalog = api;

@@ -94,6 +94,11 @@
     const description = descriptions[style.value] || descriptions.solid;
     root.querySelector('#bar-information-title').textContent = description.title;
     root.querySelector('#bar-information-description').textContent = description.text;
+    const artemis = root.querySelector('#artemis-information');
+    if (artemis) {
+      artemis.hidden = style.value !== 'lunar';
+      if (artemis.hidden) artemis.open = false;
+    }
   }
 
   globalScope.BarInformation = { descriptions, sync };

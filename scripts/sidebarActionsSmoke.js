@@ -43,7 +43,7 @@ async function checkLayout(page, compact) {
       return { x: r.x, y: r.y, width: r.width, height: r.height, right: r.right, bottom: r.bottom };
     };
     const trigger = document.querySelector('#save-button');
-    return { sidebar: box('#app-sidebar'), trigger: box('#save-button'), menu: box('#save-menu'),
+    return { sidebar: box('#app-sidebar'), actions: box('.header-actions'), trigger: box('#save-button'), toggle: box('#mobile-menu-toggle'), menu: box('#save-menu'),
       content: box('.sidebar-content'), overflow: document.documentElement.scrollWidth > innerWidth,
       collapsed: trigger.classList.contains('is-icon-only'), viewport: { width: innerWidth, height: innerHeight } };
   });
@@ -52,7 +52,9 @@ async function checkLayout(page, compact) {
   assert.ok(layout.menu.width >= Math.min(272, layout.viewport.width - 16), JSON.stringify(layout));
   assert.ok(layout.menu.bottom <= layout.viewport.height + 1, JSON.stringify(layout));
   if (!compact && !layout.collapsed) {
-    assert.ok(Math.abs(layout.trigger.width - layout.menu.width) < 1, JSON.stringify(layout));
+    assert.ok(Math.abs(layout.actions.width - layout.menu.width) < 1, JSON.stringify(layout));
+    assert.ok(Math.abs(layout.actions.x - layout.menu.x) < 1, JSON.stringify(layout));
+    assert.ok(Math.abs(layout.toggle.right - layout.menu.right) < 1, JSON.stringify(layout));
     assert.equal(Math.round(layout.sidebar.width), 352);
   }
   await page.screenshot({ path: `${evidence}/menu-${++layoutNumber}.png` });

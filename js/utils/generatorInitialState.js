@@ -189,8 +189,6 @@
       toggle.setAttribute('aria-expanded', String(!compact));
       toggle.setAttribute('aria-label', compact ? 'Open design controls' : 'Close design controls');
     }
-    const saveLabel = root.querySelector('#save-button-label');
-    if (saveLabel && theme === 'lunar') saveLabel.textContent = 'Learn About RPI x Artemis';
     if (root.isConnected) syncHeaderLayout();
     return theme;
   }

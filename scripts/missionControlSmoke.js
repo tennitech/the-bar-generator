@@ -107,17 +107,20 @@ async function main() {
         await page.keyboard.press('Escape');
         assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
       } else assert.equal(await toggle.isVisible(), false, 'Existing compact layout hides the counter');
-      assert.equal(await page.locator('#save-button').getAttribute('aria-label'), 'Open RPI x Artemis II credits');
+      assert.equal(await page.locator('#save-button').getAttribute('aria-label'), 'Open asset download menu');
       if (touch) await page.locator('#save-button').tap();
       else await page.locator('#save-button').click();
-      assert.match(await page.locator('#save-menu').innerText(), /Reid Wiseman|Artemis|RPI/i);
-      await page.screenshot({ path: path.join(evidence, `${engine}-${caseName}-credits.png`) });
+      assert.match(await page.locator('#save-menu').innerText(), /Download SVG/);
+      assert.equal(await page.locator('#export-settings').isVisible(), true);
+      assert.equal(await page.locator('#save-loop-gif').isVisible(), false);
+      assert.equal(await page.locator('#artemis-information').count(), 1);
+      await page.screenshot({ path: path.join(evidence, `${engine}-${caseName}-exports.png`) });
       if (touch) await page.locator('#save-button').tap();
       else await page.locator('#save-button').click();
       assert.equal(await page.locator('#save-button').getAttribute('aria-expanded'), 'false');
       await page.screenshot({ path: path.join(evidence, `${engine}-${touch ? 'touch' : 'desktop'}-${reduce ? 'reduced' : 'normal'}-${fallback ? '2d' : 'gpu'}.png`) });
-      // Exercise actual captured PNG encoders without changing the credits UI or
-      // triggering credit links. These artifacts are not a user-facing download.
+      // Exercise actual captured PNG encoders independently of the UI checks.
+      // These artifacts are not a user-facing download.
       const exports = await page.evaluate(async () => {
         const output = [];
         for (const mode of ['black', 'white', 'lunar']) {

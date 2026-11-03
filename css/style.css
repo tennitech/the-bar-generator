@@ -99,6 +99,8 @@
   --sidebar-width: 22rem;
   --sidebar-padding: 1.25rem;
   --export-panel-width: calc(var(--sidebar-width) - 2 * var(--sidebar-padding) - 1px);
+  --header-control-size: 2.375rem;
+  --header-action-gap: 0.625rem;
   --viewport-height: 100vh;
   --dropdown-menu-max-height: 16rem;
 
@@ -599,6 +601,18 @@ body {
 
 body.theme-lunar .bar_information-credit { display: block; }
 
+.bar_information-details { margin-top: 0.5rem; border-top: 1px solid var(--control-border); }
+.bar_information-details[hidden] { display: none; }
+.bar_information-details summary { padding-block: 0.625rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+.bar_information-details summary:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.bar_information-people { margin: 0; padding: 0; list-style: none; }
+.bar_information-people li + li { margin-top: 0.5rem; }
+.bar_information-people a { display: block; padding-block: 0.25rem; font-size: 0.75rem; line-height: 1.4; }
+.bar_information-people span { display: block; color: var(--text-secondary); font-size: 0.75rem; line-height: 1.4; }
+.sidebar-footer:has(.bar_information-details[open]) { position: static; }
+.sidebar-footer:has(.bar_information-details[open])::before { display: none; }
+
+
 /* ─── Selects & Inputs ─── */
 
 .control-select {
@@ -867,10 +881,6 @@ body.theme-lunar .bar_information-credit { display: block; }
 }
 
 .save-button.primary-button.is-icon-only #save-button-label {
-  display: none;
-}
-
-.icon-book {
   display: none;
 }
 
@@ -1591,8 +1601,10 @@ body {
 }
 
 .header-actions {
+  position: relative;
   flex: 0 0 auto;
-  gap: 10px;
+  width: var(--export-panel-width);
+  gap: var(--header-action-gap);
 }
 
 .save-button.primary-button {
@@ -1614,7 +1626,8 @@ body {
 
 .header_icon-button,
 .mobile-menu-toggle {
-  width: 38px;
+  flex: 0 0 var(--header-control-size);
+  width: var(--header-control-size);
   height: 38px;
   padding: 0;
   display: inline-flex;
@@ -3156,14 +3169,6 @@ body.theme-lunar .save-menu {
   min-width: min(340px, calc(100vw - 48px));
 }
 
-body.theme-lunar .save-button .icon-download {
-  display: none;
-}
-
-body.theme-lunar .save-button .icon-book {
-  display: block;
-}
-
 body.theme-lunar .save-option .option-label {
   max-width: 100%;
   white-space: normal;
@@ -3738,6 +3743,7 @@ body { min-height: 0; }
 }
 
 @media (pointer: coarse) {
+  :root { --header-control-size: 2.75rem; }
   .app-header { background-color: var(--bg-app); }
   :is(button, a, input, textarea, select, [role="button"], [role="combobox"]) {
     -webkit-tap-highlight-color: transparent;
@@ -3762,6 +3768,7 @@ body { min-height: 0; }
 
 @media (pointer: coarse) and (max-width: 1100px) {
   :root {
+    --header-action-gap: 0.5rem;
     --mobile-panel-width: min(22rem, 46vw);
     --mobile-panel-height: calc((var(--viewport-height) - var(--header-safe-height)) * 0.6);
     --sidebar-width: var(--mobile-panel-width);
@@ -3769,7 +3776,7 @@ body { min-height: 0; }
   }
   body { background-color: var(--bg-canvas); }
   body .app-header { background: var(--bg-canvas); color: var(--text-primary); }
-  .header-actions { gap: 0.5rem; }
+  .header-actions { gap: var(--header-action-gap); }
   .save-button { padding-inline: 0.75rem; }
   .brand-divider { display: none; }
   .app-sidebar {
@@ -4139,15 +4146,17 @@ body { min-height: 0; }
 .neural_model-details summary { cursor: pointer; padding-block: 0.5rem; }
 .neural_model-details a { color: inherit; text-underline-offset: 0.2em; }
 
-/* Export trigger and panel share the desktop sidebar's usable width. Compact
-   headers retain their small trigger, not the portrait sheet/landscape rail width. */
-.save-section { width: var(--export-panel-width); }
+/* All three header actions fit the sidebar's usable width. The export menu
+   spans that same width, while Download uses only the room between the icons. */
+.header-actions > .save-section { position: static; flex: 1 1 auto; min-width: 0; }
+.save-section > .save-menu { right: 0; }
 .save-button.primary-button { width: 100%; }
 .save-section:has(.save-button.is-icon-only) { width: auto; }
 .save-button.primary-button.is-icon-only { width: 2.375rem; }
 @media (max-width: 900px), (pointer: coarse) and (max-width: 1100px) {
   :root { --export-panel-width: min(19.5rem, calc(100vw - 1rem)); }
-  .save-section { width: auto; }
+  .header-actions { width: auto; }
+  .header-actions > .save-section { position: relative; flex: 0 1 auto; width: auto; }
   .save-button.primary-button { width: auto; }
   .save-button.primary-button.is-icon-only { width: 2.375rem; }
 }

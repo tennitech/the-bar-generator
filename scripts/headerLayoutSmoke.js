@@ -1,4 +1,4 @@
-/* Header text, exact desktop sidebar alignment and compact interaction checks. */
+/* Header order, title, sidebar alignment and compact interaction checks. */
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
@@ -40,6 +40,8 @@ async function measure(page) {
       actions: box(document.querySelector('.header-actions')),
       counter: getComputedStyle(counter).display === 'none' ? null : box(counter),
       button: box(button),
+      toggle: box(document.getElementById('mobile-menu-toggle')),
+      actionOrder: [...document.querySelector('.header-actions').children].map(el => el.id || el.className),
       control: {
         x: cr.x + parseFloat(c.paddingLeft),
         right: cr.right - parseFloat(c.paddingRight)
@@ -61,6 +63,9 @@ function check(m, compact) {
   assert.equal(m.ellipsis, 'clip');
   assert.equal(m.overflow, false);
   assert.equal(m.pageOverflow, false);
+  assert.deepEqual(m.actionOrder, ['header_icon-button', 'save-section', 'mobile-menu-toggle']);
+  assert.ok(m.button.right <= m.toggle.x - 7, JSON.stringify(m));
+  assert.ok(Math.abs(m.toggle.right - m.actions.right) < 0.6, JSON.stringify(m));
   assert.ok(m.title.x >= 0 && m.title.right <= m.viewport.width && m.title.y >= 0 && m.title.bottom <= m.header.bottom);
   assert.ok(m.brand.right <= m.actions.x - 8, JSON.stringify(m));
   if (m.counter) {
@@ -69,8 +74,8 @@ function check(m, compact) {
   }
   if (!compact) {
     assert.equal(m.icon, false, JSON.stringify(m));
-    assert.ok(Math.abs(m.button.x - m.control.x) < 0.6, JSON.stringify(m));
-    assert.ok(Math.abs(m.button.right - m.control.right) < 0.6, JSON.stringify(m));
+    assert.ok(Math.abs(m.actions.x - m.control.x) < 0.6, JSON.stringify(m));
+    assert.ok(Math.abs(m.toggle.right - m.control.right) < 0.6, JSON.stringify(m));
   }
 }
 (async () => {
@@ -101,7 +106,7 @@ function check(m, compact) {
       touch: false,
       dpr: 2
     }];
-    for (const c of cases) {
+    for (const c of (process.env.RPI_HEADER_FOCUS === 'order' ? [] : cases)) {
       const context = await b.newContext({
         viewport: {
           width: c.width,
@@ -161,7 +166,7 @@ function check(m, compact) {
       }
       await context.close();
     }
-    for (const [width, theme, touch] of [[1440, 'black', false], [390, 'black', true], [1024, 'lunar', true]]) {
+    for (const [width, theme, touch] of (process.env.RPI_HEADER_FOCUS === 'order' ? [] : [[1440, 'black', false], [390, 'black', true], [1024, 'lunar', true]])) {
       const context = await b.newContext({
         viewport: {
           width,
@@ -184,7 +189,7 @@ function check(m, compact) {
       await p.locator('#p5-container canvas').waitFor();
       await p.waitForTimeout(60);
       const ready = await measure(p);
-      for (const key of ['title', 'button', 'brand', 'actions']) for (const axis of ['x', 'y', 'width', 'height']) assert.ok(Math.abs(ready[key][axis] - early[key][axis]) < 0.6, `first-paint ${width} ${theme} ${key}.${axis}: ${early[key][axis]} → ${ready[key][axis]}`);
+      for (const key of ['title', 'button', 'toggle', 'brand', 'actions']) for (const axis of ['x', 'y', 'width', 'height']) assert.ok(Math.abs(ready[key][axis] - early[key][axis]) < 0.6, `first-paint ${width} ${theme} ${key}.${axis}: ${early[key][axis]} → ${ready[key][axis]}`);
       results.push({
         delayedStartup: true,
         width,
@@ -192,7 +197,44 @@ function check(m, compact) {
       });
       await context.close();
     }
-    await fs.writeFile(path.join(evidence, `${engine}-results.json`), JSON.stringify(results, null, 2));
+    // Larger touch targets and embedded Save labels must keep the same order.
+    for (const c of [{ width: 1440, touch: true, embedded: false },
+      { width: 390, touch: false, embedded: true }, { width: 320, touch: true, embedded: true }]) {
+      const context = await b.newContext({ viewport: { width: c.embedded ? 1280 : c.width, height: 800 },
+        hasTouch: c.touch, isMobile: c.touch, deviceScaleFactor: 2, reducedMotion: 'reduce' });
+      const page = await context.newPage();
+      let target = page;
+      if (c.embedded) {
+        await page.setContent(`<iframe style="width:${c.width}px;height:700px;border:0" sandbox="allow-scripts allow-same-origin" src="${base}/generator/solid/"></iframe>`);
+        target = await (await page.locator('iframe').elementHandle()).contentFrame();
+      } else await page.goto(`${base}/generator/lunar/?colorMode=lunar`);
+      await target.locator('#p5-container canvas[data-preview-ready="true"]').waitFor();
+      await target.evaluate(() => { noLoop(); return document.fonts.ready; });
+      const compact = c.width <= 900 || (c.touch && c.width <= 1100);
+      const m = await measure(target);
+      check(m, compact);
+      if (c.embedded) assert.equal(await target.locator('#save-button-label').innerText(), 'Save asset');
+      await target.locator('#save-button').focus();
+      await page.keyboard.press('Tab');
+      assert.equal(await target.evaluate(() => document.activeElement.id), 'mobile-menu-toggle');
+      const before = await target.locator('#mobile-menu-toggle').getAttribute('aria-expanded');
+      await page.keyboard.press('Enter');
+      assert.notEqual(await target.locator('#mobile-menu-toggle').getAttribute('aria-expanded'), before);
+      await target.locator('#save-button').click();
+      await target.locator('#save-menu').evaluate(async el => { await Promise.allSettled(el.getAnimations().map(a => a.finished)); });
+      const menu = await target.locator('#save-menu').evaluate(el => {
+        const r = el.getBoundingClientRect(); return { x: r.x, right: r.right, bottom: r.bottom };
+      });
+      assert.ok(menu.x >= 0 && menu.right <= c.width + 1);
+      assert.ok(menu.bottom <= (c.embedded ? 700 : 800) + 1);
+      await target.locator('#mobile-menu-toggle').click();
+      assert.equal(await target.locator('#save-button').getAttribute('aria-expanded'), 'false');
+      check(await measure(target), compact);
+      results.push({ orderInteraction: true, ...c, ...m });
+      await context.close();
+    }
+    const suffix = process.env.RPI_HEADER_FOCUS === 'order' ? '-order' : '';
+    await fs.writeFile(path.join(evidence, `${engine}${suffix}-results.json`), JSON.stringify(results, null, 2));
     console.log(`${engine}: ${results.length} header/alignment/first-paint cases passed. ${evidence}`);
   } finally {
     await b.close();

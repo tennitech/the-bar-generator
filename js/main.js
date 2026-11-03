@@ -188,10 +188,6 @@ let appMain;
 let canvasViewport;
 const ARTEMIS_II_SPLASHDOWN_AT = Date.parse('2026-04-10T20:07:00-04:00');
 const ARTEMIS_II_AUDIO_SOURCE = 'assets/audio/artemis-ii-liftoff.mp3';
-const ARTEMIS_CREDIT_LINKS = {
-  reidWiseman: 'https://news.rpi.edu/2026/04/13/engineers-who-reached-moon-how-rpi-became-launchpad-stars',
-  rpiEngineers: 'https://news.rpi.edu/2026/03/31/meet-rpi-engineers-guiding-artemis-ii-moon-and-back'
-};
 const DEFAULT_SAVE_MENU_COPY = {
   button: 'Download Asset',
   png: {
@@ -205,21 +201,6 @@ const DEFAULT_SAVE_MENU_COPY = {
   gif: {
     label: 'GIF',
     description: 'Best for animated slides and screens'
-  }
-};
-const MISSION_CONTROL_SAVE_MENU_COPY = {
-  button: 'Learn About RPI x Artemis',
-  png: {
-    label: "Reid Wiseman '97",
-    description: 'Commander'
-  },
-  svg: {
-    label: "Maeve Marshall '23, M.Eng. '24",
-    description: 'GNC Engineer'
-  },
-  gif: {
-    label: "Paul McKee '17, MS '18, Ph.D. '23",
-    description: 'Orion Optical Navigation Engineer'
   }
 };
 const DEFAULT_INTERFACE_COPY = {
@@ -2512,7 +2493,7 @@ function setup() {
   saveLoopGifButton = document.getElementById('save-loop-gif');
   syncResponsiveLayoutMode();
   syncMissionControlInterfaceCopy();
-  syncMissionControlSaveMenu();
+  syncSaveMenuCopy();
   setupSaveButtonResponsiveLayout();
 
   initializePreviewButtons();
@@ -3851,10 +3832,6 @@ function handleClickOutside(event) {
   }
 }
 
-function isMissionControlCreditsMenuActive() {
-  return currentColorMode === 'lunar';
-}
-
 function hideSaveMenu() {
   window.logoExportUI?.cancelPendingPreview();
   if (saveMenu) {
@@ -3906,12 +3883,6 @@ function positionSaveMenu() {
   saveMenu.style.left = `${Math.round(clampedLeft)}px`;
 }
 
-function openMissionControlCreditLink(url) {
-  const linkedWindow = window.open(url, '_blank', 'noopener,noreferrer');
-  if (linkedWindow) linkedWindow.opener = null;
-  hideSaveMenu();
-}
-
 function setSaveOptionCopy(optionElement, optionCopy) {
   if (!optionElement || !optionCopy) return;
 
@@ -3924,7 +3895,7 @@ function setSaveOptionCopy(optionElement, optionCopy) {
 }
 
 function syncMissionControlInterfaceCopy() {
-  const missionControlActive = isMissionControlCreditsMenuActive();
+  const missionControlActive = isMissionControlThemeActive();
   const interfaceCopy = missionControlActive ? MISSION_CONTROL_INTERFACE_COPY : DEFAULT_INTERFACE_COPY;
 
   if (styleSelectLabel) styleSelectLabel.textContent = interfaceCopy.styleLabel;
@@ -3937,69 +3908,27 @@ function syncMissionControlInterfaceCopy() {
   syncLunarSplashdownCounter();
 }
 
-function syncMissionControlSaveMenu() {
-  const missionControlActive = isMissionControlCreditsMenuActive();
-  const menuCopy = missionControlActive ? MISSION_CONTROL_SAVE_MENU_COPY : DEFAULT_SAVE_MENU_COPY;
-
+function syncSaveMenuCopy() {
+  const menuCopy = DEFAULT_SAVE_MENU_COPY;
   if (saveButtonLabel) saveButtonLabel.textContent = menuCopy.button;
-  if (saveButton) {
-    saveButton.setAttribute(
-      'aria-label',
-      missionControlActive ? 'Open RPI x Artemis II credits' : 'Open asset download menu'
-    );
-  }
-  requestSaveButtonResponsiveLayout();
-
+  if (saveButton) saveButton.setAttribute('aria-label', 'Open asset download menu');
   setSaveOptionCopy(savePngButton, menuCopy.png);
   setSaveOptionCopy(saveSvgButton, menuCopy.svg);
   setSaveOptionCopy(saveLoopGifButton, menuCopy.gif);
-
-  if (saveLoopGifButton && missionControlActive) {
-    saveLoopGifButton.hidden = false;
-  } else {
-    updateLoopingGifSaveOption();
-  }
-  if (window.logoExportUI) window.logoExportUI.sync(missionControlActive);
+  updateLoopingGifSaveOption();
+  if (window.logoExportUI) window.logoExportUI.sync(false);
+  requestSaveButtonResponsiveLayout();
 }
 
-function handleSavePngClick(event) {
-  if (isMissionControlCreditsMenuActive()) {
-    event.preventDefault();
-    event.stopPropagation();
-    openMissionControlCreditLink(ARTEMIS_CREDIT_LINKS.reidWiseman);
-    return;
-  }
-
-  savePNG();
-}
-
-function handleSaveSvgClick(event) {
-  if (isMissionControlCreditsMenuActive()) {
-    event.preventDefault();
-    event.stopPropagation();
-    openMissionControlCreditLink(ARTEMIS_CREDIT_LINKS.rpiEngineers);
-    return;
-  }
-
-  saveSVG();
-}
-
-function handleSaveLoopGifClick(event) {
-  if (isMissionControlCreditsMenuActive()) {
-    event.preventDefault();
-    event.stopPropagation();
-    openMissionControlCreditLink(ARTEMIS_CREDIT_LINKS.rpiEngineers);
-    return;
-  }
-
-  saveLoopingGIF();
-}
+function handleSavePngClick() { savePNG(); }
+function handleSaveSvgClick() { saveSVG(); }
+function handleSaveLoopGifClick() { saveLoopingGIF(); }
 
 function toggleSaveMenu(e) {
   if (e) e.stopPropagation();
 
   if (saveMenu) {
-    syncMissionControlSaveMenu();
+    syncSaveMenuCopy();
     saveMenu.classList.toggle('hidden');
     const isExpanded = !saveMenu.classList.contains('hidden');
     if (saveButton) saveButton.setAttribute('aria-expanded', isExpanded);
@@ -4016,11 +3945,6 @@ function toggleSaveMenu(e) {
 
 function updateLoopingGifSaveOption() {
   if (!saveLoopGifButton) return;
-  if (isMissionControlCreditsMenuActive()) {
-    saveLoopGifButton.hidden = false;
-    return;
-  }
-
   const selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const canExportLoopGif = Boolean(
     typeof GIF !== 'undefined' &&
@@ -4268,7 +4192,7 @@ function handleStyleChange() {
   window.quantumControls.sync();
   syncLunarPreviewVisibility(selectedStyle);
   console.log('Style changed to:', selectedStyle, 'currentShader:', currentShader);
-  syncMissionControlSaveMenu();
+  syncSaveMenuCopy();
   updateSidebarScrollFadeState();
   updateAudioControlsUI();
   requestUpdate();
@@ -4317,7 +4241,7 @@ function applyColorMode(colorMode) {
   }
 
   syncMissionControlInterfaceCopy();
-  syncMissionControlSaveMenu();
+  syncSaveMenuCopy();
   syncLunarPreviewVisibility();
   updateAudioControlsUI();
   if (activeAudioPreviewType === 'lunar' && !isMissionControlThemeActive(currentColorMode)) {
