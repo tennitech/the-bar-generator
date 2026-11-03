@@ -1,3 +1,6 @@
+const rulerScaleModel = typeof module !== 'undefined' && module.exports
+  ? require('./rulerScale') : window.RulerScale;
+
 function mapDigitToHeightPercent(digit) {
   switch (digit) {
     case 0: return 0.1;
@@ -304,31 +307,27 @@ function createRulerPatternGeometry(options = {}) {
   const barY = Number(options.barY || 0);
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const rulerRepeats = normalizeTickerWholeNumber(options.rulerRepeats, 10);
-  const rulerUnits = normalizeTickerWholeNumber(options.rulerUnits, 4);
-  // REPEATS spans the exact domain; DIVISIONS splits each repeat equally.
-  // Centered marks are clipped naturally, never stretched to fit painted edges.
+  const rulerRepeats = rulerScaleModel.normalizeUnits(options.rulerRepeats);
+  const rulerUnits = rulerScaleModel.normalizeDivisions(options.rulerUnits);
+  // Whole units span the fixed domain, so zero phase begins and ends on a
+  // major mark. Motion translates this same ruler; the ends are never pinned.
   const repeatWidth = exactBarWidth / rulerRepeats;
   const tickSpacing = repeatWidth / rulerUnits;
-  const tickWidth = tickSpacing / 2;
+  const tickWidth = Math.min(barHeight / 18, tickSpacing * 0.35);
   const offset = Number.isFinite(options.loopOffsetX) ? options.loopOffsetX : 0;
   const wrappedOffset = ((offset % repeatWidth) + repeatWidth) % repeatWidth;
-  const gcd = (a, b) => b ? gcd(b, a % b) : a;
-  const getTickHeight = index => {
-    const position = ((index % rulerUnits) + rulerUnits) % rulerUnits;
-    if (position === 0) return barHeight;
-    const denominator = rulerUnits / gcd(position, rulerUnits);
-    // Halves, then quarters/thirds/fifths, then the finer subdivisions.
-    return barHeight * (denominator === 2 ? 0.75 : denominator <= 5 ? 0.5 : 0.25);
-  };
+  const heights = [1, 0.7, 0.5, 0.35, 0.22];
+  const widths = [1, 0.8, 0.65, 0.55, 0.5];
   const rects = [];
   const first = Math.floor((wrappedOffset - tickWidth / 2) / tickSpacing);
   const last = Math.ceil((exactBarWidth + wrappedOffset + tickWidth / 2) / tickSpacing);
   for (let index = first; index <= last; index++) {
-    const height = getTickHeight(index);
+    const level = rulerScaleModel.tickLevel(index, rulerUnits);
+    const height = barHeight * heights[level];
+    const width = tickWidth * widths[level];
     const rect = clipTickerRectToBar({
-      x: barStartX + index * tickSpacing - wrappedOffset - tickWidth / 2,
-      y: barY + barHeight - height, width: tickWidth, height
+      x: barStartX + index * tickSpacing - wrappedOffset - width / 2,
+      y: barY + barHeight - height, width, height
     }, barStartX, barY, exactBarWidth, barHeight);
     if (rect) rects.push(rect);
   }

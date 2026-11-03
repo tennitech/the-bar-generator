@@ -4,7 +4,7 @@ const { createRulerPatternGeometry, normalizeBinaryText } = require('../js/utils
 const { getLoopingGifFramePlan, getLoopingAnimationState, advanceLiveLoopPhase } = require('../js/utils/loopingGif');
 const { normalizeState } = require('../js/utils/shareState');
 
-for (const divisions of [2, 4, 6, 8, 10]) test(`Ruler ${divisions} divisions represent exact fractions without duplicate ticks`, () => {
+for (const divisions of [2, 4, 8, 10, 16]) test(`Ruler ${divisions} divisions represent exact fractions without duplicate ticks`, () => {
   const options = { rulerRepeats: 10, rulerUnits: divisions, exactBarWidth: 250, barHeight: 18 };
   const still = createRulerPatternGeometry(options);
   expect(still.repeatWidth).toBe(25);
@@ -29,7 +29,7 @@ for (const divisions of [2, 4, 6, 8, 10]) test(`Ruler ${divisions} divisions rep
 
 test('Ruler halves, quarters and eighths have a consistent height hierarchy', () => {
   const ticks = createRulerPatternGeometry({ rulerRepeats: 10, rulerUnits: 8 }).rects.slice(0, 9);
-  expect(ticks.map(tick => tick.height / 18)).toEqual([1, .25, .5, .25, .75, .25, .5, .25, 1]);
+  ticks.forEach((tick, index) => expect(tick.height / 18).toBeCloseTo([1, .35, .5, .35, .7, .35, .5, .35, 1][index]));
 });
 
 test.each(['ruler', 'ticker', 'waveform'])('%s transport uses the selected direction in live and GIF rendering', style => {

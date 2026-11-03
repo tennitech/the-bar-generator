@@ -7,6 +7,8 @@
 
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const rulerScale = typeof module !== 'undefined' && module.exports
+    ? require('./rulerScale') : globalThis.RulerScale;
   const LOOPING_GIF_STYLE_SET = new Set(['ruler', 'ticker', 'waveform']);
   const DEFAULT_CAPTURE_FPS = 24;
   const MIN_CAPTURE_FPS = 12;
@@ -20,7 +22,7 @@
   const MAX_LIVE_RENDER_FPS = 1000;
   const MAX_LIVE_FRAME_DELTA_MS = 1000 / 20;
   // Speeds are major-pattern recurrences per display second, not physical units.
-  // Ruler has up to ten minor ticks per recurrence; ticker has up to five.
+  // Ruler has up to sixteen minor ticks per recurrence; ticker has up to five.
   const LOOP_SPEED_LIMITS = Object.freeze({
     ruler: Object.freeze({ min: 0.2, max: 0.6, step: 0.1, default: 0.3 }),
     ticker: Object.freeze({ min: 0.2, max: 0.8, step: 0.1, default: 0.4 }),
@@ -162,7 +164,7 @@
   function advanceLiveLoopPhase(phase, style, values = {}, deltaMs = 0) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
     const subdivisions = normalizedStyle === 'ruler'
-      ? Math.max(1, Number(values.rulerUnits) || 4)
+      ? rulerScale.normalizeDivisions(values.rulerUnits)
       : normalizedStyle === 'ticker' ? Math.max(1, Number(values.tickerRatio) || 2) : 1;
     // Keep each frame below a quarter of the smallest repeating tick interval.
     // A delayed frame slows the preview instead of sampling an apparent reversal.
@@ -191,12 +193,14 @@
     const barWidth = toPositiveNumber(options.barWidth, 250);
 
     if (normalizedStyle === 'ruler') {
-      const repeats = Math.max(1, Math.round(toPositiveNumber(values.rulerRepeats, 10)));
+      const repeats = rulerScale.normalizeUnits(values.rulerRepeats);
       const speed = getLoopSpeed(normalizedStyle, values);
       const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
       const repeatWidth = barWidth / repeats;
       const periodSeconds = 1 / speed;
-      const frameCount = getFrameCountForPeriod(periodSeconds, fps);
+      // At least four samples per subdivision before GIF delay quantization.
+      const frameCount = Math.max(getFrameCountForPeriod(periodSeconds, fps),
+        4 * rulerScale.normalizeDivisions(values.rulerUnits));
 
       return {
         style: normalizedStyle,
