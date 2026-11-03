@@ -13,13 +13,6 @@ async function close(page) {
   await page.keyboard.press('Escape');
   await page.locator('#logo-animation-overlay').waitFor({ state:'hidden' });
 }
-async function mousePress(page, target, duration, move = false) {
-  const box = await target.boundingBox(); assert.ok(box, 'secret target must be visible');
-  const x = box.x + box.width/2, y = box.y + box.height/2;
-  await page.mouse.move(x,y); await page.mouse.down();
-  if (move) { await page.mouse.move(x+15,y); await page.mouse.move(x,y); }
-  await page.waitForTimeout(duration); await page.mouse.up();
-}
 async function main() {
   assert.ok({ chromium, webkit }[engine], `Unsupported RPI_BROWSER: ${engine}`);
   if (process.env.RPI_ASCII_MODE) assert.ok(Object.hasOwn(palette,process.env.RPI_ASCII_MODE),'Unknown RPI_ASCII_MODE');
@@ -79,12 +72,14 @@ async function main() {
       assert.equal(await page.evaluate(() => currentColorMode),'black');
       await page.goForward(); await page.waitForURL(`${base}/`);
       await page.goBack(); await page.locator('#p5-container canvas').waitFor();
-      // PR57's compact header intentionally hides the desktop title. The same
-      // deliberate gesture lives on the existing mobile panel heading, not Home.
-      if (touch) await page.locator('#mobile-menu-toggle').click();
-      const target = page.locator(touch?'#mobile-secret-title':'#brand-title');
+      const target = page.getByRole('button', { name:'The Bar Generator: Play ASCII intro', exact:true });
       await target.waitFor({ state:'visible' });
-      await target.click({ clickCount:3 }); assert.equal(await page.locator('#logo-animation-overlay').count(),0);
+      assert.equal(await target.getAttribute('title'),'Play ASCII intro');
+      assert.equal(await target.getAttribute('aria-haspopup'),'dialog');
+      assert.equal(await target.getAttribute('aria-expanded'),'false');
+      assert.ok((await target.boundingBox()).height>=44);
+      assert.equal(await target.locator('.brand_intro-icon').isVisible(),true);
+      const originalUrl = page.url();
       await target.focus(); await page.keyboard.type('rpi182x4');
       assert.equal(await page.locator('#logo-animation-overlay').count(),0);
       const editor = await page.evaluateHandle(() => {
@@ -92,36 +87,36 @@ async function main() {
         document.body.append(input); input.focus(); return input;
       });
       await page.keyboard.type('rpi1824'); assert.equal(await page.locator('#logo-animation-overlay').count(),0);
-      await editor.evaluate(element => element.remove()); await target.focus();
-      await page.keyboard.type('rpi1824'); await page.locator('.logo_animation_static-artwork > svg').waitFor();
+      await editor.evaluate(element => element.remove());
+      await page.screenshot({ path:path.join(evidence,`${engine}-${touch?'touch':'desktop'}-intro-trigger.png`) });
+      if (touch) await target.tap(); else await target.click();
+      await page.locator('.logo_animation_static-artwork > svg').waitFor();
+      assert.equal(await target.getAttribute('aria-expanded'),'true');
+      assert.equal(page.url(),originalUrl);
       assert.equal(await page.locator('.logo_animation_frame').count(),0);
       await page.getByRole('button',{ name:'Play animation once' }).click();
       await page.frameLocator('.logo_animation_frame').locator('#animation-projection').filter({ hasText:/\S/ }).waitFor();
-      await page.waitForTimeout(2300); // Inspect the settled selected bar, not the first scattered particle.
+      await page.waitForTimeout(2300);
       await page.screenshot({ path:path.join(evidence,`${engine}-${touch?'touch':'desktop'}-secret.png`) });
       await close(page);
-      assert.equal(await page.evaluate(() => document.activeElement.id),touch?'mobile-secret-title':'brand-title');
-      for (const [duration,moved] of [[200,false],[1900,true]]) {
-        await mousePress(page,target,duration,moved); await target.click({ clickCount:2 });
-        assert.equal(await page.locator('#logo-animation-overlay').isVisible(),false);
+      assert.equal(await page.evaluate(() => document.activeElement.id),'brand-title');
+      assert.equal(await target.getAttribute('aria-expanded'),'false');
+      for (const key of ['Enter','Space']) {
+        await target.focus(); await page.keyboard.press(key);
+        await page.locator('.logo_animation_static-artwork > svg').waitFor();
+        await close(page);
+        assert.equal(await page.evaluate(() => document.activeElement.id),'brand-title');
       }
-      await mousePress(page,target,1900); await page.waitForTimeout(2450); await target.click({ clickCount:2 });
-      assert.equal(await page.locator('#logo-animation-overlay').isVisible(),false);
-      if (touch && engine==='chromium') {
-        const box = await target.boundingBox(); const x=box.x+box.width/2,y=box.y+box.height/2;
-        const session = await context.newCDPSession(page);
-        await session.send('Input.dispatchTouchEvent',{ type:'touchStart',touchPoints:[{x,y}] });
-        await page.waitForTimeout(1900);
-        await session.send('Input.dispatchTouchEvent',{ type:'touchEnd',touchPoints:[] }); await session.detach();
-      } else {
-        // WebKit has genuine touch taps but no held-touch driver API. Its hold
-        // is mouse input in the coarse viewport, not physical-device evidence.
-        await mousePress(page,target,1900);
-      }
-      if (touch) { await target.tap(); await target.tap(); }
-      else { await target.click(); await target.click(); }
+      // Rapid repeated activation must not stack dialogs or change history.
+      const box = await target.boundingBox();
+      await page.mouse.click(box.x+box.width/2,box.y+box.height/2,{clickCount:2});
+      await page.locator('.logo_animation_static-artwork > svg').waitFor();
+      assert.equal(await page.locator('#logo-animation-overlay').count(),1);
+      await close(page);
+      await target.focus(); await page.keyboard.type('rpi1824');
       await page.locator('.logo_animation_static-artwork > svg').waitFor(); await close(page);
-      assert.deepEqual(errors,[]); checks.push({ touch,navigation:true,secret:true }); await context.close();
+      assert.equal(page.url(),originalUrl);
+      assert.deepEqual(errors,[]); checks.push({ touch,navigation:true,clickTap:true,keyboard:true,repeat:true,shortcut:true }); await context.close();
     }
     const page = await browser.newPage({ reducedMotion:'reduce',viewport:{ width:1440,height:900 } });
     for (const [mode,ink] of Object.entries(palette)) {
@@ -199,6 +194,30 @@ async function main() {
     assert.match(await recovery.locator('.logo_animation_frame').getAttribute('src'),/foreground=%23000000$/);
     assert.equal(loads,2); await close(recovery); await recovery.close();
     checks.push({ lazyRetry:true,blockedStorageInk:true });
+    // A normal-motion click enters the actual ASCII sequence, then returns to
+    // the same editable design and trigger after the visible close action.
+    const normal = await browser.newPage({ reducedMotion:'no-preference',viewport:{width:390,height:844},hasTouch:true,isMobile:true });
+    await normal.goto(`${base}/generator/ruler/?colorMode=black&rulerRepeats=7`);
+    await normal.locator('#p5-container canvas').waitFor();
+    const designUrl = normal.url();
+    const headerBounds = await normal.locator('.header-actions').boundingBox();
+    assert.ok(headerBounds.x>=0 && headerBounds.x+headerBounds.width<=390,JSON.stringify(headerBounds));
+    await normal.locator('#brand-title').tap();
+    await normal.frameLocator('.logo_animation_frame').locator('#animation-projection').filter({hasText:/\S/}).waitFor();
+    await normal.waitForFunction(() => !document.getElementById('logo-animation-close').disabled);
+    assert.equal(await normal.locator('.logo_animation_frame').count(),1);
+    assert.equal(await normal.locator('.app-header').evaluate(element=>element.inert),true);
+    const closeBounds = await normal.locator('#logo-animation-close').boundingBox();
+    assert.ok(closeBounds.x>=0 && closeBounds.x+closeBounds.width<=390,JSON.stringify(closeBounds));
+    await normal.locator('#logo-animation-close').tap();
+    await normal.locator('#logo-animation-overlay').waitFor({state:'hidden'});
+    assert.equal(await normal.evaluate(()=>document.activeElement.id),'brand-title');
+    assert.equal(await normal.locator('#brand-title').getAttribute('aria-expanded'),'false');
+    assert.equal(await normal.locator('.app-header').evaluate(element=>element.inert),false);
+    assert.equal(await normal.locator('#ruler-repeats-slider').inputValue(),'7');
+    assert.equal(normal.url(),designUrl);
+    checks.push({ normalMotionTap:true,closeReturnsToDesign:true }); await normal.close();
+
     await fs.writeFile(path.join(evidence,`${engine}-results.json`),JSON.stringify(checks,null,2));
     console.log(JSON.stringify({ engine,checks:checks.length,passed:true,evidence,
       scope:{ flows:!process.argv.includes('--palette-only'),nativePopup:!process.argv.includes('--palette-only')
