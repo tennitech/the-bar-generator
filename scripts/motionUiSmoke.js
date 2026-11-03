@@ -33,11 +33,11 @@ async function main() {
       await page.locator('#logo-animation-close').waitFor();
       const measure = () => page.evaluate(() => {
         const rect = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { x:r.x, y:r.y, width:r.width, height:r.height, bottom:r.bottom }; };
-        return { replay:rect('#logo-animation-replay'), close:rect('#logo-animation-close'), github:rect('.header-actions a[aria-label*="GitHub"]'), menu:rect('#mobile-menu-toggle') };
+        return { replay:rect('#logo-animation-replay'), close:rect('#logo-animation-close'), menu:rect('#mobile-menu-toggle') };
       });
       let boxes = await measure();
       if (mode !== 'desktop') assert.ok(boxes.close.height >= 44, 'touch target stayed 44px after activation');
-      assert.deepEqual(boxes.replay, boxes.github, `${mode} replay alignment`);
+      assert.equal(boxes.close.x - boxes.replay.x - boxes.replay.width, 10, `${mode} grouped actions`);
       assert.deepEqual(boxes.close, boxes.menu, `${mode} close alignment`);
       await page.waitForFunction(() => document.querySelector('iframe')?.contentDocument?.querySelector('pre')?.textContent.trim().length > 0);
       await page.waitForTimeout(1600);
@@ -57,10 +57,10 @@ async function main() {
           return ['x', 'y', 'width', 'height'].every(key => Math.abs(first[key] - second[key]) < 0.01);
         };
         return aligned('#logo-animation-close', '#mobile-menu-toggle')
-          && aligned('#logo-animation-replay', '.header-actions a[aria-label*="GitHub"]');
+          && (() => { const replay = document.querySelector('#logo-animation-replay').getBoundingClientRect(); const close = document.querySelector('#logo-animation-close').getBoundingClientRect(); return Math.abs(close.x - replay.right - 10) < 0.01; })();
       });
       const resized = await measure();
-      assert.deepEqual(resized.replay, resized.github);
+      assert.equal(resized.close.x - resized.replay.x - resized.replay.width, 10);
       assert.deepEqual(resized.close, resized.menu);
       // Escape from inside the frame after a tap focuses it.
       await page.locator('.logo_animation_frame').focus();
@@ -128,7 +128,7 @@ async function main() {
       await page.evaluate(() => { const title = document.getElementById('brand-title'); (title.getClientRects().length ? title : document.getElementById('header-logo-preview')).focus(); return openHeaderLogoAnimation(); });
       await page.locator('#logo-animation-close').waitFor();
       const withShare = await measure();
-      assert.deepEqual(withShare.replay, withShare.github);
+      assert.equal(withShare.close.x - withShare.replay.x - withShare.replay.width, 10);
       assert.deepEqual(withShare.close, withShare.menu);
       const toolbar = await page.evaluate(() => {
         const selectors=['.header-actions a[aria-label*="GitHub"]','#mobile-menu-toggle','#logo-animation-close'];

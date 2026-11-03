@@ -19,6 +19,20 @@ sizes at desktop, 390 px and 320 px widths. The existing Chromium export suite
 also verifies Large GIF dimensions, progress and completion. Browser automation
 is not physical-device or screen-reader certification.
 
+## November 3 animation action spacing
+
+Replay and Close now form one compact pair with the overlay's existing 10 px
+gap. Previously they copied the GitHub and menu button positions, leaving
+the hidden wide Download action's space between them. Both retain the menu
+button's dimensions and follow its position after resizing; compact layouts
+no longer stretch Replay to the export control's width.
+
+Validation: all 635 unit tests pass. Focused WebKit checks pass at 1800, 1440,
+768, 390 and 320 px, including resize, Replay, Escape, reopen and reduced
+motion. Chromium's initial 1440 px geometry assertion passed, but renderer
+crashes during the particle animation prevented a complete Chromium run.
+This is automated browser coverage, not owner or physical-device testing.
+
 ## November 3 combined release validation
 
 The combined candidate includes responsive display and complete first-frame

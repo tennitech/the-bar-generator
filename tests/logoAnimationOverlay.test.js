@@ -196,19 +196,22 @@ describe('logo animation overlay controller', () => {
     };
   }
 
-  test('Replay falls back to the visible export control when GitHub is hidden', async () => {
-    const { controller, documentRef, replayEl, windowRef } = createController();
-    let githubRect = { left: 0, top: 0, width: 0, height: 0 };
-    documentRef.querySelector = selector => {
-      if (selector.includes('GitHub')) return { getBoundingClientRect: () => githubRect };
-      if (selector === '#save-button') return { getBoundingClientRect: () => ({ left: 300, top: 16, width: 70, height: 44 }) };
-      return null;
-    };
+  test('keeps Replay beside Close instead of reserving hidden header action slots', async () => {
+    const { controller, documentRef, windowRef, replayEl, closeEl } = createController();
+    let rect = { left: 1360, top: 12, width: 38, height: 38 };
+    documentRef.querySelector = selector => selector === '#mobile-menu-toggle'
+      ? { getBoundingClientRect: () => rect } : null;
+    replayEl.parentElement = {};
+    windowRef.getComputedStyle = () => ({ columnGap: '10px' });
     await controller.open();
-    expect(replayEl.style).toMatchObject({ left: '300px', top: '16px', width: '70px', height: '44px' });
-    githubRect = { left: 900, top: 16, width: 44, height: 44 };
+    expect(closeEl.style.left).toBe('1360px');
+    expect(replayEl.style.left).toBe('1312px');
+    expect(replayEl.style.width).toBe('38px');
+    rect = { left: 330, top: 10, width: 44, height: 44 };
     windowRef.dispatch('resize');
-    expect(replayEl.style).toMatchObject({ left: '900px', width: '44px', height: '44px' });
+    expect(closeEl.style.left).toBe('330px');
+    expect(replayEl.style.left).toBe('276px');
+    expect(replayEl.style.height).toBe('44px');
   });
 
   test('opens the overlay and mounts the ASCII animation iframe', async () => {

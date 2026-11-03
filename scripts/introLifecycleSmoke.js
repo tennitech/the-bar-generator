@@ -8,7 +8,7 @@ async function main(){
  const browser=await({chromium,webkit}[engine]).launch({headless:true});const results=[];
  try{for(const touch of [false,true]){
   const page=await browser.newPage(touch?{...devices['iPhone 13'],viewport:{width:390,height:664}}:{viewport:{width:1440,height:900}});
-  page.setDefaultTimeout(30000);await page.goto(`${base}/generator/ruler/`);await page.locator('.header_motion-letters').waitFor();await page.waitForLoadState('networkidle');
+  page.setDefaultTimeout(30000);await page.goto(`${base}/generator/ruler/`);await page.locator('#header-logo-preview canvas').waitFor();await page.waitForLoadState('networkidle');
   await page.evaluate(()=>openHeaderLogoAnimation());
   const entrance=await page.evaluate(async()=>{
    const overlay=document.querySelector('#logo-animation-overlay'),chrome=overlay.querySelector('.logo_animation_chrome'),stage=overlay.querySelector('.logo_animation_stage'),button=document.querySelector('#logo-animation-close');
@@ -24,13 +24,12 @@ async function main(){
   assert.ok(entrance.some(f=>f.chrome>0.05&&f.chrome<0.95));
   entrance.forEach(f=>{assert.ok(Math.abs(f.chrome-f.background)<0.035);assert.ok(Math.abs(f.chrome-f.stage)<0.02)});
   const rects=await page.evaluate(()=>{
-   const github=document.querySelector('.header-actions a[aria-label*="GitHub"]');
-   const r=github.getBoundingClientRect();
-   const replayAnchor=r.width>0&&r.height>0?github:document.querySelector('#save-button');
-   return [document.querySelector('#logo-animation-replay'),replayAnchor,document.querySelector('#logo-animation-close'),document.querySelector('#mobile-menu-toggle')].map(el=>{const r=el.getBoundingClientRect();return[r.x,r.y,r.width,r.height]});
+   return ['#logo-animation-replay','#logo-animation-close','#mobile-menu-toggle'].map(selector=>{const r=document.querySelector(selector).getBoundingClientRect();return[r.x,r.y,r.width,r.height]});
   });
   assert.ok(rects[0][2]>=(touch?40:30)&&rects[0][3]>=(touch?40:30),`Replay retains a usable target: ${JSON.stringify(rects[0])}`);
-  assert.deepEqual(rects[0],rects[1]);assert.deepEqual(rects[2],rects[3]);
+  assert.deepEqual(rects[1],rects[2]);
+  assert.equal(rects[1][0]-rects[0][0]-rects[0][2],10);
+  assert.deepEqual(rects[0].slice(1),rects[1].slice(1));
   const exit=await page.evaluate(async()=>{
    const controller=await ensureHeaderLogoAnimationController();controller.close();
    const o=document.querySelector('#logo-animation-overlay'),c=o.querySelector('.logo_animation_chrome'),s=o.querySelector('.logo_animation_stage'),b=document.querySelector('#logo-animation-close');const frames=[];

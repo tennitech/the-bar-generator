@@ -4501,7 +4501,7 @@ async function ensureHeaderLogoAnimationController() {
   }
 
   headerLogoAnimationControllerPromise = (async () => {
-    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261103-save-removal');
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261103-animation-buttons');
 
     if (!window.LogoAnimationOverlay
       || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {

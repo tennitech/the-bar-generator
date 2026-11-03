@@ -181,23 +181,25 @@
       motionPreference.addEventListener('change', handleMotionPreference);
     }
 
-    // Compact headers hide GitHub; keep Replay anchored to a visible control.
+    // Keep the overlay actions together; hidden header actions must not leave
+    // empty slots between Replay and Close.
     function alignControls() {
       if (!overlayParts || !documentRef.querySelector) return;
-      const github = documentRef.querySelector('.header-actions a[aria-label*="GitHub"]');
-      const githubRect = github && github.getBoundingClientRect();
-      const replayAnchor = githubRect && githubRect.width > 0 && githubRect.height > 0
-        ? github : documentRef.querySelector('#save-button');
-      const pairs = [
-        [overlayParts.replayEl, replayAnchor],
-        [overlayParts.closeEl, documentRef.querySelector('#mobile-menu-toggle')]
-      ];
-      pairs.forEach(([button, anchor]) => {
-        if (!anchor) return;
-        const rect = anchor.getBoundingClientRect();
-        if (rect.width <= 0 || rect.height <= 0) return;
+      const anchor = documentRef.querySelector('#mobile-menu-toggle');
+      if (!anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+      const chrome = overlayParts.replayEl.parentElement;
+      const chromeStyle = chrome && windowRef.getComputedStyle
+        ? windowRef.getComputedStyle(chrome) : null;
+      const gap = chromeStyle ? parseFloat(chromeStyle.columnGap) : NaN;
+      const spacing = Number.isFinite(gap) ? gap : 10;
+      [
+        [overlayParts.closeEl, rect.left],
+        [overlayParts.replayEl, rect.left - rect.width - spacing]
+      ].forEach(([button, left]) => {
         Object.assign(button.style, {
-          position: 'fixed', left: `${rect.left}px`, top: `${rect.top}px`,
+          position: 'fixed', left: `${left}px`, top: `${rect.top}px`,
           width: `${rect.width}px`, height: `${rect.height}px`
         });
       });
