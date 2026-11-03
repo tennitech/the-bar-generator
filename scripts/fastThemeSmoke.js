@@ -30,6 +30,8 @@ const engine=process.env.RPI_BROWSER||'chromium';
    assert.equal(result.token,'120ms');assert.equal(result.immediate,'white');assert.equal(result.single.theme,'white');assert.equal(result.rapid.theme,'gold');assert.equal(result.resize.theme,'white');
    for(const state of [result.single,result.rapid,result.resize]){assert.equal(state.scanner,0);assert.equal(state.snapshot,false);}
    await page.emulateMedia({reducedMotion:'reduce'});
+   // WebKit can acknowledge emulation before matchMedia reflects the new value.
+   await page.waitForFunction(()=>matchMedia('(prefers-reduced-motion: reduce)').matches);
    const reduced=await page.evaluate(()=>{const select=document.getElementById('color-mode-select');select.value='black';select.dispatchEvent(new Event('change'));return{theme:currentColorMode,scanner:document.querySelectorAll('.theme_scan').length};});
    assert.deepEqual(reduced,{theme:'black',scanner:0});assert.deepEqual(errors,[]);results.push({fallback,...result,reduced});await page.close();
   }
