@@ -10,7 +10,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
     const errors = []; page.on('pageerror', error => errors.push(error.message));
-    await page.goto(`${base}/generator/ruler/`);
+    await page.goto(`${base}/generator/waveform/`);
     await page.waitForFunction(() => window.logoExportUI && typeof captureLogoExportSnapshot === 'function');
     if (evidence) await fs.mkdir(evidence, { recursive: true });
     const open = async () => { if (!await page.locator('#save-menu').isVisible()) await page.locator('#save-button').click(); };
