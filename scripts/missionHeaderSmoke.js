@@ -76,13 +76,13 @@ const ready = target => target.locator('#p5-container canvas[data-preview-ready=
       assert.equal(await frame.locator('#save-button-label').innerText(), 'Save asset');
       for (const format of ['svg', 'png']) {
         await frame.locator('#save-button').click(); await frame.locator(`#save-${format}`).click();
-        await frame.locator('#save-preview-dialog[open]').waitFor();
-        const image = frame.locator('#save-preview-image'); await image.waitFor();
-        assert.equal(await image.evaluate(el => el.complete && el.naturalWidth > 0), true);
+        await frame.waitForFunction(() => !logoExportUI.isBusy());
+        assert.match(await frame.locator('#export-message').textContent(), /download requested/);
+        assert.equal(await frame.locator('#save-menu').isVisible(), true);
+        assert.equal(await frame.locator('#save-preview-dialog, #save-preview-image').count(), 0);
         await page.keyboard.press('Escape');
-        assert.equal(await frame.locator('#save-preview-dialog').getAttribute('open'), null);
       }
-      results.push({ embedded: true, width, previewFormats: ['svg', 'png'] }); await page.close();
+      results.push({ embedded: true, width, requestedFormats: ['svg', 'png'] }); await page.close();
     }
     await fs.writeFile(path.join(evidence, `${engine}-mission-header-results.json`), JSON.stringify(results, null, 2));
     console.log(`${engine}: ${results.length} mission header/info/export cases passed`);
