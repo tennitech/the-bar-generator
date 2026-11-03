@@ -41,7 +41,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       assert.equal(await frame.locator('#share-button, #share-popover, #share-name, #share-copy').count(), 0);
       assert.equal(await frame.locator('#save-preview-dialog, #save-preview-image, script[src*=manualSavePreview]').count(), 0);
       assert.equal(await frame.evaluate(() => typeof window.manualSavePreview), 'undefined');
-      await frame.locator('#save-button').click();
+      if (!await frame.locator('#save-menu').isVisible()) await frame.locator('#save-button').click();
       assert.equal(await frame.locator('#export-open-standalone, #export-embed-help, #save-menu a[target="_blank"]').count(), 0);
       return frame;
     }
@@ -49,7 +49,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
     if (engine === 'chromium') {
       assert.equal(await frame.evaluate(() => embedSupport.clipboardBlocked()), true);
       assert.equal(await frame.locator('#copy-png').isDisabled(), true);
-      assert.match(await frame.locator('#copy-png').innerText(), /embedding permissions/);
+      assert.match(await frame.locator('#copy-png').innerText(), /embed permissions/);
     }
     let downloads = 0; const countDownload = () => { downloads++; }; page.on('download', countDownload);
     await frame.locator('#save-svg').click();
@@ -79,7 +79,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
     if (engine === 'webkit') assert((await frame.evaluate(() => __copiedBytes)) > 0);
     results.push(`allowed iframe SVG/PNG downloads + ${engine === 'chromium' ? 'native' : 'adapter'} PNG copy`);
     if (await frame.evaluate(() => logoClipboard.mode('svg') === 'image')) {
-      await frame.locator('#save-button').click();
+      if (!await frame.locator('#save-menu').isVisible()) await frame.locator('#save-button').click();
       await frame.locator('#copy-svg').click();
       await frame.waitForFunction(() => !logoExportUI.isBusy());
       assert.match(await frame.locator('#export-message').textContent(), /SVG copied/);
@@ -94,10 +94,10 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       window.__originalWrite = navigator.clipboard.write;
       navigator.clipboard.write = () => Promise.reject(new DOMException('Fixture denial', 'NotAllowedError'));
     });
-    await frame.locator('#save-button').click();
+    if (!await frame.locator('#save-menu').isVisible()) await frame.locator('#save-button').click();
     await frame.locator('#copy-png').click();
     await frame.waitForFunction(() => !logoExportUI.isBusy());
-    assert.match(await frame.locator('#export-message').textContent(), /brand portal/);
+    assert.match(await frame.locator('#export-message').textContent(), /embedded generator/);
     assert.equal(await frame.locator('#save-menu').isVisible(), true);
     assert.doesNotMatch(await frame.locator('#export-message').innerText(), /new tab/i);
     await frame.evaluate(() => { navigator.clipboard.write = __originalWrite; });
@@ -110,12 +110,12 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       const style = document.getElementById('style-select');
       style.value = 'ruler'; style.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    await frame.locator('#save-button').click();
+    if (!await frame.locator('#save-menu').isVisible()) await frame.locator('#save-button').click();
     const gifWaiting = page.waitForEvent('download');
     await frame.locator('#save-loop-gif').click();
     const gif = await fs.readFile(await (await gifWaiting).path());
     assert.match(gif.subarray(0, 6).toString(), /^GIF8[79]a$/);
-    assert.equal(gif.readUInt16LE(6), 1160); assert.equal(gif.readUInt16LE(8), 762);
+    assert.equal(gif.readUInt16LE(6), 2320); assert.equal(gif.readUInt16LE(8), 1524);
     await frame.waitForFunction(() => !logoExportUI.isBusy());
     results.push('allowed iframe native transparent GIF download');
 

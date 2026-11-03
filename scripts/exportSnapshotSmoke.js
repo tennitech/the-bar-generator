@@ -56,7 +56,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
       await page.evaluate(() => { __mutateExportControls(); __releaseExportDecode(); });
       const frozenDownload = await frozenWaiting;
       const frozen = await fs.readFile(await frozenDownload.path());
-      assert.match(frozenDownload.suggestedFilename(), /1000w.*frozen-request/i);
+      assert.match(frozenDownload.suggestedFilename(), /1160x762.*frozen-request/i);
       assert.equal(frozen.readUInt32BE(16), 1160); assert.equal(frozen.readUInt32BE(20), 762);
       assert.deepEqual(frozen, baseline, `${style}: downloaded PNG changed after request-time capture`);
       assert.equal(await page.evaluate(() => captureLogoExportSnapshot().svgSource !== __oldSVG), true,

@@ -23,7 +23,7 @@ const ready = target => target.locator('#p5-container canvas[data-preview-ready=
       page.on('popup', () => popups++);
       await page.goto(`${base}/generator/lunar/?colorMode=lunar`); await ready(page);
       await page.evaluate(() => { noLoop(); return document.fonts.ready; });
-      assert.equal(await page.locator('#save-button-label').innerText(), 'Download Asset');
+      assert.equal(await page.locator('#save-button-label').innerText(), 'Export');
       assert.equal(await page.locator('#save-button .icon-download').isVisible(), true);
       const expectedSVG = await page.evaluate(() => captureLogoExportSnapshot().svgSource);
       for (const format of ['svg', 'png']) {
@@ -73,7 +73,7 @@ const ready = target => target.locator('#p5-container canvas[data-preview-ready=
       const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
       await page.setContent(`<iframe style="width:${width}px;height:800px;border:0" sandbox="allow-scripts allow-same-origin" src="${base}/generator/lunar/?colorMode=lunar"></iframe>`);
       const frame = await (await page.locator('iframe').elementHandle()).contentFrame(); await ready(frame);
-      assert.equal(await frame.locator('#save-button-label').innerText(), 'Save asset');
+      assert.equal(await frame.locator('#save-button-label').innerText(), 'Export');
       for (const format of ['svg', 'png']) {
         await frame.locator('#save-button').click(); await frame.locator(`#save-${format}`).click();
         await frame.waitForFunction(() => !logoExportUI.isBusy());

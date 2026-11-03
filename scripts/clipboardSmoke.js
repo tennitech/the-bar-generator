@@ -96,7 +96,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
       logoClipboard.sync();
     });
     await open();
-    assert.match(await page.locator('#copy-svg').innerText(), /SVG copy unavailable/);
+    assert.match(await page.locator('#copy-svg').innerText(), /Not supported here. Download SVG instead/);
     assert.equal(await page.locator('#copy-svg').isDisabled(), true);
     await page.evaluate(() => logoClipboard.copy('svg')); await page.waitForFunction(() => !logoExportUI.isBusy());
     assert.match(await page.locator('#export-message').innerText(), /SVG clipboard copying is unavailable/);
