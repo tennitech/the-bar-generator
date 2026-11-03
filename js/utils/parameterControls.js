@@ -49,7 +49,7 @@
   }
   function prepareSliderValueLabel(display) {
     if (!display) return;
-    display.classList.add('slider_value-display');
+    display.classList.add(display.hasAttribute('data-slider-label') ? 'slider_value-text' : 'slider_value-display');
 
     const label = display.closest('label.control-label');
     if (!label || label.dataset.sliderValueLayout === 'ready') {
@@ -95,7 +95,7 @@
   }
 
   function prepare(root = document) {
-    root.querySelectorAll('[data-slider-value]').forEach(prepareSliderValueLabel);
+    root.querySelectorAll('[data-slider-value], [data-slider-label]').forEach(prepareSliderValueLabel);
     root.querySelectorAll('[data-parameter-actions]').forEach(group => {
       const style = group.dataset.parameterActions;
       if (!supportsActions(style)) return;

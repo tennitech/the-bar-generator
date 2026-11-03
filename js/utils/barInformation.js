@@ -31,11 +31,11 @@
   },
   "numeric": {
     "title": "Numeric",
-    "text": "Enter a decimal value or select a formula to turn its digits into a pattern. Compare dot matrix and height encoding to explore the same digits; the bar encodes the displayed decimal approximation, without a sign, rather than measuring an external quantity."
+    "text": "Enter a decimal value or select a formula to turn its digits into a pattern. Compare dot matrix and height encoding to explore the same digits; the bar encodes the displayed decimal approximation, without a sign, rather than measuring an external quantity. Zero cells can remain empty in Dot Matrix."
   },
   "neural-network": {
     "title": "Neural Network",
-    "text": "What changes when a network gets wider or deeper? Explore an untrained feedforward model: nodes apply tanh or sigmoid to weighted sums, filled centers encode activation, and dashed links mark negative weights; changing the input recomputes every layer, without training."
+    "text": "What changes when a network gets wider or deeper? Explore an untrained feedforward model: three inputs feed the hidden layers and two outputs. Nodes apply tanh or sigmoid to weighted sums, filled centers encode activation, and dashed links mark negative weights; changing the input recomputes every layer, without training."
   },
   "circles-gradient": {
     "title": "Circles Gradient",

@@ -31,10 +31,16 @@ function generateWaveValue(phase, type) {
   const normalizedPhase = phase - Math.floor(phase);
   const wrappedPhase = normalizedPhase < 0 ? normalizedPhase + 1 : normalizedPhase;
 
-  const sine = (Math.sin(wrappedPhase * 2 * Math.PI - Math.PI / 2) + 1) * 0.5;
-  const saw = wrappedPhase;
-  const square = wrappedPhase > 0.5 ? 1.0 : 0.0;
-  const pulse = wrappedPhase > 0.8 ? 1.0 : 0.0;
+  return blendWaveformShape(wrappedPhase, type);
+}
+
+// The side selects a one-sided limit at a discontinuity. Phase 1 is the
+// left limit of the wrap, not phase 0 of the next cycle.
+function blendWaveformShape(phase, type, side = 0) {
+  const sine = (Math.sin(phase * 2 * Math.PI - Math.PI / 2) + 1) * 0.5;
+  const saw = phase;
+  const square = phase > 0.5 || (phase === 0.5 && side > 0) ? 1 : 0;
+  const pulse = phase > 0.8 || (phase === 0.8 && side > 0) ? 1 : 0;
 
   if (type < 1.0) {
     return sine + (saw - sine) * type;
@@ -111,6 +117,66 @@ function mapWaveformToBarYFraction(wave, centerOffset = 0) {
   const centeredWave = clampedWave - 0.5;
 
   return clampWaveformValue(centerFraction - centeredWave * amplitudeScale, 0, 1);
+}
+
+// Shared curve for preview, header and SVG/PNG/GIF. Uniform samples describe
+// smooth portions; exact one-sided vertices describe moving jumps. Sampling a
+// jump on a stationary grid makes its edge hop and its duty cycle breathe.
+function createWaveformPatternGeometry(options = {}) {
+  const finite = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+  const width = Math.max(1, finite(options.exactBarWidth, 250));
+  const height = Math.max(1, finite(options.barHeight, 18));
+  const startX = finite(options.barStartX, 0);
+  const startY = finite(options.barY, 0);
+  const frequency = Math.max(1, Math.min(100, Math.round(finite(options.waveformFrequency, 24))));
+  const type = clampWaveformValue(finite(options.waveformType, 0), 0, 3);
+  const speed = finite(options.waveformSpeed, 0.3);
+  const time = finite(options.timeSeconds, 0);
+  const shift = ((time * speed) % 1 + 1) % 1;
+  const count = Math.max(12, Math.min(10000, Math.ceil(finite(options.waveformPoints,
+    Math.max(500, frequency * 12)))));
+  const jumps = type > 0 ? [0] : [];
+  if (type > 1 && type < 3) jumps.push(0.5);
+  if (type > 2) jumps.push(0.8);
+  const samples = [];
+  const epsilon = 1e-10;
+
+  for (let i = 0; i <= count; i++) {
+    const x = i / count;
+    const phase = x * frequency - shift;
+    const wrapped = phase - Math.floor(phase);
+    // Exact jump vertices below replace a coincident regular sample.
+    if (jumps.some(jump => Math.abs(wrapped - jump) < epsilon
+      || (jump === 0 && Math.abs(wrapped - 1) < epsilon))) continue;
+    samples.push({ x, wave: generateWaveValue(phase, type), order: 0 });
+  }
+  for (let cycle = -1; cycle <= frequency; cycle++) {
+    for (const jump of jumps) {
+      const x = (cycle + jump + shift) / frequency;
+      if (x < -epsilon || x > 1 + epsilon) continue;
+      const clippedX = clampWaveformValue(x, 0, 1);
+      if (clippedX > epsilon) samples.push({ x: clippedX,
+        wave: blendWaveformShape(jump === 0 ? 1 : jump, type, -1), order: -1 });
+      if (clippedX < 1 - epsilon) samples.push({ x: clippedX,
+        wave: blendWaveformShape(jump, type, 1), order: 1 });
+    }
+  }
+  samples.sort((a, b) => a.x - b.x || a.order - b.order);
+  const curve = samples.map(sample => {
+    const wave = applyWaveformEnvelope(sample.wave, {
+      applyEnvelope: options.waveformEnvelope === true || options.waveformEnvelope === 'true',
+      envType: options.waveformEnvelopeType,
+      envWaves: options.waveformEnvelopeWaves,
+      bipolar: options.waveformEnvelopeBipolar === true || options.waveformEnvelopeBipolar === 'true',
+      xPortion: sample.x
+    });
+    return { x: startX + sample.x * width,
+      y: startY + height * mapWaveformToBarYFraction(wave, options.waveformEnvelopeCenter) };
+  });
+  return { curve, polygon: [
+    { x: startX, y: startY + height }, ...curve,
+    { x: startX + width, y: startY + height }
+  ] };
 }
 
 function createMusicHeadSVG(shape, x, y, rx, ry, filled, fgColor, lineThickness) {
@@ -1520,37 +1586,11 @@ function createBarPatternSVG(config) {
   }
 
   if (currentShader === 4) {
-    const frequency = parseInt(values.waveformFrequency, 10);
-    const waveType = parseFloat(values.waveformType);
-    const speed = parseFloat(values.waveformSpeed);
-    const time = parseFloat(values.timeSeconds || 0);
-    const applyEnvelope = values.waveformEnvelope === true || values.waveformEnvelope === 'true';
-    const envType = values.waveformEnvelopeType || 'sine';
-    const envWaves = normalizeWaveformEnvelopeWaves(values.waveformEnvelopeWaves);
-    const envCenter = parseFloat(values.waveformEnvelopeCenter || 0);
-    const bipolar = values.waveformEnvelopeBipolar === true || values.waveformEnvelopeBipolar === 'true';
-
-    const basePoints = Math.max(300, exactBarWidth * 3);
-    const frequencyMultiplier = Math.max(1, frequency / 10);
-    const points = Number.isFinite(values.waveformPoints) ? values.waveformPoints : Math.ceil(basePoints * frequencyMultiplier);
-
-    let pathData = `M ${barStartX} ${barY + barHeight}`;
-    for (let i = 0; i <= points; i++) {
-      const xPortion = i / points;
-      const x = xPortion * exactBarWidth;
-      const phase = Math.round(((xPortion * frequency) - (time * speed)) * 1000000) / 1000000;
-      let wave = generateWaveValue(phase, waveType);
-      wave = applyWaveformEnvelope(wave, {
-        applyEnvelope,
-        envType,
-        envWaves,
-        bipolar,
-        xPortion
-      });
-      const y = barY + barHeight * mapWaveformToBarYFraction(wave, envCenter);
-      pathData += ` L ${barStartX + x} ${y}`;
-    }
-    pathData += ` L ${barStartX + exactBarWidth} ${barY + barHeight} Z`;
+    const geometry = createWaveformPatternGeometry({
+      ...values, barStartX, barY, exactBarWidth, barHeight
+    });
+    const pathData = geometry.polygon.map((point, index) =>
+      `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ') + ' Z';
     pattern += `\n    <path d="${pathData}" fill="${fgColor}"/>`;
     return pattern;
   }
@@ -2038,6 +2078,7 @@ if (typeof window !== 'undefined') {
   window.createUnionPatternGeometry = createUnionPatternGeometry;
   window.createBarPatternSVG = createBarPatternSVG;
   window.createWaveQuantumPatternGeometry = createWaveQuantumPatternGeometry;
+  window.createWaveformPatternGeometry = createWaveformPatternGeometry;
   window.mapWaveformToBarYFraction = mapWaveformToBarYFraction;
   window.normalizeWaveformEnvelopeCenter = normalizeWaveformEnvelopeCenter;
   window.normalizeWaveformEnvelopeWaves = normalizeWaveformEnvelopeWaves;
@@ -2066,6 +2107,7 @@ if (typeof module !== 'undefined' && module.exports) {
     createTrianglesPatternGeometry,
     createUnionPatternGeometry,
     createWaveQuantumPatternGeometry,
+    createWaveformPatternGeometry,
     mapWaveformToBarYFraction,
     normalizeWaveformEnvelopeCenter,
     normalizeWaveformEnvelopeWaves,
