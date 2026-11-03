@@ -5,12 +5,12 @@ const vm = require('node:vm');
 test('decimal data retains leading zeros and precision, encodes only digits and point', () => {
   expect(numeric.digits('-001.20')).toEqual([0,0,1,10,2,0]);
   expect(numeric.digits(numeric.DEFAULT_VALUE)).toHaveLength(numeric.DEFAULT_VALUE.length);
-  expect(numeric.isValue('9'.repeat(200))).toBe(true);
+  expect(numeric.isValue('9'.repeat(100))).toBe(true);
   for (const value of ['', '-', '+', '.', '-.']) {
     expect(numeric.isDraft(value)).toBe(true);
     expect(numeric.digits(value)).toEqual([]);
   }
-  for (const value of ['12abc34', 'PI', '1e3', 'NaN', 'Infinity', '1/0', '1..2', '1,2', '9'.repeat(201), '١٢', '<script>']) {
+  for (const value of ['12abc34', 'PI', '1e3', 'NaN', 'Infinity', '1/0', '1..2', '1,2', '9'.repeat(101), '١٢', '<script>']) {
     expect(numeric.isDraft(value)).toBe(false);
     expect(numeric.digits(value)).toEqual([]);
   }
@@ -45,7 +45,7 @@ test('legacy shares migrate sources; new numeric shares reject text before apply
   const context = {globalThis: {}, NumericControls:numeric, TextEncoder, TextDecoder, btoa, atob};
   context.window = context;
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/shareState'),'utf8'), context);
-  const manifest = {'numeric-input':{type:'text',maxLength:200},'numeric-source-select':{options:['values','formula']},'numeric-formula-select':{options:numeric.presets.map(x=>x.id)}};
+  const manifest = {'numeric-input':{type:'text',maxLength:100},'numeric-source-select':{options:['values','formula']},'numeric-formula-select':{options:numeric.presets.map(x=>x.id)}};
   const state = controls => ({v:1,name:'',controls,runtime:{}});
   const restored = context.BarShareState.normalizeState(state({'numeric-input':'Math.PI'}),manifest);
   expect(restored.controls['numeric-source-select']).toBe('formula');
@@ -60,3 +60,39 @@ test.each(['constructor', 'toString', '__proto__', 'hasOwnProperty'])(
     expect(numeric.migrate(value)).toEqual({ numericSource: 'values', numericFormula: 'pi', numericValue: '' });
   }
 );
+
+
+test('100-character limit counts the sign and decimal point and matches the input', () => {
+  expect(numeric.MAX_LENGTH).toBe(100);
+  for (const value of ['9'.repeat(99), '9'.repeat(100), '-' + '9'.repeat(99), '0.' + '1'.repeat(98)]) {
+    expect(numeric.isValue(value)).toBe(true);
+  }
+  for (const value of ['9'.repeat(101), '-' + '9'.repeat(100), '0.' + '1'.repeat(99)]) {
+    expect(numeric.isDraft(value)).toBe(false);
+    expect(numeric.digits(value)).toEqual([]);
+    expect(numeric.legacyValue(value)).toBeNull();
+    expect(numeric.migrate(value).numericValue).toBe('');
+    for (const prefix of ['', 'numericSource=values&', 'numericSource=formula&']) {
+      expect(numeric.readQuery(new URLSearchParams(prefix + 'numericValue=' + encodeURIComponent(value))).numericValue).toBe('');
+    }
+  }
+  const html = fs.readFileSync(require.resolve('../generator/index.html'), 'utf8');
+  expect(html.match(/<input[^>]*id="numeric-input"[^>]*>/)[0]).toContain('maxlength="100"');
+  expect(html).toContain('Up to 100 characters:');
+  expect(numeric.DEFAULT_VALUE).toHaveLength(100);
+});
+
+test('share validation preserves the limit exactly and rejects longer decimal data', () => {
+  const context = { NumericControls: numeric, TextEncoder, TextDecoder, btoa, atob };
+  context.window = context;
+  vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/shareState'), 'utf8'), context);
+  const manifest = { 'numeric-input': { type: 'text', maxLength: 100 },
+    'numeric-source-select': { options: ['values', 'formula'] },
+    'numeric-formula-select': { options: numeric.presets.map(item => item.id) } };
+  const state = (value, legacy = false) => ({ v: 1, name: '', runtime: {}, controls:
+    { 'numeric-input': value, ...(!legacy && { 'numeric-source-select': 'values' }) } });
+  const boundary = '0.' + '1'.repeat(98);
+  expect(context.BarShareState.normalizeState(state(boundary), manifest).controls['numeric-input']).toBe(boundary);
+  expect(() => context.BarShareState.normalizeState(state(boundary + '1'), manifest)).toThrow(/numeric/);
+  expect(context.BarShareState.normalizeState(state(boundary + '1', true), manifest).controls['numeric-input']).toBe('');
+});

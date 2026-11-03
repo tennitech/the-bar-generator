@@ -132,3 +132,7 @@ requested image is available, retaining a previous complete frame during decode.
 An entrance capture cannot run before that first complete draw. This changes
 presentation readiness only: official 250-unit geometry, fixed bar gap, model
 parameters and exported SVG/PNG/GIF content are unchanged.
+
+## Numeric circle threshold — November 3, 2026
+
+Numeric values are capped at 100 characters, the exact Dot Matrix circle threshold: dot width is `250 / encoded columns - 1` and height is 1.5 reference units. At 100 encoded columns the rounded dots are circles; 101 would compress them horizontally. Shorter values retain the existing stretched dots. A decimal point is encoded; a leading sign counts toward the text limit but is not encoded. Controls, query/share validation and export digit parsing use this same bound, without changing the renderer or official geometry. See [Numeric modes](numeric_modes.md#circle-threshold--november-3-2026).

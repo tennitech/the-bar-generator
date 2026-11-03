@@ -34,7 +34,7 @@ async function file(page, type) {
     await page.locator('#numeric-input').fill('12text34');
     assert.equal(await page.inputValue('#numeric-input'),'-001.20');
     assert.match(await page.locator('#numeric-input-error').innerText(),/decimal/);
-    for (const bad of ['NaN','Infinity','1/0','1e3','1..2','2+3','9'.repeat(201)]) {
+    for (const bad of ['NaN','Infinity','1/0','1e3','1..2','2+3','9'.repeat(101)]) {
       await page.evaluate(bad=>{const f=document.getElementById('numeric-input'); f.value=bad;f.dispatchEvent(new Event('input',{bubbles:true}));},bad);
       assert.equal(await page.inputValue('#numeric-input'),'-001.20');
     }
@@ -44,8 +44,8 @@ async function file(page, type) {
     }
     await page.locator('#numeric-input').press('Tab');
     assert.equal(await page.getAttribute('#numeric-input','aria-invalid'),'true');
-    await page.locator('#numeric-input').fill('9'.repeat(200));
-    assert.equal((await page.inputValue('#numeric-input')).length,200);
+    await page.locator('#numeric-input').fill('9'.repeat(100));
+    assert.equal((await page.inputValue('#numeric-input')).length,100);
     await page.locator('#numeric-input').fill('001.20');
     const valuesSVG=await file(page,'SVG');
     await page.screenshot({path:path.join(evidence,'values-desktop.png')});
@@ -100,8 +100,17 @@ async function file(page, type) {
     assert.equal(await page.inputValue('#numeric-source-select'),'values');
     assert.equal(await page.inputValue('#numeric-input'),await page.evaluate(()=>NumericControls.DEFAULT_VALUE));
     await page.getByRole('button',{name:'Randomize numeric parameters',exact:true}).click();
+    assert.equal(await page.inputValue('#numeric-source-select'),'values');
+    const generated = await page.inputValue('#numeric-input');
+    assert.match(generated, /^[0-9]{24}$/);
+    assert.equal(await page.inputValue('#numeric-mode-select'),'dotmatrix');
+    await choose(page,'numeric-source-select','formula');
+    const priorFormula = await page.inputValue('#numeric-formula-select');
+    await page.getByRole('button',{name:'Randomize numeric parameters',exact:true}).click();
     assert.equal(await page.inputValue('#numeric-source-select'),'formula');
+    assert.notEqual(await page.inputValue('#numeric-formula-select'),priorFormula);
     assert.ok(presets.includes(await page.inputValue('#numeric-formula-select')));
+    assert.equal(await page.inputValue('#numeric-input'),generated);
     for(const [legacy,expected] of [['PI','3.141592653589793'],['Math.pow(3,5)','243'],['bad123',''],['constructor',''],['toString',''],['__proto__',''],['hasOwnProperty','']]) {
       await page.goto(`${base}/generator/numeric/?numericValue=${encodeURIComponent(legacy)}`);await ready(page);
       assert.equal(await page.evaluate(()=>getNumericSourceValue()),expected);
