@@ -1180,6 +1180,7 @@ function awaitExportTask(promise, signal) {
 }
 
 async function createRasterExportBlob(snapshot, signal) {
+  throwIfExportCancelled(signal);
   const { dimensions, geometry } = snapshot;
   const xml = new DOMParser().parseFromString(snapshot.svgSource, 'image/svg+xml');
   if (xml.querySelector('parsererror')) throw new Error('The selected SVG could not be rendered.');
@@ -1249,6 +1250,7 @@ async function runLogoExport(format) {
   if (!['png', 'svg', 'gif'].includes(format)) return null;
   const job = window.logoExportUI.begin(format);
   if (!job) return null;
+  job.preview = Boolean(window.manualSavePreview?.enabled(format));
   const started = performance.now();
   let renderer;
   try {
@@ -1271,6 +1273,16 @@ async function runLogoExport(format) {
       blob = result.blob; metrics = result.metrics;
     }
     throwIfExportCancelled(job.controller.signal);
+    if (job.preview) {
+      await window.manualSavePreview.open({ format, blob, snapshot, signal: job.controller.signal,
+        filename: type => window.logoExportOptions.filename(snapshot, type),
+        prepare: (type, signal) => type === 'svg'
+          ? Promise.resolve(new Blob([snapshot.svgSource], { type: 'image/svg+xml' }))
+          : createRasterExportBlob(snapshot, signal),
+        onReady: () => window.logoExportUI.finish(job, 'prepared', `${format.toUpperCase()} image ready to save.`) });
+      return { filename, preview: true, metrics: { bytes: blob.size, width: format === 'svg' ? null : snapshot.dimensions.width,
+        height: format === 'svg' ? null : snapshot.dimensions.height, elapsedMs: performance.now() - started } };
+    }
     window.logoExportUI.message(job, 'Starting download…');
     startLogoDownload(blob, filename);
     // A synthetic anchor click has no completion signal. Sandboxed hosts can

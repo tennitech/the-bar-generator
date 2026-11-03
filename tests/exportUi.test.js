@@ -112,3 +112,15 @@ test('an embedded download request keeps recovery visible without claiming downl
   expect(elements['save-svg'].disabled).toBe(false);
   expect(ui.isBusy()).toBe(false);
 });
+
+
+test('dismissal cancels only owned preview jobs, never a dispatched clipboard preparation', () => {
+  const { ui } = fixture();
+  const copy = ui.begin('png'); copy.triggerId = 'copy-png';
+  expect(ui.cancelPendingPreview()).toBe(false);
+  expect(copy.controller.signal.aborted).toBe(false);
+  ui.finish(copy, 'started', 'PNG copied.');
+  const preview = ui.begin('png'); preview.preview = true;
+  expect(ui.cancelPendingPreview()).toBe(true);
+  expect(preview.controller.signal.aborted).toBe(true);
+});

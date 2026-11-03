@@ -14,6 +14,24 @@
       if (description) description.textContent = `Transparent${format === 'gif' ? ' loop' : ''} · ${dimensions.width} × ${dimensions.height} px`;
       if (button) button.setAttribute('aria-label', `${format.toUpperCase()}: ${description?.textContent || ''}`);
     }
+    if (root.manualSavePreview?.enabled('svg')) {
+      const title = byId('save-button-label');
+      if (title) title.textContent = 'Save asset';
+      byId('save-button')?.setAttribute('aria-label', 'Open asset save menu');
+      for (const format of ['svg', 'png']) {
+        const button = byId(`save-${format}`);
+        const label = button?.querySelector('.option-label');
+        const description = button?.querySelector('.option-desc');
+        if (label) label.textContent = `Save ${format.toUpperCase()}`;
+        if (description) description.textContent = format === 'svg' ? 'Vector · in-page image preview' : `Transparent · ${dimensions.width} × ${dimensions.height} px`;
+        button?.setAttribute('aria-label', `Save ${format.toUpperCase()}: prepare an in-page image preview`);
+      }
+    }
+  }
+  function cancelPendingPreview() {
+    if (!active?.preview) return false;
+    active.controller.abort();
+    return true;
   }
   function begin(format) {
     if (active) {
@@ -94,7 +112,7 @@
     byId('save-button')?.addEventListener('keydown', dismiss);
     sync(false);
   }
-  root.logoExportUI = { size, sync, begin, report, message, finish, isBusy: () => !!active };
+  root.logoExportUI = { size, sync, begin, report, message, finish, cancelPendingPreview, isBusy: () => !!active };
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
