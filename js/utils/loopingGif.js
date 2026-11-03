@@ -119,9 +119,10 @@
     const normalizedStyle = normalizeLoopingGifStyle(style);
     if (!LOOPING_GIF_STYLE_SET.has(normalizedStyle)) return false;
     // Reverse is relative to the owner-corrected default for each family.
-    // Ticker previously had the opposite sign from Ruler and Waveform.
+    // Waveform moves toward increasing screen x by default; Ruler's drawing
+    // coordinates require the opposite transport sign. Ticker is unchanged.
     const checked = normalizeLoopReverse(normalizedStyle, values[`${normalizedStyle}Reverse`]);
-    return normalizedStyle === 'ticker' ? checked : !checked;
+    return normalizedStyle === 'ruler' ? !checked : checked;
   }
 
   function getFrameCountForPeriod(periodSeconds, fps) {

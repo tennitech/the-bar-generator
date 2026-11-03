@@ -56,7 +56,7 @@ describe('loopingGif utils', () => {
   test('speed changes preserve current phase instead of rescaling elapsed time', () => {
     let phase = advanceLiveLoopPhase(0.3, 'waveform', { waveformSpeed: 1 }, 10);
     phase = advanceLiveLoopPhase(phase, 'waveform', { waveformSpeed: 5 }, 10);
-    expect(phase).toBeCloseTo(0.28);
+    expect(phase).toBeCloseTo(0.32);
     const state = getLoopingAnimationState('waveform', { waveformSpeed: 5 }, { phase });
     expect(((state.timeSeconds * normalizeLoopSpeed('waveform', 5)) % 1 + 1) % 1).toBeCloseTo(phase);
   });
@@ -140,7 +140,7 @@ describe('loopingGif utils', () => {
     expect(plan.style).toBe('waveform');
     expect(plan.periodSeconds).toBeCloseTo(1);
     expect(plan.frameCount).toBe(24);
-    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(-0.5);
+    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(0.5);
   });
 
   test('reverses waveform time progression when reverse is enabled', () => {
@@ -149,7 +149,7 @@ describe('loopingGif utils', () => {
       waveformReverse: true
     });
 
-    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(0.5);
+    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(-0.5);
   });
 
   test('caps very fast loop exports to viewer-safe frame delays', () => {
