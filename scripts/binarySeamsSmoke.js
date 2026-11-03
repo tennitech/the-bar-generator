@@ -46,8 +46,11 @@ const allowBefore = process.env.RPI_EXPECT_BINARY_SEAMS === '1';
             const expected = bit ? row !== 1 : row === 1;
             if (expected ? alpha(x, y) < 250 : alpha(x, y) > 5) wrongCells++;
           } });
-          return { size, probes: probes.length, issues, wrongCells, width: canvas.width, height: canvas.height,
+          const result = { size, probes: probes.length, issues, wrongCells, width: canvas.width, height: canvas.height,
             source: snapshot.svgSource, png: canvas.toDataURL('image/png').split(',')[1] };
+          // Release each test-only raster before preparing the next large case.
+          image.src = ''; canvas.width = 0; canvas.height = 0;
+          return result;
         }, { size });
         if (!allowBefore) { assert.equal(data.issues.length, 0, `${text}/${size}: ${JSON.stringify(data.issues.slice(0, 4))}`); assert.equal(data.wrongCells, 0); }
         results.push({ text, size, seamCount: data.issues.length, wrongCells: data.wrongCells, probes: data.probes });
@@ -108,7 +111,9 @@ const allowBefore = process.env.RPI_EXPECT_BINARY_SEAMS === '1';
           }
           const expected = new DOMParser().parseFromString(buildHeaderPreviewSVG(), 'image/svg+xml');
           const rects = root => [...root.querySelectorAll('rect')].map(el => ['x', 'y', 'width', 'height'].map(key => Number(el.getAttribute(key))));
-          return { probes: probes.length, issues, headerMatches: JSON.stringify(rects(expected)) === JSON.stringify(rects(document.querySelector('#header-logo-preview'))) };
+          const result = { probes: probes.length, issues, headerMatches: JSON.stringify(rects(expected)) === JSON.stringify(rects(document.querySelector('#header-logo-preview'))) };
+          canvas.width = 0; canvas.height = 0;
+          return result;
         });
         if (!allowBefore) { assert.ok(painted.probes > 0); assert.equal(painted.issues.length, 0, JSON.stringify({ viewport, fallback, zoom, ...painted })); }
         assert.equal(painted.headerMatches, true);
