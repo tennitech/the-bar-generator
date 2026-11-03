@@ -132,7 +132,8 @@ async function main() {
         const canvas=document.createElement('canvas'); canvas.width=image.width; canvas.height=image.height;
         const ctx=canvas.getContext('2d'); ctx.drawImage(image,0,0);
         // A point in the fixed official R stem, independent of bar family.
-        const px=[...ctx.getImageData((20+5)*4,(20+20)*4,1,1).data]; URL.revokeObjectURL(image.src);
+        const { exportPadding }=snapshot.geometry; const { scale }=snapshot.dimensions;
+        const px=[...ctx.getImageData(Math.floor((exportPadding+5)*scale),Math.floor((exportPadding+20)*scale),1,1).data]; URL.revokeObjectURL(image.src);
         return { fg:snapshot.foreground.toLowerCase(),source:snapshot.svgSource.includes(`fill="${snapshot.foreground}"`),px };
       });
       assert.equal(result.fg,ink); assert.equal(result.source,true);

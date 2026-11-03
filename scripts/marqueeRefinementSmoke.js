@@ -92,7 +92,13 @@ async function movement(page, duration = 400) {
       for (const item of current.samples) {
         const sample = samples.find(sample => sample.path === item.path);
         assert.ok(sample, 'sample is pre-rendered from the catalog');
-        assert.equal(new URL(item.href, base + '/').search.slice(1), sample.query);
+        const query = new URL(item.href, base + '/').searchParams;
+        for (const [key, value] of new URLSearchParams(sample.query)) assert.equal(query.get(key), value);
+        const prefix = sample.value === 'wave-quantum' ? 'quantum' : sample.value;
+        if (['ticker', 'waveform', 'quantum'].includes(prefix)) {
+          assert.ok(Number(query.get(`${prefix}Speed`)) >= 0.2);
+          assert.ok(['true', 'false'].includes(query.get(`${prefix}Reverse`)));
+        } else assert.equal(query.toString(), sample.query);
         assert.match(new URL(item.href, base + '/').pathname, new RegExp(`/generator/${sample.value}/$`));
       }
       if (previous) {
@@ -153,8 +159,8 @@ async function movement(page, duration = 400) {
     await page.waitForTimeout(250);
     const slowed = await movement(page, 600);
     const ratio = (slowed.distance / slowed.simulatedSeconds) / (normal.distance / normal.simulatedSeconds);
-    assert.ok(slowed.distance > 0.15, `hover continues moving: ${JSON.stringify({normal, slowed, ratio})}`);
-    assert.ok(ratio > 0.025 && ratio < 0.2, `hover brakes to a strong crawl: ${ratio}`);
+    assert.equal(slowed.distance, 0, 'hover stops the lane completely');
+    assert.equal(ratio, 0, 'hover never retains a slow crawl');
     await page.screenshot({ path: path.join(evidence, `${engine}-hover.png`) });
     await page.evaluate(() => { window.__pointerLog = []; for (const type of ['pointerdown','pointerup','pointercancel','gotpointercapture','lostpointercapture','dragstart','dragend','mouseup']) document.addEventListener(type, event => window.__pointerLog.push({ type, target: event.target.className, pointerId: event.pointerId }), true); });
     await page.locator('#marquee-motion-test').evaluate(link => {
@@ -165,7 +171,7 @@ async function movement(page, duration = 400) {
     const pressed = await movement(page, 250);
     assert.equal(pressed.distance, 0, 'press locks target for click/touch');
     // Keep this hold test on the homepage; test unmodified native click below.
-    await page.mouse.move(20, 880); await page.mouse.up();
+    await page.mouse.up(); await page.mouse.move(20, 880);
     await page.locator('#marquee-motion-test').evaluate(link => link.removeEventListener('click', window.__marqueeSuppressClick));
     await page.waitForTimeout(700);
     const resumed = await movement(page);
@@ -173,7 +179,7 @@ async function movement(page, duration = 400) {
     for (let i = 0; i < 2; i++) {
       point = await visibleLink(page); await page.mouse.move(point.x, point.y);
       await page.waitForTimeout(250);
-      assert.ok((await movement(page, 200)).distance > 0, 'repeated hover does not freeze');
+      assert.equal((await movement(page, 200)).distance, 0, 'each repeated hover stops immediately');
       await page.mouse.move(20, 880); await page.waitForTimeout(400);
     }
     await page.emulateMedia({ reducedMotion: 'reduce' });

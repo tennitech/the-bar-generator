@@ -201,7 +201,7 @@
       url.hash = encodeState(snapshot, manifest);
       return url.href;
     }
-    function apply(snapshot) {
+    function apply(snapshot, options = {}) {
       restoring = true;
       try {
         const values = { ...defaultControls, ...snapshot.controls };
@@ -215,7 +215,7 @@
         }
         name = sanitize(snapshot.name);
         updateNameContext();
-        bridge.restore(snapshot.runtime);
+        bridge.restore(snapshot.runtime, options);
         for (const field of fields) {
           if (field.id === 'style-select' || field.id === 'color-mode-select') continue;
           field.dispatchEvent(new Event(field.type === 'range' || field.type === 'text' ? 'input' : 'change', { bubbles: true }));
@@ -242,6 +242,11 @@
     }
     const controller = {
       capture, manifest, buildLink, getName: () => name,
+      restoreLocal(snapshot) {
+        // The same validation and renderer bridge as historical snapshots,
+        // without writing a share fragment or creating persistent storage.
+        apply(normalizeState(snapshot, manifest), { local: true });
+      },
       isRestoring: () => restoring,
       syncUrl() {
         if (restoring) return true;

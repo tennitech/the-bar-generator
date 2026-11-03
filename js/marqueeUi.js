@@ -8,10 +8,13 @@ const ROW_REFERENCE_VIEWPORT_HEIGHT = 822;
 const ROW_LEFT = '-44vw';
 const ROW_WIDTH = '220vw';
 const MEASUREMENT_EPSILON = 0.5;
-const HOVER_SPEED_FACTOR = 0.08;
+const HOVER_SPEED_FACTOR = 0;
 const PRESS_SPEED_FACTOR = 0;
 const EASE_RATE = 5.2;
 const BRAKE_RATE = 28;
+const DRAG_THRESHOLD = 8;
+const INERTIA_FRICTION = 5.5;
+const INERTIA_STOP_SPEED = 8;
 const STARTUP_STYLE_PROMPT_DELAY = 5000;
 const BASE_SPEEDS = [24, 28, 26, 30, 27, 29, 25, 28, 26, 30];
 const HERO_CLUSTER_WIDTH = 960;
@@ -47,7 +50,10 @@ function createRowPatterns(entries) {
     Array.from({ length: 7 }, (_, slot) => entries[(row * 7 + slot * 5) % entries.length].path));
 }
 // Choose the small static sample set once. Resize and every animation frame reuse it.
-const rowPatterns = createRowPatterns(marqueeCatalogApi.selectEntries());
+const selectedMarqueeEntries = marqueeCatalogApi.selectEntries();
+const rowPatterns = createRowPatterns(selectedMarqueeEntries);
+const marqueeAnimation = typeof window !== 'undefined' && window.MarqueeAnimation
+  ? window.MarqueeAnimation.create(selectedMarqueeEntries) : null;
 
 function toAssetUrl(path) { return encodeURI(path); }
 
@@ -218,10 +224,11 @@ function createAssetElement(path) {
   const style = getMarqueeBarStyle(path);
   asset.className = 'bar_asset_wrap';
   asset.style.setProperty('--asset-width', 'var(--marquee-asset-width)');
-  asset.href = getGeneratorHref(style.value, style.query);
+  asset.href = getGeneratorHref(style.value, marqueeAnimation?.settings.get(path)?.query || style.query);
   asset.dataset.barVariant = style.variant;
   asset.dataset.barStyle = style.value;
   asset.setAttribute('aria-label', `Open ${style.label} in the generator`);
+  asset.draggable = false;
   asset.tabIndex = -1;
   asset.setAttribute('aria-hidden', 'true');
 
@@ -245,9 +252,9 @@ function syncRowTargetFactor(state) {
     : state.isHovered
       ? HOVER_SPEED_FACTOR
       : 1;
-  // A deliberate press locks the link for selection. Hover instead brakes
-  // quickly to a slow crawl, retaining motion rather than abruptly stopping.
-  if (state.isPressed) state.currentFactor = PRESS_SPEED_FACTOR;
+  // Keep a hovered link exactly still. Deliberate drag momentum is separate
+  // from autoplay, so a release can coast even while the pointer stays here.
+  if (state.isPressed || state.isHovered) state.currentFactor = 0;
 }
 
 function advanceRowSpeed(currentFactor, targetFactor, dt) {
@@ -288,12 +295,61 @@ function setPressedAsset(state, asset) {
   }
 }
 
+// Work in the lane's own coordinates, not screen x: each row is rotated.
+function projectLaneDelta(dx, dy, axis) {
+  return dx * axis.x + dy * axis.y;
+}
+
+function sampleDragVelocity(previous, distance, seconds, maximum) {
+  if (!(seconds > 0)) return previous;
+  const instant = clamp(distance / seconds, -maximum, maximum);
+  return previous + (instant - previous) * (1 - Math.exp(-seconds / 0.035));
+}
+
+function advanceRowInertia(velocity, seconds) {
+  if (!velocity || !(seconds > 0)) return { velocity: velocity || 0, distance: 0 };
+  const decay = Math.exp(-INERTIA_FRICTION * seconds);
+  const next = velocity * decay;
+  return {
+    velocity: Math.abs(next) < INERTIA_STOP_SPEED ? 0 : next,
+    distance: velocity * (1 - decay) / INERTIA_FRICTION
+  };
+}
+
+function resetRowInteraction(state) {
+  const drag = state.drag;
+  if (drag) state.suppressClick = true;
+  state.drag = null;
+  state.inertiaVelocity = 0;
+  state.inertiaOrigin = null;
+  state.isPressed = false;
+  state.isHovered = false;
+  setPressedAsset(state, null);
+  setHoveredAsset(state, null);
+  state.element.classList.remove('is-dragging');
+  syncRowTargetFactor(state);
+  if (drag?.asset.hasPointerCapture(drag.pointerId)) {
+    drag.asset.releasePointerCapture(drag.pointerId);
+  }
+}
+
 function bindAssetInteractions(asset, state) {
-  asset.addEventListener('pointerenter', () => {
+  function catchMovingLane(event) {
+    // Transform-driven enter/move events at the release point must not kill a
+    // deliberate throw. Moving the mouse to inspect a bar does catch the lane.
+    if (state.inertiaVelocity && state.inertiaOrigin && event.pointerType !== 'touch'
+      && Math.hypot(event.clientX - state.inertiaOrigin.x, event.clientY - state.inertiaOrigin.y) > 2) {
+      state.inertiaVelocity = 0;
+    }
+  }
+  function hoverAsset(event) {
+    if (event.pointerType === 'touch' || state.drag) return;
+    catchMovingLane(event);
     state.isHovered = true;
     setHoveredAsset(state, asset);
     syncRowTargetFactor(state);
-  });
+  }
+  asset.addEventListener('pointerenter', hoverAsset);
 
   asset.addEventListener('pointerleave', () => {
     if (state.hoveredAsset === asset && !state.isPressed) {
@@ -304,36 +360,97 @@ function bindAssetInteractions(asset, state) {
   });
 
   asset.addEventListener('pointerdown', event => {
-    state.isHovered = true;
+    if (event.isPrimary === false) return;
+    // A fresh press must never inherit suppression from an earlier drag.
+    state.suppressClick = false;
+    // Keep auxiliary and modified native-link activation unchanged.
+    if (event.button !== 0 || event.ctrlKey
+      || event.metaKey || event.shiftKey || event.altKey || state.drag) return;
+    state.inertiaVelocity = 0;
+    state.isHovered = event.pointerType !== 'touch';
     state.isPressed = true;
-    setHoveredAsset(state, asset);
+    setHoveredAsset(state, state.isHovered ? asset : null);
     setPressedAsset(state, asset);
     syncRowTargetFactor(state);
+    const matrix = new DOMMatrixReadOnly(getComputedStyle(state.element).transform);
+    const length = Math.hypot(matrix.a, matrix.b) || 1;
+    state.drag = {
+      asset, pointerId: event.pointerId, pointerType: event.pointerType,
+      startX: event.clientX, startY: event.clientY,
+      lastX: event.clientX, lastY: event.clientY, time: event.timeStamp,
+      axis: { x: matrix.a / length, y: matrix.b / length },
+      velocity: 0, moved: false
+    };
     asset.setPointerCapture(event.pointerId);
   });
 
-  function finishPress(event) {
-    if (event.type === 'lostpointercapture' && state.pressedAsset !== asset) return;
-    state.isPressed = false;
-    setPressedAsset(state, null);
-    // Hit-test the actual release point: :hover can stay stale after pointer
-    // capture or a native link drag, particularly in WebKit.
-    const hit = document.elementFromPoint(event.clientX, event.clientY);
-    state.isHovered = event.type !== 'lostpointercapture' && event.pointerType !== 'touch'
-      && hit?.closest('.bar_asset_wrap') === asset;
-    if (!state.isHovered) setHoveredAsset(state, null);
-    syncRowTargetFactor(state);
-    if (Number.isInteger(event.pointerId) && asset.hasPointerCapture(event.pointerId)) {
-      asset.releasePointerCapture(event.pointerId);
+  asset.addEventListener('pointermove', event => {
+    const drag = state.drag;
+    // Focus/history restoration may not emit a fresh pointerenter for the
+    // asset already under the pointer. Re-establish hover on its next move.
+    if (!drag) { hoverAsset(event); return; }
+    if (drag.asset !== asset || drag.pointerId !== event.pointerId) return;
+    if (drag.pointerType === 'mouse' && event.buttons === 0) {
+      resetRowInteraction(state);
+      return;
     }
+    const dx = event.clientX - drag.startX, dy = event.clientY - drag.startY;
+    if (!drag.moved) {
+      if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+      const along = projectLaneDelta(dx, dy, drag.axis);
+      const across = projectLaneDelta(dx, dy, { x: -drag.axis.y, y: drag.axis.x });
+      // Hand vertical touch gestures back to the browser, including pinch.
+      if (drag.pointerType === 'touch' && Math.abs(across) > Math.abs(along)) {
+        state.suppressClick = true;
+        resetRowInteraction(state);
+        return;
+      }
+      drag.moved = true;
+      state.element.classList.add('is-dragging');
+    }
+    if (event.cancelable) event.preventDefault();
+    const delta = projectLaneDelta(event.clientX - drag.lastX, event.clientY - drag.lastY, drag.axis);
+    const seconds = (event.timeStamp - drag.time) / 1000;
+    drag.velocity = sampleDragVelocity(drag.velocity, delta, seconds, state.slotWidth * 4);
+    state.travel += delta * state.direction;
+    drag.lastX = event.clientX; drag.lastY = event.clientY; drag.time = event.timeStamp;
+    updateRowLayout(state);
+  });
+
+  function finishPress(event) {
+    const drag = state.drag;
+    if (!drag || drag.asset !== asset || drag.pointerId !== event.pointerId) return;
+    const released = event.type === 'pointerup';
+    state.suppressClick = drag.moved || !released;
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    // A held release, cancellation, or reduced-motion preference never throws.
+    state.inertiaVelocity = released && drag.moved && !reduced
+      && event.timeStamp - drag.time < 100 ? drag.velocity : 0;
+    state.inertiaOrigin = { x: event.clientX, y: event.clientY };
+    state.drag = null;
+    state.isPressed = false;
+    state.element.classList.remove('is-dragging');
+    setPressedAsset(state, null);
+    const hit = released && drag.pointerType !== 'touch'
+      ? document.elementFromPoint(event.clientX, event.clientY)?.closest('.bar_asset_wrap') : null;
+    const hovered = hit && state.items.some(item => item.asset === hit) ? hit : null;
+    state.isHovered = !!hovered;
+    setHoveredAsset(state, hovered);
+    syncRowTargetFactor(state);
+    if (asset.hasPointerCapture(event.pointerId)) asset.releasePointerCapture(event.pointerId);
   }
 
   asset.addEventListener('pointerup', finishPress);
   asset.addEventListener('pointercancel', finishPress);
   asset.addEventListener('lostpointercapture', finishPress);
-  // Native link drag can replace pointerup/cancel with dragend. Do not leave
-  // the entire lane stuck in its pressed state after that interrupted selection.
-  asset.addEventListener('dragend', finishPress);
+  // Prevent the anchor's own native ghost-image drag, not just image dragging.
+  asset.addEventListener('dragstart', event => event.preventDefault());
+  asset.addEventListener('click', event => {
+    if (!state.suppressClick || event.detail === 0) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    state.suppressClick = false;
+  }, true);
 }
 
 function createTrackItem(state, path, isMeasure = false) {
@@ -347,6 +464,7 @@ function createTrackItem(state, path, isMeasure = false) {
     bindAssetInteractions(asset, state);
   }
   item.append(asset);
+  if (!isMeasure) marqueeAnimation?.decorate(asset, path);
 
   return item;
 }
@@ -375,6 +493,10 @@ function createRow(index) {
     isPressed: false,
     hoveredAsset: null,
     pressedAsset: null,
+    drag: null,
+    inertiaVelocity: 0,
+    inertiaOrigin: null,
+    suppressClick: false,
     rowWidth: 0,
     rowHeight: 0,
     slotWidth: 0,
@@ -466,6 +588,7 @@ function syncRowMeasurements(rowStates, force = false) {
       return;
     }
 
+    if (state.drag || state.inertiaVelocity) resetRowInteraction(state);
     const previousSlotWidth = state.slotWidth;
     state.rowWidth = nextRowWidth;
     state.rowHeight = nextRowHeight;
@@ -512,7 +635,11 @@ function syncRowVerticalLayout(rowStates, stage) {
     rowStates.push(state);
     stage.append(state.element);
   }
-  while (rowStates.length > neededRows) rowStates.pop().element.remove();
+  while (rowStates.length > neededRows) {
+    const removed = rowStates.pop();
+    resetRowInteraction(removed);
+    removed.element.remove();
+  }
   syncRowMeasurements(rowStates);
   const rowPositions = computeRowTopPositions({
     rowCount: rowStates.length,
@@ -523,6 +650,7 @@ function syncRowVerticalLayout(rowStates, stage) {
   rowStates.forEach((state, index) => {
     state.element.style.top = `${rowPositions[index]}px`;
   });
+  marqueeAnimation?.resize();
 }
 
 function syncMarqueeSizing(root) {
@@ -579,6 +707,11 @@ function initMarqueeScene() {
 
   const rowStates = Array.from({ length: ROW_COUNT }, (_, index) => createRow(index));
   rowStates.forEach(state => stage.append(state.element));
+  const cancelInteractions = () => rowStates.forEach(resetRowInteraction);
+  stage.addEventListener('pointerdown', event => {
+    if (event.isPrimary === false) cancelInteractions();
+  }, true);
+  window.addEventListener('blur', cancelInteractions);
 
   let startupStylePromptTimer = null;
   if (startupStylePrompt) {
@@ -634,14 +767,17 @@ function initMarqueeScene() {
   let lastTime = performance.now();
   function animateRows(now) {
     animationFrame = 0;
-    if (reducedMotion && reducedMotion.matches) return;
+    if (document.hidden || (reducedMotion && reducedMotion.matches)) return;
     const dt = Math.min(0.04, (now - lastTime) / 1000);
     lastTime = now;
-    if (window.PageEntrance?.isHoldingArtwork?.()) {
+    if (window.PageEntrance?.isHoldingArtwork?.() || document.body.classList.contains('has-logo-animation')) {
+      marqueeAnimation?.hold();
       animationFrame = window.requestAnimationFrame(animateRows);
       return;
     }
 
+    marqueeAnimation?.start();
+    marqueeAnimation?.tick(dt * 1000);
     const viewport = getViewportMetrics();
     const speedScale = getResponsiveMarqueeMetrics(viewport.width, viewport.height).scale;
     rowStates.forEach(state => {
@@ -649,9 +785,15 @@ function initMarqueeScene() {
         return;
       }
 
-      state.currentFactor = advanceRowSpeed(state.currentFactor, state.targetFactor, dt);
-      state.travel += state.baseSpeed * state.currentFactor * dt
-        * speedScale;
+      if (state.drag) return;
+      if (state.inertiaVelocity) {
+        const inertia = advanceRowInertia(state.inertiaVelocity, dt);
+        state.inertiaVelocity = inertia.velocity;
+        state.travel += inertia.distance * state.direction;
+      } else {
+        state.currentFactor = advanceRowSpeed(state.currentFactor, state.targetFactor, dt);
+        state.travel += state.baseSpeed * state.currentFactor * dt * speedScale;
+      }
       updateRowLayout(state);
     });
 
@@ -659,7 +801,13 @@ function initMarqueeScene() {
   }
 
   function syncMotionPreference() {
-    if (reducedMotion && reducedMotion.matches) {
+    if (document.hidden || (reducedMotion && reducedMotion.matches)) {
+      if (document.hidden) cancelInteractions();
+      else rowStates.forEach(state => {
+        state.inertiaVelocity = 0;
+        state.currentFactor = 0;
+      });
+      marqueeAnimation?.hold();
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
       animationFrame = 0;
       return;
@@ -677,6 +825,14 @@ function initMarqueeScene() {
       reducedMotion.addListener(syncMotionPreference);
     }
   }
+  document.addEventListener('visibilitychange', syncMotionPreference);
+  window.addEventListener('pagehide', () => {
+    cancelInteractions();
+    if (animationFrame) window.cancelAnimationFrame(animationFrame);
+    animationFrame = 0;
+    marqueeAnimation?.hold();
+  });
+  window.addEventListener('pageshow', syncMotionPreference);
   syncMotionPreference();
 }
 
@@ -684,6 +840,11 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     updateRowLayout,
     advanceRowSpeed,
+    projectLaneDelta,
+    sampleDragVelocity,
+    advanceRowInertia,
+    bindAssetInteractions,
+    resetRowInteraction,
     createRowPatterns,
     syncRowTargetFactor,
     computeRowTopPositions,
