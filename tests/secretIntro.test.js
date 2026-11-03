@@ -63,3 +63,43 @@ test('click clears a partial shortcut rather than reopening after dismissal', ()
   const s = setup(); s.type('rpi'); s.target.emit('click'); s.type('1824');
   expect(s.open).toHaveBeenCalledTimes(1);
 });
+
+function dropdownSetup() {
+  const summary = { focus: jest.fn(() => { documentRef.activeElement = summary; }) };
+  const target = emitter({ focus: jest.fn(() => { documentRef.activeElement = target; }) });
+  const disclosure = emitter({ open: true, querySelector: () => summary,
+    contains: element => element === target || element === summary });
+  const documentRef = emitter({ hidden: false, activeElement: target,
+    body: { classList: { contains: () => false } } });
+  const windowRef = emitter({ performance: { now: () => 100 } });
+  const open = jest.fn();
+  bind({ target, disclosure, documentRef, windowRef, open });
+  return { target, summary, disclosure, documentRef, windowRef, open };
+}
+test('disclosure selection closes first and restores a visible focus target for the dialog', () => {
+  const s = dropdownSetup();
+  s.open.mockImplementation(() => {
+    expect(s.disclosure.open).toBe(false);
+    expect(s.documentRef.activeElement).toBe(s.summary);
+  });
+  s.target.emit('click');
+  expect(s.open).toHaveBeenCalledTimes(1);
+  expect(s.summary.focus).toHaveBeenCalledWith({ preventScroll: true });
+});
+test('Escape closes the disclosure without also closing its mobile controls', () => {
+  const s = dropdownSetup(); const preventDefault = jest.fn(), stopPropagation = jest.fn();
+  s.disclosure.emit('keydown', { key: 'Escape', preventDefault, stopPropagation });
+  expect(s.disclosure.open).toBe(false); expect(s.summary.focus).toHaveBeenCalledTimes(1);
+  expect(preventDefault).toHaveBeenCalledTimes(1); expect(stopPropagation).toHaveBeenCalledTimes(1);
+  expect(s.open).not.toHaveBeenCalled();
+});
+test.each(['pointerdown', 'focusin'])('%s outside dismisses without stealing focus', type => {
+  const s = dropdownSetup();
+  s.documentRef.emit(type, { target: s.target }); expect(s.disclosure.open).toBe(true);
+  s.documentRef.emit(type, { target: {} }); expect(s.disclosure.open).toBe(false);
+  expect(s.summary.focus).not.toHaveBeenCalled(); expect(s.open).not.toHaveBeenCalled();
+});
+test('page visibility changes dismiss the disclosure', () => {
+  const s = dropdownSetup(); s.documentRef.emit('visibilitychange');
+  expect(s.disclosure.open).toBe(false); expect(s.open).not.toHaveBeenCalled();
+});

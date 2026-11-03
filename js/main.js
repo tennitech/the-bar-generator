@@ -3353,7 +3353,8 @@ function setup() {
         targetTag === 'INPUT' ||
         targetTag === 'TEXTAREA' ||
         targetTag === 'SELECT' ||
-        targetTag === 'BUTTON'
+        targetTag === 'BUTTON' ||
+        targetTag === 'SUMMARY'
       )
     );
 
@@ -3736,7 +3737,7 @@ function resetCirclePatternCache() {
 
 function getSidebarFocusableElements() {
   if (!appSidebar) return [];
-  return Array.from(appSidebar.querySelectorAll('button, [href], input, select, textarea, [tabindex]'))
+  return Array.from(appSidebar.querySelectorAll('button, summary, [href], input, select, textarea, [tabindex]'))
     .filter(element => !element.disabled
       && element.tabIndex >= 0
       && element.getClientRects().length > 0
@@ -4511,6 +4512,7 @@ async function ensureHeaderLogoAnimationController() {
     return window.LogoAnimationOverlay.createLogoAnimationController({
       triggerEl: document.getElementById('ascii-intro-trigger'),
       getReturnFocus: () => [headerLogoAnimationReturnFocus,
+        document.getElementById('sidebar-more-toggle'),
         document.getElementById('ascii-intro-trigger'),
         document.getElementById('brand-title'),
         document.getElementById('header-logo-preview')]
@@ -4569,6 +4571,7 @@ async function openHeaderLogoAnimation() {
 
 function setupHeaderLogoAnimationTrigger() {
   window.SecretIntro?.bind({ target: document.getElementById('ascii-intro-trigger'),
+    disclosure: document.getElementById('sidebar-more'),
     open: openHeaderLogoAnimation });
 }
 

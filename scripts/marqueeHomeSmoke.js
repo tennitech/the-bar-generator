@@ -9,6 +9,11 @@ const evidence = process.env.RPI_MARQUEE_EVIDENCE || '/tmp/marquee-home-evidence
 const palette = { black:'#000000', white:'#ffffff', red:'#d6001c', blue:'#0081ce',
   gold:'#cdac38', silver:'#e1edf5', gray:'#b9ccd8', lunar:'#f4f7fb' };
 const rgb = hex => `rgb(${hex.slice(1).match(/../g).map(n => parseInt(n,16)).join(', ')})`;
+async function revealIntro(page) {
+  const more=page.locator('#sidebar-more-toggle'); await more.scrollIntoViewIfNeeded();
+  if(!await page.locator('#sidebar-more').evaluate(element=>element.open)) await more.click();
+  return page.getByRole('button',{name:'Why not...',exact:true});
+}
 async function close(page) {
   await page.keyboard.press('Escape');
   await page.locator('#logo-animation-overlay').waitFor({ state:'hidden' });
@@ -73,14 +78,14 @@ async function main() {
       await page.goForward(); await page.waitForURL(`${base}/`);
       await page.goBack(); await page.locator('#p5-container canvas').waitFor();
       if (touch) await page.locator('#mobile-menu-toggle').click();
-      const target = page.getByRole('button', { name:'Play ASCII intro', exact:true });
+      const target = await revealIntro(page);
       await target.scrollIntoViewIfNeeded();
       await target.waitFor({ state:'visible' });
-      assert.equal(await target.getAttribute('title'),'Play ASCII intro');
+      assert.equal(await page.locator('#sidebar-more-toggle').getAttribute('aria-label'),'More options');
       assert.equal(await target.getAttribute('aria-haspopup'),'dialog');
       assert.equal(await target.getAttribute('aria-expanded'),'false');
       assert.ok((await target.boundingBox()).height>=44);
-      assert.equal(await target.textContent(),'1824');
+      assert.equal(await target.textContent(),'Why not...');
       const originalUrl = page.url();
       await target.focus(); await page.keyboard.type('rpi182x4');
       assert.equal(await page.locator('#logo-animation-overlay').count(),0);
@@ -91,6 +96,7 @@ async function main() {
       await page.keyboard.type('rpi1824'); assert.equal(await page.locator('#logo-animation-overlay').count(),0);
       await editor.evaluate(element => element.remove());
       await page.screenshot({ path:path.join(evidence,`${engine}-${touch?'touch':'desktop'}-intro-trigger.png`) });
+      await revealIntro(page);
       if (touch) await target.tap(); else await target.click();
       await page.locator('.logo_animation_static-artwork > svg').waitFor();
       assert.equal(await target.getAttribute('aria-expanded'),'true');
@@ -101,21 +107,23 @@ async function main() {
       await page.waitForTimeout(2300);
       await page.screenshot({ path:path.join(evidence,`${engine}-${touch?'touch':'desktop'}-secret.png`) });
       await close(page);
-      assert.equal(await page.evaluate(() => document.activeElement.id),'ascii-intro-trigger');
+      assert.equal(await page.evaluate(() => document.activeElement.id),'sidebar-more-toggle');
       assert.equal(await target.getAttribute('aria-expanded'),'false');
       for (const key of ['Enter','Space']) {
+        await revealIntro(page);
         await target.focus(); await page.keyboard.press(key);
         await page.locator('.logo_animation_static-artwork > svg').waitFor();
         await close(page);
-        assert.equal(await page.evaluate(() => document.activeElement.id),'ascii-intro-trigger');
+        assert.equal(await page.evaluate(() => document.activeElement.id),'sidebar-more-toggle');
       }
       // Rapid repeated activation must not stack dialogs or change history.
+      await revealIntro(page);
       const box = await target.boundingBox();
       await page.mouse.click(box.x+box.width/2,box.y+box.height/2,{clickCount:2});
       await page.locator('.logo_animation_static-artwork > svg').waitFor();
       assert.equal(await page.locator('#logo-animation-overlay').count(),1);
       await close(page);
-      await target.focus(); await page.keyboard.type('rpi1824');
+      await revealIntro(page); await target.focus(); await page.keyboard.type('rpi1824');
       await page.locator('.logo_animation_static-artwork > svg').waitFor(); await close(page);
       assert.equal(page.url(),originalUrl);
       assert.deepEqual(errors,[]); checks.push({ touch,navigation:true,clickTap:true,keyboard:true,repeat:true,shortcut:true }); await context.close();
@@ -206,7 +214,7 @@ async function main() {
     const headerBounds = await normal.locator('.header-actions').boundingBox();
     assert.ok(headerBounds.x>=0 && headerBounds.x+headerBounds.width<=390,JSON.stringify(headerBounds));
     await normal.locator('#mobile-menu-toggle').tap();
-    await normal.locator('#ascii-intro-trigger').scrollIntoViewIfNeeded();
+    await revealIntro(normal);
     await normal.locator('#ascii-intro-trigger').tap();
     await normal.frameLocator('.logo_animation_frame').locator('#animation-projection').filter({hasText:/\S/}).waitFor();
     await normal.waitForFunction(() => !document.getElementById('logo-animation-close').disabled);
@@ -216,7 +224,7 @@ async function main() {
     assert.ok(closeBounds.x>=0 && closeBounds.x+closeBounds.width<=390,JSON.stringify(closeBounds));
     await normal.locator('#logo-animation-close').tap();
     await normal.locator('#logo-animation-overlay').waitFor({state:'hidden'});
-    assert.equal(await normal.evaluate(()=>document.activeElement.id),'ascii-intro-trigger');
+    assert.equal(await normal.evaluate(()=>document.activeElement.id),'sidebar-more-toggle');
     assert.equal(await normal.locator('#ascii-intro-trigger').getAttribute('aria-expanded'),'false');
     assert.equal(await normal.locator('.app-header').evaluate(element=>element.inert),false);
     assert.equal(await normal.locator('#ruler-repeats-slider').inputValue(),'7');
