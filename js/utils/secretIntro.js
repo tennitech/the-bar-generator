@@ -1,6 +1,6 @@
-/* Click or tap the product title to play the ASCII intro. Native button
-   semantics provide Enter/Space access. rpi1824 remains a bonus shortcut;
-   no behavior is attached to the RPI Home link. */
+/* The quiet 1824 footer button opens the ASCII intro. Native button semantics
+   provide Enter/Space access; rpi1824 remains a bonus keyboard shortcut.
+   The product title and official mark are both ordinary Home links. */
 (function (scope) {
   const WINDOW_MS = 2400;
   function bind({ target, documentRef = document, windowRef = window, open }) {

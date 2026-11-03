@@ -4492,8 +4492,9 @@ async function ensureHeaderLogoAnimationController() {
     }
 
     return window.LogoAnimationOverlay.createLogoAnimationController({
-      triggerEl: document.getElementById('brand-title'),
+      triggerEl: document.getElementById('ascii-intro-trigger'),
       getReturnFocus: () => [headerLogoAnimationReturnFocus,
+        document.getElementById('ascii-intro-trigger'),
         document.getElementById('brand-title'),
         document.getElementById('header-logo-preview')]
         .find(element => {
@@ -4550,7 +4551,7 @@ async function openHeaderLogoAnimation() {
 }
 
 function setupHeaderLogoAnimationTrigger() {
-  window.SecretIntro?.bind({ target: document.getElementById('brand-title'),
+  window.SecretIntro?.bind({ target: document.getElementById('ascii-intro-trigger'),
     open: openHeaderLogoAnimation });
 }
 

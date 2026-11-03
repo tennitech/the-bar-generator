@@ -8,9 +8,10 @@
   <title>The Bar Generator | RPI</title>
   <base href="../">
   <link rel="preload" href="assets/fonts/RPIGeist-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261103-control-feedback" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261103-header-home" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
   <script src="js/utils/generatorRoutes.js?v=20261103-resting-motion-ruler"></script>
@@ -41,12 +42,9 @@
     <div class="header-brand">
       <a id="header-logo-preview" class="brand-mark" href="./" aria-label="RPI — Home"><span class="brand_initial-mark" aria-hidden="true"></span></a>
       <span class="brand-divider">|</span>
-      <button id="brand-title" class="brand-title brand_intro-trigger" type="button"
-        aria-label="The Bar Generator: Play ASCII intro" aria-haspopup="dialog" aria-expanded="false"
-        aria-controls="logo-animation-overlay" data-action-title="Play ASCII intro" title="Play ASCII intro">
+      <a id="brand-title" class="brand-title brand_home-link" href="./" aria-label="The Bar Generator: Home" data-action-title="Home" title="Home">
         <span class="brand_title-text"><span>The Bar</span> <span>Generator</span></span>
-        <svg class="brand_intro-icon" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3m6 0h4"/></svg>
-      </button>
+      </a>
     </div>
     <section id="lunar-splashdown-counter" class="lunar_counter" aria-label="Time since Artemis II splashdown">
       <button id="lunar-counter-detail-toggle" class="lunar_counter-toggle" type="button" aria-expanded="false"
@@ -854,9 +852,13 @@
                 rel="noopener noreferrer">View BOROMIR source code</a>
             </p>
           </aside>
+          <div class="sidebar_footer-actions">
           <button id="report-problem-btn" class="sidebar-feedback-btn" type="button">
             <span id="report-problem-label">Report a Problem</span>
           </button>
+          <button id="ascii-intro-trigger" class="sidebar_intro-trigger" type="button" aria-label="Play ASCII intro"
+            aria-haspopup="dialog" aria-expanded="false" aria-controls="logo-animation-overlay" title="Play ASCII intro">1824</button>
+          </div>
         </div>
       </div>
     </aside>
@@ -959,8 +961,8 @@
   <script src="js/utils/barInformation.js?v=20261103-resting-motion-ruler"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
-  <script src="js/utils/secretIntro.js?v=20261103-ascii-discovery"></script>
-  <script src="js/main.js?v=20261103-control-feedback"></script>
+  <script src="js/utils/secretIntro.js?v=20261103-header-home"></script>
+  <script src="js/main.js?v=20261103-header-home"></script>
   <script src="js/utils/logoClipboard.js?v=20261103-export-hierarchy"></script>
   <script src="js/drawing.js?v=20261103-resting-motion-ruler"></script>
   <script>

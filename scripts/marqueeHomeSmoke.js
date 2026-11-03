@@ -72,13 +72,15 @@ async function main() {
       assert.equal(await page.evaluate(() => currentColorMode),'black');
       await page.goForward(); await page.waitForURL(`${base}/`);
       await page.goBack(); await page.locator('#p5-container canvas').waitFor();
-      const target = page.getByRole('button', { name:'The Bar Generator: Play ASCII intro', exact:true });
+      if (touch) await page.locator('#mobile-menu-toggle').click();
+      const target = page.getByRole('button', { name:'Play ASCII intro', exact:true });
+      await target.scrollIntoViewIfNeeded();
       await target.waitFor({ state:'visible' });
       assert.equal(await target.getAttribute('title'),'Play ASCII intro');
       assert.equal(await target.getAttribute('aria-haspopup'),'dialog');
       assert.equal(await target.getAttribute('aria-expanded'),'false');
       assert.ok((await target.boundingBox()).height>=44);
-      assert.equal(await target.locator('.brand_intro-icon').isVisible(),true);
+      assert.equal(await target.textContent(),'1824');
       const originalUrl = page.url();
       await target.focus(); await page.keyboard.type('rpi182x4');
       assert.equal(await page.locator('#logo-animation-overlay').count(),0);
@@ -99,13 +101,13 @@ async function main() {
       await page.waitForTimeout(2300);
       await page.screenshot({ path:path.join(evidence,`${engine}-${touch?'touch':'desktop'}-secret.png`) });
       await close(page);
-      assert.equal(await page.evaluate(() => document.activeElement.id),'brand-title');
+      assert.equal(await page.evaluate(() => document.activeElement.id),'ascii-intro-trigger');
       assert.equal(await target.getAttribute('aria-expanded'),'false');
       for (const key of ['Enter','Space']) {
         await target.focus(); await page.keyboard.press(key);
         await page.locator('.logo_animation_static-artwork > svg').waitFor();
         await close(page);
-        assert.equal(await page.evaluate(() => document.activeElement.id),'brand-title');
+        assert.equal(await page.evaluate(() => document.activeElement.id),'ascii-intro-trigger');
       }
       // Rapid repeated activation must not stack dialogs or change history.
       const box = await target.boundingBox();
@@ -135,7 +137,7 @@ async function main() {
       });
       assert.equal(result.fg,ink); assert.equal(result.source,true);
       assert.deepEqual(result.px,[...ink.slice(1).match(/../g).map(n => parseInt(n,16)),255]);
-      await page.locator('#brand-title').focus(); await page.keyboard.type('rpi1824');
+      await page.evaluate(() => document.activeElement.blur()); await page.keyboard.type('rpi1824');
       await page.locator('.logo_animation_static-artwork > svg').waitFor();
       const background=mode==='black'?'#ffffff':'#000000';
       await page.waitForFunction(expected => getComputedStyle(document.querySelector('#logo-animation-overlay')).backgroundColor===expected,rgb(background));
@@ -161,7 +163,7 @@ async function main() {
       // A later selection must not reuse the lazy controller's previous ink.
       if (mode==='black') {
         await page.selectOption('#color-mode-select','red',{ force:true });
-        await page.locator('#brand-title').focus(); await page.keyboard.type('rpi1824');
+        await page.evaluate(() => document.activeElement.blur()); await page.keyboard.type('rpi1824');
         await page.locator('.logo_animation_static-artwork > svg').waitFor();
         assert.equal(await page.locator('.logo_animation_static-artwork').evaluate(element => getComputedStyle(element).color),rgb(palette.red));
         await close(page);
@@ -182,7 +184,7 @@ async function main() {
     let loads=0;
     await recovery.route('**/js/utils/logoAnimationOverlay.js*',route => ++loads===1 ? route.abort() : route.continue());
     await recovery.goto(`${base}/generator/solid/?colorMode=black`);
-    await recovery.locator('#p5-container canvas').waitFor(); await recovery.locator('#brand-title').focus();
+    await recovery.locator('#p5-container canvas').waitFor(); await recovery.evaluate(() => document.activeElement.blur());
     const failed=recovery.waitForEvent('console',{ predicate:message => message.text().includes('Unable to launch the header logo animation.') });
     await recovery.keyboard.type('rpi1824'); await failed;
     assert.equal(await recovery.locator('#logo-animation-overlay').count(),0);
@@ -202,7 +204,9 @@ async function main() {
     const designUrl = normal.url();
     const headerBounds = await normal.locator('.header-actions').boundingBox();
     assert.ok(headerBounds.x>=0 && headerBounds.x+headerBounds.width<=390,JSON.stringify(headerBounds));
-    await normal.locator('#brand-title').tap();
+    await normal.locator('#mobile-menu-toggle').tap();
+    await normal.locator('#ascii-intro-trigger').scrollIntoViewIfNeeded();
+    await normal.locator('#ascii-intro-trigger').tap();
     await normal.frameLocator('.logo_animation_frame').locator('#animation-projection').filter({hasText:/\S/}).waitFor();
     await normal.waitForFunction(() => !document.getElementById('logo-animation-close').disabled);
     assert.equal(await normal.locator('.logo_animation_frame').count(),1);
@@ -211,8 +215,8 @@ async function main() {
     assert.ok(closeBounds.x>=0 && closeBounds.x+closeBounds.width<=390,JSON.stringify(closeBounds));
     await normal.locator('#logo-animation-close').tap();
     await normal.locator('#logo-animation-overlay').waitFor({state:'hidden'});
-    assert.equal(await normal.evaluate(()=>document.activeElement.id),'brand-title');
-    assert.equal(await normal.locator('#brand-title').getAttribute('aria-expanded'),'false');
+    assert.equal(await normal.evaluate(()=>document.activeElement.id),'ascii-intro-trigger');
+    assert.equal(await normal.locator('#ascii-intro-trigger').getAttribute('aria-expanded'),'false');
     assert.equal(await normal.locator('.app-header').evaluate(element=>element.inert),false);
     assert.equal(await normal.locator('#ruler-repeats-slider').inputValue(),'7');
     assert.equal(normal.url(),designUrl);

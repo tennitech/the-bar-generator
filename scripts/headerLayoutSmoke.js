@@ -58,7 +58,7 @@ async function measure(page) {
 }
 function check(m, compact) {
   assert.equal(m.text, 'The Bar Generator');
-  assert.equal(m.weight, '700');
+  assert.equal(m.weight, '500');
   assert.equal(m.opacity, '1');
   assert.equal(m.ellipsis, 'clip');
   assert.equal(m.overflow, false);
