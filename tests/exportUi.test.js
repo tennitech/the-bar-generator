@@ -14,7 +14,7 @@ function fixture(clipboard) {
     },
     get disabled() { return this.isDisabled; },
     focus() { document.activeElement = this; },
-    setAttribute() {}, removeAttribute() {}, classList: { add() {} },
+    setAttribute() {}, removeAttribute() {}, classList: { add() {}, contains: () => false },
     set hidden(value) {
       this.isHidden = value;
       if (value && document.activeElement === this) document.activeElement = null;
@@ -22,9 +22,9 @@ function fixture(clipboard) {
   }]));
   elements['save-menu'].contains = element => element && !['save-menu', 'save-button'].includes(element.id);
   document.getElementById = id => elements[id];
-  const context = { document, AbortController, performance, logoClipboard: clipboard };
+  const context = { document, AbortController, performance, logoClipboard: clipboard, hideSaveMenu: jest.fn() };
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/exportUi'), 'utf8'), context);
-  return { ui: context.logoExportUI, elements, document };
+  return { ui: context.logoExportUI, elements, document, hideSaveMenu: context.hideSaveMenu };
 }
 
 test.each(['error', 'started', 'cancelled'])('finishing %s restores focus even when hiding Cancel blurs it', outcome => {
@@ -37,6 +37,18 @@ test.each(['error', 'started', 'cancelled'])('finishing %s restores focus even w
   expect(elements['save-loop-gif'].disabled).toBe(false);
   expect(elements['export-meter'].value).toBe(outcome === 'started' ? 1 : 0);
   expect(ui.isBusy()).toBe(false);
+});
+
+test.each(['save-button', 'save-menu'])('Escape dismisses the visible export dialog from %s and restores trigger focus', target => {
+  const { elements, document, hideSaveMenu } = fixture();
+  const event = { key: 'Escape', preventDefault: jest.fn(), stopPropagation: jest.fn() };
+  elements[target].listeners.keydown(event);
+  expect(hideSaveMenu).toHaveBeenCalledTimes(1);
+  expect(event.preventDefault).toHaveBeenCalled();
+  expect(document.activeElement.id).toBe('save-button');
+  elements['save-menu'].classList.contains = () => true;
+  elements[target].listeners.keydown(event);
+  expect(hideSaveMenu).toHaveBeenCalledTimes(1);
 });
 
 test('Cancel activation retains focus while abort propagates and ignores repeated activation', () => {

@@ -52,6 +52,7 @@ npm test -- --runInBand
 npm run test:browser:install
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 npm run test:motion
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/sidebarActionsSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/motionPreferenceSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/motionAuditSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/routedStartupSmoke.js
@@ -152,6 +153,9 @@ RPI_SITE_URL=http://127.0.0.1:8000 node scripts/urlStateSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/colorPickerSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/neuralNetworkSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/selectorSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/marqueeHomeSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit node scripts/marqueeHomeSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_MARQUEE_CHECK=1 node scripts/generateMarqueeAssets.js
 ```
 
 `test:integration` checks real triangle controls, downloaded SVG equality after

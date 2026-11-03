@@ -1,0 +1,55 @@
+{
+  "fingerprint": "ac01de450cbc3030d72aa583d5cf897e1676ea0cd0b0e4a8f7ab07c2b58e4451",
+  "checks": {
+    "sample-parity": {
+      "status": "passed",
+      "exit_code": 0,
+      "observed_utc": "2026-10-28T18:49:34.476937+00:00"
+    },
+    "chromium-browser": {
+      "status": "passed",
+      "exit_code": 0,
+      "observed_utc": "2026-10-28T18:50:15.019524+00:00"
+    },
+    "webkit-browser": {
+      "status": "passed",
+      "exit_code": 0,
+      "observed_utc": "2026-10-28T18:51:18.729925+00:00"
+    },
+    "webkit-sidebar": {
+      "status": "passed",
+      "exit_code": 0,
+      "observed_utc": "2026-10-28T18:52:42.589791+00:00"
+    },
+    "chromium-intro-lifecycle": {
+      "status": "passed",
+      "exit_code": 0,
+      "observed_utc": "2026-10-28T18:52:55.277411+00:00"
+    },
+    "webkit-intro-lifecycle": {
+      "status": "passed",
+      "exit_code": 0,
+      "observed_utc": "2026-10-28T18:53:13.743497+00:00"
+    },
+    "chromium-mission-selected": {
+      "status": "passed",
+      "exit_code": 0,
+      "observed_utc": "2026-10-28T18:53:27.563615+00:00"
+    },
+    "webkit-mission-selected": {
+      "status": "passed",
+      "exit_code": 0,
+      "observed_utc": "2026-10-28T18:53:54.316480+00:00"
+    },
+    "chromium-marquee-core": {
+      "status": "passed",
+      "exit_code": 0,
+      "observed_utc": "2026-10-28T18:56:39.154310+00:00"
+    },
+    "webkit-marquee-core": {
+      "status": "passed",
+      "exit_code": 0,
+      "observed_utc": "2026-10-28T18:57:26.592671+00:00"
+    }
+  }
+}

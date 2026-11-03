@@ -16,6 +16,7 @@ function harness(search = '') {
   const editors = [];
   const window = Object.assign(target(), { quantumModel: model, location: { search },
     matchMedia: () => media, registerSliderValueEditor: config => editors.push(config),
+    ParameterControls: { refreshStyle: jest.fn() },
     updateUrlParameters: jest.fn(), requestUpdate: jest.fn(), parseSliderNumericInput: Number });
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/quantumControls'), 'utf8'), { window, document, URLSearchParams });
   window.quantumControls.setup();
@@ -79,4 +80,19 @@ test('reload is static and reduced-motion changes still pause an explicitly star
   h.controls.tick(10); h.controls.tick(50);
   expect(h.elements['quantum-motion-toggle'].checked).toBe(false);
   expect(h.phase()).toBeCloseTo(.6, 12);
+});
+
+test('running phase changes refresh only Quantum actions without writing a URL for every frame', () => {
+  const h = harness();
+  h.loop(true); h.controls.tick(0);
+  const writes = h.window.updateUrlParameters.mock.calls.length;
+  h.window.ParameterControls.refreshStyle.mockClear();
+  h.controls.tick(50);
+  expect(h.phase()).toBeGreaterThan(0);
+  expect(h.window.ParameterControls.refreshStyle).toHaveBeenCalledWith('wave-quantum');
+  expect(h.window.updateUrlParameters).toHaveBeenCalledTimes(writes);
+  h.seek(0);
+  expect(h.elements['quantum-motion-toggle'].checked).toBe(true);
+  expect(h.phase()).toBe(0);
+  expect(h.window.ParameterControls.refreshStyle.mock.calls).toEqual([['wave-quantum'], ['wave-quantum']]);
 });

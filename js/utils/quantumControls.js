@@ -12,6 +12,7 @@
     const percentage = (values().quantumPhase * 100).toFixed(1);
     el('quantum-phase-display').textContent = `${percentage}%`;
     el('quantum-phase').setAttribute('aria-valuetext', `${percentage} percent of recurrence`);
+    root.ParameterControls?.refreshStyle('wave-quantum');
   }
   function sync() {
     if (!initialized) return;

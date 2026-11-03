@@ -16,7 +16,7 @@ async function main(){
     await new Promise(requestAnimationFrame);
     if(f===8){const select=document.querySelector('#color-mode-select');select.value='white';select.dispatchEvent(new Event('change'));}
     const bg=getComputedStyle(overlay).backgroundColor.match(/[\d.]+/g);
-    frames.push({background:Number(bg[3]??1)/0.96,chrome:Number(getComputedStyle(chrome).opacity),stage:Number(getComputedStyle(stage).opacity),disabled:button.disabled});
+    frames.push({background:Number(bg[3]??1),chrome:Number(getComputedStyle(chrome).opacity),stage:Number(getComputedStyle(stage).opacity),disabled:button.disabled});
     if(frames.at(-1).chrome>0.999)break;
    }return frames;
   });
@@ -28,11 +28,11 @@ async function main(){
   const exit=await page.evaluate(async()=>{
    const controller=await ensureHeaderLogoAnimationController();controller.close();
    const o=document.querySelector('#logo-animation-overlay'),c=o.querySelector('.logo_animation_chrome'),s=o.querySelector('.logo_animation_stage'),b=document.querySelector('#logo-animation-close');const frames=[];
-   for(let f=0;f<180&&!o.hidden;f++){await new Promise(requestAnimationFrame);if(o.hidden)break;const bg=getComputedStyle(o).backgroundColor.match(/[\d.]+/g);frames.push({background:Number(bg[3]??1)/0.96,chrome:Number(getComputedStyle(c).opacity),stage:Number(getComputedStyle(s).opacity),disabled:b.disabled,inert:document.querySelector('.app-header').inert});}
+   for(let f=0;f<180&&!o.hidden;f++){await new Promise(requestAnimationFrame);if(o.hidden)break;const bg=getComputedStyle(o).backgroundColor.match(/[\d.]+/g);frames.push({background:Number(bg[3]??1),chrome:Number(getComputedStyle(c).opacity),stage:Number(getComputedStyle(s).opacity),disabled:b.disabled,inert:document.querySelector('.app-header').inert});}
    return{frames,hidden:o.hidden,focus:document.activeElement.id,bodyFlag:document.body.classList.contains('has-logo-animation')};
   });
   if(evidence)await fs.writeFile(path.join(evidence,`${engine}-intro-timing-${touch?'phone':'desktop'}.json`),JSON.stringify({entrance,exit},null,2));
-  assert.equal(exit.hidden,true);assert.equal(exit.focus,'header-logo-preview');assert.equal(exit.bodyFlag,false);
+  assert.equal(exit.hidden,true);assert.equal(exit.focus,touch?'header-logo-preview':'brand-title');assert.equal(exit.bodyFlag,false);
   assert.ok(exit.frames.some(f=>f.chrome>0.05&&f.chrome<0.95));
   exit.frames.forEach(f=>{assert.equal(f.disabled,true);assert.equal(f.inert,true);assert.ok(Math.abs(f.chrome-f.background)<0.035);assert.ok(Math.abs(f.chrome-f.stage)<0.02)});
   await page.evaluate(async()=>{const c=await ensureHeaderLogoAnimationController();for(let i=0;i<8;i++){await c.open();c.close();}await c.open();});

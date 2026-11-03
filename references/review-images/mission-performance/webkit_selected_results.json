@@ -1,0 +1,73 @@
+{
+  "engine": "webkit",
+  "browserVersion": "26.5",
+  "platform": "linux",
+  "release": "6.18.55",
+  "results": [
+    {
+      "caseName": "normal-touch-2d",
+      "reduce": false,
+      "touch": true,
+      "fallback": true,
+      "renderer": {
+        "liveCanvasUsesWebGL": false,
+        "contextClass": "CanvasRenderingContext2D",
+        "webglVersion": null,
+        "renderer": null
+      },
+      "exports": 6
+    },
+    {
+      "caseName": "reduced-desktop-gpu",
+      "reduce": true,
+      "touch": false,
+      "fallback": false,
+      "renderer": {
+        "liveCanvasUsesWebGL": true,
+        "contextClass": "WebGL2RenderingContext",
+        "webglVersion": "WebGL 2.0",
+        "renderer": "WebKit WebGL"
+      },
+      "exports": 6
+    },
+    {
+      "caseName": "reduced-desktop-2d",
+      "reduce": true,
+      "touch": false,
+      "fallback": true,
+      "renderer": {
+        "liveCanvasUsesWebGL": false,
+        "contextClass": "CanvasRenderingContext2D",
+        "webglVersion": null,
+        "renderer": null
+      },
+      "exports": 6
+    },
+    {
+      "caseName": "reduced-touch-gpu",
+      "reduce": true,
+      "touch": true,
+      "fallback": false,
+      "renderer": {
+        "liveCanvasUsesWebGL": true,
+        "contextClass": "WebGL2RenderingContext",
+        "webglVersion": "WebGL 2.0",
+        "renderer": "WebKit WebGL"
+      },
+      "exports": 6
+    },
+    {
+      "caseName": "reduced-touch-2d",
+      "reduce": true,
+      "touch": true,
+      "fallback": true,
+      "renderer": {
+        "liveCanvasUsesWebGL": false,
+        "contextClass": "CanvasRenderingContext2D",
+        "webglVersion": null,
+        "renderer": null
+      },
+      "exports": 6
+    }
+  ]
+}

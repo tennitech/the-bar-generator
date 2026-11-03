@@ -39,9 +39,13 @@
     const visibleSurface = sidebar && touchLayout.matches && sidebar.classList.contains('active')
       ? sidebar : (touchLayout.matches ? (canvasSurface || body) : body);
     const background = body.classList.contains('has-logo-animation')
-      ? 'rgb(0, 0, 0)'
+      ? (document.getElementById('logo-animation-overlay')?.style.getPropertyValue('--intro-background') || '#000000')
       : getComputedStyle(visibleSurface).backgroundColor;
-    const channels = background.match(/[\d.]+/g);
+    // Computed surfaces are rgb(), while the captured intro palette uses exact
+    // hex colors. Do not classify a black intro as light browser chrome.
+    const channels = /^#[\da-f]{6}$/i.test(background)
+      ? background.slice(1).match(/../g).map(channel => parseInt(channel, 16))
+      : background.match(/[\d.]+/g);
     const dark = channels && channels.length >= 3
       && (Number(channels[0]) * 0.2126 + Number(channels[1]) * 0.7152
         + Number(channels[2]) * 0.0722) < 128;

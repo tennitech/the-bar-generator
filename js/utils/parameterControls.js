@@ -2,6 +2,51 @@
 (function (scope) {
   let callbacks = {};
   const pendingActions = [];
+  // Every available family is intentional: fixed artwork has no parameter actions.
+  const capabilities = Object.freeze({
+    solid: null, ruler: 'ruler', binary: 'binary', morse: 'morse', ticker: 'ticker',
+    waveform: 'waveform', 'wave-quantum': 'quantum', circles: 'circles', numeric: 'numeric',
+    'circles-gradient': 'circles-gradient', gradient: 'gradient', grid: 'grid', lines: 'lines',
+    'point-connect': 'point-connect', 'neural-network': 'neural-network',
+    'triangle-grid': 'triangle-grid', triangles: 'triangles',
+    'fibonacci-sequence': null, union: null, runway: null, lunar: null
+  });
+  function supportsActions(style) {
+    return Object.prototype.hasOwnProperty.call(capabilities, style) && Boolean(capabilities[style]);
+  }
+  function fieldsFor(style, root = document) {
+    const group = root.querySelector(`[data-parameter-actions="${style}"]`);
+    return group ? Array.from(group.querySelectorAll('[data-url-parameter], #quantum-phase, #quantum-speed-slider, #quantum-reverse-toggle')) : [];
+  }
+  function isDefaultField(field) {
+    if (field.type === 'checkbox') return field.checked === field.defaultChecked;
+    // A full Quantum recurrence is the same model state as phase zero.
+    if (field.id === 'quantum-phase' && scope.quantumModel) {
+      return scope.quantumModel.normalizePhase(field.value) === scope.quantumModel.normalizePhase(field.defaultValue);
+    }
+    if (field.type === 'range') return Number(field.value) === Number(field.defaultValue);
+    if (field.tagName === 'SELECT') {
+      const initial = Array.from(field.options).find(option => option.defaultSelected) || field.options[0];
+      return field.value === initial.value;
+    }
+    return field.value === field.defaultValue;
+  }
+  function refreshButton(button, root) {
+    const style = button.dataset.parameterStyle;
+    const pristine = fieldsFor(style, root).every(isDefaultField)
+      && (style !== 'circles' || !callbacks.isDefaultSeed || callbacks.isDefaultSeed());
+    if (button.disabled !== pristine) button.disabled = pristine;
+    const title = pristine ? 'Parameters are at their defaults' : 'Restore default parameters';
+    if (button.title !== title) button.title = title;
+  }
+  function refresh(root = document) {
+    root.querySelectorAll('[data-parameter-action="reset"]').forEach(button => refreshButton(button, root));
+  }
+  function refreshStyle(style, root = document) {
+    if (!supportsActions(style)) return;
+    const button = root.querySelector(`[data-parameter-action="reset"][data-parameter-style="${style}"]`);
+    if (button) refreshButton(button, root);
+  }
   function prepareSliderValueLabel(display) {
     if (!display) return;
     display.classList.add('slider_value-display');
@@ -53,8 +98,7 @@
     root.querySelectorAll('[data-slider-value]').forEach(prepareSliderValueLabel);
     root.querySelectorAll('[data-parameter-actions]').forEach(group => {
       const style = group.dataset.parameterActions;
-      // Reactive triangle controls have no Randomize/Reset actions.
-      if (!style || style === 'triangles') return;
+      if (!supportsActions(style)) return;
       const header = group.querySelector('.control-header');
       if (!header || header.querySelector('.control-header-actions')) return;
       const label = document.createElement('span');
@@ -69,6 +113,8 @@
         button.type = 'button';
         button.className = className;
         button.textContent = text;
+        button.dataset.parameterAction = action;
+        button.dataset.parameterStyle = style;
         button.setAttribute('aria-label', `${text} ${style} parameters`);
         button.addEventListener('click', event => {
           event.preventDefault();
@@ -79,14 +125,16 @@
       }
       header.replaceChildren(label, actions);
     });
+    refresh(root);
   }
   function bindActions(nextCallbacks) {
     callbacks = nextCallbacks;
+    refresh();
     // Apply an intentional early click once setup finishes; never install duplicate handlers.
     while (pendingActions.length) {
       const { action, style } = pendingActions.shift();
       if (callbacks[action]) callbacks[action](style);
     }
   }
-  scope.ParameterControls = { prepareSliderValueLabel, prepare, bindActions };
+  scope.ParameterControls = { prepareSliderValueLabel, prepare, bindActions, capabilities, supportsActions, fieldsFor, refresh, refreshStyle };
 })(typeof window !== 'undefined' ? window : globalThis);
