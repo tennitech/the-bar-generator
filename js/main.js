@@ -6857,41 +6857,16 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
     }
 
   } else if (currentShader === 3) {
-    // Binary mode - 3-row grid: 0 = center bar, 1 = top and bottom bars
+    // The shared run geometry removes internal raster seams without changing bits.
     resetShader();
     fill(fgColor);
     noStroke();
+    const geometry = createBinaryPatternGeometry({
+      bits: textToBinary(binaryInput.value || 'RPI'),
+      barStartX, barY: 0, exactBarWidth, barHeight: rectHeight
+    });
+    geometry.rects.forEach(item => rect(item.x, item.y, item.width, item.height));
 
-    // Get the binary data for the current text (default "RPI")
-    const text = binaryInput.value || "RPI";
-    const validBinaryData = textToBinary(text);
-
-    // Safety check to prevent division by zero
-    if (validBinaryData.length === 0) {
-      return; // Skip drawing if no data
-    }
-
-    // No gaps between bits - they should touch
-    const actualBitWidth = exactBarWidth / validBinaryData.length;
-
-    // Define the 3-row grid
-    const rowHeight = rectHeight / 3;
-    const topRowY = 0;
-    const middleRowY = rowHeight;
-    const bottomRowY = rowHeight * 2;
-
-    for (let i = 0; i < validBinaryData.length; i++) {
-      const x = barStartX + i * actualBitWidth;
-
-      if (validBinaryData[i] === 1) {
-        // 1 = double bars at top and bottom rows
-        rect(x, topRowY, actualBitWidth, rowHeight);
-        rect(x, bottomRowY, actualBitWidth, rowHeight);
-      } else {
-        // 0 = single bar in middle row (vertically centered)
-        rect(x, middleRowY, actualBitWidth, rowHeight);
-      }
-    }
   } else if (currentShader === 4) {
     resetShader();
     const time = currentMotionStyle === 'waveform' && loopAnimationState
