@@ -213,7 +213,7 @@ function check(m, compact) {
       const compact = c.width <= 900 || (c.touch && c.width <= 1100);
       const m = await measure(target);
       check(m, compact);
-      if (c.embedded) assert.equal(await target.locator('#save-button-label').innerText(), 'Save asset');
+      if (c.embedded) assert.equal(await target.locator('#save-button-label').innerText(), 'Export');
       await target.locator('#save-button').focus();
       await page.keyboard.press('Tab');
       assert.equal(await target.evaluate(() => document.activeElement.id), 'mobile-menu-toggle');

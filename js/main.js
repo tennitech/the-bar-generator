@@ -188,18 +188,18 @@ let canvasViewport;
 const ARTEMIS_II_SPLASHDOWN_AT = Date.parse('2026-04-10T20:07:00-04:00');
 const ARTEMIS_II_AUDIO_SOURCE = 'assets/audio/artemis-ii-liftoff.mp3';
 const DEFAULT_SAVE_MENU_COPY = {
-  button: 'Download Asset',
+  button: 'Export',
   png: {
-    label: 'PNG',
-    description: 'Best for slides, docs, and sharing'
+    label: 'Download PNG',
+    description: 'Transparent image · current frame'
   },
   svg: {
     label: 'Download SVG',
-    description: 'Scalable vector file'
+    description: 'Scalable vector · current frame'
   },
   gif: {
-    label: 'GIF',
-    description: 'Best for animated slides and screens'
+    label: 'Download GIF',
+    description: 'Transparent animation · full loop'
   }
 };
 const DEFAULT_INTERFACE_COPY = {
@@ -3904,7 +3904,7 @@ function syncMissionControlInterfaceCopy() {
 function syncSaveMenuCopy() {
   const menuCopy = DEFAULT_SAVE_MENU_COPY;
   if (saveButtonLabel) saveButtonLabel.textContent = menuCopy.button;
-  if (saveButton) saveButton.setAttribute('aria-label', 'Open asset download menu');
+  if (saveButton) saveButton.setAttribute('aria-label', 'Open export menu');
   setSaveOptionCopy(savePngButton, menuCopy.png);
   setSaveOptionCopy(saveSvgButton, menuCopy.svg);
   setSaveOptionCopy(saveLoopGifButton, menuCopy.gif);

@@ -22,10 +22,14 @@
     group.hidden = credits;
     for (const format of ['svg', 'png']) {
       const button = document.getElementById(`copy-${format}`), unavailable = mode(format) === 'unavailable';
-      const label = unavailable ? `${format.toUpperCase()} copy unavailable` : `Copy ${format.toUpperCase()}`;
-      const description = root.embedSupport?.clipboardBlocked() ? 'Blocked by this page’s embedding permissions'
-        : unavailable ? `Use ${format.toUpperCase()} download` : format === 'svg' ? 'Vector format' : 'Transparent · selected raster size';
-      button.querySelector('.option-label').innerHTML = root.FeatherIcons.getIconMarkup('copy', 'export_copy-icon') + label;
+      const label = `Copy ${format.toUpperCase()}`;
+      const dimensions = root.RPI_LOGO_GEOMETRY && root.logoExportOptions
+        ? root.logoExportOptions.dimensions(root.logoExportUI.size(), root.RPI_LOGO_GEOMETRY) : null;
+      const description = root.embedSupport?.clipboardBlocked() ? 'Blocked by this site’s embed permissions'
+        : unavailable ? `Not supported here. Download ${format.toUpperCase()} instead.`
+          : format === 'svg' ? 'Scalable vector · current frame'
+            : dimensions ? `Transparent image · ${dimensions.width} × ${dimensions.height} px` : 'Transparent image · current frame';
+      button.querySelector('.option-label').innerHTML = root.FeatherIcons.getIconMarkup('copy', 'export_action-icon') + label;
       button.querySelector('.option-desc').textContent = description;
       button.setAttribute('aria-label', `${label}: ${description}`);
       button.setAttribute('aria-disabled', String(unavailable));
@@ -41,29 +45,34 @@
       if (!root.isSecureContext) throw new Error('Copy needs HTTPS or localhost. Use the download actions.');
       if (mode(format) === 'unavailable') throw new Error(`${format.toUpperCase()} clipboard copying is unavailable in this browser. Use the ${format.toUpperCase()} download.`);
       const snapshot = captureLogoExportSnapshot();
+      root.logoExportUI.describe(job, snapshot);
       const mime = `image/${format === 'svg' ? 'svg+xml' : format}`;
       // Invoke write synchronously before any await. Never substitute source
       // text, HTML or raster data for an SVG clipboard request.
-      const payload = format === 'svg' ? Promise.resolve(new Blob([snapshot.svgSource], { type: mime }))
-        : createRasterExportBlob(snapshot, job.controller.signal);
+      const payload = (format === 'svg' ? Promise.resolve(new Blob([snapshot.svgSource], { type: mime }))
+        : createRasterExportBlob(snapshot, job.controller.signal, stage => root.logoExportUI.message(job, stage)))
+        .then(blob => {
+          root.logoExportUI.ready(job, blob);
+          root.logoExportUI.message(job, `Writing ${format.toUpperCase()} to clipboard…`);
+          return blob;
+        });
       payload.catch(() => {}); // A browser may reject write before consuming the promise.
       const write = root.navigator.clipboard.write([new root.ClipboardItem({ [mime]: payload })]);
       // Dispatched platform writes cannot be reliably cancelled.
       document.getElementById('export-cancel').hidden = true;
       const status = document.getElementById('export-message');
       status.tabIndex = -1; status.focus({ preventScroll: true });
-      root.logoExportUI.message(job, `Preparing and copying ${format.toUpperCase()}…`);
       await write;
       const message = `${format.toUpperCase()} copied.`;
-      root.logoExportUI.finish(job, 'started', message);
-      Toast.show(message, 'success');
+      root.logoExportUI.finish(job, 'copied', message);
+      if (document.getElementById('save-menu')?.classList.contains('hidden')) Toast.show(message, 'success');
       return { mime, width: format === 'svg' ? null : snapshot.dimensions.width, height: format === 'svg' ? null : snapshot.dimensions.height };
     } catch (error) {
       job.controller.abort();
-      const message = error.name === 'NotAllowedError' ? (root.embedSupport?.isEmbedded() ? 'Copy was blocked by the browser or brand portal. Focus this page and try again. If it stays blocked, the portal’s clipboard permissions may need updating.' : 'Copy was blocked. Focus this page and try again, or download the asset.')
+      const message = error.name === 'NotAllowedError' ? (root.embedSupport?.isEmbedded() ? 'Copy was blocked. This site may need to allow clipboard access for the embedded generator.' : 'Copy was blocked. Focus this page and try again, or download the file.')
         : `Copy failed: ${error.message} Try again or use a download.`;
       root.logoExportUI.finish(job, 'error', message);
-      Toast.show(message, 'error');
+      if (document.getElementById('save-menu')?.classList.contains('hidden')) Toast.show(message, 'error');
       return null;
     }
   }

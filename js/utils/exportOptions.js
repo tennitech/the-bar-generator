@@ -4,8 +4,9 @@
   root.logoExportOptions = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const SIZES = Object.freeze({ standard: 1000, large: 2000 });
+  const DEFAULT_SIZE = 'large';
   function dimensions(size, geometry) {
-    const logoWidth = SIZES[size] || SIZES.standard;
+    const logoWidth = SIZES[size] || SIZES[DEFAULT_SIZE];
     const scale = logoWidth / geometry.width;
     return { logoWidth, scale, width: Math.ceil((geometry.width + geometry.exportPadding * 2) * scale),
       height: Math.ceil((geometry.totalHeight + geometry.exportPadding * 2) * scale) };
@@ -41,11 +42,11 @@
     if (snapshot.family === 'ruler') tokens.push(`r${values.rulerRepeats || 10}`, `u${values.rulerUnits || 10}`);
     if (snapshot.family === 'ticker') tokens.push(`n${values.tickerRepeats || 34}`, `ratio${values.tickerRatio || 2}`);
     tokens.push(snapshot.inkName || snapshot.colorMode || 'black', 'clear');
-    tokens.push(format === 'svg' ? 'vector' : `${snapshot.dimensions.logoWidth}w`);
+    tokens.push(format === 'svg' ? 'vector' : `${snapshot.dimensions.width}x${snapshot.dimensions.height}`);
     if (format === 'gif') tokens.push('loop');
     const base = tokens.map(token => safeTitle(token, 40)).filter(Boolean).join('-');
     const title = safeTitle(snapshot.title, Math.max(0, Math.min(64, 175 - utf8Length(base))));
     return `${base}${title ? `--${title}` : ''}.${format}`;
   }
-  return { SIZES, dimensions, safeTitle, filename };
+  return { SIZES, DEFAULT_SIZE, dimensions, safeTitle, filename };
 });

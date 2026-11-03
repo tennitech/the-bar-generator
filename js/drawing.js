@@ -1096,8 +1096,9 @@ function awaitExportTask(promise, signal) {
   });
 }
 
-async function createRasterExportBlob(snapshot, signal) {
+async function createRasterExportBlob(snapshot, signal, onStage = () => {}) {
   throwIfExportCancelled(signal);
+  onStage('Rendering PNG…');
   const { dimensions, geometry } = snapshot;
   const xml = new DOMParser().parseFromString(snapshot.svgSource, 'image/svg+xml');
   if (xml.querySelector('parsererror')) throw new Error('The selected SVG could not be rendered.');
@@ -1115,6 +1116,7 @@ async function createRasterExportBlob(snapshot, signal) {
     canvas.width = dimensions.width; canvas.height = dimensions.height;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0);
+    onStage('Encoding PNG…');
     return await awaitExportTask(new Promise((resolve, reject) => canvas.toBlob(blob =>
       blob && blob.type === 'image/png' ? resolve(blob) : reject(new Error('PNG encoding failed. Try again.')), 'image/png')), signal);
   } finally { URL.revokeObjectURL(url); image.src = ''; canvas.width = 0; canvas.height = 0; }
@@ -1172,12 +1174,14 @@ async function runLogoExport(format) {
   try {
     // Everything used by asynchronous work is captured before yielding to input.
     const snapshot = captureLogoExportSnapshot();
+    window.logoExportUI.describe(job, snapshot);
     const filename = window.logoExportOptions.filename(snapshot, format);
     await new Promise(resolve => setTimeout(resolve, 0));
     throwIfExportCancelled(job.controller.signal);
     let blob, metrics = {};
     if (format === 'svg') blob = new Blob([snapshot.svgSource], { type: 'image/svg+xml' });
-    else if (format === 'png') blob = await createRasterExportBlob(snapshot, job.controller.signal);
+    else if (format === 'png') blob = await createRasterExportBlob(snapshot, job.controller.signal,
+      stage => window.logoExportUI.message(job, stage));
     else {
       if (!window.loopingGifUtils.isLoopingGifEligibleStyle(snapshot.family)) throw new Error('This pattern does not have a looping GIF.');
       const plan = window.loopingGifUtils.getLoopingGifFramePlan(snapshot.family, snapshot.values, { barWidth: snapshot.geometry.width });
@@ -1189,21 +1193,21 @@ async function runLogoExport(format) {
       blob = result.blob; metrics = result.metrics;
     }
     throwIfExportCancelled(job.controller.signal);
-    window.logoExportUI.message(job, 'Starting download…');
+    window.logoExportUI.ready(job, blob);
+    window.logoExportUI.message(job, 'Requesting download…');
     startLogoDownload(blob, filename);
     // A synthetic anchor click has no completion signal. Sandboxed hosts can
     // silently deny it, so never claim a verified download from an iframe.
-    const embedded = window.embedSupport?.isEmbedded();
     const message = `${format.toUpperCase()} download requested.`;
-    window.logoExportUI.finish(job, embedded ? 'requested' : 'started', message);
-    Toast.show(message, 'info');
+    window.logoExportUI.finish(job, 'requested', message);
+    if (document.getElementById('save-menu')?.classList.contains('hidden')) Toast.show(message, 'info');
     return { filename, metrics: { ...metrics, bytes: blob.size, width: format === 'svg' ? null : snapshot.dimensions.width,
       height: format === 'svg' ? null : snapshot.dimensions.height, elapsedMs: performance.now() - started } };
   } catch (error) {
     const cancelled = error.name === 'AbortError' || job.controller.signal.aborted;
     const message = cancelled ? 'Export cancelled.' : `Export failed: ${error.message}`;
     window.logoExportUI.finish(job, cancelled ? 'cancelled' : 'error', message);
-    Toast.show(message, cancelled ? 'info' : 'error');
+    if (document.getElementById('save-menu')?.classList.contains('hidden')) Toast.show(message, cancelled ? 'info' : 'error');
     if (!cancelled) console.error('Logo export error:', error);
     return null;
   } finally { if (renderer) renderer.release(); }
