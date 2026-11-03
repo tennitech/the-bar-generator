@@ -7,8 +7,8 @@
   <meta name="description" content="Experimental next-gen marquee interface for the RPI Bar Generator.">
   <title>RPI Bar Generator Marquee Experiment</title>
   <link href="css/marquee-ui.css?v=20261103-marquee-controls" rel="stylesheet" type="text/css">
-  <link href="css/page-entrance.css?v=20261103-display-motion-embed" rel="stylesheet" type="text/css">
-  <script src="js/utils/pageEntrance.js?v=20261103-display-motion-embed"></script>
+  <link href="css/page-entrance.css?v=20261103-home-entrance" rel="stylesheet" type="text/css">
+  <script src="js/utils/pageEntrance.js?v=20261103-home-entrance" data-entry-kind="selector"></script>
   <script src="js/utils/generatorRoutes.js?v=20261103-resting-motion-ruler"></script>
   <script>
     const legacyGeneratorUrl = window.GeneratorRoutes
@@ -25,7 +25,7 @@
   <div class="page-wrapper marquee_page">
     <main class="main-wrapper">
       <a class="marquee_skip-link" href="generator/solid/">Open the generator and choose a bar style</a>
-      <section class="section_marquee_hero">
+      <section class="section_marquee_hero" data-entrance-page="selector">
         <div class="marquee_scene" data-entrance-plane="selector">
           <div class="marquee_stage" id="marquee-stage" data-marquee-stage></div>
         </div>

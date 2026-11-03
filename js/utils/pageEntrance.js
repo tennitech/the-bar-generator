@@ -1,4 +1,4 @@
-/* One print pass across artwork; typography, identity and controls remain still. */
+/* Home arrives as one composition; generator artwork keeps its print reveal. */
 (function (scope) {
   const root = document.documentElement;
   const motion = scope.matchMedia('(prefers-reduced-motion: reduce)');
@@ -6,7 +6,15 @@
   let active = null;
   let observer = null;
   const supported = typeof document.startViewTransition === 'function';
-  let stopped = motion.matches || !supported || performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
+  // Read in the head, before Home's first paint. This does not rely on body markup
+  // that has not been parsed yet, or on View Transition support.
+  const selectorPage = document.currentScript?.dataset.entryKind === 'selector';
+  let savedPause = false;
+  try { savedPause = selectorPage && scope.localStorage.getItem('rpi-marquee-motion') === 'paused'; } catch (_) {}
+  let stopped = motion.matches || savedPause || (!selectorPage && !supported)
+    || performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
+  let selectorPending = selectorPage && !stopped;
+  let readinessTimer = 0;
 
   function remember(kind) {
     try {
@@ -19,19 +27,66 @@
   function finish(pass = active) {
     if (!pass || active !== pass) return;
     cancelAnimationFrame(pass.frame);
+    clearTimeout(pass.timer);
+    pass.reveal?.removeEventListener('transitionend', pass.onTransitionEnd);
+    clearTimeout(readinessTimer);
     pass.plane.classList.add('is-entry-complete');
     pass.styles.forEach(([element, previous]) => { element.style.viewTransitionName = previous; });
     pass.plane.dataset.entryActive = 'false';
     completed.add(pass.plane);
     active = null;
     stopped = true;
-    root.classList.remove('has-page-entrance');
+    selectorPending = false;
+    root.classList.remove('has-page-entrance', 'has-selector-entrance', 'is-selector-entering');
   }
   function cancel() {
     stopped = true;
+    selectorPending = false;
+    clearTimeout(readinessTimer);
     active?.transition?.skipTransition();
     finish();
-    root.classList.remove('has-page-entrance');
+    root.classList.remove('has-page-entrance', 'has-selector-entrance', 'is-selector-entering', 'has-selector-assets');
+    if (selectorPage) {
+      const plane = document.querySelector('[data-entrance-plane="selector"]');
+      if (plane) { plane.classList.add('is-entry-complete'); plane.dataset.entryActive = 'false'; }
+    }
+  }
+  function startSelector() {
+    clearTimeout(readinessTimer);
+    const plane = document.querySelector('[data-entrance-plane="selector"]');
+    if (!plane) { cancel(); return; }
+    // decode() can stall independently of a successfully loaded image.
+    selectorImages.forEach(image => { if (image.complete && image.naturalWidth > 0) markAssetReady(image); });
+    if (completed.has(plane) || active) return;
+    if (stopped || motion.matches || document.hidden || document.body?.classList.contains('has-logo-animation')) {
+      plane.dataset.entryMode = 'bypass';
+      completed.add(plane);
+      cancel();
+      return;
+    }
+    const duration = remember('selector') ? 400 : 680;
+    const pass = { plane, kind: 'selector', frame: 0, styles: [], hold: true, timer: 0,
+      reveal: document.querySelector('[data-entrance-page="selector"]') };
+    pass.onTransitionEnd = event => {
+      if (event.target === pass.reveal && event.propertyName === 'opacity') finish(pass);
+    };
+    pass.reveal?.addEventListener('transitionend', pass.onTransitionEnd);
+    active = pass;
+    selectorPending = false;
+    Object.assign(plane.dataset, { entryKind: 'selector', entryMode: 'fade', entryDuration: String(duration), entryBuffer: '0', entryActive: 'true' });
+    root.style.setProperty('--selector-entry-duration', `${duration}ms`);
+    // Two frames commit the concealed state even with memory-cached SVGs/fonts.
+    // The whole composition fades together without a captured page-sized image.
+    pass.frame = requestAnimationFrame(() => {
+      if (active !== pass) return;
+      pass.frame = requestAnimationFrame(() => {
+        if (active !== pass) return;
+        root.classList.add('is-selector-entering');
+        // Follow the actual painted transition. A deadline still reveals the page
+        // if a browser drops transition events or styles are unavailable.
+        pass.timer = setTimeout(() => finish(pass), duration + 250);
+      });
+    });
   }
   function start(plane, kind) {
     if (!plane || completed.has(plane) || active) return;
@@ -105,33 +160,51 @@
   const selectorImages = [];
   let selectorScheduled = false;
   let selectorFinished = false;
+  function markAssetReady(image) {
+    image.classList.add('is-entrance-ready');
+    image.classList.remove('is-entrance-decoding');
+  }
   function revealAsset(image) {
     if (selectorFinished) {
       image.classList.add('is-entrance-ready');
       return;
     }
-    // All rows are constructed in one turn. Decode each distinct source before
-    // taking the field snapshot, including sources that arrive out of order.
     selectorImages.push(image);
+    if (selectorPage && !stopped) image.classList.add('is-entrance-decoding');
+    // Share each source's decode, not one decode per repeated lane item.
     if (!selectorAssets.has(image.src)) {
-      selectorAssets.set(image.src, image.decode().catch(() => {}));
+      const decoded = typeof image.decode === 'function' ? image.decode() : Promise.resolve();
+      selectorAssets.set(image.src, decoded.catch(() => {}));
     }
+    selectorAssets.get(image.src).then(() => markAssetReady(image));
     if (selectorScheduled) return;
     selectorScheduled = true;
     queueMicrotask(async () => {
-      await Promise.allSettled(selectorAssets.values());
+      if (selectorPage && stopped) startSelector();
+      await Promise.allSettled([...selectorAssets.values(), document.fonts?.ready]);
       selectorFinished = true;
-      selectorImages.splice(0).forEach(asset => asset.classList.add('is-entrance-ready'));
+      selectorImages.splice(0).forEach(markAssetReady);
       selectorAssets.clear();
-      const plane = document.querySelector('[data-entrance-plane="selector"]');
-      if (plane) start(plane, 'selector');
+      if (selectorPage) startSelector();
+      else {
+        const plane = document.querySelector('[data-entrance-plane="selector"]');
+        if (plane) start(plane, 'selector');
+      }
     });
   }
-  if (!stopped) root.classList.add('has-page-entrance');
-  observer = new MutationObserver(prepareCanvas);
-  observer.observe(root, { childList: true, subtree: true });
+  if (selectorPending) {
+    root.classList.add('has-selector-entrance', 'has-selector-assets');
+    // An unavailable asset, font, or later script must never hide navigation
+    // indefinitely. Slow images can fade in individually after this deadline.
+    readinessTimer = setTimeout(startSelector, 2200);
+  } else if (!stopped) root.classList.add('has-page-entrance');
+  if (!selectorPage) {
+    observer = new MutationObserver(prepareCanvas);
+    observer.observe(root, { childList: true, subtree: true });
+  }
   motion.addEventListener('change', () => { if (motion.matches) cancel(); });
-  scope.addEventListener('resize', cancel);
+  // Home uses live layout, not a fixed snapshot; browser chrome/font resize is harmless.
+  if (!selectorPage) scope.addEventListener('resize', cancel);
   scope.addEventListener('popstate', cancel);
   scope.addEventListener('hashchange', cancel);
   scope.addEventListener('pagehide', () => { cancel(); scope.ThemeMotion?.cancel(); });
@@ -140,8 +213,9 @@
   });
   document.addEventListener('pointerdown', cancel, { capture: true, passive: true });
   document.addEventListener('keydown', cancel, true);
+  if (selectorPage) document.addEventListener('focusin', cancel, true);
   document.addEventListener('change', event => { if (event.target.id === 'color-mode-select') cancel(); }, true);
   document.addEventListener('visibilitychange', () => { if (document.hidden) cancel(); });
-  scope.PageEntrance = { revealAsset, revealGenerator: prepareCanvas, cancel, isActive: () => Boolean(active),
-    isHoldingArtwork: () => Boolean(active && (active.kind === 'selector' || active.hold)) };
+  scope.PageEntrance = { revealAsset, revealGenerator: prepareCanvas, cancel, isActive: () => Boolean(selectorPending || active),
+    isHoldingArtwork: () => Boolean(selectorPending || (active && (active.kind === 'selector' || active.hold))) };
 })(window);
