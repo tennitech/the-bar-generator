@@ -117,22 +117,11 @@
 
   function getLoopReverse(style, values = {}) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
-    if (normalizedStyle === 'ruler') {
-      return normalizeLoopReverse(normalizedStyle, values.rulerReverse);
-    }
-
-    if (normalizedStyle === 'ticker') {
-      // Ticker shipped with the reverse semantics flipped relative to the desired UI.
-      // Keep the existing checkbox/URL key, but invert the effective direction here so
-      // unchecked ticker motion runs in the reverse direction and checked runs forward.
-      return !normalizeLoopReverse(normalizedStyle, values.tickerReverse);
-    }
-
-    if (normalizedStyle === 'waveform') {
-      return normalizeLoopReverse(normalizedStyle, values.waveformReverse);
-    }
-
-    return normalizeLoopReverse(normalizedStyle, false);
+    if (!LOOPING_GIF_STYLE_SET.has(normalizedStyle)) return false;
+    // Reverse is relative to the owner-corrected default for each family.
+    // Ticker previously had the opposite sign from Ruler and Waveform.
+    const checked = normalizeLoopReverse(normalizedStyle, values[`${normalizedStyle}Reverse`]);
+    return normalizedStyle === 'ticker' ? checked : !checked;
   }
 
   function getFrameCountForPeriod(periodSeconds, fps) {
@@ -202,12 +191,9 @@
 
     if (normalizedStyle === 'ruler') {
       const repeats = Math.max(1, Math.round(toPositiveNumber(values.rulerRepeats, 10)));
-      const units = Math.max(1, Math.round(toPositiveNumber(values.rulerUnits, 4)));
       const speed = getLoopSpeed(normalizedStyle, values);
       const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
-      const totalTicks = repeats * units + 1;
-      const tickWidth = barWidth / (2 * totalTicks - 1);
-      const repeatWidth = units * tickWidth * 2;
+      const repeatWidth = barWidth / repeats;
       const periodSeconds = 1 / speed;
       const frameCount = getFrameCountForPeriod(periodSeconds, fps);
 

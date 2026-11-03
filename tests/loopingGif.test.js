@@ -49,16 +49,16 @@ describe('loopingGif utils', () => {
       for (let frame = 0; frame < hz / 2; frame++) {
         phase = advanceLiveLoopPhase(phase, 'ruler', { rulerSpeed: 0.4, rulerUnits: 4 }, 1000 / hz);
       }
-      expect(phase).toBeCloseTo(0.2, 9);
+      expect(phase).toBeCloseTo(0.8, 9);
     }
   });
 
   test('speed changes preserve current phase instead of rescaling elapsed time', () => {
     let phase = advanceLiveLoopPhase(0.3, 'waveform', { waveformSpeed: 1 }, 10);
     phase = advanceLiveLoopPhase(phase, 'waveform', { waveformSpeed: 5 }, 10);
-    expect(phase).toBeCloseTo(0.32);
+    expect(phase).toBeCloseTo(0.28);
     const state = getLoopingAnimationState('waveform', { waveformSpeed: 5 }, { phase });
-    expect(state.timeSeconds * normalizeLoopSpeed('waveform', 5)).toBeCloseTo(phase);
+    expect(((state.timeSeconds * normalizeLoopSpeed('waveform', 5)) % 1 + 1) % 1).toBeCloseTo(phase);
   });
 
   test('bounds fast dense tick motion even after a delayed frame', () => {
@@ -102,8 +102,8 @@ describe('loopingGif utils', () => {
     expect(plan.style).toBe('ruler');
     expect(plan.periodSeconds).toBeCloseTo(1 / 0.6);
     expect(plan.frameDelayMs).toBeGreaterThan(0);
-    expect(plan.repeatWidth).toBeCloseTo((250 / (2 * (10 * 4 + 1) - 1)) * 8);
-    expect(plan.getLoopOffsetX(0.5)).toBeCloseTo(plan.repeatWidth / 2);
+    expect(plan.repeatWidth).toBeCloseTo(25);
+    expect(plan.getLoopOffsetX(0.5)).toBeCloseTo(-plan.repeatWidth / 2);
   });
 
   test('builds a ticker loop plan from the bottom repeat count', () => {
@@ -117,7 +117,7 @@ describe('loopingGif utils', () => {
     expect(plan.style).toBe('ticker');
     expect(plan.periodSeconds).toBeCloseTo(2);
     expect(plan.repeatWidth).toBeCloseTo(10);
-    expect(plan.getLoopOffsetX(0.25)).toBeCloseTo(-2.5);
+    expect(plan.getLoopOffsetX(0.25)).toBeCloseTo(2.5);
   });
 
   test('flips ticker loop offsets when reverse is enabled', () => {
@@ -129,7 +129,7 @@ describe('loopingGif utils', () => {
       barWidth: 250
     });
 
-    expect(plan.getLoopOffsetX(0.25)).toBeCloseTo(2.5);
+    expect(plan.getLoopOffsetX(0.25)).toBeCloseTo(-2.5);
   });
 
   test('builds a waveform loop plan from waveform speed', () => {
@@ -140,7 +140,7 @@ describe('loopingGif utils', () => {
     expect(plan.style).toBe('waveform');
     expect(plan.periodSeconds).toBeCloseTo(1);
     expect(plan.frameCount).toBe(24);
-    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(0.5);
+    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(-0.5);
   });
 
   test('reverses waveform time progression when reverse is enabled', () => {
@@ -149,7 +149,7 @@ describe('loopingGif utils', () => {
       waveformReverse: true
     });
 
-    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(-0.5);
+    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(0.5);
   });
 
   test('caps very fast loop exports to viewer-safe frame delays', () => {
@@ -176,6 +176,6 @@ describe('loopingGif utils', () => {
 
     expect(state.periodSeconds).toBeCloseTo(1.25);
     expect(state.progress).toBeCloseTo(0.1);
-    expect(state.loopOffsetX).toBeCloseTo(-1);
+    expect(state.loopOffsetX).toBeCloseTo(1);
   });
 });

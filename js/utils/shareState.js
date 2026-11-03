@@ -31,6 +31,11 @@
     const sourceControls = scope.loopingGifUtils && typeof scope.loopingGifUtils.normalizeMotionSpeedControls === 'function'
       ? scope.loopingGifUtils.normalizeMotionSpeedControls(value.controls)
       : { ...value.controls };
+    // Older Binary shares allowed 100 code points. Migrate only that field.
+    if (manifest['binary-input']?.maxLength === 10 && typeof sourceControls['binary-input'] === 'string') {
+      if (Array.from(sourceControls['binary-input']).length > 100) throw new Error('Text in this share link is too long.');
+      sourceControls['binary-input'] = safeText(sourceControls['binary-input'], 10);
+    }
     if (scope.NumericControls && manifest['numeric-source-select']) {
       if (!Object.hasOwn(sourceControls, 'numeric-source-select')) {
         const migrated = scope.NumericControls.migrate(sourceControls['numeric-input']);
@@ -118,26 +123,8 @@
     };
   }
 
-  function prepareTrigger(root = document) {
-    const existing = root.querySelector('#share-button');
-    if (existing) return existing;
-    const trigger = document.createElement('button');
-    trigger.id = 'share-button';
-    trigger.type = 'button';
-    trigger.className = 'header_icon-button share_trigger';
-    trigger.setAttribute('aria-label', 'Share bar');
-    trigger.setAttribute('title', 'Share bar');
-    trigger.setAttribute('aria-haspopup', 'dialog');
-    trigger.setAttribute('aria-expanded', 'false');
-    trigger.setAttribute('aria-controls', 'share-popover');
-    trigger.innerHTML = scope.FeatherIcons.getIconMarkup('share', 'header_icon');
-    root.querySelector('.header-actions .save-section').after(trigger);
-    trigger.addEventListener('click', () => {
-      if (trigger.openShare) trigger.openShare();
-      else trigger.dataset.pendingOpen = 'true';
-    });
-    return trigger;
-  }
+  // Retained as a no-op for cached route shells. Public share links are paused.
+  function prepareTrigger() { return null; }
 
   function prepareNameContext(root = document, name = '') {
     let nameContext = root.querySelector('.share_document-context');
@@ -171,7 +158,7 @@
       manifest[field.id] = {
         type: field.type,
         min: Number(field.min || 0), max: Number(field.max || 100), step: Number(field.step || 1),
-        maxLength: field.maxLength > 0 ? field.maxLength : MAX_TEXT_LENGTH,
+        maxLength: Number(field.dataset.maxCodePoints) || (field.maxLength > 0 ? field.maxLength : MAX_TEXT_LENGTH),
         ...(field.tagName === 'SELECT' ? { options: Array.from(field.options).filter(option => field.id !== 'style-select' || !option.disabled).map(option => option.value) } : {})
       };
     }
@@ -180,40 +167,18 @@
     defaultControls['style-select'] = 'solid';
     let restoring = false;
     let name = '';
-    let loadError = '';
-    const trigger = prepareTrigger();
-    const section = document.createElement('section');
-    section.id = 'share-popover';
-    section.className = 'save-menu share_popover';
-    section.hidden = true;
-    section.dataset.shareUi = '';
-    section.setAttribute('role', 'dialog');
-    section.setAttribute('aria-label', 'Share bar');
-    section.innerHTML = '<button id="share-copy" class="save-option share_copy" type="button"><span class="option-label" data-share-copy-label>Copy link</span><span class="share_menu-icon" data-share-copy-icon></span></button><label class="u-sr-only" for="share-name">Name (optional, up to 80 characters)</label><input id="share-name" class="control-input share_name" type="text" maxlength="160" placeholder="Name this bar"><div id="share-fallback" class="share_fallback" hidden><label for="share-url">Select and copy</label><textarea id="share-url" rows="2" readonly spellcheck="false"></textarea></div><p id="share-status" class="share_status" role="status" aria-live="polite"></p>';
-    document.body.append(section);
-    // A named bar is document context in the app header, never part of the official mark.
+    // Existing snapshots still restore their document title. There is no Share
+    // trigger, naming field, link-copy action or popover in the current UI.
     const brandTitle = document.querySelector('.brand-title');
     const nameContext = prepareNameContext();
     const loadedName = nameContext.querySelector('#share-loaded-name');
     const baseDocumentTitle = document.title;
-    const nameInput = section.querySelector('#share-name');
-    const output = section.querySelector('#share-url');
-    const fallback = section.querySelector('#share-fallback');
-    const copyButton = section.querySelector('#share-copy');
-    const copyLabel = section.querySelector('[data-share-copy-label]');
-    const copyIcon = section.querySelector('[data-share-copy-icon]');
-    const status = section.querySelector('#share-status');
     function updateNameContext() {
       loadedName.textContent = name;
       nameContext.hidden = !name;
       brandTitle.classList.toggle('has-document-name', !!name);
       brandTitle.title = name || '';
       document.title = name ? `${name} · ${baseDocumentTitle}` : baseDocumentTitle;
-    }
-    function resetCopyFeedback() {
-      copyLabel.textContent = 'Copy link';
-      copyIcon.innerHTML = scope.FeatherIcons.getIconMarkup('copy', 'share_menu-glyph');
-      status.classList.remove('u-sr-only');
     }
     const sanitize = value => bridge.sanitize ? bridge.sanitize(value) : value;
     const capture = () => ({ v: VERSION, name: sanitize(name), controls: Object.fromEntries(fields.map(field => [field.id,
@@ -225,10 +190,6 @@
       url.search = '';
       url.hash = encodeState(snapshot, manifest);
       return url.href;
-    }
-    function refresh() {
-      try { output.value = buildLink(); status.textContent = loadError; copyButton.title = `${output.value.length.toLocaleString()} characters. Some messaging apps limit long links.`; }
-      catch (error) { output.value = ''; status.textContent = error.message; }
     }
     function apply(snapshot) {
       restoring = true;
@@ -243,7 +204,6 @@
           else field.value = field.type === 'text' ? sanitize(values[field.id]) : values[field.id];
         }
         name = sanitize(snapshot.name);
-        nameInput.value = name;
         updateNameContext();
         bridge.restore(snapshot.runtime);
         for (const field of fields) {
@@ -255,7 +215,6 @@
       } finally { restoring = false; }
     }
     function load() {
-      loadError = '';
       try {
         const snapshot = decodeState(location.hash, manifest);
         if (snapshot) apply(snapshot);
@@ -266,101 +225,29 @@
             else field.value = defaultControls[field.id];
           }
           bridge.legacy();
-          name = ''; nameInput.value = ''; updateNameContext();
+          name = ''; updateNameContext();
           restoring = false;
         }
-        refresh();
-      } catch (error) { restoring = false; loadError = error.message; setOpen(true, false); }
+      } catch (error) { restoring = false; scope.Toast?.show(error.message, 'error'); }
     }
     const controller = {
-      capture, manifest, buildLink,
+      capture, manifest, buildLink, getName: () => name,
       syncUrl() {
         if (restoring) return true;
-        loadError = '';
         if (!location.hash.startsWith(PREFIX)) return false;
         try {
           if (scope.URLState) scope.URLState.replace(buildLink());
           else history.replaceState(history.state, '', buildLink());
-        } catch (error) { status.textContent = error.message; }
+        } catch (error) { scope.Toast?.show(error.message, 'error'); }
         return true;
       }
     };
     scope.barShareController = controller;
-    nameInput.addEventListener('input', () => { name = safeText(sanitize(nameInput.value), MAX_NAME_LENGTH); nameInput.value = name; resetCopyFeedback(); updateNameContext(); controller.syncUrl(); refresh(); });
-    function positionPopover() {
-      if (section.hidden) return;
-      const anchor = trigger.getBoundingClientRect();
-      const viewport = window.visualViewport;
-      const left = viewport ? viewport.offsetLeft : 0;
-      const top = viewport ? viewport.offsetTop : 0;
-      const width = viewport ? viewport.width : innerWidth;
-      const height = viewport ? viewport.height : innerHeight;
-      section.style.maxHeight = `${Math.max(44, height - 16)}px`;
-      section.style.left = `${Math.max(left + 8, Math.min(anchor.right - section.offsetWidth, left + width - section.offsetWidth - 8))}px`;
-      section.style.top = `${Math.max(top + 8, Math.min(anchor.bottom + 8, top + height - section.offsetHeight - 8))}px`;
-    }
-    function setOpen(open, moveFocus = true) {
-      section.hidden = !open;
-      trigger.setAttribute('aria-expanded', String(open));
-      if (open) {
-        if (typeof scope.hideSaveMenu === 'function') scope.hideSaveMenu();
-        fallback.hidden = true;
-        resetCopyFeedback();
-        refresh();
-        positionPopover();
-        if (moveFocus) copyButton.focus({preventScroll:true});
-      } else if (moveFocus) trigger.focus({preventScroll:true});
-    }
-    trigger.openShare = () => setOpen(section.hidden);
-    if (trigger.dataset.pendingOpen === 'true') {
-      delete trigger.dataset.pendingOpen;
-      trigger.openShare();
-    }
-    document.addEventListener('pointerdown', event => {
-      if (!section.hidden && !section.contains(event.target) && !trigger.contains(event.target)) setOpen(false, false);
-    });
-    document.addEventListener('keydown', event => {
-      if (!section.hidden && event.key === 'Escape') {
-        event.preventDefault();
-        event.stopPropagation();
-        setOpen(false);
-      }
-    }, true);
-    document.addEventListener('focusin', event => {
-      if (!section.hidden && !section.contains(event.target) && event.target !== trigger) setOpen(false, false);
-    });
-    window.addEventListener('resize', positionPopover);
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', positionPopover);
-      window.visualViewport.addEventListener('scroll', positionPopover);
-    }
-    copyButton.addEventListener('click', async () => {
-      loadError = '';
-      refresh();
-      if (!output.value) return;
-      try {
-        if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('Clipboard unavailable');
-        await navigator.clipboard.writeText(output.value);
-        copyLabel.textContent = 'Copied';
-        copyIcon.innerHTML = scope.FeatherIcons.getIconMarkup('check', 'share_menu-glyph');
-        status.classList.add('u-sr-only');
-        status.textContent = 'Link copied.';
-        fallback.hidden = true;
-      } catch (_) {
-        status.classList.remove('u-sr-only');
-        fallback.hidden = false;
-        positionPopover();
-        output.focus(); output.select();
-        status.textContent = 'Copy the selected link with your keyboard or touch menu.';
-      }
-    });
-    document.getElementById('app-sidebar').addEventListener('input', event => { if (!event.target.closest('[data-share-ui]')) { controller.syncUrl(); if (!section.hidden) refresh(); } });
-    document.getElementById('app-sidebar').addEventListener('change', event => { if (!event.target.closest('[data-share-ui]')) { controller.syncUrl(); if (!section.hidden) refresh(); } });
+    document.getElementById('app-sidebar').addEventListener('input', () => controller.syncUrl());
+    document.getElementById('app-sidebar').addEventListener('change', () => controller.syncUrl());
     window.addEventListener('popstate', load);
     window.addEventListener('hashchange', load);
-    trigger.disabled = false;
     if (location.hash.startsWith(PREFIX)) load();
-    resetCopyFeedback();
     updateNameContext();
     return controller;
   }

@@ -67,10 +67,10 @@ describe('Artemis frame invalidation', () => {
     r.createLunarBarVectorFragment = () => '';
     r.ready = true;
     r.draw(); r.draw();
-    expect(r.clear).toHaveBeenCalledTimes(3);
+    expect(r.clear).toHaveBeenCalledTimes(1);
     r.ready = false; r.draw();
     r.ready = true; r.draw();
-    expect(r.clear).toHaveBeenCalledTimes(4);
+    expect(r.clear).toHaveBeenCalledTimes(2);
   });
 
   test.each(['hidden', 'intro', 'entrance'])('%s suspension invalidates the resumed frame', suspension => {
@@ -225,5 +225,37 @@ describe('Mission Control wall-time counter lifecycle', () => {
     expect(day.writes).toBe(1); expect(second.writes).toBe(2); expect(root.attrWrites).toBe(2);
     expect(root.getAttribute('aria-label')).toMatch(/^Time since Artemis II splashdown: .* seconds$/);
     expect(nodes['lunar-counter-detail-toggle'].getAttribute('aria-label')).toMatch(/^Show Artemis II splashdown details/);
+  });
+});
+
+describe('Complete first preview frame', () => {
+  test('does not paint letters or clear a prior frame before a static bar is ready', () => {
+    const { context: r } = drawRuntime();
+    r.currentShader = 5;
+    r.getReadyCanonicalBarImage = jest.fn(() => null);
+    r.draw(); r.draw();
+    expect(r.clear).not.toHaveBeenCalled();
+    expect(r.drawSVGPath).not.toHaveBeenCalled();
+    expect(r.drawBottomBar).not.toHaveBeenCalled();
+    r.getReadyCanonicalBarImage.mockReturnValue({ width: 1000 });
+    r.draw();
+    expect(r.clear).toHaveBeenCalledTimes(1);
+    expect(r.drawSVGPath).toHaveBeenCalledTimes(3);
+    expect(r.drawBottomBar).toHaveBeenCalledTimes(1);
+    r.getReadyCanonicalBarImage.mockReturnValue(null);
+    r.draw();
+    expect(r.clear).toHaveBeenCalledTimes(1);
+  });
+
+  test('signals the entrance only after the complete mark has been drawn', () => {
+    const { context: r } = drawRuntime();
+    r._renderer.canvas.dataset = {};
+    r.PageEntrance.revealGenerator = jest.fn(() => {
+      expect(r.drawSVGPath).toHaveBeenCalledTimes(3);
+      expect(r.drawBottomBar).toHaveBeenCalledTimes(1);
+    });
+    r.draw(); r.draw();
+    expect(r._renderer.canvas.dataset.previewReady).toBe('true');
+    expect(r.PageEntrance.revealGenerator).toHaveBeenCalledTimes(1);
   });
 });

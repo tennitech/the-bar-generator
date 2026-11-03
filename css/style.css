@@ -1,4 +1,4 @@
-@import url("share-panel.css");
+@import url("share-panel.css?v=20261103-display-motion-embed");
 /* RPI Logo Generator Styles
    Typography:  RPI Geist (body), RPI Geist Mono (labels, captions ≤14px), Replica (display)
    Colors:      Black #000, White #FFF, Red #D6001C  |  Secondary: Silver #E1EDF5, Gray #B9CCD8, Blue #0081CE, Gold #CDAC38
@@ -93,7 +93,7 @@
   --header-height: 56px;
   --sidebar-width: 22rem;
   --sidebar-padding: 1.25rem;
-  --export-panel-width: calc(var(--sidebar-width) - 2 * var(--sidebar-padding));
+  --export-panel-width: calc(var(--sidebar-width) - 2 * var(--sidebar-padding) - 1px);
   --viewport-height: 100vh;
   --dropdown-menu-max-height: 16rem;
 
@@ -186,13 +186,33 @@ body {
 }
 
 .brand-title {
-  font-size: 11px;
-  opacity: 0.6;
-  letter-spacing: 0.08em;
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+  flex: 0 0 auto;
+  font-family: 'RPIGeist', 'Geist', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.08;
+  opacity: 1;
+  letter-spacing: -0.015em;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.brand_title-text { display: flex; gap: 0.25em; white-space: nowrap; }
+/* Legacy document names remain available without taking space from the product name. */
+.brand-title > .share_document-context {
+  width: 0;
+  min-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.625rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0;
 }
 
 .header-actions {
@@ -330,6 +350,16 @@ body {
   color: var(--text-primary, #000);
   font-family: 'RPIGeist', sans-serif;
   text-align: center;
+}
+
+.generator_preview-error {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  gap: 1rem;
+  background: var(--bg-canvas);
 }
 
 .generator_error button {
@@ -1499,8 +1529,11 @@ body {
 }
 
 .header-brand {
-  gap: 12px;
+  flex: 0 0 auto;
+  gap: 1rem;
 }
+
+.brand-divider { display: none; }
 
 .brand-mark {
   height: 36.25px;
@@ -1534,10 +1567,11 @@ body {
 
 .brand-title {
   color: currentColor;
-  opacity: 0.66;
+  opacity: 1;
 }
 
 .header-actions {
+  flex: 0 0 auto;
   gap: 10px;
 }
 
@@ -2859,7 +2893,7 @@ body.theme-lunar .logo-container::before {
 
 body.theme-lunar .app-header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
   column-gap: 16px;
   align-items: center;
   position: relative;
@@ -2984,8 +3018,8 @@ body.theme-lunar .zoom-level-input:focus {
 }
 
 .brand-title {
-  letter-spacing: 0.1em;
-  opacity: 0.7;
+  letter-spacing: -0.015em;
+  opacity: 1;
 }
 
 body.theme-red .brand-title {
@@ -3290,7 +3324,7 @@ body.theme-lunar .lunar_counter {
   line-height: 1.25;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   body.theme-lunar .lunar_counter {
     display: none;
   }
@@ -3589,8 +3623,7 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 360px) {
-  .header-brand .brand-divider,
-  .header-brand .brand-title {
+  .header-brand .brand-divider {
     display: none;
   }
 }
@@ -3727,7 +3760,7 @@ body { min-height: 0; }
   body .app-header { background: var(--bg-canvas); color: var(--text-primary); }
   .header-actions { gap: 0.5rem; }
   .save-button { padding-inline: 0.75rem; }
-  .brand-divider, .brand-title { display: none; }
+  .brand-divider { display: none; }
   .app-sidebar {
     position: absolute;
     top: 0;
@@ -4128,3 +4161,14 @@ body.theme-lunar .export_menu { min-width: 0; }
 :is(html, body).theme-red { --header-artwork-ink: var(--rpi-white); }
 :is(html, body).theme-lunar { --header-artwork-ink: #f4f7fb; }
 #brand-title, #mobile-secret-title { touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+
+/* Keep the complete product title beside the official mark at compact widths.
+   The optional repository link yields space before primary controls or the name. */
+@media (max-width: 640px) {
+  .app-header .brand-title {
+    font-size: 0.875rem;
+    line-height: 1.08;
+  }
+  .brand_title-text { flex-direction: column; gap: 0; }
+  .header-actions > .header_icon-button { display: none; }
+}

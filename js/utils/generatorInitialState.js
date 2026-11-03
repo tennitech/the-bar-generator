@@ -35,7 +35,7 @@
   function resolveStyle() {
     return scope.GeneratorRoutes.normalizeStyleValue(scope.__RPI_GENERATOR_ROUTE_STYLE__ || scope.GeneratorRoutes.getGeneratorRouteStyleFromPathname(scope.location.pathname) || new URLSearchParams(scope.location.search).get('style') || 'solid');
   }
-  function syncHeaderLayout(saveButton = document.getElementById('save-button'), saveButtonLabel = document.getElementById('save-button-label'), collapseBuffer = 96) {
+  function syncHeaderLayout(saveButton = document.getElementById('save-button'), saveButtonLabel = document.getElementById('save-button-label'), collapseBuffer = 16) {
     if (!saveButton || !saveButtonLabel) return;
 
     const appHeader = saveButton.closest('.app-header') || document.querySelector('.app-header');
@@ -52,7 +52,7 @@
       (Number.isFinite(labelLineHeight) && saveButtonLabel.offsetHeight > labelLineHeight * 1.35);
     const brandTitleStyle = brandTitle ? window.getComputedStyle(brandTitle) : null;
     const brandTitleLineHeight = brandTitleStyle ? parseFloat(brandTitleStyle.lineHeight) : NaN;
-    const brandTitleWrapped = brandTitle ? (
+    const brandTitleWrapped = brandTitle && brandTitleStyle.flexDirection !== 'column' ? (
       brandTitle.getClientRects().length > 1 ||
       (Number.isFinite(brandTitleLineHeight) && brandTitle.offsetHeight > brandTitleLineHeight * 1.35)
     ) : false;
@@ -114,7 +114,7 @@
       root.querySelectorAll('#app-sidebar input[id], #app-sidebar select[id]').forEach(field => {
         manifest[field.id] = {
           type: field.type, min: Number(field.min || 0), max: Number(field.max || 100), step: Number(field.step || 1),
-          maxLength: field.maxLength > 0 ? field.maxLength : 4096,
+          maxLength: Number(field.dataset.maxCodePoints) || (field.maxLength > 0 ? field.maxLength : 4096),
           ...(field.tagName === 'SELECT' ? { options: Array.from(field.options).filter(option => field.id !== 'style-select' || !option.disabled).map(option => option.value) } : {})
         };
       });
@@ -144,7 +144,7 @@
       const speedLabel = root.querySelector('#quantum-speed-display');
       phaseLabel.textContent = `${(scope.quantumModel.normalizePhase(phase.value) * 100).toFixed(1)}%`;
       speedLabel.textContent = scope.quantumModel.normalizeSpeed(speed.value).toFixed(1);
-      root.querySelector('#quantum-motion-toggle').checked = false;
+      root.querySelector('#quantum-motion-toggle').checked = !scope.location.hash.startsWith('#bar=');
     }
     if (scope.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       root.querySelectorAll('input[id$="-motion-toggle"]').forEach(toggle => { toggle.checked = false; });
@@ -161,6 +161,7 @@
       let value = field.value;
       if (display.id === 'waveform-type-display') value = ['SINE', 'SAWTOOTH', 'SQUARE', 'PULSE'][Math.min(3, Math.max(0, Math.round(Number(value))))];
       else if (display.id === 'lines-variant-display') value = Number(value) === 1 ? 'LG' : 'MD';
+      else if (display.id === 'neural-network-input-display') value += '%';
       else if (display.id === 'ticker-ratio-display') value += ':1';
       else if (display.id === 'ticker-width-ratio-display') value = `1:${value}`;
       else if (/^(ruler|ticker|waveform)-speed-display$/.test(display.id)) value = Number(value).toFixed(1);

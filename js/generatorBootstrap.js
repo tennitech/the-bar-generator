@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261028-bar24-26-release';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261103-display-motion-embed';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
@@ -20,7 +20,7 @@
       return window.GeneratorRoutes;
     }
 
-    await loadScript('js/utils/generatorRoutes.js?v=20261028-bar24-26-release');
+    await loadScript('js/utils/generatorRoutes.js?v=20261103-display-motion-embed');
     return window.GeneratorRoutes || null;
   }
 
@@ -47,7 +47,7 @@
       .map(script => script.getAttribute('src'))
       .filter(src => src && !(window.GeneratorRoutes && src.startsWith('js/utils/generatorRoutes.js')));
     if (window.__RPI_GENERATOR_ROUTE_STYLE__ === 'lunar') {
-      const lunarSource = 'js/utils/lunarBarAsset.js?v=20261027-artemis-vector';
+      const lunarSource = 'js/utils/lunarBarAsset.js?v=20261103-display-motion-embed';
       const patternIndex = scriptSources.findIndex(src => src.startsWith('js/utils/barPattern.js'));
       scriptSources.splice(patternIndex < 0 ? scriptSources.length : patternIndex, 0, lunarSource);
     }
@@ -68,7 +68,6 @@
         routeCSS.href = shellCSS.getAttribute('href');
       });
     }
-    window.BarShareState?.prepareTrigger(bodyClone);
     window.GeneratorInitialState.apply(bodyClone);
     window.BarInformation?.sync(bodyClone);
     bodyClone.querySelectorAll('script').forEach(script => script.remove());

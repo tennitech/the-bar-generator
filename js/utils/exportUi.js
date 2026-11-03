@@ -53,7 +53,14 @@
     byId('save-button')?.removeAttribute('aria-busy');
     byId('export-message').textContent = text;
     byId('export-cancel').hidden = true;
-    byId('export-meter').value = outcome === 'started' ? 1 : 0;
+    byId('export-meter').value = ['started', 'requested'].includes(outcome) ? 1 : 0;
+    if (outcome === 'requested') {
+      if (focusWasInMenu) {
+        const status = byId('export-message');
+        status.tabIndex = -1; status.focus({ preventScroll: true });
+      }
+      return;
+    }
     if (outcome === 'error' && focusWasInMenu) {
       const retry = byId(job.triggerId || (job.format === 'gif' ? 'save-loop-gif' : `save-${job.format}`));
       if (retry && !retry.disabled) retry.focus();

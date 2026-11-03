@@ -96,13 +96,20 @@
     if (!canvas) return;
     const artwork = canvas.parentElement;
     artwork.dataset.entrancePlane = 'generator';
+    // Canvas insertion precedes SVG decoding. Capture only a complete first mark.
+    if (canvas.dataset.previewReady !== 'true') return;
     start(artwork, 'generator');
     observer?.disconnect();
   }
   const selectorAssets = new Map();
   const selectorImages = [];
   let selectorScheduled = false;
+  let selectorFinished = false;
   function revealAsset(image) {
+    if (selectorFinished) {
+      image.classList.add('is-entrance-ready');
+      return;
+    }
     // All rows are constructed in one turn. Decode each distinct source before
     // taking the field snapshot, including sources that arrive out of order.
     selectorImages.push(image);
@@ -113,7 +120,9 @@
     selectorScheduled = true;
     queueMicrotask(async () => {
       await Promise.allSettled(selectorAssets.values());
-      selectorImages.forEach(asset => asset.classList.add('is-entrance-ready'));
+      selectorFinished = true;
+      selectorImages.splice(0).forEach(asset => asset.classList.add('is-entrance-ready'));
+      selectorAssets.clear();
       const plane = document.querySelector('[data-entrance-plane="selector"]');
       if (plane) start(plane, 'selector');
     });
@@ -133,6 +142,6 @@
   document.addEventListener('keydown', cancel, true);
   document.addEventListener('change', event => { if (event.target.id === 'color-mode-select') cancel(); }, true);
   document.addEventListener('visibilitychange', () => { if (document.hidden) cancel(); });
-  scope.PageEntrance = { revealAsset, cancel, isActive: () => Boolean(active),
+  scope.PageEntrance = { revealAsset, revealGenerator: prepareCanvas, cancel, isActive: () => Boolean(active),
     isHoldingArtwork: () => Boolean(active && (active.kind === 'selector' || active.hold)) };
 })(window);

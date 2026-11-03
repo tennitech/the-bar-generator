@@ -1,4 +1,4 @@
-// Isolated browser checks for complete client-side snapshots and actual downloaded SVGs.
+// Legacy snapshot compatibility remains while public Share controls are removed.
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const { chromium, webkit } = require('playwright');
@@ -41,11 +41,17 @@ async function svg(page) {
     for (const style of styles) {
       await page.selectOption('#style-select', style, {force:true});
       await page.evaluate(() => {
+        // Selection now enables Loop. Freeze explicitly before testing snapshot identity.
+        for (const field of document.querySelectorAll('input[id$="-motion-toggle"]')) {
+          field.checked = false; field.dispatchEvent(new Event('change', { bubbles: true }));
+        }
         liveMotionPhase = 0.375; window.animationTime = 23;
-        document.getElementById('share-button').click();
-        const input = document.getElementById('share-name'); input.value = 'Exploration α 🚀 <img onerror=alert(1)>';
-        input.dispatchEvent(new Event('input', {bubbles:true}));
       });
+      const namedLink = await page.evaluate(() => {
+        const state = barShareController.capture(); state.name = 'Exploration α 🚀 <img onerror=alert(1)>';
+        return location.href.split('#')[0] + BarShareState.encodeState(state, barShareController.manifest);
+      });
+      await page.goto(namedLink); await ready(page);
       const before = await page.evaluate(() => barShareController.capture());
       const exported = await svg(page);
       const link = await page.evaluate(() => barShareController.buildLink());
@@ -59,35 +65,14 @@ async function svg(page) {
     }
     // Approved palette choices restore alongside complete controls; no arbitrary colors.
     for (const color of ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray', 'lunar']) {
-      await page.selectOption('#color-mode-select', color, {force:true});
-      const link = await page.evaluate(() => barShareController.buildLink());
+      const link = await page.evaluate(color => {
+        const state = barShareController.capture(); state.controls['color-mode-select'] = color;
+        return location.href.split('#')[0] + BarShareState.encodeState(state, barShareController.manifest);
+      }, color);
       await page.goto(link); await ready(page);
       assert.equal(await page.inputValue('#color-mode-select'), color);
     }
-    // Toolbar popover supports keyboard entry, Escape, outside dismissal and focus exit.
-    await page.keyboard.press('Escape');
-    await page.locator('#share-button').focus(); await page.keyboard.press('Enter');
-    assert.equal(await page.locator('#share-button').getAttribute('aria-expanded'), 'true');
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'share-copy');
-    await page.keyboard.press('Tab');
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'share-name');
-    await page.keyboard.press('Escape');
-    assert.equal(await page.locator('#share-popover').isVisible(), false);
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'share-button');
-    await page.click('#share-button');
-    await page.mouse.click(20, 400);
-    assert.equal(await page.locator('#share-popover').isVisible(), false);
-    await page.click('#share-button');
-    await page.evaluate(() => document.getElementById('mobile-menu-toggle').focus());
-    assert.equal(await page.locator('#share-popover').isVisible(), false);
-    // Successful clipboard feedback without changing the host system clipboard.
-    await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', {configurable:true,value:{writeText:async text=>{window.__copiedShareLink=text;}}}));
-    await page.click('#share-button'); await page.click('#share-copy');
-    assert.equal(await page.locator('#share-copy').textContent(), 'Copied');
-    assert.equal(await page.locator('#share-status').textContent(), 'Link copied.');
-    assert.ok(await page.evaluate(() => window.__copiedShareLink.includes('#bar=')));
-    assert.equal(await page.locator('#share-fallback').isVisible(), false);
-    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#share-button, #share-popover, #share-copy, #share-name').count(), 0);
     // Same-document Back/Forward restores fields and the canonical route style, not the boot route.
     const original = page.url();
     const second = await page.evaluate(() => {
@@ -101,22 +86,16 @@ async function svg(page) {
     await page.goForward(); await page.waitForURL(second);
     assert.equal(await page.inputValue('#style-select'), 'binary');
     assert.equal(await page.inputValue('#binary-input'), '');
-    // Force clipboard rejection and verify an accessible manual copy path.
-    await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', {value:{writeText:async()=>{throw Error('blocked')}}}));
-    await page.click('#share-button');
-    await page.locator('#share-copy').click();
-    assert.match(await page.locator('#share-status').textContent(), /Copy the selected link/);
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'share-url');
     // Changed values update an existing shared fragment so reload cannot silently revert edits.
-    await page.fill('#binary-input', 'New settings');
+    await page.fill('#binary-input', 'New inputs');
     await page.reload(); await ready(page);
-    assert.equal(await page.inputValue('#binary-input'), 'New settings');
+    assert.equal(await page.inputValue('#binary-input'), 'New inputs');
     // Legacy query remains supported; empty shared fields remain empty.
     await page.goto(`${base}/generator/morse/?morseText=Legacy&colorMode=red`); await ready(page);
     assert.equal(await page.inputValue('#morse-input'), 'Legacy');
     assert.equal(await page.inputValue('#color-mode-select'), 'red');
     await page.goto(`${base}/generator/solid/#bar=broken!`); await ready(page);
-    assert.match(await page.locator('#share-status').textContent(), /malformed/);
+    assert.match(await page.locator('#toast-container').textContent(), /malformed/);
     assert.equal(await page.locator('#p5-container canvas').count(), 1);
     // Mobile + reduced motion respect receiver preference even if sender enabled animation.
     const reduced = await browser.newPage({ viewport:{width:390,height:844}, reducedMotion:'reduce' });
@@ -136,26 +115,17 @@ async function svg(page) {
     assert.equal(await reduced.evaluate(() => barShareController.capture().runtime.phase), phase);
     if (evidence) {
       await reduced.screenshot({path:`${evidence}/bar-05-toolbar-mobile-closed.png`});
-      await reduced.click('#share-button');
       await reduced.screenshot({path:`${evidence}/bar-05-toolbar-mobile.png`});
       await page.goto(original); await ready(page);
-      await page.click('#share-button');
       await page.screenshot({path:`${evidence}/bar-05-toolbar-desktop.png`});
     }
-    if (!await reduced.locator('#share-popover').isVisible()) await reduced.click('#share-button');
     for (const width of [320, 390, 768, 1440]) {
       await reduced.setViewportSize({width,height:844});
-      const bounds = await reduced.locator('#share-popover').boundingBox();
-      assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width, `popover fits ${width}px`);
+      assert.equal(await reduced.locator('#share-button, #share-popover').count(), 0);
       assert.ok(await reduced.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-      const target = await reduced.locator('#share-button').boundingBox();
-      if (width <= 900) {
-        const inset = await reduced.locator('#share-button').evaluate(button => parseFloat(getComputedStyle(button, '::before').top));
-        assert.ok(target.width - inset * 2 >= 44 && target.height - inset * 2 >= 44);
-      }
     }
     assert.deepEqual(errors, []);
     assert.ok(requests.every(url => url.startsWith(base) || url.startsWith('blob:') || url.startsWith('data:')), 'no external server requests');
-    console.log('PASS history, edited-fragment reload, legacy links, malformed recovery, clipboard fallback, Unicode/XSS, reduced motion, mobile');
+    console.log('PASS history, edited-fragment reload, legacy links, malformed recovery, Share removal, Unicode/XSS, reduced motion, mobile');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode=1; });

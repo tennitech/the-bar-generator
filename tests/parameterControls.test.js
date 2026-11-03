@@ -210,7 +210,7 @@ test('same-page shared and legacy restoration refresh action state after the com
     animationTime: 0, DEFAULT_MOTION_ENABLED: false, MOTION_ENABLED_BY_STYLE: { ruler: false, ticker: false, waveform: false },
     matchMedia: () => ({ matches: false }), location: { search: '' },
     resetAnimationClock: jest.fn(), quantumModel: require('../js/utils/quantumModel'),
-    quantumControls: { pause: jest.fn(), sync: jest.fn() },
+    quantumControls: { select: () => {}, pause: jest.fn(), sync: jest.fn() },
     applyUrlParameters() {
       for (const field of Object.values(h.fields)) {
         if (field.type === 'checkbox') field.checked = field.defaultChecked;
@@ -239,4 +239,7 @@ test('same-page shared and legacy restoration refresh action state after the com
   expect(h.buttons.binary.disabled).toBe(true);
   expect(h.context.sharePatternSeed).toBe(1);
   expect(h.buttons.circles.disabled).toBe(true);
+  h.context.matchMedia = () => ({ matches: true });
+  bridge.legacy();
+  expect(Object.values(h.context.MOTION_ENABLED_BY_STYLE)).toEqual([false, false, false]);
 });

@@ -34,7 +34,9 @@ async function download(page, kind) {
 }
 async function checkLayout(page, compact) {
   await page.locator('#save-button').click();
-  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await page.locator('#save-menu').evaluate(async menu => {
+    await Promise.all(menu.getAnimations().map(animation => animation.finished.catch(() => {})));
+  });
   const layout = await page.evaluate(() => {
     const box = selector => {
       const r = document.querySelector(selector).getBoundingClientRect();
@@ -182,8 +184,7 @@ async function checkLayout(page, compact) {
     const motion = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'no-preference' }); watch(motion);
     await motion.goto(`${base}/generator/wave-quantum/`); await ready(motion);
     const loop = motion.locator('label.switch:has(#quantum-motion-toggle)');
-    await loop.click();
-    assert.equal(await motion.locator('#quantum-motion-toggle').isChecked(), true);
+    assert.equal(await motion.locator('#quantum-motion-toggle').isChecked(), true, 'fresh route defaults to Loop');
     await motion.waitForFunction(() => !document.querySelector('[data-parameter-style="wave-quantum"][data-parameter-action="reset"]').disabled);
     const resetState = await motion.evaluate(() => {
       document.getElementById('quantum-phase').value = .5;
@@ -197,7 +198,7 @@ async function checkLayout(page, compact) {
     });
     // Preserved playback may already advance during requestUpdate's synchronous
     // redraws. It must restart near zero, not retain/catch up from the old half-cycle.
-    assert.ok(resetState.phase >= 0 && resetState.phase < .005, JSON.stringify(resetState));
+    assert.ok(resetState.phase >= 0 && resetState.phase < 1 && Math.min(resetState.phase, 1 - resetState.phase) < .005, JSON.stringify(resetState));
     assert.equal(resetState.loop, true); assert.equal(resetState.speed, '1'); assert.equal(resetState.reverse, false);
     assert.equal(resetState.disabled, resetState.phase === 0);
     await motion.waitForFunction(() => !document.querySelector('[data-parameter-style="wave-quantum"][data-parameter-action="reset"]').disabled);

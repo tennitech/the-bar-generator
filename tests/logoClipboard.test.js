@@ -20,3 +20,12 @@ test('unsupported copy requests cannot enter an image or export path', async () 
   expect(api.mode('unsupported')).toBe('unavailable');
   expect(await api.copy('unsupported')).toBe(null);
 });
+
+test('positive MIME support cannot override an explicit embedding policy denial', () => {
+  const context = { isSecureContext: true, navigator: { clipboard: { write: jest.fn() } },
+    ClipboardItem: { supports: () => true }, embedSupport: { clipboardBlocked: () => true } };
+  vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/logoClipboard'), 'utf8'), context);
+  expect(context.logoClipboard.mode('png')).toBe('unavailable');
+  expect(context.logoClipboard.mode('svg')).toBe('unavailable');
+  expect(context.navigator.clipboard.write).not.toHaveBeenCalled();
+});

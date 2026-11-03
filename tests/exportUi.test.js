@@ -101,3 +101,14 @@ test('completion preserves unsupported copy state and focuses an enabled recover
   expect(elements['save-svg'].disabled).toBe(false);
   expect(state.document.activeElement.id).toBe('save-button');
 });
+
+test('an embedded download request keeps recovery visible without claiming download completion', () => {
+  const { ui, elements, document, hideSaveMenu } = fixture();
+  elements['save-svg'].focus();
+  const job = ui.begin('svg');
+  ui.finish(job, 'requested', 'SVG download requested.');
+  expect(hideSaveMenu).not.toHaveBeenCalled();
+  expect(document.activeElement.id).toBe('export-message');
+  expect(elements['save-svg'].disabled).toBe(false);
+  expect(ui.isBusy()).toBe(false);
+});

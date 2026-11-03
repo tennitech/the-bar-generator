@@ -41,22 +41,26 @@ describe('marquee row layout helpers', () => {
     expect(getRowStepPx(419)).toBeCloseTo((7.35 / 100) * 822, 3);
   });
 
-  test('uses the larger desktop sizing tier at 1920x1080 and above', () => {
-    expect(getResponsiveMarqueeMetrics(1920, 1080)).toEqual({
-      assetWidth: '32rem',
-      rowHeight: '4.45rem',
-      rowGap: '1.7rem',
-      heroMaxScale: 1.16
+  test.each([[1440, 900, 1], [1920, 1080, 1.2], [3840, 2160, 2.4],
+    [7680, 4320, 4.8], [5120, 1440, 1.6], [390, 844, 1]])(
+    'sizes the complete composition continuously at %ix%i', (width, height, scale) => {
+      const metrics = getResponsiveMarqueeMetrics(width, height);
+      expect(metrics.scale).toBeCloseTo(scale);
+      expect(parseFloat(metrics.assetWidth)).toBeCloseTo(28 * scale);
+      expect(parseFloat(metrics.rowGap)).toBeCloseTo(1.45 * scale);
+      expect(parseFloat(metrics.rowHeight)).toBeCloseTo(3.9 * scale);
+      expect(metrics.heroMaxScale).toBeCloseTo(scale);
     });
+
+  test('does not jump at the former desktop breakpoint', () => {
+    const before = getResponsiveMarqueeMetrics(1919, 1080);
+    const after = getResponsiveMarqueeMetrics(1920, 1080);
+    expect(parseFloat(after.assetWidth) - parseFloat(before.assetWidth)).toBeLessThan(0.01);
   });
 
-  test('keeps the baseline sizing below the large-desktop breakpoint', () => {
-    expect(getResponsiveMarqueeMetrics(1919, 1080)).toEqual({
-      assetWidth: '28rem',
-      rowHeight: '3.9rem',
-      rowGap: '1.45rem',
-      heroMaxScale: 1
-    });
+  test('bounds vertical spacing by actual row size on tall and large screens', () => {
+    expect(getRowStepPx(4000, 62)).toBeCloseTo(62 * 1.32);
+    expect(getRowStepPx(5000, 150)).toBeCloseTo(150 * 1.32);
   });
 
   test('applies extra row lift for near-square tall viewports that collide with the title', () => {

@@ -5,30 +5,26 @@ This file distinguishes encoded data from illustrative patterns. It does not gra
 ## Shared mark geometry
 
 - The complete supplied `assets/images/RPI Logo.svg` is the geometry source, uniformly scaled by 0.5. Width is 250, letter bottom is 111.4885, bar top is 132.4885, design height is 18, and the fixed gap is 21. Complete painted bounds are 250 × 150.4885. The original solid path retains its rounded source height of 17.9995.
-- Except for the owner-corrected Ruler composition, every valid bar must paint both nominal horizontal edges and remain within the bar rectangle. This is the owner's October 27 requirement. Clips and empty containers do not count as paint. Static geometric artwork may use a single stroke-aware horizontal fit; scientific domains and nested artwork viewports retain their coordinates.
+- The November 3 owner clarification supersedes the earlier strict painted-edge rule. Artwork remains in the fixed bar viewport, but natural whitespace is valid. No artificial boundary paint or painted-bounds fit is added. Scientific domains and nested artwork retain their coordinates.
 - Export clear space is 20 reference units at every scale. Standard PNG/GIF uses a 1000 px mark on a transparent 1160 × 762 canvas with 80 px side padding; Large uses a 2000 px mark on 2320 × 1524 with 160 px padding. SVG retains its 290 × 190.4885 viewBox. Enforce the 0.25-inch print rule at placement size.
-- Ruler uses natural ticks without fixed boundary references; natural edge whitespace is accepted. Ticker retains fixed references, no wider than one ordinary tick or one reference unit. Interior coordinates and phase stay unchanged. Waveform retains its sample coordinates and adds a one-unit zero baseline. Numeric references preserve empty leading/trailing digit cells; zero-ink data blocks export with recovery guidance rather than inventing encoded paint. Neural endpoint circles are tangent to the edges.
+- Ruler and Ticker use natural ticks without fixed boundary references. Waveform has no artificial bottom baseline. Numeric preserves empty leading/trailing digit cells without boundary strips; zero-ink data blocks receive export recovery guidance rather than invented paint. Neural endpoint circles retain their natural tangency.
 - Clipboard SVG/PNG uses the same frozen export snapshot and coordinates. PNG retains alpha. Neither changes bar math, phase or geometry. Native SVG clipboard content uses the same standalone vector document as SVG download; unsupported browsers offer the separate download without a text or raster substitute.
 - Main static preview, header, SVG and PNG use one current-control collector. Circle packing uses the shared seed in both generation and cache identity, including same-page share-history restoration. No per-frame spatial normalization is used.
 - Circles now starts and resets with canonical seed 1, making the initial artwork and default Reset state agree. Randomize chooses a different nonzero shareable seed; explicit historical/shared seeds remain unchanged. Returning to a plain query restores seed 1 rather than inheriting a previous shared seed. This is a reproducible initial-condition choice, not a packing/model or geometry change.
 - Artemis retains original vector paths and nested source clipping. Its white source maps the actual 2083.3335-unit painted width rather than the padded 2084 frame. Live preview uses one projected SVG overlay; raster exports draw paths directly. It remains supplied illustration, not telemetry; permissions and formal approval remain unresolved.
 
-## Required painted extent
+## Natural painted extent — November 3, 2026
 
-Except for Ruler, the owner requires actual painted artwork to reach both exact nominal horizontal edges of the official bar area, while all strokes and fills remain inside it. A container or clip rectangle alone proves containment, not edge contact. Preserve the official 500 × 36 proportions, fixed placement, letterforms and letter-to-bar gap; do not add visible side padding to satisfy a bounds check. Floating-point tolerance is for numerical verification only.
-
-The owner explicitly corrected Ruler on October 27: remove forced end caps and allow natural edge whitespace. Its fixed viewport, clipping, placement and rhythm remain exact; never stretch or shift a frame to force edge contact. This narrow correction supersedes the earlier strict painted-edge interpretation for Ruler only.
-
-Apply the remaining painted-edge requirement to every other family, variant and relevant animation phase in the main preview, header and supported SVG, PNG and GIF exports. It is an implementation requirement, not a claim of complete validation or formal RPI approval.
+The owner clarified that the fixed viewport is a containment boundary, not a demand to paint every edge. Natural edge contact is retained where the pattern supports it. Natural gaps, including brief gaps during animation, are acceptable and will be reviewed individually. The former forced Ticker sides, Waveform baseline, Numeric sides and generic static edge-fitting pass are removed from preview, header and supported exports.
 
 ## Encoded and measurement-inspired styles
 
 | Style | Meaning and current assumption |
 | --- | --- |
-| Binary | Encodes up to 100 input Unicode characters as UTF-8 bytes, most-significant bit first. Offensive text is masked before encoding. |
+| Binary | Encodes up to 10 input Unicode code points as UTF-8 bytes, most-significant bit first. Offensive text is masked before encoding. |
 | Morse | Uses International Morse symbols for A–Z, digits, and supported punctuation. Dots are one time unit, dashes three, element gaps one, letter gaps three, and word gaps seven. Accents are transliterated to base letters; unsupported characters are omitted. |
 | Fibonacci Sequence | Segment widths follow consecutive values `34, 21, 13, 8, 5, 3, 2, 1` in descending order. Gaps separate the values visually. |
-| Ruler | Evenly spaced visual ticks; a major tick occurs at each selected unit division. It is an illustrative scale, not a calibrated physical ruler. |
+| Ruler | REPEATS counts major intervals across the fixed width; DIVISIONS counts equal subdivisions of each interval. Major ticks are full-height, halves 3/4-height, thirds/quarters/fifths 1/2-height, and finer fractions 1/4-height. It is a dimensionless illustrative scale, not a calibrated physical ruler. |
 | Numeric | Visualizes digits supplied by the user or generated from the selected formula. It does not claim to measure an external quantity. |
 | Waveform | Synthetic waveform based on the selected controls. It is not a recording or measured signal. |
 | Ticker | Repeating visual ticks with configurable ratios. It is not tied to a physical time or length unit. |
@@ -55,13 +51,13 @@ Navigation briefly holds live phase and decorative marquee movement while the ca
 
 The tiny header keeps vector letters separate from its supersampled moving bar.
 The former unresolved Ticker row-average fill is removed; selected geometry,
-phase and boundary references remain shared with main/export output. There is no
+phase and natural tick coordinates remain shared with main/export output. There is no
 per-frame spatial fitting or independent header clock. Exact letter-pixel checks
 and persistent nodes are software evidence, not a physical-display flicker-free
 guarantee.
 
 Ruler speed is0.2–0.6 major repeats/display second (default0.3), Ticker is0.2–0.8
-top-row repeats/display second (default0.4), and Waveform is0.2–1 temporal
+bottom-row repeats/display second (default0.4), and Waveform is0.2–1 temporal
 cycles/display second (default0.3), all in0.1steps. At the densest controls, caps
 bound local tick crossings to6/s and4/s for Ruler and Ticker. These are design
 choices, not universal flash-safety thresholds. One normalizer governs native
@@ -84,11 +80,11 @@ Button zoom keeps the bar as the inspection focus. Pointer zoom uses the pointer
 - **Gradient:** Apparent tone uses area coverage in one foreground color. Variant 1 linearly tapers full-height stripe widths; variant 2 uses three rows with a symmetric triangular coverage envelope. There is no opacity or color interpolation. The existing Gradient name/treatment still needs owner review against the dated Pattern restriction.
 - **Circles Gradient:** Variant 1 uses three rows with radius factors 1, .72, .46. Variant 2 increases circle area linearly left to right in two rows; variant 3 has symmetric triangular area coverage strongest at the center in three rows. Radii are bounded by row/cell dimensions. Every row shares the same column centers, so vertical columns remain upright; the largest endpoint circles are tangent to the exact left/right edges. Smaller endpoint dots retain their radius and sit inside those edges rather than shifting sideways. These are geometric patterns, not external datasets.
 
-The configurable static families above paint both horizontal boundaries within the canonical bar. The combined renderer uses the complete official vector basis and one selected-control collector for header/preview/SVG/PNG across all static families, superseding the isolated four-family export bypass. Exports capture controls, color, phase, title and Standard/Large size before asynchronous work begins. PNG rasterizes that captured vector; GIF streams captured frames with true palette transparency and disposal2. GIF uses binary alpha with coverage dithering, so PNG/SVG remain the smooth-alpha alternatives. See [transparent exports](transparent_gif_exports.md) for timing, streaming memory budgets, measured benchmarks and limits.
+The configurable static families retain their natural composition within the canonical viewport. The combined renderer uses the complete official vector basis and one selected-control collector for header/preview/SVG/PNG across all static families, superseding the isolated four-family export bypass. Exports capture controls, color, phase, title and Standard/Large size before asynchronous work begins. PNG rasterizes that captured vector; GIF streams captured frames with true palette transparency and disposal2. GIF uses binary alpha with coverage dithering, so PNG/SVG remain the smooth-alpha alternatives. See [transparent exports](transparent_gif_exports.md) for timing, streaming memory budgets, measured benchmarks and limits.
 
-The combined development checkout includes the revised single Quantum projection model from `ac06247`, `b4288ba`, and `c25cfa5`. It graphs three phase-convention-dependent projections of one normalized free-particle wavefunction on an ideal periodic ring, using modes −4,3,7 with equal coefficient magnitude1/√3. The fixed amplitude bound√3 maps to height; it never uses sampled-peak fitting. A recurrence takes120display seconds at1×, SPEED0.2–1 uniformly scales time, and REVERSE evaluates earlier model time. Display seconds have no physical calibration because mass/circumference are unspecified. The curves are not particles, literal trajectories, probabilities or measured data. See [model, equations, sources and limits](quantum_model.md).
+The combined development checkout includes the revised single Quantum projection model from `ac06247`, `b4288ba`, and `c25cfa5`. It graphs three phase-convention-dependent projections of one normalized free-particle wavefunction on an ideal periodic ring, using modes −4,3,7 with equal coefficient magnitude1/√3. The fixed amplitude bound√3 maps to height; it never uses sampled-peak fitting. A recurrence takes120display seconds at1×, SPEED0.2–1 uniformly scales time, and the owner-corrected default evaluates decreasing model time; REVERSE switches to increasing model time. Display seconds have no physical calibration because mass/circumference are unspecified. The curves are not particles, literal trajectories, probabilities or measured data. See [model, equations, sources and limits](quantum_model.md).
 
-Quantum uses the immediate native renderer for main preview and the same phase/polygons in header/SVG/captured PNG; preview bypasses asynchronous static snapshots. Shared restore pauses transport even for older LOOP=true state, drops obsolete density-view fields and retains phase. Same-page legacy-query restoration uses the bounded model normalizers. Phase edits preserve the explicit LOOP selection and temporarily hold model time during pointer drags or numeric editing; playback resumes from the selected phase without catch-up. Quantum GIF export is unavailable. Header rendering and navigation entrance policies are documented separately; no model or brand approval is inferred from software tests.
+Quantum uses the immediate native renderer for main preview and the same phase/polygons in header/SVG/captured PNG; preview bypasses asynchronous static snapshots. Fresh routes and menu selection default to Loop unless reduced motion is requested. Shared restore pauses transport even for older LOOP=true state, drops obsolete density-view fields and retains phase. Same-page legacy-query restoration uses the bounded model normalizers. Phase edits preserve the explicit LOOP selection and temporarily hold model time during pointer drags or numeric editing; playback resumes from the selected phase without catch-up. Quantum GIF export is unavailable. Header rendering and navigation entrance policies are documented separately; no model or brand approval is inferred from software tests.
 
 ## Inspection snapshot bounds — October 28, 2026
 
@@ -112,3 +108,27 @@ rings include stroke-aware vertical padding and retain natural horizontal edge
 contact. Preview/header/static exports share one graph and visual encoding.
 There is no training or animated biological-flow claim. See
 [Neural Network model](neural_network_model.md) for equations and limitations.
+
+## Binary input and motion defaults — November 3, 2026
+
+Binary no longer offers audio. Its input, query parser, shared-state migration and UTF-8 encoder use the same ten-code-point cap. UTF-16 surrogate pairs remain intact; a combined emoji or combining accent can contain multiple code points and is not promised to count as one grapheme. Historical valid Binary shares longer than ten points retain their first ten; other controls are unchanged. Profanity filtering runs on the bounded text before encoding. The native field allows twenty UTF-16 code units so ten supplementary characters can be entered; the application enforces the ten-point cap on input.
+
+Unchecked REVERSE now inverts each family's previous direction, including Quantum. This changes presentation direction, not the scientific model. Ruler moves toward increasing screen x; Ticker and Waveform move toward decreasing screen x. Quantum's default traverses decreasing model phase, with no claim of one physical left/right direction for all its modes. Reverse changes the direction without jumping the current phase. Selecting an animated family, including selecting it again after another style, starts Loop unless reduced motion is requested. Explicit paused shared snapshots remain paused; new reduced-motion requests still pause playback and explicit Loop remains available.
+
+## Embedded exports — November 3, 2026
+
+Public sharing controls are removed, while historical snapshot restoration
+retains the same validated model controls, seed and phase. Embedded exports
+stay on the current page. Names from historical snapshots remain export metadata.
+Download feedback and clipboard policy checks do not change scientific
+assumptions, geometry, SVG/PNG/GIF renderers or raster sizing. See
+[embedded export compatibility](frontify_exports.md).
+
+## Complete preview frames — November 3, 2026
+
+Static preview images still use the canonical clipped SVG and hardware-bounded
+125:9 raster sizes. The canvas now paints the letters and bar together after the
+requested image is available, retaining a previous complete frame during decode.
+An entrance capture cannot run before that first complete draw. This changes
+presentation readiness only: official 250-unit geometry, fixed bar gap, model
+parameters and exported SVG/PNG/GIF content are unchanged.

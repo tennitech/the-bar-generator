@@ -7,7 +7,7 @@
   },
   "ruler": {
     "title": "Ruler",
-    "text": "Evenly spaced ticks build a visual scale, with longer marks at each selected division. Explore the rhythm by changing repeats, units, or motion; the scale is illustrative, so its ticks do not measure a physical length on your screen."
+    "text": "Repeats sets the number of major visual units across the bar. Divisions splits each unit into equal intervals, with longer marks for larger fractions. Explore the rhythm or motion; this scale does not measure a physical length on your screen."
   },
   "ticker": {
     "title": "Ticker",
@@ -15,7 +15,7 @@
   },
   "binary": {
     "title": "Binary",
-    "text": "Your text becomes UTF-8 bytes, drawn as a sequence of binary bits from most significant to least significant. Try a different word or character to compare the resulting pattern; the content filter masks offensive text before the bar encodes it."
+    "text": "Up to 10 characters become UTF-8 bytes, drawn as a sequence of binary bits from most significant to least significant. Try a different word or character to compare the resulting pattern; the content filter masks offensive text before the bar encodes it."
   },
   "morse": {
     "title": "Morse Code",

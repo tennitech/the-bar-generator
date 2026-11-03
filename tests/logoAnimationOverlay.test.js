@@ -196,6 +196,21 @@ describe('logo animation overlay controller', () => {
     };
   }
 
+  test('Replay falls back to the visible export control when GitHub is hidden', async () => {
+    const { controller, documentRef, replayEl, windowRef } = createController();
+    let githubRect = { left: 0, top: 0, width: 0, height: 0 };
+    documentRef.querySelector = selector => {
+      if (selector.includes('GitHub')) return { getBoundingClientRect: () => githubRect };
+      if (selector === '#save-button') return { getBoundingClientRect: () => ({ left: 300, top: 16, width: 70, height: 44 }) };
+      return null;
+    };
+    await controller.open();
+    expect(replayEl.style).toMatchObject({ left: '300px', top: '16px', width: '70px', height: '44px' });
+    githubRect = { left: 900, top: 16, width: 44, height: 44 };
+    windowRef.dispatch('resize');
+    expect(replayEl.style).toMatchObject({ left: '900px', width: '44px', height: '44px' });
+  });
+
   test('opens the overlay and mounts the ASCII animation iframe', async () => {
     const {
       controller,

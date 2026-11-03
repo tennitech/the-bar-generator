@@ -1,7 +1,76 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-10-28
+**Last Updated:** 2026-11-03
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
+
+## November 3 combined release validation
+
+The combined candidate includes responsive display and complete first-frame
+rendering, the full bold product title and aligned export controls, corrected
+Ruler/default motion, natural pattern edges, ten-character Binary input, and
+same-page embedded export behavior. All production route/cache references share
+`20261103-display-motion-embed`; marquee samples were regenerated from the shared
+renderer. See [combined release evidence](display_motion_embed_qa.md) for exact
+coverage and remaining environment limits.
+
+The production Frontify frame was inspected separately and lacks download and
+clipboard delegation. This application release does not fix those host
+permissions. A separate manual-save prototype is not included in this release.
+
+## November 3 header title and export alignment
+
+The header now preserves the complete product name in full-contrast RPIGeist
+Bold, with a deliberate two-line phone layout instead of ellipsis or hiding.
+Legacy document names remain secondary and cannot crowd the product name.
+Download/Learn and its menu now share both edges with desktop sidebar fields;
+compact headers retain their smaller accessible actions. Header startup and
+runtime use the same fit logic. Official mark geometry and exports are unchanged.
+All 531 unit tests pass, and Chromium/WebKit each pass 45 focused responsive,
+alignment and startup cases. See [header validation and limits](header_layout_qa.md).
+This component is included in the combined candidate described above.
+
+## November 3 motion, Ruler and natural-edge corrections
+
+Implemented locally on `codex/fix-bar-motion-details`, based on the preserved integration commit `395ce422`; no push, merge or deployment is included. The owner clarified that natural edge gaps are valid. Removed artificial Ticker sides, Waveform bottom baseline, Numeric side marks and the generic horizontal fit pass, while preserving the official viewport, clipping, letterforms, spacing, scientific domains and intrinsic pattern geometry.
+
+Ruler now spans exactly the selected REPEATS in major units; the former UNITS control is DIVISIONS per repeat. Centered ticks have a consistent fractional hierarchy and are drawn once, eliminating doubled major ticks in animated frames. All four animated families reverse their prior default direction, and menu selection defaults Loop on except under reduced motion. Shared paused transport remains respected. Binary is limited to ten Unicode code points throughout input/query/share/encoding and no longer offers audio.
+
+Validation and remaining limits are recorded in [motion details QA](bar_motion_details_qa.md). Automated checks do not establish owner testing, final-size visual acceptance, physical-device behavior or formal RPI approval.
+
+## November 3 embedded export compatibility
+
+The public Share controls are removed for the Frontify workflow. Historical
+snapshot links still restore their model and document title. Embedded exports
+stay in the current page: the rejected new-tab link and guidance are removed.
+The menu explains explicit clipboard-policy denials and reports downloads as
+requested rather than confirmed. No geometry, model math, raster sizing or
+native-image MIME changes were made. Host permissions are never changed or
+bypassed.
+
+The cross-origin fixtures reproduce silent sandbox download blocking and
+Chromium clipboard-policy denial. Permitted hosts support direct SVG/PNG/GIF
+downloads and supported image copying without popup permissions. This is not
+an authenticated test of RPI's production Frontify embed. Separate production inspection confirmed missing iframe download and
+clipboard delegation. Host-side permission repair remains unresolved. A private SDK wrapper is an extension option to validate, not a
+verified production fix. See [behavior, host requirements and verification
+limits](frontify_exports.md).
+
+## November 3 display and first-frame repair
+
+The landing composition now scales bars, gaps, heading and credits together from
+CSS viewport dimensions. DPR does not independently enlarge the layout. Row
+spacing is bounded by bar height, with extra lanes on unusually tall viewports.
+The startup prompt uses bounded intrinsic width and compact wrapping rather than
+an absolutely positioned auto width that could wrap into an oversized bubble.
+Marquee speed is lower and a hovered or pressed link pauses its lane immediately;
+leaving resumes smoothly. Reduced motion remains still.
+
+Static generator previews wait for the selected SVG image before painting a
+complete mark. The entrance capture waits for that complete first frame rather
+than canvas insertion. Async updates retain the prior complete canvas, and a
+failed image exposes Retry. Geometry, selected patterns, export sizes, and model
+math are unchanged. See [display verification and limits](display_scaling_qa.md).
+This component is included in the combined candidate described above.
 
 ## October 28 feature integration
 
@@ -50,7 +119,7 @@ A web-based **Design Tool** intended for RPI's central Brand Hub. It lets studen
 ## 2. Architecture & Tech Stack
 *   **Core:** Vanilla HTML5, CSS3, JavaScript (ES6+).
 *   **Rendering:** p5.js 1.7.0 for the live canvas, using WebGL when available and 2D canvas otherwise, served from `third_party/p5/`.
-*   **Startup:** Shared initial-state, canonical query, dropdown and parameter utilities prepare theme and control chrome before the generator shell paints. The existing Share trigger and restored control labels occupy their final layout before renderer setup. Font preloads and explicit control line metrics limit fallback-font layout movement. Startup errors retain visible recovery. When shared-state startup is present, its motion normalizer loads before validation. The existing p5.js global runtime reuses these utilities, including one compact-layout decision for early and runtime sidebar state.
+*   **Startup:** Shared initial-state, canonical query, dropdown and parameter utilities prepare theme and control chrome before the generator shell paints. Restored control labels and any legacy snapshot title occupy their final layout before renderer setup; public Share controls are removed. Font preloads and explicit control line metrics limit fallback-font layout movement. Startup errors retain visible recovery. When shared-state startup is present, its motion normalizer loads before validation. The existing p5.js global runtime reuses these utilities, including one compact-layout decision for early and runtime sidebar state.
 *   **URL state:** Query and shared-fragment edits use one bounded 200ms writer. Navigation cancels stale pending writes; a validated same-origin session handoff retains the final pending edit on immediate reload before initial controls paint. WebKit rapid-edit/reload tests cover this behavior.
 *   **Navigation:** One native artwork print pass, including Artemis’s vector bar, keeps identity and controls fixed; reduced motion, history restoration and unsupported browsers bypass it. Captured artwork motion holds briefly and resumes without catching up presentation time.
 *   **Integration:** Designed to embed within the **Frontify** ecosystem.

@@ -181,16 +181,21 @@
       motionPreference.addEventListener('change', handleMotionPreference);
     }
 
-    // Measure the actual shared toolbar controls, including a future Share slot.
+    // Compact headers hide GitHub; keep Replay anchored to a visible control.
     function alignControls() {
       if (!overlayParts || !documentRef.querySelector) return;
+      const github = documentRef.querySelector('.header-actions a[aria-label*="GitHub"]');
+      const githubRect = github && github.getBoundingClientRect();
+      const replayAnchor = githubRect && githubRect.width > 0 && githubRect.height > 0
+        ? github : documentRef.querySelector('#save-button');
       const pairs = [
-        [overlayParts.replayEl, documentRef.querySelector('.header-actions a[aria-label*="GitHub"]')],
+        [overlayParts.replayEl, replayAnchor],
         [overlayParts.closeEl, documentRef.querySelector('#mobile-menu-toggle')]
       ];
       pairs.forEach(([button, anchor]) => {
         if (!anchor) return;
         const rect = anchor.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return;
         Object.assign(button.style, {
           position: 'fixed', left: `${rect.left}px`, top: `${rect.top}px`,
           width: `${rect.width}px`, height: `${rect.height}px`

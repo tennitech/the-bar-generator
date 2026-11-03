@@ -204,6 +204,11 @@ function clipTickerRectToBar(rect, barStartX, barY, exactBarWidth, barHeight, ma
   };
 }
 
+// Binary limits count Unicode code points, not UTF-16 surrogate halves.
+function normalizeBinaryText(value) {
+  return Array.from(String(value ?? '').replace(/[\u0000-\u001f\u007f]/g, '')).slice(0, 10).join('');
+}
+
 function createRulerPatternGeometry(options = {}) {
   const barStartX = Number(options.barStartX || 0);
   const barY = Number(options.barY || 0);
@@ -211,86 +216,33 @@ function createRulerPatternGeometry(options = {}) {
   const barHeight = Math.max(1, Number(options.barHeight || 18));
   const rulerRepeats = normalizeTickerWholeNumber(options.rulerRepeats, 10);
   const rulerUnits = normalizeTickerWholeNumber(options.rulerUnits, 4);
-  const totalTicks = rulerRepeats * rulerUnits + 1;
-  const tickWidth = exactBarWidth / (2 * totalTicks - 1);
-  const tickSpacing = tickWidth * 2;
-  const repeatWidth = rulerUnits * tickSpacing;
+  // REPEATS spans the exact domain; DIVISIONS splits each repeat equally.
+  // Centered marks are clipped naturally, never stretched to fit painted edges.
+  const repeatWidth = exactBarWidth / rulerRepeats;
+  const tickSpacing = repeatWidth / rulerUnits;
+  const tickWidth = tickSpacing / 2;
+  const offset = Number.isFinite(options.loopOffsetX) ? options.loopOffsetX : 0;
+  const wrappedOffset = ((offset % repeatWidth) + repeatWidth) % repeatWidth;
+  const gcd = (a, b) => b ? gcd(b, a % b) : a;
+  const getTickHeight = index => {
+    const position = ((index % rulerUnits) + rulerUnits) % rulerUnits;
+    if (position === 0) return barHeight;
+    const denominator = rulerUnits / gcd(position, rulerUnits);
+    // Halves, then quarters/thirds/fifths, then the finer subdivisions.
+    return barHeight * (denominator === 2 ? 0.75 : denominator <= 5 ? 0.5 : 0.25);
+  };
   const rects = [];
-  const addRect = (rect) => {
-    const clippedRect = clipTickerRectToBar(rect, barStartX, barY, exactBarWidth, barHeight);
-    if (clippedRect) {
-      rects.push(clippedRect);
-    }
-  };
-  const getTickHeight = (tickIndex) => {
-    if (tickIndex === 0 || tickIndex === totalTicks - 1 || tickIndex % rulerUnits === 0) {
-      return barHeight;
-    }
-
-    const positionInUnit = tickIndex % rulerUnits;
-    if (rulerUnits === 10) {
-      if (positionInUnit === 5) {
-        return barHeight * 0.75;
-      }
-      if (positionInUnit % 2 === 0) {
-        return barHeight * 0.5;
-      }
-      return barHeight * 0.25;
-    }
-
-    if (positionInUnit === Math.floor(rulerUnits / 2)) {
-      return barHeight * 0.75;
-    }
-
-    return barHeight * 0.5;
-  };
-
-  if (Number.isFinite(options.loopOffsetX)) {
-    const wrappedOffset = ((options.loopOffsetX % repeatWidth) + repeatWidth) % repeatWidth;
-    const drawStartX = barStartX - wrappedOffset;
-    const drawEndX = barStartX + exactBarWidth;
-
-    for (let repeatX = drawStartX - repeatWidth; repeatX <= drawEndX + repeatWidth; repeatX += repeatWidth) {
-      for (let tickIndex = 0; tickIndex <= rulerUnits; tickIndex++) {
-        const tickX = repeatX + tickIndex * tickSpacing;
-        if (tickX + tickWidth <= barStartX || tickX >= drawEndX) {
-          continue;
-        }
-
-        const tickHeight = getTickHeight(tickIndex);
-        addRect({
-          x: tickX,
-          y: barY + barHeight - tickHeight,
-          width: tickWidth,
-          height: tickHeight
-        });
-      }
-    }
-
-    return {
-      rects,
-      repeatWidth,
-      tickWidth,
-      tickSpacing
-    };
+  const first = Math.floor((wrappedOffset - tickWidth / 2) / tickSpacing);
+  const last = Math.ceil((exactBarWidth + wrappedOffset + tickWidth / 2) / tickSpacing);
+  for (let index = first; index <= last; index++) {
+    const height = getTickHeight(index);
+    const rect = clipTickerRectToBar({
+      x: barStartX + index * tickSpacing - wrappedOffset - tickWidth / 2,
+      y: barY + barHeight - height, width: tickWidth, height
+    }, barStartX, barY, exactBarWidth, barHeight);
+    if (rect) rects.push(rect);
   }
-
-  for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
-    const tickHeight = getTickHeight(tickIndex);
-    addRect({
-      x: barStartX + tickIndex * tickSpacing,
-      y: barY + barHeight - tickHeight,
-      width: tickWidth,
-      height: tickHeight
-    });
-  }
-
-  return {
-    rects,
-    repeatWidth,
-    tickWidth,
-    tickSpacing
-  };
+  return { rects, repeatWidth, tickWidth, tickSpacing };
 }
 
 function createTickerPatternGeometry(options = {}) {
@@ -2065,6 +2017,7 @@ function createBarPatternSVG(config) {
 }
 
 if (typeof window !== 'undefined') {
+  window.normalizeBinaryText = normalizeBinaryText;
   window.applyWaveformEnvelope = applyWaveformEnvelope;
   window.createBoundedCirclePatternGeometry = createBoundedCirclePatternGeometry;
   window.createCirclesGradientPatternGeometry = createCirclesGradientPatternGeometry;
@@ -2092,6 +2045,7 @@ if (typeof window !== 'undefined') {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
+    normalizeBinaryText,
     applyWaveformEnvelope,
     generateWaveValue,
     getTickerHeaderSampling,

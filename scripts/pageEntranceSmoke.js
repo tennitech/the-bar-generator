@@ -63,7 +63,7 @@ async function geometry(page) {
           await page.screenshot({ path: path.join(evidence, `${name}-${width}-${theme}-${reduced ? 'reduced' : 'motion'}.png`) });
           // Existing action handlers remain single, even after repeated early preparation.
           assert.equal(await page.locator('#ruler-group .control-header-actions button').count(), 2);
-          assert.equal(await page.locator('#triangles-group .control-header-actions').count(), 0);
+          assert.equal(await page.locator('#triangles-group .control-header-actions button').count(), 2);
           results.push({ engine: name, width, reduced, theme, ...info, errors });
         }
         await page.goto(base + '/');
@@ -112,7 +112,7 @@ async function geometry(page) {
       await slow.close();
       // Repeated calls create neither duplicate actions nor duplicate runtime callbacks.
       const check = await browser.newPage();
-      await check.goto(base + '/generator/ruler/'); await check.locator('#p5-container canvas').waitFor();
+      await check.goto(base + '/generator/ruler/?rulerRepeats=20'); await check.locator('#p5-container canvas').waitFor();
       await check.evaluate(() => {
         ParameterControls.prepare(document); ParameterControls.prepare(document);
         window.__actionCalls = 0;

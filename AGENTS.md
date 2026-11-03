@@ -139,8 +139,8 @@ Avoid:
 - The bar must obey the official geometry:
   - use the official 500 × 36 px bar design area and scale it proportionally with the official vectors
   - keep spacing, placement, and letterform proportions fixed
-  - require actual painted artwork to touch both nominal horizontal edges without overflow, across variants and animation phases; a clip/container alone is insufficient
-  - Ruler exception, explicitly corrected by the owner October 27: retain natural ticks and edge whitespace within the fixed bar viewport; do not add forced end caps or fit individual phases to the edges
+  - contain artwork in the fixed design viewport; edge contact is welcome when natural to a pattern, but is not mandatory
+  - owner clarification November 3: do not add artificial side strips, bottom baselines, outlines, or painted-bounds fitting to force edge contact; natural gaps, including temporary animation gaps, are valid and will be reviewed case by case
   - preserve scientific coordinates and fixed reference geometry; do not rescale motion per frame to force edge contact
   - use primitive geometry such as rectangles, ellipses, polygons, and lines
   - do not infer new numerical geometry from ambiguous prose about the width of lettering

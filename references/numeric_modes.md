@@ -6,7 +6,7 @@ Numeric now separates **Enter values** and **Select a formula** with the same dr
 
 The text field uses a decimal mobile keyboard and accepts ASCII decimal digits, one point, and an optional leading sign, up to 200 characters. Keeping it as text preserves leading zeros and long decimal precision; a native number field would admit exponent letters and coerce data. The sign is explicitly not encoded. Arbitrary letters, exponent notation, commas, extra points, NaN and Infinity reject the complete edit instead of silently deleting characters and inventing a different value. The input event covers typing and inserted/pasted text. Normal temporary states such as an empty field, `-`, or `.` remain editable and render no digit pattern. Leaving an incomplete value shows recovery guidance. A valid edit clears that guidance.
 
-The existing two visualization methods, decimal-point mapping, zero-ink recovery and boundary references remain unchanged. The old fallback from an empty field to π is removed, so preview and exports cannot silently substitute a different value. Existing profanity protections for text encoders and names remain intact.
+The existing two visualization methods, decimal-point mapping, zero-ink recovery remain unchanged; the November 3 owner correction removes artificial side references without changing encoded cells. The old fallback from an empty field to π is removed, so preview and exports cannot silently substitute a different value. Existing profanity protections for text encoders and names remain intact.
 
 ## Presets and sources
 

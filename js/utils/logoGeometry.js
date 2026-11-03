@@ -21,72 +21,8 @@ function clipBarSVG(markup, x, y, width, height) {
   return `<defs><clipPath id="${id}"><rect x="${x}" y="${y}" width="${width}" height="${height}"/></clipPath></defs><g clip-path="url(#${id})">${markup}</g>`;
 }
 
-function getBarEdgeTransform(left, right, start, width) {
-  if (![left, right, start, width].every(Number.isFinite) || right <= left || width <= 0) {
-    return { offset: 0, scale: 1 };
-  }
-  const scale = width / (right - left);
-  return { offset: start - left * scale, scale };
-}
-
-// getBBox() alone omits centered strokes and can falsely report an inset.
-// Measure each painted primitive in the group's coordinates, excluding clip/defs.
-function getSVGPaintedHorizontalBounds(group) {
-  const inverse = group.getScreenCTM().inverse();
-  let left = Infinity, right = -Infinity;
-  for (const element of group.querySelectorAll('path,rect,circle,ellipse,line,polygon,polyline')) {
-    if (element.closest('defs,clipPath,mask,pattern,marker')) continue;
-    const style = getComputedStyle(element);
-    const hasStroke = style.stroke !== 'none' && Number(style.strokeOpacity) !== 0;
-    const hasFill = style.fill !== 'none' && Number(style.fillOpacity) !== 0;
-    if ((!hasStroke && !hasFill) || Number(style.opacity) === 0) continue;
-    const bounds = element.getBBox();
-    const stroke = hasStroke ? (parseFloat(style.strokeWidth) || 0) / 2 : 0;
-    if (bounds.width === 0 && bounds.height === 0 && !stroke) continue;
-    const matrix = inverse.multiply(element.getScreenCTM());
-    for (const x of [bounds.x - stroke, bounds.x + bounds.width + stroke]) {
-      for (const y of [bounds.y - stroke, bounds.y + bounds.height + stroke]) {
-        const mappedX = matrix.a * x + matrix.c * y + matrix.e;
-        left = Math.min(left, mappedX); right = Math.max(right, mappedX);
-      }
-    }
-  }
-  return { left, right };
-}
-
-// Fit actual primitive geometry, rather than its empty SVG container, to both edges.
-// Geometry outside the design rectangle is clipped before considering its extents.
-const horizontalBarFits = new Map();
-function fitBarSVGToEdges(markup, x, y, width, height) {
-  if (!markup || typeof document === 'undefined') return markup;
-  const key = `${x}:${y}:${width}:${height}:${markup}`;
-  if (horizontalBarFits.has(key)) return horizontalBarFits.get(key);
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  const group = document.createElementNS(svg.namespaceURI, 'g');
-  svg.style.cssText = 'position:fixed;left:-10000px;top:-10000px;visibility:hidden;pointer-events:none';
-  svg.setAttribute('aria-hidden', 'true');
-  group.innerHTML = markup;
-  svg.appendChild(group);
-  document.body.appendChild(svg);
-  let fitted = markup;
-  try {
-    const bounds = getSVGPaintedHorizontalBounds(group);
-    const left = Math.max(x, bounds.left);
-    const right = Math.min(x + width, bounds.right);
-    if (right > left && (Math.abs(left - x) > 1e-7 || Math.abs(right - x - width) > 1e-7)) {
-      const fit = getBarEdgeTransform(left, right, x, width);
-      fitted = `<g data-bar-edge-fit="true" transform="translate(${fit.offset} 0) scale(${fit.scale} 1)">${markup}</g>`;
-    }
-  } finally { svg.remove(); }
-  horizontalBarFits.set(key, fitted);
-  if (horizontalBarFits.size > 8) horizontalBarFits.delete(horizontalBarFits.keys().next().value);
-  return fitted;
-}
-
 if (typeof window !== 'undefined') {
   window.RPI_LOGO_GEOMETRY = RPI_LOGO_GEOMETRY;
   window.clipBarSVG = clipBarSVG;
-  window.fitBarSVGToEdges = fitBarSVGToEdges;
-  window.getBarEdgeTransform = getBarEdgeTransform;
 }
-if (typeof module !== 'undefined' && module.exports) module.exports = { RPI_LOGO_GEOMETRY, clipBarSVG, fitBarSVGToEdges, getBarEdgeTransform };
+if (typeof module !== 'undefined' && module.exports) module.exports = { RPI_LOGO_GEOMETRY, clipBarSVG };

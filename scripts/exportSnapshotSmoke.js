@@ -21,13 +21,14 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
           set('triangles-count-slider', 6);
           set('triangles-direction-select', 'up-left', 'change');
           set('quantum-phase', 0.375); window.quantumControls.pause();
-          set('share-name', 'Frozen request');
+          window.__fixtureName = 'Frozen request';
+          barShareController.getName = () => window.__fixtureName;
           set('export-size-select', 'standard', 'change');
           window.__oldSVG = captureLogoExportSnapshot().svgSource;
           window.__mutateExportControls = () => {
             set('triangles-count-slider', 28);
             set('triangles-direction-select', 'down-right', 'change');
-            set('quantum-phase', 0.8); set('share-name', 'In-flight change');
+            set('quantum-phase', 0.8); window.__fixtureName = 'In-flight change';
             set('export-size-select', 'large', 'change');
             set('color-mode-select', 'white', 'change');
           };
