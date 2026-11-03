@@ -3,7 +3,7 @@ const vm = require('node:vm');
 
 function fixture(clipboard) {
   const document = { readyState: 'complete', addEventListener() {}, activeElement: null };
-  const ids = ['save-menu', 'save-button', 'save-png', 'save-svg', 'save-loop-gif', 'export-size-select',
+  const ids = ['save-menu', 'save-button', 'save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'export-size-large', 'export-size-standard',
     'export-progress', 'export-message', 'export-meter', 'export-cancel', 'copy-png', 'copy-svg',
     'export-track', 'export-fill', 'export-percent', 'export-detail'];
   const elements = Object.fromEntries(ids.map(id => [id, {
@@ -163,4 +163,22 @@ test('finishing after dismissal does not steal focus or reopen the menu', () => 
   ui.finish(job, 'requested', 'PNG download requested.');
   expect(document.activeElement.id).toBe('save-button');
   expect(hideSaveMenu).not.toHaveBeenCalled();
+});
+
+
+test('custom size choices synchronize the export size and lock during export', () => {
+  const { ui, elements } = fixture();
+  elements['export-size-standard'].listeners.change({ target: { checked: true } });
+  expect(ui.size()).toBe('standard');
+  expect(elements['export-size-standard'].checked).toBe(true);
+  expect(elements['export-size-large'].checked).toBe(false);
+  const job = ui.begin('png');
+  expect(elements['export-size-standard'].disabled).toBe(true);
+  expect(elements['export-size-large'].disabled).toBe(true);
+  elements['export-size-large'].listeners.change({ target: { checked: true } });
+  expect(ui.size()).toBe('standard');
+  ui.finish(job, 'error', 'Try again.');
+  expect(elements['export-size-standard'].disabled).toBe(false);
+  elements['export-size-large'].listeners.change({ target: { checked: true } });
+  expect(ui.size()).toBe('large');
 });

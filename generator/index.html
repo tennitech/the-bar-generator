@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261103-header-home" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261103-custom-size-picker" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
   <script src="js/utils/generatorRoutes.js?v=20261103-resting-motion-ruler"></script>
@@ -95,11 +95,21 @@
         </button>
         <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Export asset">
           <div id="export-settings" class="export_settings">
-            <label for="export-size-select" class="export_size-label">Image size</label>
-            <select id="export-size-select" class="export_size-select" aria-describedby="export-dimensions export-size-note">
+            <span id="export-size-label" class="export_size-label">Image size</span>
+            <select id="export-size-select" hidden aria-hidden="true" tabindex="-1">
               <option value="large" selected>Large · Recommended</option>
               <option value="standard">Standard</option>
             </select>
+            <div class="export_size-options" role="radiogroup" aria-labelledby="export-size-label" aria-describedby="export-dimensions export-size-note">
+              <label class="export_size-option">
+                <input id="export-size-large" type="radio" name="export-size" value="large" checked>
+                <span>Large <small>Recommended</small></span>
+              </label>
+              <label class="export_size-option">
+                <input id="export-size-standard" type="radio" name="export-size" value="standard">
+                <span>Standard</span>
+              </label>
+            </div>
             <p id="export-dimensions" class="export_dimensions">2320 × 1524 px</p>
             <p id="export-size-note" class="export_note">Includes clear space. SVG scales to any size.</p>
           </div>
@@ -958,7 +968,7 @@
   <script src="js/utils/exportOptions.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportUi.js?v=20261103-export-hierarchy"></script>
+  <script src="js/utils/exportUi.js?v=20261103-custom-size-picker"></script>
   <script src="js/utils/barInformation.js?v=20261103-resting-motion-ruler"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
