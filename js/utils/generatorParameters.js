@@ -53,8 +53,8 @@ function read() {
     trianglesCount: normalizeTrianglesPatternSettings({ count: params.has('trianglesCount') ? params.get('trianglesCount') : undefined }).count,
 
     // Ruler parameters
-    rulerRepeats: parseInt(params.get('rulerRepeats')) || 10,
-    rulerUnits: parseInt(params.get('rulerUnits')) || 4,
+    rulerRepeats: window.RulerScale.normalizeUnits(params.get('rulerRepeats')),
+    rulerUnits: window.RulerScale.normalizeDivisions(params.get('rulerUnits')),
     rulerSpeed: window.loopingGifUtils.normalizeLoopSpeed('ruler', params.get('rulerSpeed')),
     rulerReverse: params.get('rulerReverse') === 'true',
 

@@ -38,7 +38,7 @@
       tokens.push(Number.isInteger(type) ? (['sine', 'saw', 'square', 'pulse'][type] || 'wave') : `wave-${String(type).replace('.', 'p')}`);
       tokens.push(`f${values.waveformFrequency || 24}`);
     }
-    if (snapshot.family === 'ruler') tokens.push(`r${values.rulerRepeats || 10}`, `u${values.rulerUnits || 4}`);
+    if (snapshot.family === 'ruler') tokens.push(`r${values.rulerRepeats || 10}`, `u${values.rulerUnits || 10}`);
     if (snapshot.family === 'ticker') tokens.push(`n${values.tickerRepeats || 34}`, `ratio${values.tickerRatio || 2}`);
     tokens.push(snapshot.inkName || snapshot.colorMode || 'black', 'clear');
     tokens.push(format === 'svg' ? 'vector' : `${snapshot.dimensions.logoWidth}w`);

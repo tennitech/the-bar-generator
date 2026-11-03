@@ -31,6 +31,16 @@
     const sourceControls = scope.loopingGifUtils && typeof scope.loopingGifUtils.normalizeMotionSpeedControls === 'function'
       ? scope.loopingGifUtils.normalizeMotionSpeedControls(value.controls)
       : { ...value.controls };
+    // The old division slider offered sixths. Restore them as eighths only
+    // for its known legacy values; malformed snapshots still fail validation.
+    if (manifest['ruler-divisions-select'] && Object.hasOwn(sourceControls, 'ruler-units-slider')) {
+      const legacy = sourceControls['ruler-units-slider'];
+      if (!['2', '4', '6', '8', '10'].includes(legacy)) throw new Error('This share link has invalid ruler divisions.');
+      if (!Object.hasOwn(sourceControls, 'ruler-divisions-select')) {
+        sourceControls['ruler-divisions-select'] = legacy === '6' ? '8' : legacy;
+      }
+      delete sourceControls['ruler-units-slider'];
+    }
     // Older Binary shares allowed 100 code points. Migrate only that field.
     if (manifest['binary-input']?.maxLength === 10 && typeof sourceControls['binary-input'] === 'string') {
       if (Array.from(sourceControls['binary-input']).length > 100) throw new Error('Text in this share link is too long.');
@@ -232,6 +242,7 @@
     }
     const controller = {
       capture, manifest, buildLink, getName: () => name,
+      isRestoring: () => restoring,
       syncUrl() {
         if (restoring) return true;
         if (!location.hash.startsWith(PREFIX)) return false;

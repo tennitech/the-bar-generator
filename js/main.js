@@ -24,8 +24,7 @@ let staffAudioBtn;
 let rulerGroup;
 let rulerRepeatsSlider;
 let rulerRepeatsDisplay;
-let rulerUnitsSlider;
-let rulerUnitsDisplay;
+let rulerDivisionsSelect;
 let rulerMotionToggle;
 let rulerReverseToggle;
 let rulerSpeedSlider;
@@ -1065,7 +1064,7 @@ function getMotionControlConfig(style) {
 function getLoopRuntimeValues() {
   return {
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
-    rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+    rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
     rulerSpeed: normalizeLoopSpeed('ruler', rulerSpeedSlider ? rulerSpeedSlider.value : undefined),
     rulerReverse: rulerReverseToggle ? rulerReverseToggle.checked : false,
     tickerRepeats: tickerSlider ? tickerSlider.value : 34,
@@ -1290,8 +1289,9 @@ function resetStyleParameters(style) {
 
   switch (style) {
     case 'ruler':
+      liveMotionPhase = 0;
       if (rulerRepeatsSlider) rulerRepeatsSlider.value = 10;
-      if (rulerUnitsSlider) rulerUnitsSlider.value = 4;
+      if (rulerDivisionsSelect) rulerDivisionsSelect.value = 10;
       if (rulerSpeedSlider) rulerSpeedSlider.value = getDefaultLoopSpeed('ruler');
       if (rulerReverseToggle) rulerReverseToggle.checked = false;
       updateRulerRepeatsDisplay();
@@ -1462,8 +1462,9 @@ function randomizeStyleParameters(style) {
 
   switch (style) {
     case 'ruler':
-      if (rulerRepeatsSlider) rulerRepeatsSlider.value = randomDifferentStep(rulerRepeatsSlider, 4, 20);
-      if (rulerUnitsSlider) rulerUnitsSlider.value = pickRandom(['2', '4', '6', '8', '10']);
+      liveMotionPhase = 0;
+      if (rulerRepeatsSlider) rulerRepeatsSlider.value = randomDifferentStep(rulerRepeatsSlider, 1, 20);
+      if (rulerDivisionsSelect) rulerDivisionsSelect.value = pickRandom(['2', '4', '8', '10', '16']);
       if (rulerSpeedSlider) rulerSpeedSlider.value = randomStepValue(Number(rulerSpeedSlider.min), Number(rulerSpeedSlider.max), 0.1);
       if (rulerReverseToggle) rulerReverseToggle.checked = randomChance(0.5);
       updateRulerRepeatsDisplay();
@@ -2310,8 +2311,7 @@ function setup() {
   rulerGroup = document.getElementById('ruler-group');
   rulerRepeatsSlider = document.getElementById('ruler-repeats-slider');
   rulerRepeatsDisplay = document.getElementById('ruler-repeats-display');
-  rulerUnitsSlider = document.getElementById('ruler-units-slider');
-  rulerUnitsDisplay = document.getElementById('ruler-units-display');
+  rulerDivisionsSelect = document.getElementById('ruler-divisions-select');
   rulerMotionToggle = document.getElementById('ruler-motion-toggle');
   rulerReverseToggle = document.getElementById('ruler-reverse-toggle');
   rulerSpeedSlider = document.getElementById('ruler-speed-slider');
@@ -2508,11 +2508,13 @@ function setup() {
 
   // Setup ruler sliders with display updates
   rulerRepeatsSlider.addEventListener('input', function () {
+    if (!window.barShareController?.isRestoring?.()) liveMotionPhase = 0;
     updateRulerRepeatsDisplay();
     updateUrlParameters();
     requestUpdate();
   });
-  rulerUnitsSlider.addEventListener('input', function () {
+  rulerDivisionsSelect.addEventListener('change', function () {
+    if (!window.barShareController?.isRestoring?.()) liveMotionPhase = 0;
     updateRulerUnitsDisplay();
     updateUrlParameters();
     requestUpdate();
@@ -3170,15 +3172,8 @@ function setup() {
       slider: rulerRepeatsSlider,
       display: rulerRepeatsDisplay,
       refreshDisplay: updateRulerRepeatsDisplay,
-      commit: () => { updateRulerRepeatsDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set ruler repeats'
-    },
-    {
-      slider: rulerUnitsSlider,
-      display: rulerUnitsDisplay,
-      refreshDisplay: updateRulerUnitsDisplay,
-      commit: () => { updateRulerUnitsDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set ruler units'
+      commit: () => { liveMotionPhase = 0; updateRulerRepeatsDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set ruler whole units'
     },
     {
       slider: rulerSpeedSlider,
@@ -3536,16 +3531,15 @@ function updateRulerRepeatsDisplay() {
 }
 
 function updateRulerUnitsDisplay() {
-  // Display the current ruler units slider value
-  const sliderValue = parseInt(rulerUnitsSlider.value);
-  rulerUnitsDisplay.textContent = sliderValue;
+  if (!rulerDivisionsSelect) return;
+  rulerDivisionsSelect.value = String(window.RulerScale.normalizeDivisions(rulerDivisionsSelect.value));
 }
 
 function updateRulerSpeedDisplay() {
   if (!rulerSpeedSlider || !rulerSpeedDisplay) return;
   rulerSpeedSlider.value = String(normalizeLoopSpeed('ruler', rulerSpeedSlider.value));
   rulerSpeedDisplay.textContent = parseFloat(rulerSpeedSlider.value).toFixed(1);
-  rulerSpeedSlider.setAttribute('aria-valuetext', `${rulerSpeedDisplay.textContent} major repeats per second`);
+  rulerSpeedSlider.setAttribute('aria-valuetext', `${rulerSpeedDisplay.textContent} units per second`);
 }
 
 function updateTickerDisplay() {
@@ -4261,7 +4255,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
   return {
     ...window.quantumControls.values(),
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
-    rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+    rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
     tickerRepeats: tickerSlider ? tickerSlider.value : 34,
     tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
     tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
@@ -6071,8 +6065,8 @@ function updateUrlParameters() {
     if (rulerRepeatsSlider && parseInt(rulerRepeatsSlider.value) !== 10) {
       params.set('rulerRepeats', rulerRepeatsSlider.value);
     }
-    if (rulerUnitsSlider && parseInt(rulerUnitsSlider.value) !== 4) {
-      params.set('rulerUnits', rulerUnitsSlider.value);
+    if (rulerDivisionsSelect && parseInt(rulerDivisionsSelect.value) !== 10) {
+      params.set('rulerUnits', rulerDivisionsSelect.value);
     }
     if (rulerSpeedSlider && parseFloat(rulerSpeedSlider.value) !== getDefaultLoopSpeed('ruler')) {
       params.set('rulerSpeed', rulerSpeedSlider.value);
@@ -6325,8 +6319,8 @@ function applyUrlParameters() {
   if (rulerRepeatsSlider) {
     rulerRepeatsSlider.value = params.rulerRepeats;
   }
-  if (rulerUnitsSlider) {
-    rulerUnitsSlider.value = params.rulerUnits;
+  if (rulerDivisionsSelect) {
+    rulerDivisionsSelect.value = params.rulerUnits;
   }
   if (rulerSpeedSlider) {
     rulerSpeedSlider.value = params.rulerSpeed;
@@ -6825,7 +6819,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       exactBarWidth,
       barHeight: rectHeight,
       rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
-      rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+      rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
       loopOffsetX: currentMotionStyle === 'ruler' && loopAnimationState ? loopAnimationState.loopOffsetX : 0
     });
 

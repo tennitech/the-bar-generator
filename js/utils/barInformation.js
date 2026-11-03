@@ -7,7 +7,7 @@
   },
   "ruler": {
     "title": "Ruler",
-    "text": "Repeats sets the number of major visual units across the bar. Divisions splits each unit into equal intervals, with longer marks for larger fractions. Explore the rhythm or motion; this scale does not measure a physical length on your screen."
+    "text": "Whole-unit marks are longest, with shorter marks for halves and finer divisions, just like a ruler. Choose decimal tenths or fractional divisions; both ends start on whole marks, and the scale is not calibrated to physical screen length."
   },
   "ticker": {
     "title": "Ticker",

@@ -18,10 +18,10 @@ async function configure(page, family, size) {
     const set = (id, value) => {
       const input = document.getElementById(id);
       if (!input) throw new Error(`Missing fixture control: ${id}`);
-      input.value = value; input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.value = value; input.dispatchEvent(new Event(input.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
     };
     set(`${family}-speed-slider`, '5');
-    if (family === 'ruler') { set('ruler-repeats-slider', '20'); set('ruler-units-slider', '10'); }
+    if (family === 'ruler') { set('ruler-repeats-slider', '20'); set('ruler-divisions-select', '10'); }
     if (family === 'ticker') { set('ticker-slider', '40'); set('ticker-ratio-slider', '5'); }
     if (family === 'waveform') {
       set('waveform-type-slider', '2.35'); set('waveform-frequency-slider', '100');

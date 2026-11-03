@@ -35,7 +35,9 @@ async function main() {
     const page = await browser.newPage({ reducedMotion: 'reduce' });
     // Capture the authored canonical initial packing seed, which also matches Reset.
     // Do not override randomness: explicit shared seeds and the generator UX stay intact.
-    for (const entry of samples) {
+    const selected = process.env.RPI_MARQUEE_STYLE ? samples.filter(entry => entry.value === process.env.RPI_MARQUEE_STYLE) : samples;
+    assert.ok(selected.length, 'No marquee samples match the requested style');
+    for (const entry of selected) {
       await page.goto(`${base}/generator/${entry.value}/?colorMode=white${entry.query ? `&${entry.query}` : ''}`);
       await page.waitForFunction(() => typeof buildCurrentBarOnlySVG === 'function'
         && document.querySelector('#p5-container canvas'));
@@ -59,7 +61,7 @@ async function main() {
       else await fs.writeFile(filename, svg);
       console.log(`${entry.value}:${entry.variant}`);
     }
-    console.log(JSON.stringify({ engine, count: samples.length, checkOnly, passed: true }));
+    console.log(JSON.stringify({ engine, count: selected.length, checkOnly, passed: true }));
   } finally { await browser.close(); }
 }
 module.exports = { compareSvgSamples };

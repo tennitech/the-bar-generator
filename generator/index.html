@@ -15,19 +15,20 @@
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
   <script src="js/utils/generatorRoutes.js?v=20261103-save-removal"></script>
   <script src="js/utils/themeMode.js?v=20261103-save-removal"></script>
-  <script src="js/utils/selectorPreviews.js?v=20261103-save-removal"></script>
+  <script src="js/utils/selectorPreviews.js?v=20261103-ruler-scale"></script>
   <script src="js/utils/customDropdowns.js?v=20261103-save-removal"></script>
   <script src="js/utils/parameterControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/loopingGif.js?v=20261103-save-removal"></script>
+  <script src="js/utils/rulerScale.js?v=20261103-ruler-scale"></script>
+  <script src="js/utils/loopingGif.js?v=20261103-ruler-scale"></script>
   <script src="js/utils/featherIcons.js?v=20261103-save-removal"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261103-ascii-discovery"></script>
+  <script src="js/utils/shareState.js?v=20261103-ruler-scale"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/barPattern.js?v=20261103-binary-seams"></script>
+  <script src="js/utils/barPattern.js?v=20261103-ruler-scale"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/quantumModel.js"></script>
-  <script src="js/utils/generatorParameters.js?v=20261103-save-removal"></script>
+  <script src="js/utils/generatorParameters.js?v=20261103-ruler-scale"></script>
   <script src="js/utils/generatorInitialState.js?v=20261103-save-removal"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
@@ -231,15 +232,21 @@
         <div id="ruler-group" data-parameter-actions="ruler" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control slider-control">
-            <label for="ruler-repeats-slider" class="control-label">REPEATS <span
+            <label for="ruler-repeats-slider" class="control-label">UNITS <span
                 id="ruler-repeats-display" data-slider-value>10</span></label>
-            <input type="range" id="ruler-repeats-slider" data-url-parameter="rulerRepeats" min="4" max="20" value="10" class="control-slider"
-              aria-label="Ruler Repeats">
+            <input type="range" id="ruler-repeats-slider" data-url-parameter="rulerRepeats" min="1" max="20" value="10" class="control-slider"
+              aria-label="Ruler Whole Units" aria-describedby="ruler-units-hint">
           </div>
-          <div class="control slider-control">
-            <label for="ruler-units-slider" class="control-label">DIVISIONS <span id="ruler-units-display" data-slider-value>4</span></label>
-            <input type="range" id="ruler-units-slider" data-url-parameter="rulerUnits" min="2" max="10" step="2" value="4" class="control-slider"
-              aria-label="Ruler Divisions per Repeat">
+          <div class="control">
+            <label for="ruler-divisions-select" class="control-label">DIVISIONS</label>
+            <select id="ruler-divisions-select" data-url-parameter="rulerUnits" class="control-select" aria-describedby="ruler-units-hint">
+              <option value="10" selected>Tenths · 10 per unit</option>
+              <option value="2">Halves · 2 per unit</option>
+              <option value="4">Quarters · 4 per unit</option>
+              <option value="8">Eighths · 8 per unit</option>
+              <option value="16">Sixteenths · 16 per unit</option>
+            </select>
+            <p id="ruler-units-hint" class="control-hint">Whole units have the longest marks. Divisions split each unit equally.</p>
           </div>
           <div class="runtime_section motion_section">
             <div class="control-header">MOTION</div>
@@ -261,7 +268,7 @@
               <label for="ruler-speed-slider" class="control-label">SPEED <span id="ruler-speed-display" data-slider-value>0.3</span></label>
               <input type="range" id="ruler-speed-slider" data-url-parameter="rulerSpeed" min="0.2" max="0.6" step="0.1" value="0.3" class="control-slider"
                 aria-label="Ruler Motion Speed" aria-describedby="ruler-speed-unit">
-              <p id="ruler-speed-unit" class="control-hint">major repeats / s</p>
+              <p id="ruler-speed-unit" class="control-hint">units / s</p>
             </div>
           </div>
         </div>
@@ -950,17 +957,17 @@
   <script src="js/ui.js?v=20261103-save-removal"></script>
   <script src="js/utils/logoGeometry.js?v=20261103-save-removal"></script>
   <script src="js/utils/urlState.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportOptions.js?v=20261103-save-removal"></script>
+  <script src="js/utils/exportOptions.js?v=20261103-ruler-scale"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportUi.js?v=20261103-save-removal"></script>
-  <script src="js/utils/barInformation.js?v=20261103-save-removal"></script>
+  <script src="js/utils/barInformation.js?v=20261103-ruler-scale"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-ascii-discovery"></script>
-  <script src="js/main.js?v=20261103-binary-seams"></script>
+  <script src="js/main.js?v=20261103-ruler-scale"></script>
   <script src="js/utils/logoClipboard.js?v=20261103-save-removal"></script>
-  <script src="js/drawing.js?v=20261103-binary-seams"></script>
+  <script src="js/drawing.js?v=20261103-ruler-scale"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

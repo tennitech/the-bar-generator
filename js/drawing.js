@@ -275,7 +275,7 @@ function drawLoopingRulerPatternOnGraphics(pg, barStartX, barY, exactBarWidth, r
     exactBarWidth,
     barHeight: rectHeight,
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
-    rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+    rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
     loopOffsetX
   });
 
@@ -378,7 +378,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       exactBarWidth,
       barHeight: rectHeight,
       rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
-      rulerUnits: rulerUnitsSlider ? rulerUnitsSlider.value : 4,
+      rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
       loopOffsetX
     });
 

@@ -5,7 +5,7 @@ const routes = require('../js/utils/generatorRoutes');
 const theme = require('../js/utils/themeMode');
 const loopingGifUtils = require('../js/utils/loopingGif');
 function read(search, pathname = '/generator/waveform/') {
-  const window = {location:{search,pathname},GeneratorRoutes:routes,loopingGifUtils,NumericControls:require('../js/utils/numericControls')};
+  const window = {location:{search,pathname},GeneratorRoutes:routes,loopingGifUtils,RulerScale:require('../js/utils/rulerScale'),NumericControls:require('../js/utils/numericControls')};
   window.GeneratorInitialState = {resolveTheme: query => theme.normalizeColorModeValue(new URLSearchParams(query).get('colorMode'))};
   const context = vm.createContext({window,URLSearchParams,...pattern});
   vm.runInContext(fs.readFileSync(require.resolve('../js/utils/musicStyle'),'utf8'),context);
@@ -50,4 +50,12 @@ test('Neural Network query state retains zero input, bounds model controls and p
     neuralNetworkUnits: 3, neuralNetworkInput: 65, neuralNetworkSeed: 1, neuralNetworkConnectivity: 'dense', neuralNetworkActivation: 'tanh' });
   expect(read('?neuralNetworkHiddenLayers=99&neuralNetworkUnits=99&neuralNetworkInput=0&neuralNetworkSeed=99&neuralNetworkConnectivity=local&neuralNetworkActivation=sigmoid', '/generator/neural-network/')).toMatchObject({
     neuralNetworkHiddenLayers: 5, neuralNetworkUnits: 5, neuralNetworkInput: 0, neuralNetworkSeed: 16, neuralNetworkConnectivity: 'local', neuralNetworkActivation: 'sigmoid' });
+});
+
+
+test('Ruler query controls share the conventional scale normalizer', () => {
+  expect(read('', '/generator/ruler/')).toMatchObject({rulerRepeats:10,rulerUnits:10});
+  expect(read('?rulerRepeats=1&rulerUnits=16','/generator/ruler/')).toMatchObject({rulerRepeats:1,rulerUnits:16});
+  expect(read('?rulerRepeats=99&rulerUnits=6','/generator/ruler/')).toMatchObject({rulerRepeats:20,rulerUnits:8});
+  expect(read('?rulerRepeats=-1&rulerUnits=99','/generator/ruler/')).toMatchObject({rulerRepeats:10,rulerUnits:10});
 });
