@@ -10,7 +10,7 @@
     ruler: ['rulerRepeats=6&rulerUnits=2', 'rulerRepeats=16&rulerUnits=8'],
     ticker: ['tickerRepeats=12&tickerRatio=3&tickerWidthRatio=2', 'tickerRepeats=24&tickerRatio=4&tickerWidthRatio=3'],
     binary: ['binaryText=1824', 'binaryText=WHY+NOT'],
-    waveform: ['waveformType=1&waveformFrequency=12', 'waveformType=0&waveformFrequency=36&waveformEnvelope=true&waveformEnvelopeWaves=2'],
+    waveform: ['waveformType=1&waveformFrequency=12', 'waveformType=0&waveformFrequency=36'],
     circles: ['circlesFill=fill&circlesDensity=35&circlesSizeVariation=60', 'circlesFill=stroke&circlesDensity=75&circlesSizeVariation=35'],
     numeric: ['numericSource=formula&numericFormula=e&numericMode=dotmatrix', 'numericSource=formula&numericFormula=phi&numericMode=dotmatrix'],
     nucleotide: ['nucleotideVariant=backbone', 'nucleotideSequence=ATGGTGCATCTGACTCCTGAGGAGAAGTCT'],
