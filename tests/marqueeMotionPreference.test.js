@@ -68,9 +68,18 @@ describe('Home motion preference', () => {
   });
 });
 
-test.each(['index.html', 'marquee-ui.html'])('%s retains native browse and skip routes plus a labelled motion button', file => {
+test.each(['index.html', 'marquee-ui.html'])('%s has a native generator entrance and an accessible icon-only motion control', file => {
   const html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
   expect(html).toMatch(/class="marquee_skip-link" href="generator\/solid\/"/);
-  expect(html).toMatch(/class="hero_browse-link" href="generator\/solid\/">Browse styles<\/a>/);
-  expect(html).toMatch(/<button[^>]+id="marquee-motion-toggle"[^>]+type="button"[^>]+aria-controls="marquee-stage"[^>]+aria-describedby="marquee-motion-description"[^>]*>Pause motion<\/button>/);
+  expect(html).toMatch(/class="hero_generator-link" href="generator\/solid\/"/);
+  expect(html).toContain('<span>Enter generator</span>');
+  const button = html.match(/<button[^>]+id="marquee-motion-toggle"[\s\S]*?<\/button>/)[0];
+  expect(button).toContain('aria-label="Pause motion"');
+  expect(button).toContain('aria-controls="marquee-stage"');
+  expect(button).toContain('aria-describedby="marquee-motion-description"');
+  expect(button).toContain('data-motion-paused="false"');
+  expect(button).toContain(' hidden>');
+  expect(button).toContain('data-feather="play"');
+  expect(button).toContain('data-feather="pause"');
+  expect(button.replace(/<[^>]*>/g, '').trim()).toBe('');
 });

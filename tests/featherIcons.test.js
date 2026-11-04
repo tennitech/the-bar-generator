@@ -32,3 +32,15 @@ test('static action icons use the same exact Feather child geometry and decorati
   }
   expect(html).not.toMatch(/[↘↗↖↙]/);
 });
+
+
+test.each(['index.html', 'marquee-ui.html'])('%s Home controls preserve pinned icon geometry and decorative semantics', file => {
+  const html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+  const matches = Array.from(html.matchAll(/<svg data-feather="([a-z-]+)"[^>]*>([\s\S]*?)<\/svg>/g));
+  expect(matches.map(([, name]) => name)).toEqual(['chevron-down', 'pause', 'play']);
+  for (const [markup, name, children] of matches) {
+    expect(children).toBe(icons[name].match(/<svg[^>]*>([\s\S]*)<\/svg>/)[1]);
+    expect(markup).toContain('aria-hidden="true"');
+    expect(markup).toContain('focusable="false"');
+  }
+});
