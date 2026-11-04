@@ -81,8 +81,8 @@
       pass.frame = requestAnimationFrame(() => {
         pass.frame = requestAnimationFrame(() => {
           if (active !== pass) return;
-          scope.AsciiEntrance.prepare(Array.from(document.querySelectorAll('.bar_asset')),
-            Array.from(document.querySelectorAll('.hero_title-line, .credit_line, .hero_browse-link, .hero_motion-control')),
+          scope.AsciiEntrance.prepare([], // Keep the moving gallery untouched; resolve the headline letters.
+            Array.from(document.querySelectorAll('.hero_title-line')),
             () => active !== pass || stopped || motion.matches || document.hidden).then(ascii => {
               if (active !== pass) { ascii?.cleanup(); return; }
               pass.ascii = ascii;
@@ -130,7 +130,7 @@
           plane.dataset.entryMode = ascii ? 'ascii' : 'fallback';
           plane.classList.add('is-entry-complete');
           if (!ascii) { finish(pass); return; }
-          // Only the actual canvas fades; the sampled overlay remains legible.
+          // The wake resolves in place into the actual canvas; chrome stays still.
           ascii.start(580);
           pass.timer = setTimeout(() => finish(pass), 680);
         });
