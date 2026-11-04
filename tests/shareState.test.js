@@ -86,6 +86,20 @@ test('Ticker validates width against the restored count ratio rather than the pr
   }
 });
 
+test('old triangle grid snapshots retain preset rows without overwriting new custom values',()=>{
+  const schema={'triangle-grid-variant-slider':{options:['1','2','3']}};
+  for(const [key,min,max] of [['rows',1,6],['density',50,150],['stroke',40,160],['stagger',0,100]]) schema[`triangle-grid-${key}`]={type:'range',min,max,step:1};
+  expect(normalizeState({v:1,controls:{'triangle-grid-variant-slider':'3','triangle-grid-stagger':'0'}},schema).controls).toMatchObject({'triangle-grid-rows':'4','triangle-grid-density':'100','triangle-grid-stroke':'100','triangle-grid-stagger':'0'});
+});
+
+test('legacy gradient shares derive new controls from their preset, preserving explicit custom zeroes', () => {
+  const schema = {'circles-gradient-variant-slider':{options:['1','2','3']}};
+  for (const [key,min,max] of [['columns',8,48],['rows',1,5],['size',25,100],['contrast',0,100],['stagger',0,100]]) schema[`circles-gradient-${key}`]={type:'range',min,max,step:1};
+  schema['circles-gradient-reverse']={type:'checkbox'};
+  const controls=normalizeState({v:1,controls:{'circles-gradient-variant-slider':'2','circles-gradient-contrast':'0'}},schema).controls;
+  expect(controls).toMatchObject({'circles-gradient-columns':'24','circles-gradient-rows':'2','circles-gradient-contrast':'0','circles-gradient-stagger':'0','circles-gradient-reverse':false});
+  expect(()=>normalizeState({v:1,controls:{'circles-gradient-columns':'999'}},schema)).toThrow();
+});
 
 test('nucleotide ignores retired target controls and preserves actual bases up to 50', () => {
   const {normalizeState}=require('../js/utils/shareState');

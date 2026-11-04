@@ -61,7 +61,6 @@ let numericSourceSelect;
 let numericFormulaSelect;
 let circlesGradientGroup;
 let circlesGradientVariantSlider;
-let circlesGradientVariantDisplay;
 let gradientGroup;
 let gradientVariantSlider;
 let gradientVariantDisplay;
@@ -79,7 +78,6 @@ let neuralNetworkHiddenLayersSlider;
 let neuralNetworkHiddenLayersDisplay;
 let triangleGridGroup;
 let triangleGridVariantSlider;
-let triangleGridVariantDisplay;
 let trianglesGroup;
 let trianglesDirectionSelect;
 let trianglesCountSlider;
@@ -1360,7 +1358,7 @@ function resetStyleParameters(style) {
       break;
     case 'circles-gradient':
       if (circlesGradientVariantSlider) circlesGradientVariantSlider.value = 1;
-      updateCirclesGradientVariantDisplay();
+      setCirclesGradientControls({ variant: 1 });
       break;
     case 'gradient':
       if (gradientVariantSlider) gradientVariantSlider.value = 1;
@@ -1415,8 +1413,7 @@ function resetStyleParameters(style) {
       updateNeuralNetworkHiddenLayersDisplay();
       break;
     case 'triangle-grid':
-      if (triangleGridVariantSlider) triangleGridVariantSlider.value = 2;
-      updateTriangleGridVariantDisplay();
+      setTriangleGridControls({ variant: 2 });
       break;
     case 'triangles':
       if (trianglesDirectionSelect) {
@@ -1542,8 +1539,9 @@ function randomizeStyleParameters(style) {
       updateNumericData();
       break;
     case 'circles-gradient':
-      if (circlesGradientVariantSlider) circlesGradientVariantSlider.value = randomDifferentStep(circlesGradientVariantSlider, 1, 3);
-      updateCirclesGradientVariantDisplay();
+      setCirclesGradientControls({ variant: randomStepValue(1, 3, 1), columns: randomDifferentStep(document.getElementById('circles-gradient-columns'), 12, 40),
+        rows: randomStepValue(1, 5, 1), size: randomStepValue(50, 100, 1), contrast: randomStepValue(20, 100, 1),
+        stagger: randomStepValue(0, 100, 1), reverse: Math.random() < .5 });
       break;
     case 'gradient':
       if (gradientVariantSlider) gradientVariantSlider.value = randomDifferentStep(gradientVariantSlider, 1, 2);
@@ -1601,8 +1599,8 @@ function randomizeStyleParameters(style) {
       updateNeuralNetworkHiddenLayersDisplay();
       break;
     case 'triangle-grid':
-      if (triangleGridVariantSlider) triangleGridVariantSlider.value = randomDifferentStep(triangleGridVariantSlider, 1, 3);
-      updateTriangleGridVariantDisplay();
+      setTriangleGridControls({ variant: randomStepValue(1, 3, 1), rows: randomDifferentStep(document.getElementById('triangle-grid-rows'), 1, 6),
+        density: randomStepValue(60, 140, 1), stroke: randomStepValue(40, 130, 1), stagger: randomStepValue(0, 100, 1) });
       break;
     case 'triangles':
       if (trianglesDirectionSelect) {
@@ -2391,7 +2389,6 @@ function setup() {
   numericModeSelect = document.getElementById('numeric-mode-select');
   circlesGradientGroup = document.getElementById('circles-gradient-group');
   circlesGradientVariantSlider = document.getElementById('circles-gradient-variant-slider');
-  circlesGradientVariantDisplay = document.getElementById('circles-gradient-variant-display');
   gradientGroup = document.getElementById('gradient-group');
   gradientVariantSlider = document.getElementById('gradient-variant-slider');
   gradientVariantDisplay = document.getElementById('gradient-variant-display');
@@ -2409,7 +2406,6 @@ function setup() {
   neuralNetworkHiddenLayersDisplay = document.getElementById('neural-network-hidden-layers-display');
   triangleGridGroup = document.getElementById('triangle-grid-group');
   triangleGridVariantSlider = document.getElementById('triangle-grid-variant-slider');
-  triangleGridVariantDisplay = document.getElementById('triangle-grid-variant-display');
   trianglesGroup = document.getElementById('triangles-group');
   trianglesDirectionSelect = document.getElementById('triangles-direction-select');
   trianglesCountSlider = document.getElementById('triangles-count-slider');
@@ -2885,11 +2881,18 @@ function setup() {
   });
 
   if (circlesGradientVariantSlider) {
-    circlesGradientVariantSlider.addEventListener('input', function () {
-      updateCirclesGradientVariantDisplay();
-      updateUrlParameters();
-      requestUpdate();
-    });
+    const applyPreset = () => {
+      if (window.barShareController?.isRestoring()) return;
+      setCirclesGradientControls({ variant: circlesGradientVariantSlider.value });
+      updateUrlParameters(); requestUpdate();
+    };
+    circlesGradientVariantSlider.addEventListener('change', applyPreset);
+    circlesGradientVariantSlider.addEventListener('input', applyPreset);
+    for (const key of ['columns', 'rows', 'size', 'contrast', 'stagger', 'reverse']) {
+      document.getElementById(`circles-gradient-${key}`).addEventListener('input', () => {
+        updateCirclesGradientVariantDisplay(); updateUrlParameters(); requestUpdate();
+      });
+    }
     updateCirclesGradientVariantDisplay();
   }
 
@@ -2940,11 +2943,18 @@ function setup() {
   }
 
   if (triangleGridVariantSlider) {
-    triangleGridVariantSlider.addEventListener('input', function () {
-      updateTriangleGridVariantDisplay();
-      updateUrlParameters();
-      requestUpdate();
-    });
+    const applyPreset = () => {
+      if (window.barShareController?.isRestoring()) return;
+      setTriangleGridControls({ variant: triangleGridVariantSlider.value });
+      updateUrlParameters(); requestUpdate();
+    };
+    triangleGridVariantSlider.addEventListener('change', applyPreset);
+    triangleGridVariantSlider.addEventListener('input', applyPreset);
+    for (const key of ['rows', 'density', 'stroke', 'stagger']) {
+      document.getElementById(`triangle-grid-${key}`).addEventListener('input', () => {
+        updateTriangleGridVariantDisplay(); updateUrlParameters(); requestUpdate();
+      });
+    }
     updateTriangleGridVariantDisplay();
   }
 
@@ -3225,13 +3235,13 @@ function setup() {
       commit: () => { updateGraphScaleDisplay(); updateUrlParameters(); requestUpdate(); },
       ariaLabel: 'Set graph scale max'
     },
-    {
-      slider: circlesGradientVariantSlider,
-      display: circlesGradientVariantDisplay,
+    ...['columns', 'rows', 'size', 'contrast', 'stagger'].map(key => ({
+      slider: document.getElementById(`circles-gradient-${key}`),
+      display: document.getElementById(`circles-gradient-${key}-display`),
       refreshDisplay: updateCirclesGradientVariantDisplay,
       commit: () => { updateCirclesGradientVariantDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set circles gradient variant'
-    },
+      ariaLabel: `Set circles gradient ${key}`
+    })),
     {
       slider: gradientVariantSlider,
       display: gradientVariantDisplay,
@@ -3260,13 +3270,13 @@ function setup() {
       commit: () => { updateNeuralNetworkHiddenLayersDisplay(); updateUrlParameters(); requestUpdate(); },
       ariaLabel: 'Set neural network hidden layers'
     },
-    {
-      slider: triangleGridVariantSlider,
-      display: triangleGridVariantDisplay,
+    ...['rows', 'density', 'stroke', 'stagger'].map(key => ({
+      slider: document.getElementById(`triangle-grid-${key}`),
+      display: document.getElementById(`triangle-grid-${key}-display`),
       refreshDisplay: updateTriangleGridVariantDisplay,
       commit: () => { updateTriangleGridVariantDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set triangle grid variant'
-    },
+      ariaLabel: `Set triangle grid ${key}`
+    })),
     {
       slider: trianglesCountSlider,
       display: trianglesCountDisplay,
@@ -3516,9 +3526,31 @@ function updateTickerSpeedDisplay() {
   tickerSpeedSlider.setAttribute('aria-valuetext', `${tickerSpeedDisplay.textContent} top-row repeats per second`);
 }
 
+function getCirclesGradientControlValues() {
+  const values = { circlesGradientVariant: circlesGradientVariantSlider?.value || '1' };
+  for (const key of ['columns', 'rows', 'size', 'contrast', 'stagger', 'reverse']) {
+    const field = document.getElementById(`circles-gradient-${key}`);
+    values[`circlesGradient${key[0].toUpperCase()}${key.slice(1)}`] = key === 'reverse' ? !!field?.checked : field?.value;
+  }
+  return values;
+}
+
+function setCirclesGradientControls(options) {
+  const values = normalizeCirclesGradientSettings(options);
+  if (circlesGradientVariantSlider) circlesGradientVariantSlider.value = values.variant;
+  for (const key of ['columns', 'rows', 'size', 'contrast', 'stagger', 'reverse']) {
+    const field = document.getElementById(`circles-gradient-${key}`);
+    if (key === 'reverse') field.checked = values[key]; else field.value = values[key];
+  }
+  updateCirclesGradientVariantDisplay();
+}
+
 function updateCirclesGradientVariantDisplay() {
-  if (!circlesGradientVariantSlider || !circlesGradientVariantDisplay) return;
-  circlesGradientVariantDisplay.textContent = circlesGradientVariantSlider.value;
+  for (const key of ['columns', 'rows', 'size', 'contrast', 'stagger']) {
+    const field = document.getElementById(`circles-gradient-${key}`);
+    const display = document.getElementById(`circles-gradient-${key}-display`);
+    if (field && display) display.textContent = field.value;
+  }
 }
 
 function updateGradientVariantDisplay() {
@@ -3591,9 +3623,26 @@ function updateNeuralNetworkHiddenLayersDisplay() {
   updateNeuralNetworkControls();
 }
 
+function getTriangleGridControlValues() {
+  const values = { triangleGridVariant: triangleGridVariantSlider?.value || '2' };
+  for (const key of ['rows', 'density', 'stroke', 'stagger']) {
+    values[`triangleGrid${key[0].toUpperCase()}${key.slice(1)}`] = document.getElementById(`triangle-grid-${key}`)?.value;
+  }
+  return values;
+}
+
+function setTriangleGridControls(options) {
+  const values = normalizeTriangleGridSettings(options);
+  if (triangleGridVariantSlider) triangleGridVariantSlider.value = values.variant;
+  for (const key of ['rows', 'density', 'stroke', 'stagger']) document.getElementById(`triangle-grid-${key}`).value = values[key];
+  updateTriangleGridVariantDisplay();
+}
+
 function updateTriangleGridVariantDisplay() {
-  if (!triangleGridVariantSlider || !triangleGridVariantDisplay) return;
-  triangleGridVariantDisplay.textContent = triangleGridVariantSlider.value;
+  for (const key of ['rows', 'density', 'stroke', 'stagger']) {
+    const field = document.getElementById(`triangle-grid-${key}`), display = document.getElementById(`triangle-grid-${key}-display`);
+    if (field && display) display.textContent = field.value;
+  }
 }
 
 function updateTrianglesCountDisplay() {
@@ -4215,13 +4264,13 @@ function getCurrentBarPatternValues(exactBarWidth) {
     numericSource: numericSourceSelect?.value || 'values',
     numericFormula: numericFormulaSelect?.value || 'pi',
     numericMode: numericModeSelect ? numericModeSelect.value : 'dotmatrix',
-    circlesGradientVariant: circlesGradientVariantSlider ? circlesGradientVariantSlider.value : 1,
+    ...getCirclesGradientControlValues(),
     gradientVariant: gradientVariantSlider ? gradientVariantSlider.value : 1,
     gridVariant: gridVariantSlider ? gridVariantSlider.value : 1,
     linesVariant: linesVariantSlider ? linesVariantSlider.value : 2,
     pointConnectVariant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1,
     ...getNeuralNetworkControlValues(),
-    triangleGridVariant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2,
+    ...getTriangleGridControlValues(),
     ...(typeof getTrianglePatternControlValues === 'function'
       ? getTrianglePatternControlValues()
       : { trianglesDirection: 'down-right', trianglesCount: 14 }),
@@ -5843,9 +5892,7 @@ function updateUrlParameters() {
   }
 
   if (styleSelect && styleSelect.value === 'circles-gradient') {
-    if (circlesGradientVariantSlider && parseInt(circlesGradientVariantSlider.value, 10) !== 1) {
-      params.set('circlesGradientVariant', circlesGradientVariantSlider.value);
-    }
+    for (const [key, value] of Object.entries(getCirclesGradientControlValues())) params.set(key, String(value));
   }
 
   if (styleSelect && styleSelect.value === 'gradient') {
@@ -5885,9 +5932,7 @@ function updateUrlParameters() {
   }
 
   if (styleSelect && styleSelect.value === 'triangle-grid') {
-    if (triangleGridVariantSlider && parseInt(triangleGridVariantSlider.value, 10) !== 2) {
-      params.set('triangleGridVariant', triangleGridVariantSlider.value);
-    }
+    for (const [key, value] of Object.entries(getTriangleGridControlValues())) params.set(key, String(value));
   }
 
   if (styleSelect && styleSelect.value === 'triangles') {
@@ -6077,8 +6122,7 @@ function applyUrlParameters() {
   }
 
   if (circlesGradientVariantSlider) {
-    circlesGradientVariantSlider.value = params.circlesGradientVariant;
-    updateCirclesGradientVariantDisplay();
+    setCirclesGradientControls(params);
   }
   if (gradientVariantSlider) {
     gradientVariantSlider.value = params.gradientVariant;
@@ -6104,8 +6148,7 @@ function applyUrlParameters() {
     updateNeuralNetworkHiddenLayersDisplay();
   }
   if (triangleGridVariantSlider) {
-    triangleGridVariantSlider.value = params.triangleGridVariant;
-    updateTriangleGridVariantDisplay();
+    setTriangleGridControls(params);
   }
 
   if (trianglesDirectionSelect) trianglesDirectionSelect.value = params.trianglesDirection;
@@ -7007,7 +7050,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       barY: 0,
       exactBarWidth,
       barHeight: rectHeight,
-      variant: triangleGridVariantSlider ? triangleGridVariantSlider.value : 2
+      ...getTriangleGridControlValues()
     });
 
     stroke(fgColor);
@@ -7029,7 +7072,7 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       barY: 0,
       exactBarWidth,
       barHeight: rectHeight,
-      variant: circlesGradientVariantSlider ? circlesGradientVariantSlider.value : 1
+      ...getCirclesGradientControlValues()
     });
 
     for (let i = 0; i < geometry.rects.length; i++) {

@@ -59,6 +59,9 @@ function fixture(random = 0) {
     getDefaultLoopSpeed: style => ({ ruler: .3, ticker: .4, waveform: .3 })[style],
     NucleotidePattern: require('../js/utils/nucleotidePattern'), syncNucleotideControls: jest.fn(),
     NumericControls: { ...numeric, sync: jest.fn() },
+    normalizeTriangleGridSettings: require('../js/utils/barPattern').normalizeTriangleGridSettings,
+
+    normalizeCirclesGradientSettings: require('../js/utils/barPattern').normalizeCirclesGradientSettings,
     quantumModel: require('../js/utils/quantumModel'),
     applyTickerWidthRatioBounds: () => {}, stopAudio: jest.fn() };
   context.window = context;
@@ -72,6 +75,9 @@ function fixture(random = 0) {
   }
   vm.createContext(context);
   vm.runInContext(fs.readFileSync(require.resolve('../js/utils/parameterControls'), 'utf8'), context);
+  vm.runInContext(source.slice(source.indexOf('function getTriangleGridControlValues'), source.indexOf('function updateTrianglesCountDisplay')), context);
+
+  vm.runInContext(source.slice(source.indexOf('function getCirclesGradientControlValues'), source.indexOf('function updateGradientVariantDisplay')), context);
   vm.runInContext(source.slice(source.indexOf('const NEURAL_CONTROL_DEFAULTS'), source.indexOf('function updateTriangleGridVariantDisplay')), context);
   vm.runInContext(source.slice(source.indexOf('function resetWaveformLfo()'), source.indexOf('function getCurrentAudioPreviewType()')), context);
   vm.runInContext(source.slice(source.indexOf('function resetStyleParameters'), source.indexOf('function getBugReportContextLabel')), context);

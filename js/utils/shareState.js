@@ -31,6 +31,14 @@
     const sourceControls = scope.loopingGifUtils && typeof scope.loopingGifUtils.normalizeMotionSpeedControls === 'function'
       ? scope.loopingGifUtils.normalizeMotionSpeedControls(value.controls)
       : { ...value.controls };
+    if (manifest['triangle-grid-rows']) {
+      const variant = Number(sourceControls['triangle-grid-variant-slider'] || 2);
+      const defaults = { rows: variant + 1, density: 100, stroke: 100, stagger: 50 };
+      for (const [key, value] of Object.entries(defaults)) {
+        const id = `triangle-grid-${key}`;
+        if (!Object.hasOwn(sourceControls, id)) sourceControls[id] = String(value);
+      }
+    }
     // The old division slider offered sixths. Restore them as eighths only
     // for its known legacy values; malformed snapshots still fail validation.
     if (manifest['ruler-divisions-select'] && Object.hasOwn(sourceControls, 'ruler-units-slider')) {
@@ -40,6 +48,17 @@
         sourceControls['ruler-divisions-select'] = legacy === '6' ? '8' : legacy;
       }
       delete sourceControls['ruler-units-slider'];
+    }
+    // Old gradient shares contain only the preset; restore that preset's
+    // authored values instead of applying Reference-row defaults to every one.
+    if (manifest['circles-gradient-columns']) {
+      const variant = String(sourceControls['circles-gradient-variant-slider'] || '1');
+      const defaults = { columns: variant === '1' ? 29 : variant === '2' ? 24 : 28,
+        rows: variant === '2' ? 2 : 3, size: 100, contrast: 100, stagger: variant === '1' ? 100 : 0, reverse: false };
+      for (const [key, value] of Object.entries(defaults)) {
+        const id = `circles-gradient-${key}`;
+        if (!Object.hasOwn(sourceControls, id)) sourceControls[id] = key === 'reverse' ? value : String(value);
+      }
     }
     // Older encoded-text shares allowed 100 code points. Migrate these fields.
     for (const id of ['binary-input', 'morse-input']) {

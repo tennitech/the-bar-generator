@@ -169,6 +169,41 @@ while the remaining settings restore normally; new exports use the unmasked
 waveform. Historical low-level envelope geometry helpers remain available to
 existing renderer consumers and retain their tests, but are not active controls.
 
+## Parametric Triangle Grid — November 4, 2026
+
+Triangle Grid preserves its three prior layouts as Wide, Balanced and Fine
+presets (two, three and four rows). Rows now range from one to six. Density
+scales the near-equilateral baseline column count by 50–150%, capped at 96
+columns. Stroke weight is 40–160% of the preset stroke; column topology does
+not change solely because the stroke changes. Row offset shifts alternate rows
+between aligned and a full cell offset, with 50% retaining the original lattice.
+Two adjacent connections per vertex preserve triangulation without an all-pairs
+search; output stays below 1200 segments.
+
+The fixed viewport clip, reference frame lines and stroke treatment are retained.
+The model has no time animation, simulation or measured-data claim. Dynamic
+means adjustable here. Preview, header and SVG/PNG share the same settings.
+Historical URLs and snapshots recover original preset defaults; custom values
+round-trip through reload, history, Reset, Randomize and Undo.
+
+## Parametric Circles Gradient — November 4, 2026
+
+Circles Gradient is adjustable rather than time-animated. Its three starting
+presets preserve the shipped Reference rows (including all 86 supplied circles),
+Left to right area ramp and Center peak exactly. Columns (8–48), Rows (1–5),
+Dot size (25–100%), Size contrast (0–100%), Row offset (0–100%) and Reverse
+produce deterministic new compositions, bounded to 240 circles. A customized
+row/column count samples the same vertical, directional or symmetric size rule
+on a regular lattice. Unchanged reference counts retain the source offsets.
+
+Dot size scales radii. Contrast interpolates radii toward a common cell-safe
+radius; zero creates equal-size dots. Row offset shifts alternate rows by up to
+a half-cell relative to the preset; complete-circle geometric bounds contain
+the result before the defensive clip. Reverse reflects the vertical reference
+profile or horizontal ramp/peak. No opacity interpolation, measured dataset,
+new motion clock or per-frame fitting is introduced. Preview/header/SVG/PNG use
+the same model; URL, historical share, Reset, Randomize and Undo retain settings.
+
 Nucleotide completion update (November 4): 30 actual bases are required for
 export, with up to 50 allowed. These are tool limits, not biological requirements.
 The length selector is retired. Preview slots represent the 30-base minimum;

@@ -25,6 +25,12 @@ function read() {
     connectivity: params.get('neuralNetworkConnectivity'), activation: params.get('neuralNetworkActivation')
   });
 
+  const triangleGrid = normalizeTriangleGridSettings(Object.fromEntries(
+    ['variant', 'rows', 'density', 'stroke', 'stagger'].map(key => [key, params.get(`triangleGrid${key[0].toUpperCase()}${key.slice(1)}`)])));
+
+  const circlesGradient = normalizeCirclesGradientSettings(Object.fromEntries(
+    ['variant', 'columns', 'rows', 'size', 'contrast', 'stagger', 'reverse'].map(key => [key, params.get(`circlesGradient${key[0].toUpperCase()}${key.slice(1)}`)])));
+
   return {
     style,
     colorMode,
@@ -38,7 +44,7 @@ function read() {
     // Numeric parameters
     ...window.NumericControls.readQuery(params),
     numericMode: params.get('numericMode') || 'dotmatrix',
-    circlesGradientVariant: Math.max(1, Math.min(3, parseInt(params.get('circlesGradientVariant')) || 1)),
+    ...Object.fromEntries(Object.entries(circlesGradient).map(([key, value]) => [`circlesGradient${key[0].toUpperCase()}${key.slice(1)}`, value])),
     gradientVariant: Math.max(1, Math.min(2, parseInt(params.get('gradientVariant')) || 1)),
     gridVariant: Math.max(1, Math.min(3, parseInt(params.get('gridVariant')) || 1)),
 
@@ -51,7 +57,7 @@ function read() {
     neuralNetworkSeed: neural.seed,
     neuralNetworkConnectivity: neural.connectivity,
     neuralNetworkActivation: neural.activation,
-    triangleGridVariant: Math.max(1, Math.min(3, parseInt(params.get('triangleGridVariant')) || 2)),
+    ...Object.fromEntries(Object.entries(triangleGrid).map(([key, value]) => [`triangleGrid${key[0].toUpperCase()}${key.slice(1)}`, value])),
     trianglesDirection: migrateTriangleDirection(params.get('trianglesDirection'), params.get('trianglesVariant')),
     trianglesCount: normalizeTrianglesPatternSettings({ count: params.has('trianglesCount') ? params.get('trianglesCount') : undefined }).count,
 
