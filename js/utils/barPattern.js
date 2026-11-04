@@ -17,6 +17,35 @@ function mapDigitToHeightPercent(digit) {
   }
 }
 
+// Join neighboring height cells before rasterization so fractional boundaries do
+// not produce antialiased seams. Decimal cells remain genuinely empty.
+function createNumericHeightPolygons({ digits, barStartX, barY, exactBarWidth, barHeight }) {
+  const polygons = [];
+  const width = exactBarWidth / digits.length;
+  const bottom = barY + barHeight;
+  let points = null;
+  for (let i = 0; i < digits.length; i++) {
+    if (digits[i] === 10) {
+      if (points) {
+        points.push([barStartX + i * width, bottom]);
+        polygons.push(points);
+        points = null;
+      }
+      continue;
+    }
+    const left = barStartX + i * width;
+    const right = barStartX + (i + 1) * width;
+    const top = bottom - barHeight * mapDigitToHeightPercent(digits[i]);
+    if (!points) points = [[left, bottom]];
+    points.push([left, top], [right, top]);
+  }
+  if (points) {
+    points.push([barStartX + exactBarWidth, bottom]);
+    polygons.push(points);
+  }
+  return polygons;
+}
+
 // Three display pixels per repeat keep the tiny ticker away from its spatial
 // sampling boundary. Unresolved rows use their true mean ink coverage.
 function getTickerHeaderSampling(options = {}) {
@@ -665,6 +694,24 @@ function createCirclesGradientPatternGeometry(options = {}) {
   const variant = clampPatternVariant(options.variant || 1, 3);
   const circles = [];
   const rects = [];
+  if (variant === 1) {
+    // Supplied “Style=Circles Gradient 1.svg”: 29/28/29 staggered dots.
+    // Uniformly contain its 509 × 36 source frame; never stretch circles or
+    // force painted edge contact. Preserve its small source-position offsets.
+    const scale = Math.min(exactBarWidth / 509, barHeight / 36);
+    const x = barStartX + (exactBarWidth - 509 * scale) / 2;
+    const y = barY + (barHeight - 36 * scale) / 2;
+    const rows = [
+      { y: 8, r: 8, xs: [8.97656, 26.5498, 44.1221, 61.6943, 79.2666, 96.8389, 114.411, 131.983, 149.556, 167.128, 184.7, 202.272, 219.845, 237.417, 254.989, 272.562, 290.134, 307.706, 325.278, 342.851, 360.423, 377.995, 395.567, 413.14, 430.712, 448.284, 465.856, 483.428, 501] },
+      { y: 21.5781, r: 6, xs: [17.7617, 35.334, 52.9062, 70.4785, 88.0508, 105.623, 123.195, 140.768, 158.34, 175.912, 193.484, 211.057, 228.629, 246.201, 263.773, 281.346, 298.918, 316.49, 334.062, 351.635, 369.207, 386.779, 404.352, 421.924, 439.496, 457.068, 474.641] },
+      { y: 22, r: 6, xs: [492.213] },
+      { y: 31.5, r: 4.5, xs: [9.51465, 27.0498, 44.585, 62.1201, 79.6553, 97.1904, 114.726, 132.261, 149.796, 167.331, 184.866, 202.401, 219.937, 237.472, 255.007, 272.542, 290.077, 307.612, 325.147, 342.683, 360.218, 377.753, 395.288, 412.823, 430.358, 447.894, 465.429, 482.964, 500.5] },
+    ];
+    for (const row of rows) for (const cx of row.xs) {
+      circles.push({ cx: x + cx * scale, cy: y + row.y * scale, r: row.r * scale });
+    }
+    return { rects, circles };
+  }
   // All rows share column centers: shrinking dots stay vertically aligned.
   // The largest endpoint circles touch the edges without shifting smaller rows.
   const rows = variant === 2 ? 2 : 3;
@@ -1651,15 +1698,8 @@ function createBarPatternSVG(config) {
     const dotHeight = 1.5;
 
     if (mode === 'height') {
-      for (let i = 0; i < digits.length; i++) {
-        const digit = digits[i];
-        if (digit === 10) {
-          continue;
-        }
-        const x = barStartX + i * digitWidth;
-        const digitBarHeight = barHeight * mapDigitToHeightPercent(digit);
-        const barBottomY = barY + barHeight - digitBarHeight;
-        pattern += `\n    <rect x="${x}" y="${barBottomY}" width="${digitWidth}" height="${digitBarHeight}" fill="${fgColor}"/>`;
+      for (const points of createNumericHeightPolygons({ digits, barStartX, barY, exactBarWidth, barHeight })) {
+        pattern += `\n    <path d="M ${points.map(point => point.join(' ')).join(' L ')} Z" fill="${fgColor}"/>`;
       }
       return pattern;
     }
@@ -2093,6 +2133,7 @@ if (typeof window !== 'undefined') {
   window.normalizeTrianglesPatternSettings = normalizeTrianglesPatternSettings;
   window.normalizeTrianglePatternDirection = normalizeTrianglePatternDirection;
   window.createUnionPatternGeometry = createUnionPatternGeometry;
+  window.createNumericHeightPolygons = createNumericHeightPolygons;
   window.createBarPatternSVG = createBarPatternSVG;
   window.createBinaryPatternGeometry = createBinaryPatternGeometry;
   window.createWaveQuantumPatternGeometry = createWaveQuantumPatternGeometry;
@@ -2109,6 +2150,7 @@ if (typeof module !== 'undefined' && module.exports) {
     generateWaveValue,
     getTickerHeaderSampling,
     createBarPatternSVG,
+    createNumericHeightPolygons,
     createBinaryPatternGeometry,
     createCirclesGradientPatternGeometry,
     createBoundedCirclePatternGeometry,

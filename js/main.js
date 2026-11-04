@@ -48,14 +48,6 @@ let waveformSpeedDisplay;
 let waveformMotionToggle;
 let waveformReverseToggle;
 let waveformAudioBtn;
-let waveformEnvelopeToggle;
-let envelopeSettingsGroup;
-let waveformEnvelopeType;
-let waveformEnvelopeWavesSlider;
-let waveformEnvelopeWavesDisplay;
-let waveformEnvelopeCenterSlider;
-let waveformEnvelopeCenterDisplay;
-let waveformEnvelopeBipolarToggle;
 let circlesGroup;
 let circlesDensitySlider;
 let circlesDensityDisplay;
@@ -1154,18 +1146,12 @@ function generateRandomStaffPattern() {
 }
 
 function getLiveWaveformGeometry(barStartX, barY, exactBarWidth, barHeight, timeSeconds) {
-  const envelope = getWaveformEnvelopeSettings();
   return createWaveformPatternGeometry({
     barStartX, barY, exactBarWidth, barHeight, timeSeconds,
     waveformType: Number(waveformTypeSlider.value),
     waveformFrequency: Number(waveformFrequencySlider.value),
     waveformSpeed: Number(waveformSpeedSlider.value),
     waveformPoints: getWaveformRenderPointCount(exactBarWidth, waveformFrequencySlider.value),
-    waveformEnvelope: envelope.applyEnvelope,
-    waveformEnvelopeType: envelope.envType,
-    waveformEnvelopeWaves: envelope.envWaves,
-    waveformEnvelopeCenter: envelope.envCenter,
-    waveformEnvelopeBipolar: envelope.bipolar
   });
 }
 
@@ -1202,20 +1188,6 @@ function getWaveformRenderPointCount(barWidth, frequency) {
 
 function generateWaveformValue(phase, type) {
   return generateWaveValue(phase, type);
-}
-
-function getWaveformEnvelopeSettings() {
-  return {
-    applyEnvelope: !!(waveformEnvelopeToggle && waveformEnvelopeToggle.checked),
-    envType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
-    envWaves: waveformEnvelopeWavesSlider
-      ? (typeof normalizeWaveformEnvelopeWaves === 'function'
-        ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
-        : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
-      : 1,
-    envCenter: waveformEnvelopeCenterSlider ? parseFloat(waveformEnvelopeCenterSlider.value) : 0,
-    bipolar: !!(waveformEnvelopeBipolarToggle && waveformEnvelopeBipolarToggle.checked)
-  };
 }
 
 function getAudioButtonConfig() {
@@ -1326,17 +1298,9 @@ function resetStyleParameters(style) {
       if (waveformFrequencySlider) waveformFrequencySlider.value = 24;
       if (waveformSpeedSlider) waveformSpeedSlider.value = getDefaultLoopSpeed('waveform');
       if (waveformReverseToggle) waveformReverseToggle.checked = false;
-      if (waveformEnvelopeToggle) waveformEnvelopeToggle.checked = false;
-      if (waveformEnvelopeType) waveformEnvelopeType.value = 'sine';
-      if (waveformEnvelopeWavesSlider) waveformEnvelopeWavesSlider.value = 1;
-      if (waveformEnvelopeCenterSlider) waveformEnvelopeCenterSlider.value = 0;
-      if (waveformEnvelopeBipolarToggle) waveformEnvelopeBipolarToggle.checked = false;
-      if (envelopeSettingsGroup) envelopeSettingsGroup.style.display = 'none';
       updateWaveformTypeDisplay();
       updateWaveformFrequencyDisplay();
       updateWaveformSpeedDisplay();
-      updateWaveformEnvelopeWavesDisplay();
-      updateWaveformEnvelopeCenterDisplay();
       updateAudioParameters();
 
       break;
@@ -1505,19 +1469,9 @@ function randomizeStyleParameters(style) {
       if (waveformFrequencySlider) waveformFrequencySlider.value = randomDifferentStep(waveformFrequencySlider, 12, 88);
       if (waveformSpeedSlider) waveformSpeedSlider.value = randomStepValue(Number(waveformSpeedSlider.min), Number(waveformSpeedSlider.max), 0.1);
       if (waveformReverseToggle) waveformReverseToggle.checked = randomChance(0.5);
-      if (waveformEnvelopeToggle) waveformEnvelopeToggle.checked = randomChance(0.65);
-      if (waveformEnvelopeType) waveformEnvelopeType.value = pickRandom(['sine', 'cosine', 'linear', 'inverse']);
-      if (waveformEnvelopeWavesSlider) waveformEnvelopeWavesSlider.value = randomStepValue(1, 10, 1);
-      if (waveformEnvelopeCenterSlider) waveformEnvelopeCenterSlider.value = randomStepValue(-0.5, 0.5, 0.1);
-      if (waveformEnvelopeBipolarToggle) waveformEnvelopeBipolarToggle.checked = randomChance(0.35);
-      if (envelopeSettingsGroup) {
-        envelopeSettingsGroup.style.display = waveformEnvelopeToggle && waveformEnvelopeToggle.checked ? 'block' : 'none';
-      }
       updateWaveformTypeDisplay();
       updateWaveformFrequencyDisplay();
       updateWaveformSpeedDisplay();
-      updateWaveformEnvelopeWavesDisplay();
-      updateWaveformEnvelopeCenterDisplay();
       updateAudioParameters();
       break;
     case 'wave-quantum': {
@@ -2340,14 +2294,6 @@ function setup() {
   waveformMotionToggle = document.getElementById('waveform-motion-toggle');
   waveformReverseToggle = document.getElementById('waveform-reverse-toggle');
   waveformAudioBtn = document.getElementById('waveform-audio-btn');
-  waveformEnvelopeToggle = document.getElementById('waveform-envelope-toggle');
-  envelopeSettingsGroup = document.getElementById('envelope-settings-group');
-  waveformEnvelopeType = document.getElementById('waveform-envelope-type');
-  waveformEnvelopeWavesSlider = document.getElementById('waveform-envelope-waves-slider');
-  waveformEnvelopeWavesDisplay = document.getElementById('waveform-envelope-waves-display');
-  waveformEnvelopeCenterSlider = document.getElementById('waveform-envelope-center-slider');
-  waveformEnvelopeCenterDisplay = document.getElementById('waveform-envelope-center-display');
-  waveformEnvelopeBipolarToggle = document.getElementById('waveform-envelope-bipolar-toggle');
   circlesGroup = document.getElementById('circles-group');
   circlesDensitySlider = document.getElementById('circles-density-slider');
   circlesDensityDisplay = document.getElementById('circles-density-display');
@@ -2598,40 +2544,6 @@ function setup() {
   }
   if (waveformReverseToggle) {
     waveformReverseToggle.addEventListener('change', function () {
-      updateUrlParameters();
-      requestUpdate();
-    });
-  }
-
-  if (waveformEnvelopeToggle) {
-    waveformEnvelopeToggle.addEventListener('change', function () {
-      if (envelopeSettingsGroup) envelopeSettingsGroup.style.display = this.checked ? 'block' : 'none';
-      updateUrlParameters();
-      requestUpdate();
-    });
-  }
-  if (waveformEnvelopeType) {
-    waveformEnvelopeType.addEventListener('change', function () {
-      updateUrlParameters();
-      requestUpdate();
-    });
-  }
-  if (waveformEnvelopeWavesSlider) {
-    waveformEnvelopeWavesSlider.addEventListener('input', function () {
-      updateWaveformEnvelopeWavesDisplay();
-      updateUrlParameters();
-      requestUpdate();
-    });
-  }
-  if (waveformEnvelopeCenterSlider) {
-    waveformEnvelopeCenterSlider.addEventListener('input', function () {
-      updateWaveformEnvelopeCenterDisplay();
-      updateUrlParameters();
-      requestUpdate();
-    });
-  }
-  if (waveformEnvelopeBipolarToggle) {
-    waveformEnvelopeBipolarToggle.addEventListener('change', function () {
       updateUrlParameters();
       requestUpdate();
     });
@@ -3218,20 +3130,6 @@ function setup() {
       ariaLabel: 'Set waveform motion speed'
     },
     {
-      slider: waveformEnvelopeWavesSlider,
-      display: waveformEnvelopeWavesDisplay,
-      refreshDisplay: updateWaveformEnvelopeWavesDisplay,
-      commit: () => { updateWaveformEnvelopeWavesDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set waveform envelope waves'
-    },
-    {
-      slider: waveformEnvelopeCenterSlider,
-      display: waveformEnvelopeCenterDisplay,
-      refreshDisplay: updateWaveformEnvelopeCenterDisplay,
-      commit: () => { updateWaveformEnvelopeCenterDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set waveform envelope center offset'
-    },
-    {
       slider: circlesDensitySlider,
       display: circlesDensityDisplay,
       refreshDisplay: updateCirclesDensityDisplay,
@@ -3691,24 +3589,6 @@ function updateWaveformSpeedDisplay() {
   const sliderValue = parseFloat(waveformSpeedSlider.value);
   waveformSpeedDisplay.textContent = sliderValue.toFixed(1);
   waveformSpeedSlider.setAttribute('aria-valuetext', `${sliderValue.toFixed(1)} cycles per second`);
-}
-
-function updateWaveformEnvelopeWavesDisplay() {
-  if (!waveformEnvelopeWavesSlider || !waveformEnvelopeWavesDisplay) return;
-  const normalizedValue = typeof normalizeWaveformEnvelopeWaves === 'function'
-    ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
-    : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1));
-  waveformEnvelopeWavesSlider.value = normalizedValue;
-  waveformEnvelopeWavesDisplay.textContent = String(normalizedValue);
-}
-
-function updateWaveformEnvelopeCenterDisplay() {
-  if (!waveformEnvelopeCenterSlider || !waveformEnvelopeCenterDisplay) return;
-  const normalizedValue = typeof normalizeWaveformEnvelopeCenter === 'function'
-    ? normalizeWaveformEnvelopeCenter(waveformEnvelopeCenterSlider.value)
-    : Math.max(-0.5, Math.min(0.5, parseFloat(waveformEnvelopeCenterSlider.value) || 0));
-  waveformEnvelopeCenterSlider.value = normalizedValue;
-  waveformEnvelopeCenterDisplay.textContent = String(normalizedValue);
 }
 
 function updateCirclesDensityDisplay() {
@@ -4269,15 +4149,6 @@ function getCurrentBarPatternValues(exactBarWidth) {
     waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
     waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
     waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
-    waveformEnvelope: waveformEnvelopeToggle ? waveformEnvelopeToggle.checked : false,
-    waveformEnvelopeType: waveformEnvelopeType ? waveformEnvelopeType.value : 'sine',
-    waveformEnvelopeWaves: waveformEnvelopeWavesSlider
-      ? (typeof normalizeWaveformEnvelopeWaves === 'function'
-        ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
-        : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
-      : 1,
-    waveformEnvelopeCenter: waveformEnvelopeCenterSlider ? waveformEnvelopeCenterSlider.value : 0,
-    waveformEnvelopeBipolar: waveformEnvelopeBipolarToggle ? waveformEnvelopeBipolarToggle.checked : false,
     timeSeconds,
     circlesFill: circlesFillSelect ? circlesFillSelect.value : 'stroke',
     circlesDensity: circlesDensitySlider ? circlesDensitySlider.value : 50,
@@ -6066,31 +5937,6 @@ function updateUrlParameters() {
       params.set('waveformReverse', 'true');
     }
 
-    if (waveformEnvelopeToggle && waveformEnvelopeToggle.checked) {
-      params.set('waveformEnvelope', 'true');
-    }
-    if (waveformEnvelopeType && waveformEnvelopeType.value !== 'sine') {
-      params.set('waveformEnvelopeType', waveformEnvelopeType.value);
-    }
-    const normalizedEnvelopeWaves = waveformEnvelopeWavesSlider
-      ? (typeof normalizeWaveformEnvelopeWaves === 'function'
-        ? normalizeWaveformEnvelopeWaves(waveformEnvelopeWavesSlider.value)
-        : Math.max(1, Math.min(10, Math.round(parseFloat(waveformEnvelopeWavesSlider.value)) || 1)))
-      : 1;
-    if (waveformEnvelopeWavesSlider && normalizedEnvelopeWaves !== 1) {
-      params.set('waveformEnvelopeWaves', normalizedEnvelopeWaves);
-    }
-    const normalizedEnvelopeCenter = waveformEnvelopeCenterSlider
-      ? (typeof normalizeWaveformEnvelopeCenter === 'function'
-        ? normalizeWaveformEnvelopeCenter(waveformEnvelopeCenterSlider.value)
-        : Math.max(-0.5, Math.min(0.5, parseFloat(waveformEnvelopeCenterSlider.value) || 0)))
-      : 0;
-    if (waveformEnvelopeCenterSlider && normalizedEnvelopeCenter !== 0) {
-      params.set('waveformEnvelopeCenter', normalizedEnvelopeCenter);
-    }
-    if (waveformEnvelopeBipolarToggle && waveformEnvelopeBipolarToggle.checked) {
-      params.set('waveformEnvelopeBipolar', 'true');
-    }
   }
 
   if (styleSelect && styleSelect.value === 'circles') {
@@ -6318,27 +6164,6 @@ function applyUrlParameters() {
   if (waveformReverseToggle) {
     waveformReverseToggle.checked = params.waveformReverse;
   }
-  if (waveformEnvelopeToggle) {
-    waveformEnvelopeToggle.checked = params.waveformEnvelope === 'true';
-  }
-  if (envelopeSettingsGroup) {
-    envelopeSettingsGroup.style.display = params.waveformEnvelope === 'true' ? 'block' : 'none';
-  }
-  if (waveformEnvelopeType) {
-    waveformEnvelopeType.value = params.waveformEnvelopeType;
-  }
-  if (waveformEnvelopeWavesSlider) {
-    waveformEnvelopeWavesSlider.value = params.waveformEnvelopeWaves;
-  }
-  updateWaveformEnvelopeWavesDisplay();
-  if (waveformEnvelopeCenterSlider) {
-    waveformEnvelopeCenterSlider.value = params.waveformEnvelopeCenter;
-  }
-  updateWaveformEnvelopeCenterDisplay();
-  if (waveformEnvelopeBipolarToggle) {
-    waveformEnvelopeBipolarToggle.checked = params.waveformEnvelopeBipolar === 'true';
-  }
-
   // Apply circles parameters
   if (circlesFillSelect) {
     circlesFillSelect.value = params.circlesFill;
@@ -6371,8 +6196,6 @@ function updateAllDisplays() {
   updateWaveformTypeDisplay();
   updateWaveformFrequencyDisplay();
   updateWaveformSpeedDisplay();
-  updateWaveformEnvelopeWavesDisplay();
-  updateWaveformEnvelopeCenterDisplay();
   updateCirclesDensityDisplay();
   updateCirclesSizeVariationDisplay();
   updateCirclesGradientVariantDisplay();

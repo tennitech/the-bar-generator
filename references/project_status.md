@@ -1,6 +1,6 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-11-03
+**Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## November 4 encoded-text validation
@@ -11,13 +11,58 @@ stay blocked after reload, and entering clean text restores the bar. Both fields
 use the same ten-code-point limit before encoding, including URL restoration and
 migration of older share snapshots. Benign “hello” remains accepted by the existing
 whole-word filter. Issue #12 was a joke and #13 needs owner clarification; no new broad
-numeric restrictions or unrelated field limits are included.
+numeric restrictions or unrelated field limits are included. Updated text assets
+and every generator source route use `20261104-text-validation` cache keys.
 
-Validation on main 792e917: 685 unit tests in 60 suites pass. Chromium desktop (1440 × 900)
+Validation on main 0dd693a: 691 unit tests in 62 suites pass. Chromium desktop (1440 × 900)
 and phone-sized (390 × 844) checks pass for both fields: initial blocked URLs,
 sequential typing of hello, ten-character limits, repeated key handling, reload,
 and shared preview/export geometry. WebKit execution is blocked by missing host
 libraries; physical-device and screen-reader behavior were not verified.
+
+## November 4 Numeric release cache refresh
+
+Generator route shells, Numeric rendering dependencies, and the Home dependency
+loader now use `20261104-numeric-seams` cache keys so returning sessions fetch
+the released seam repair instead of a previously cached renderer. Encoding and
+geometry are unchanged.
+
+## November 4 Numeric height seams
+
+Numeric Height Encoding now joins neighboring digit cells into one silhouette
+per uninterrupted run. This removes fractional-pixel antialiasing seams (#52)
+without widening cells, rounding their coordinates, adding a baseline, or
+changing the digit-to-height mapping. Decimal cells remain empty. The canonical
+preview/header/SVG/PNG geometry and native fallback use the same polygons.
+
+Regression review also confirms the earlier removal of artificial Numeric side
+strips (#34 and the boundary portion of #54). Zero remains a valid digit: 10%
+height in Height Encoding, and an empty cell in Dot Matrix; a decimal is an empty
+height cell or a bottom dot respectively (#10 and the distinction in #54).
+All-zero Dot Matrix exports retain the existing zero-ink recovery guidance.
+
+Validation: 59 unit suites / 683 tests pass. Focused Chromium checks at 1489,
+913 and 390 px verify a seam-free 99-cell fractional-width raster, zero input,
+actual SVG snapshot equality and pixel-identical PNG/vector output. Desktop
+screenshots were inspected. These checks do not establish physical-device,
+screen-reader, formal brand approval, or owner testing.
+
+## November 4 Circles Gradient reference repair
+
+Issue #56 remained reproducible after the October 28 alignment repair: variant 1
+used a generic upright 28 × 3 grid rather than the supplied reference. It now
+preserves the source's 29/28/29 staggered dots, original radii and small coordinate
+offsets. Uniform containment of the 509 × 36 source frame keeps complete circular
+primitives inside the official viewport without stretching or forced edge paint.
+Variants 2 and 3 are unchanged. Preview, header, SVG and PNG share this geometry;
+the Home sample is regenerated from that renderer.
+
+The targeted source-oracle regression compares every circle with the supplied
+SVG at three sizes, including a nonstandard aspect ratio. Existing complete
+Circles stroke and Neural Network ring-bounds regressions also pass, confirming
+that issues #51 and #55 were already repaired in merged PR #57. Browser/export
+verification is recorded in the associated pull request. No formal RPI approval,
+physical-device testing or owner acceptance is inferred.
 
 ## November 4 Ticker audio removal
 
@@ -27,6 +72,17 @@ and exports are unchanged. Binary remains silent following the earlier #47 fix.
 Regression coverage verifies unsupported audio cannot start and supported styles
 remain available. See `scripts/audioAvailabilitySmoke.js` for the focused
 browser check of navigation, Ticker motion and phone-width layout.
+
+## November 4 Waveform envelope retirement
+
+Removed the spatial-only envelope controls under issue #49's removal option.
+They never affected the audio preview. Type, frequency, Loop/Reverse, speed and
+audio remain available. Old envelope query/share fields no longer apply; other
+historical settings restore normally. Preview/header/export use the same unmasked
+waveform. Low-level historical geometry helpers remain tested for compatibility.
+The About text and marquee preset no longer advertise the removed feature.
+Focused browser checks cover legacy-query/export parity, Randomize/Reset and
+responsive layouts. This does not establish owner or physical-device testing.
 
 ## November 3 compact export actions
 

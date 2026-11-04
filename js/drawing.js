@@ -424,35 +424,10 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       const digitWidth = exactBarWidth / digits.length;
 
       if (mode === 'height') {
-        // Height Encoding mode - digit height bars with inner stroke
-        for (let i = 0; i < digits.length; i++) {
-          const digit = digits[i];
-          const x = barStartX + i * digitWidth;
-
-          // Skip decimal points (value 10) - they create spacing
-          if (digit === 10) {
-            continue;
-          }
-
-          // Map digits 0-9 to height percentages
-          let heightPercent = 0.0;
-          switch (digit) {
-            case 0: heightPercent = 0.1; break;  // 10%
-            case 1: heightPercent = 0.2; break;  // 20%
-            case 2: heightPercent = 0.3; break;  // 30%
-            case 3: heightPercent = 0.4; break;  // 40%
-            case 4: heightPercent = 0.5; break;  // 50%
-            case 5: heightPercent = 0.6; break;  // 60%
-            case 6: heightPercent = 0.7; break;  // 70%
-            case 7: heightPercent = 0.8; break;  // 80%
-            case 8: heightPercent = 0.9; break;  // 90%
-            case 9: heightPercent = 1.0; break;  // 100%
-          }
-
-          const barHeight = rectHeight * heightPercent;
-          const barBottomY = barY + rectHeight - barHeight; // Position from bottom
-
-          pg.rect(x, barBottomY, digitWidth, barHeight);
+        for (const points of createNumericHeightPolygons({ digits, barStartX, barY, exactBarWidth, barHeight: rectHeight })) {
+          pg.beginShape();
+          for (const [x, y] of points) pg.vertex(x, y);
+          pg.endShape(CLOSE);
         }
       } else if (mode === 'dotmatrix') {
         // Dot Matrix mode - dots distributed evenly across the full height of the bar

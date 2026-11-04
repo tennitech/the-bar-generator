@@ -73,15 +73,6 @@ function read() {
     waveformSpeed: window.loopingGifUtils.normalizeLoopSpeed('waveform', params.get('waveformSpeed')),
     waveformReverse: params.get('waveformReverse') === 'true',
 
-    waveformEnvelope: params.get('waveformEnvelope') || 'false',
-    waveformEnvelopeType: params.get('waveformEnvelopeType') || 'sine',
-    waveformEnvelopeWaves: typeof normalizeWaveformEnvelopeWaves === 'function'
-      ? normalizeWaveformEnvelopeWaves(params.get('waveformEnvelopeWaves'))
-      : Math.max(1, Math.min(10, Math.round(parseFloat(params.get('waveformEnvelopeWaves'))) || 1)),
-    waveformEnvelopeCenter: typeof normalizeWaveformEnvelopeCenter === 'function'
-      ? normalizeWaveformEnvelopeCenter(params.get('waveformEnvelopeCenter'))
-      : Math.max(-0.5, Math.min(0.5, parseFloat(params.get('waveformEnvelopeCenter')) || 0)),
-    waveformEnvelopeBipolar: params.get('waveformEnvelopeBipolar') || 'false',
 
     // Circles parameters
     circlesFill: params.get('circlesFill') || 'stroke',
