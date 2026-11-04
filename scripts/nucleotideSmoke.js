@@ -122,9 +122,30 @@ async function main() {
   await page.locator('[data-parameter-style="nucleotide"][data-parameter-action="reset"]').click();
   assert.equal(await page.locator('#nucleotide-variant').inputValue(),'separate');
   assert.equal(await page.locator('#nucleotide-preset').inputValue(),'0');
-  const before=await page.locator('#nucleotide-input').inputValue();
-  await page.locator('[data-parameter-style="nucleotide"][data-parameter-action="randomize"]').click();
-  assert.notEqual(await page.locator('#nucleotide-input').inputValue(),before);
+  for (let repeat=0;repeat<6;repeat++) {
+   const before={sequence:await page.locator('#nucleotide-input').inputValue(),target:await page.locator('#nucleotide-length').inputValue(),preset:await page.locator('#nucleotide-preset').inputValue(),markup:await svg()};
+   await page.locator('[data-parameter-style="nucleotide"][data-parameter-action="randomize"]').click();
+   const target=Number(await page.locator('#nucleotide-length').inputValue());
+   assert.ok(target>=30 && target<=50);
+   assert.notEqual(String(target),before.target);
+   assert.notEqual(await page.locator('#nucleotide-preset').inputValue(),before.preset);
+   assert.equal((await page.locator('#nucleotide-input').inputValue()).length,target);
+   assert.equal(await page.locator('#nucleotide-input').getAttribute('maxlength'),String(target));
+   assert.equal(await page.locator('#save-button').getAttribute('aria-disabled'),'false');
+   assert.doesNotMatch(await svg(),/data-placeholder/);
+   assert.match(await page.getByRole('combobox',{name:/SEQUENCE LENGTH/}).innerText(),new RegExp(String(target)));
+   if (repeat===0) {
+    await page.locator('[data-randomize-undo="nucleotide"]').click();
+    assert.equal(await page.locator('#nucleotide-length').inputValue(),before.target);
+    assert.equal(await page.locator('#nucleotide-input').inputValue(),before.sequence);
+    assert.equal(await svg(),before.markup);
+   }
+  }
+  const randomized={sequence:await page.locator('#nucleotide-input').inputValue(),target:await page.locator('#nucleotide-length').inputValue()};
+  await page.evaluate(()=>URLState.flush());await page.reload();
+  await page.waitForFunction(()=>typeof buildCurrentBarOnlySVG==='function' && document.querySelector('#p5-container canvas'));
+  assert.equal(await page.locator('#nucleotide-length').inputValue(),randomized.target);
+  assert.equal(await page.locator('#nucleotide-input').inputValue(),randomized.sequence);
   // Real custom picker keyboard path.
   await page.getByRole('combobox',{name:/STRUCTURE/}).click();
   await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
@@ -170,9 +191,19 @@ async function main() {
   const progressBox=await touch.locator('#nucleotide-progress').boundingBox();
   assert.ok(progressBox.y>=0 && progressBox.y+progressBox.height<=700,'touch progress visible');
   await touch.screenshot({path:`/tmp/nucleotide-${engine}-mobile-controls.png`,fullPage:true});
+  const touchBefore={sequence:await touch.locator('#nucleotide-input').inputValue(),target:await touch.locator('#nucleotide-length').inputValue()};
+  await touch.locator('[data-parameter-style="nucleotide"][data-parameter-action="randomize"]').tap();
+  const touchTarget=Number(await touch.locator('#nucleotide-length').inputValue());
+  assert.notEqual(String(touchTarget),touchBefore.target);
+  assert.equal((await touch.locator('#nucleotide-input').inputValue()).length,touchTarget);
+  assert.equal(await touch.locator('#save-button').getAttribute('aria-disabled'),'false');
+  await touch.locator('[data-randomize-undo="nucleotide"]').tap();
+  assert.equal(await touch.locator('#nucleotide-length').inputValue(),touchBefore.target);
+  assert.equal(await touch.locator('#nucleotide-input').inputValue(),touchBefore.sequence);
+  assert.equal(await touch.locator('#save-button').getAttribute('aria-disabled'),'true');
   await touch.close();
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({engine,passed:true,coverage:'routes, alphabet, chosen 30/40/50 targets, fixed slots, capped typing, target changes/reload, progress, blocked incomplete exports, capture guard, placeholder-free SVG/PNG, presets, provenance, variants, reload parity, reset/randomize, keyboard, query/share normalization, 320/390/768 layout'}));
+  console.log(JSON.stringify({engine,passed:true,coverage:'routes, alphabet, chosen 30/40/50 targets, fixed slots, capped typing, target changes/reload, progress, blocked incomplete exports, capture guard, placeholder-free SVG/PNG, presets, provenance, variants, reload parity, reset/randomize length, exact Undo, keyboard, query/share normalization, 320/390/768 layout'}));
  } catch(error) { console.log(await page.evaluate(()=>document.body.innerText.slice(-2500))); await page.screenshot({path:`/tmp/nucleotide-${engine}-failure.png`,fullPage:true}); throw error; } finally {await browser.close();}
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

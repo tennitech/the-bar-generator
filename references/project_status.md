@@ -124,6 +124,17 @@ The About text and marquee preset no longer advertise the removed feature.
 Focused browser checks cover legacy-query/export parity, Randomize/Reset and
 responsive layouts. This does not establish owner or physical-device testing.
 
+## November 4 nucleotide Randomize length
+
+Randomize now chooses a different Sequence length from 30 to 50 along with a
+different verified preset. It fills the chosen length, updates the dropdown,
+count and provenance, and keeps exports ready. Undo restores the exact preceding
+length and sequence. Reset returns to 50 bases, INS and separate bases.
+
+Validation: 703 unit tests pass. Chromium and WebKit checks pass repeated length
+randomization, synchronized controls and export readiness, exact Undo, query
+reload and emulated touch. Source/shell cache keys refresh the released callback.
+
 ## November 4 nucleotide completion feedback
 
 Nucleotide has an explicit Sequence length control from 30 to 50 bases. The
