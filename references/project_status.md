@@ -65,6 +65,28 @@ actual SVG snapshot equality and pixel-identical PNG/vector output. Desktop
 screenshots were inspected. These checks do not establish physical-device,
 screen-reader, formal brand approval, or owner testing.
 
+## November 4 restrained interaction feedback
+
+Export actions now have a fine vertical divider, small uppercase section labels,
+and the existing Feather download/copy glyph inside each format button. Pointer
+hover and keyboard focus move only the arrow or rear sheet by 1–1.5 px; disabled
+actions stay still. Status messages gain neutral working, ready, error and cancel
+icons while retaining their authoritative text and live-region behavior. Success
+notices draw their check once, and selected dropdown markers fade in place.
+Nothing moves the official artwork or changes export payloads.
+
+Reduced motion removes all new movement, including pseudo-elements. The same
+rule closes the older switch-thumb/audio-indicator pseudo-element exception.
+The Marked status-menu still informed selection and state cues, not its rounded
+visual styling; no new animation library or idle decorative motion was added.
+See [scope, reference and verification](interaction_feedback.md).
+Validation: 691 unit tests pass on the integrated text-validation release.
+Chromium and WebKit pass grouped layout, three-theme contrast, compact screens,
+keyboard and reduced-motion feedback, repeated outcomes, real PNG downloads and
+clipboard payload/recovery checks. Shell/bootstrap/CSS cache keys are advanced
+together across direct and routed entry points.
+These checks do not establish owner testing or physical-device certification.
+
 ## November 4 Circles Gradient reference repair
 
 Issue #56 remained reproducible after the October 28 alignment repair: variant 1

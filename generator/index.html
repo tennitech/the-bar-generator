@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261103-nucleotide" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261104-interaction-feedback" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
   <script src="js/utils/generatorRoutes.js?v=20261103-nucleotide"></script>
@@ -116,24 +116,24 @@
           </div>
           <div class="export_action-columns">
           <div class="export_download-actions" role="group" aria-labelledby="export-download-label">
-            <h2 id="export-download-label" class="export_group-label"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></svg>Download</h2>
-            <button id="save-png" class="save-option" type="button">
+            <h2 id="export-download-label" class="export_group-label">Download</h2>
+            <button id="save-png" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span class="option-label">PNG</span>
               <span class="option-desc">Transparent image</span>
             </button>
-            <button id="save-svg" class="save-option" type="button">
+            <button id="save-svg" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span class="option-label">SVG</span>
               <span class="option-desc">Scalable vector</span>
             </button>
-            <button id="save-loop-gif" class="save-option" type="button" hidden>
+            <button id="save-loop-gif" class="save-option" type="button" hidden><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span class="option-label">GIF</span>
               <span class="option-desc">Looping animation</span>
             </button>
           </div>
           <div id="clipboard-actions" class="export_copy-actions" role="group" aria-labelledby="export-copy-label">
-            <h2 id="export-copy-label" class="export_group-label"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</h2>
-            <button id="copy-png" class="save-option" type="button"><span class="option-label">PNG</span><span class="option-desc">2320 × 1524 px</span></button>
-            <button id="copy-svg" class="save-option" type="button"><span class="option-label">SVG</span><span class="option-desc">Scalable vector</span></button>
+            <h2 id="export-copy-label" class="export_group-label">Copy</h2>
+            <button id="copy-png" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="option-label">PNG</span><span class="option-desc">2320 × 1524 px</span></button>
+            <button id="copy-svg" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="option-label">SVG</span><span class="option-desc">Scalable vector</span></button>
           </div>
           </div>
           <p id="export-host-note" class="export_host-note" hidden>Downloads and copying depend on this site’s embed permissions.</p>

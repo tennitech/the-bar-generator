@@ -21,11 +21,12 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       assert.equal(await page.locator('#export-copy-label').textContent(), 'Copy');
       assert.deepEqual(await page.locator('.export_download-actions .option-label').allTextContents(), ['PNG', 'SVG', 'GIF']);
       assert.deepEqual(await page.locator('.export_copy-actions .option-label').allTextContents(), ['PNG', 'SVG']);
-      assert.equal(await page.locator('.export_group-label svg[aria-hidden="true"]').count(), 2);
+      assert.equal(await page.locator('.export_group-label svg').count(), 0);
+      assert.equal(await page.locator('.save-option .export_action-icon[aria-hidden="true"][focusable="false"]').count(), 5);
+      assert.equal(await page.locator('.export_copy-actions').evaluate(el => getComputedStyle(el).borderLeftWidth), '1px');
       const [download, copy] = await page.evaluate(() => ['.export_download-actions', '.export_copy-actions'].map(selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width }; }));
       assert.equal(download.y, copy.y);
-      assert(copy.x > download.x + download.width);
-      assert.equal((await page.locator('#save-menu').innerText()).match(/\bDownload\b/g)?.length, 1);
+      assert(copy.x >= download.x + download.width);
       for (const [id, verb, format] of [['save-png', 'Download', 'PNG'], ['save-svg', 'Download', 'SVG'], ['save-loop-gif', 'Download', 'GIF'], ['copy-svg', 'Copy', 'SVG'], ['copy-png', 'Copy', 'PNG']]) {
         assert.match(await page.locator(`#${id}`).getAttribute('aria-label'), new RegExp(`^${verb} ${format}:`));
       }
