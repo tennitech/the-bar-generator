@@ -12,6 +12,17 @@ Regression coverage verifies unsupported audio cannot start and supported styles
 remain available. See `scripts/audioAvailabilitySmoke.js` for the focused
 browser check of navigation, Ticker motion and phone-width layout.
 
+## November 4 Waveform envelope retirement
+
+Removed the spatial-only envelope controls under issue #49's removal option.
+They never affected the audio preview. Type, frequency, Loop/Reverse, speed and
+audio remain available. Old envelope query/share fields no longer apply; other
+historical settings restore normally. Preview/header/export use the same unmasked
+waveform. Low-level historical geometry helpers remain tested for compatibility.
+The About text and marquee preset no longer advertise the removed feature.
+Focused browser checks cover legacy-query/export parity, Randomize/Reset and
+responsive layouts. This does not establish owner or physical-device testing.
+
 ## November 3 compact export actions
 
 Download and Copy now sit side by side, with distinct tray and overlapping-sheet

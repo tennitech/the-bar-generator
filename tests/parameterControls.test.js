@@ -254,7 +254,7 @@ test('default descriptions reflect authored values, not the current edited value
   expect(describe(h.fields['ticker-ratio-slider'])).toBe('2:1');
   expect(describe(h.fields['ticker-width-ratio-slider'])).toBe('1:2');
   expect(describe(h.fields['quantum-phase'])).toBe('0.0%');
-  expect(describe(h.fields['waveform-envelope-toggle'])).toBe('Off');
+  expect(describe(h.fields['waveform-reverse-toggle'])).toBe('Off');
   h.fields['ticker-ratio-slider'].value = 5;
   expect(describe(h.fields['ticker-ratio-slider'])).toBe('2:1');
   expect(describe({ type: 'text', defaultValue: '' })).toBe('Empty');
