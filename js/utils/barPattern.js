@@ -17,6 +17,35 @@ function mapDigitToHeightPercent(digit) {
   }
 }
 
+// Join neighboring height cells before rasterization so fractional boundaries do
+// not produce antialiased seams. Decimal cells remain genuinely empty.
+function createNumericHeightPolygons({ digits, barStartX, barY, exactBarWidth, barHeight }) {
+  const polygons = [];
+  const width = exactBarWidth / digits.length;
+  const bottom = barY + barHeight;
+  let points = null;
+  for (let i = 0; i < digits.length; i++) {
+    if (digits[i] === 10) {
+      if (points) {
+        points.push([barStartX + i * width, bottom]);
+        polygons.push(points);
+        points = null;
+      }
+      continue;
+    }
+    const left = barStartX + i * width;
+    const right = barStartX + (i + 1) * width;
+    const top = bottom - barHeight * mapDigitToHeightPercent(digits[i]);
+    if (!points) points = [[left, bottom]];
+    points.push([left, top], [right, top]);
+  }
+  if (points) {
+    points.push([barStartX + exactBarWidth, bottom]);
+    polygons.push(points);
+  }
+  return polygons;
+}
+
 // Three display pixels per repeat keep the tiny ticker away from its spatial
 // sampling boundary. Unresolved rows use their true mean ink coverage.
 function getTickerHeaderSampling(options = {}) {
@@ -1651,15 +1680,8 @@ function createBarPatternSVG(config) {
     const dotHeight = 1.5;
 
     if (mode === 'height') {
-      for (let i = 0; i < digits.length; i++) {
-        const digit = digits[i];
-        if (digit === 10) {
-          continue;
-        }
-        const x = barStartX + i * digitWidth;
-        const digitBarHeight = barHeight * mapDigitToHeightPercent(digit);
-        const barBottomY = barY + barHeight - digitBarHeight;
-        pattern += `\n    <rect x="${x}" y="${barBottomY}" width="${digitWidth}" height="${digitBarHeight}" fill="${fgColor}"/>`;
+      for (const points of createNumericHeightPolygons({ digits, barStartX, barY, exactBarWidth, barHeight })) {
+        pattern += `\n    <path d="M ${points.map(point => point.join(' ')).join(' L ')} Z" fill="${fgColor}"/>`;
       }
       return pattern;
     }
@@ -2093,6 +2115,7 @@ if (typeof window !== 'undefined') {
   window.normalizeTrianglesPatternSettings = normalizeTrianglesPatternSettings;
   window.normalizeTrianglePatternDirection = normalizeTrianglePatternDirection;
   window.createUnionPatternGeometry = createUnionPatternGeometry;
+  window.createNumericHeightPolygons = createNumericHeightPolygons;
   window.createBarPatternSVG = createBarPatternSVG;
   window.createBinaryPatternGeometry = createBinaryPatternGeometry;
   window.createWaveQuantumPatternGeometry = createWaveQuantumPatternGeometry;
@@ -2109,6 +2132,7 @@ if (typeof module !== 'undefined' && module.exports) {
     generateWaveValue,
     getTickerHeaderSampling,
     createBarPatternSVG,
+    createNumericHeightPolygons,
     createBinaryPatternGeometry,
     createCirclesGradientPatternGeometry,
     createBoundedCirclePatternGeometry,

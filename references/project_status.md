@@ -1,7 +1,27 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-11-03
+**Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
+
+## November 4 Numeric height seams
+
+Numeric Height Encoding now joins neighboring digit cells into one silhouette
+per uninterrupted run. This removes fractional-pixel antialiasing seams (#52)
+without widening cells, rounding their coordinates, adding a baseline, or
+changing the digit-to-height mapping. Decimal cells remain empty. The canonical
+preview/header/SVG/PNG geometry and native fallback use the same polygons.
+
+Regression review also confirms the earlier removal of artificial Numeric side
+strips (#34 and the boundary portion of #54). Zero remains a valid digit: 10%
+height in Height Encoding, and an empty cell in Dot Matrix; a decimal is an empty
+height cell or a bottom dot respectively (#10 and the distinction in #54).
+All-zero Dot Matrix exports retain the existing zero-ink recovery guidance.
+
+Validation: 59 unit suites / 683 tests pass. Focused Chromium checks at 1489,
+913 and 390 px verify a seam-free 99-cell fractional-width raster, zero input,
+actual SVG snapshot equality and pixel-identical PNG/vector output. Desktop
+screenshots were inspected. These checks do not establish physical-device,
+screen-reader, formal brand approval, or owner testing.
 
 ## November 3 compact export actions
 

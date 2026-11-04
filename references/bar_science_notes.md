@@ -143,3 +143,12 @@ Nucleotide adds the two supplied tooth/backbone variants, using a custom shape
 key for canonical A–T/U and C–G pairs. Only ATCGU is accepted. Versioned short
 human INS/HBB transcript excerpts have explicit accession/coordinate provenance;
 no custom input is claimed to identify a gene. See [encoding and source record](nucleotide_bar.md).
+
+## Numeric height raster continuity — November 4, 2026
+
+Height Encoding preserves the existing `(digit + 1) / 10` height mapping, including
+10% height for zero. Each decimal occupies one empty cell. Adjacent digit cells
+are represented by a joined polygon with their original exact coordinates, so
+raster antialiasing cannot reveal internal seams. Separate runs on either side
+of a decimal remain separate; no baseline or side reference is added. Dot Matrix
+remains a count encoding: zero dots for zero, one bottom dot for a decimal.
