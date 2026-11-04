@@ -583,14 +583,27 @@ function createNeuralNetworkPatternGeometry(options = {}) {
   return { ...settings, lines, nodes, layers, thickness, outputs: layers.at(-1).map(node => node.value) };
 }
 
+function normalizeTriangleGridSettings(options = {}) {
+  const read = key => options[key] ?? options[`triangleGrid${key[0].toUpperCase()}${key.slice(1)}`];
+  const variant = clampPatternVariant(read('variant') || 2, 3);
+  const defaults = { rows: variant + 1, density: 100, stroke: 100, stagger: 50 };
+  const bounded = (key, min, max) => {
+    const raw = read(key), number = Number(raw);
+    return raw == null || raw === '' || !Number.isFinite(number) ? defaults[key] : Math.max(min, Math.min(max, Math.round(number)));
+  };
+  return { variant, rows: bounded('rows', 1, 6), density: bounded('density', 50, 150),
+    stroke: bounded('stroke', 40, 160), stagger: bounded('stagger', 0, 100) };
+}
+
 function createTriangleGridPatternGeometry(options = {}) {
   const barStartX = Number(options.barStartX || 0);
   const barY = Number(options.barY || 0);
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const variant = clampPatternVariant(options.variant || 2, 3);
-  const thickness = Math.max(0.75, parseFloat(options.thickness || Math.max(1, barHeight * 0.075)));
-  const rowCount = variant + 1;
+  const settings = normalizeTriangleGridSettings(options);
+  const baseThickness = Math.max(0.75, parseFloat(options.thickness || Math.max(1, barHeight * 0.075)));
+  const thickness = Math.min(settings.stroke === 100 ? baseThickness : baseThickness * settings.stroke / 100, barHeight / 2, exactBarWidth / 2);
+  const rowCount = settings.rows;
   const halfThickness = thickness / 2;
   const left = barStartX + halfThickness;
   const right = barStartX + exactBarWidth - halfThickness;
@@ -599,8 +612,10 @@ function createTriangleGridPatternGeometry(options = {}) {
   const innerWidth = Math.max(0.1, right - left);
   const innerHeight = Math.max(0.1, bottom - top);
   const rowHeight = innerHeight / rowCount;
-  const targetCellWidth = (2 * rowHeight) / Math.sqrt(3);
-  const columnCount = Math.max(8, Math.round(innerWidth / Math.max(1, targetCellWidth)));
+  // Density changes the near-equilateral baseline; stroke edits keep topology stable.
+  const targetCellWidth = (2 * (barHeight - baseThickness) / rowCount) / Math.sqrt(3);
+  const nominalColumns = Math.max(8, Math.round((exactBarWidth - baseThickness) / Math.max(1, targetCellWidth)));
+  const columnCount = Math.min(96, Math.max(8, Math.round(nominalColumns * settings.density / 100)));
   const cellWidth = innerWidth / columnCount;
   const lines = [];
   const addLine = (x1, y1, x2, y2) => {
@@ -615,7 +630,7 @@ function createTriangleGridPatternGeometry(options = {}) {
 
   for (let row = 0; row <= rowCount; row++) {
     const y = top + row * rowHeight;
-    const offset = row % 2 === 0 ? 0 : cellWidth / 2;
+    const offset = row % 2 === 0 ? 0 : settings.stagger === 50 ? cellWidth / 2 : cellWidth * settings.stagger / 100;
     const points = [];
     const pointCount = row % 2 === 0 ? columnCount + 1 : columnCount;
 
@@ -632,14 +647,12 @@ function createTriangleGridPatternGeometry(options = {}) {
   for (let row = 0; row < rowCount; row++) {
     const upper = rowPoints[row];
     const lower = rowPoints[row + 1];
-    const targetOffset = cellWidth / 2;
-
+    // Same adjacency as the original half-cell lattice, independent of row
+    // offset. Two neighbors per vertex avoid a quadratic all-pairs scan.
     for (let i = 0; i < upper.length; i++) {
-      for (let j = 0; j < lower.length; j++) {
-        const delta = lower[j].x - upper[i].x;
-        if (Math.abs(Math.abs(delta) - targetOffset) < 0.001) {
-          addLine(upper[i].x, upper[i].y, lower[j].x, lower[j].y);
-        }
+      const neighbors = row % 2 === 0 ? [i - 1, i] : [i, i + 1];
+      for (const j of neighbors) if (j >= 0 && j < lower.length) {
+        addLine(upper[i].x, upper[i].y, lower[j].x, lower[j].y);
       }
     }
   }
@@ -686,7 +699,66 @@ function createGradientPatternGeometry(options = {}) {
   return { rects };
 }
 
+function normalizeCirclesGradientSettings(options = {}) {
+  const read = key => options[key] ?? options[`circlesGradient${key[0].toUpperCase()}${key.slice(1)}`];
+  const variant = clampPatternVariant(read('variant') || 1, 3);
+  const defaults = { columns: variant === 1 ? 29 : variant === 2 ? 24 : 28,
+    rows: variant === 2 ? 2 : 3, size: 100, contrast: 100, stagger: variant === 1 ? 100 : 0 };
+  const bounded = (key, min, max) => {
+    const raw = read(key), number = Number(raw);
+    return raw == null || raw === '' || !Number.isFinite(number) ? defaults[key] : Math.max(min, Math.min(max, Math.round(number)));
+  };
+  return { variant, columns: bounded('columns', 8, 48), rows: bounded('rows', 1, 5),
+    size: bounded('size', 25, 100), contrast: bounded('contrast', 0, 100),
+    stagger: bounded('stagger', 0, 100), reverse: read('reverse') === true || read('reverse') === 'true' };
+}
+
 function createCirclesGradientPatternGeometry(options = {}) {
+  const settings = normalizeCirclesGradientSettings(options);
+  const defaults = normalizeCirclesGradientSettings({ variant: settings.variant });
+  const x = Number(options.barStartX || 0), y = Number(options.barY || 0);
+  const width = Math.max(1, Number(options.exactBarWidth || 250));
+  const height = Math.max(1, Number(options.barHeight || 18));
+  let circles;
+  const presetGrid = settings.columns === defaults.columns && settings.rows === defaults.rows;
+  if (presetGrid) {
+    // The preset is a faithful starting point, including the supplied reference
+    // offsets. Size/contrast/row offset are continuous edits of those primitives.
+    circles = createCirclesGradientPresetGeometry({ ...options, variant: settings.variant }).circles;
+  } else {
+    const cellWidth = width / settings.columns, cellHeight = height / settings.rows;
+    const maxRadius = Math.min(cellWidth, cellHeight) * .44;
+    circles = [];
+    for (let row = 0; row < settings.rows; row++) {
+      for (let col = 0; col < settings.columns; col++) {
+        const t = col / (settings.columns - 1);
+        const rowT = settings.rows === 1 ? 0 : row / (settings.rows - 1);
+        const factor = settings.variant === 1 ? 1 - .54 * rowT
+          : Math.sqrt(settings.variant === 2 ? .12 + .88 * t : .16 + .84 * (1 - Math.abs(2 * t - 1)));
+        circles.push({ cx: x + maxRadius + t * (width - 2 * maxRadius),
+          cy: y + (row + .5) * cellHeight, r: maxRadius * factor });
+      }
+    }
+  }
+  const maxRadius = Math.min(width / settings.columns, height / settings.rows) * .44;
+  const preserve = settings.size === 100 && settings.contrast === 100 && settings.stagger === (presetGrid ? defaults.stagger : 0) && !settings.reverse;
+  if (preserve) return { rects: [], circles };
+  const gap = width / settings.columns;
+  circles = circles.map(circle => {
+    const row = Math.min(settings.rows - 1, Math.floor((circle.cy - y) / height * settings.rows));
+    const offset = (row % 2) * (settings.stagger - (presetGrid ? defaults.stagger : 0)) / 100 * gap / 2;
+    const radius = (maxRadius + (circle.r - maxRadius) * settings.contrast / 100) * settings.size / 100;
+    // A complete circle is bounded geometrically, not trimmed by an outer mask.
+    const r = Math.min(radius, width / 2, height / 2);
+    const cx = Math.max(x + r, Math.min(x + width - r, circle.cx + offset));
+    const cy = Math.max(y + r, Math.min(y + height - r, circle.cy));
+    return { cx: settings.reverse && settings.variant !== 1 ? x + width - (cx - x) : cx,
+      cy: settings.reverse && settings.variant === 1 ? y + height - (cy - y) : cy, r };
+  });
+  return { rects: [], circles };
+}
+
+function createCirclesGradientPresetGeometry(options = {}) {
   const barStartX = Number(options.barStartX || 0);
   const barY = Number(options.barY || 0);
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
@@ -1878,6 +1950,7 @@ function createBarPatternSVG(config) {
 
   if (currentShader === 15) {
     const geometry = createTriangleGridPatternGeometry({
+      ...values,
       barStartX,
       barY,
       exactBarWidth,
@@ -1898,6 +1971,7 @@ function createBarPatternSVG(config) {
 
   if (currentShader === 16) {
     const geometry = createCirclesGradientPatternGeometry({
+      ...values,
       barStartX,
       barY,
       exactBarWidth,
@@ -2117,6 +2191,7 @@ if (typeof window !== 'undefined') {
   window.normalizeBinaryText = normalizeBinaryText;
   window.applyWaveformEnvelope = applyWaveformEnvelope;
   window.createBoundedCirclePatternGeometry = createBoundedCirclePatternGeometry;
+  window.normalizeCirclesGradientSettings = normalizeCirclesGradientSettings;
   window.createCirclesGradientPatternGeometry = createCirclesGradientPatternGeometry;
   window.createFibonacciPatternGeometry = createFibonacciPatternGeometry;
   window.createGradientPatternGeometry = createGradientPatternGeometry;
@@ -2127,6 +2202,7 @@ if (typeof window !== 'undefined') {
   window.createPointConnectPatternGeometry = createPointConnectPatternGeometry;
   window.createRulerPatternGeometry = createRulerPatternGeometry;
   window.createTickerPatternGeometry = createTickerPatternGeometry;
+  window.normalizeTriangleGridSettings = normalizeTriangleGridSettings;
   window.createTriangleGridPatternGeometry = createTriangleGridPatternGeometry;
   window.createTrussPatternGeometry = createTrussPatternGeometry;
   window.createTrianglesPatternGeometry = createTrianglesPatternGeometry;
@@ -2152,6 +2228,7 @@ if (typeof module !== 'undefined' && module.exports) {
     createBarPatternSVG,
     createNumericHeightPolygons,
     createBinaryPatternGeometry,
+    normalizeCirclesGradientSettings,
     createCirclesGradientPatternGeometry,
     createBoundedCirclePatternGeometry,
     createFibonacciPatternGeometry,
@@ -2163,6 +2240,7 @@ if (typeof module !== 'undefined' && module.exports) {
     createPointConnectPatternGeometry,
     createRulerPatternGeometry,
     createTickerPatternGeometry,
+    normalizeTriangleGridSettings,
     createTriangleGridPatternGeometry,
     createTrussPatternGeometry,
     createTrianglesPatternGeometry,

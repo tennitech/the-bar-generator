@@ -65,3 +65,13 @@ test('ruler thickness restores with bounds and obsolete motion query keys are ig
   expect(read('?rulerThickness=99', '/generator/ruler/').rulerThickness).toBe(3);
   expect(read('?rulerSpeed=5', '/generator/ruler/').rulerSpeed).toBeUndefined();
 });
+
+test('triangle grid legacy and custom queries restore bounded settings',()=>{
+  expect(read('?triangleGridVariant=3','/generator/triangle-grid/')).toMatchObject({triangleGridVariant:3,triangleGridRows:4,triangleGridDensity:100,triangleGridStroke:100,triangleGridStagger:50});
+  expect(read('?triangleGridRows=99&triangleGridDensity=50&triangleGridStroke=0&triangleGridStagger=0','/generator/triangle-grid/')).toMatchObject({triangleGridRows:6,triangleGridDensity:50,triangleGridStroke:40,triangleGridStagger:0});
+});
+
+test('circle gradient URLs restore preset defaults and customized numeric controls', () => {
+  expect(read('?circlesGradientVariant=2', '/generator/circles-gradient/')).toMatchObject({circlesGradientVariant:2,circlesGradientColumns:24,circlesGradientRows:2,circlesGradientStagger:0});
+  expect(read('?circlesGradientColumns=48&circlesGradientRows=5&circlesGradientSize=25&circlesGradientContrast=0&circlesGradientStagger=0&circlesGradientReverse=true', '/generator/circles-gradient/')).toMatchObject({circlesGradientColumns:48,circlesGradientRows:5,circlesGradientSize:25,circlesGradientContrast:0,circlesGradientStagger:0,circlesGradientReverse:true});
+});

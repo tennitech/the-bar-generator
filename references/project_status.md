@@ -3,6 +3,57 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 parametric-controls integration recovery
+
+The preserved Triangle Grid and Circles Gradient branches are combined with main
+`4af090b`, retaining Waveform LFO, Nucleotide completion and variable-length
+Randomize, stable Undo startup, sidebar overflow cues and existing export feedback.
+Both parameterized styles remain alphabetical in Dynamic. Shared shell/runtime
+cache keys advance together to `20261104-parametric-lfo-recovery`.
+
+Validation: all 730 unit tests in 68 suites pass; all 84 inline JavaScript blocks
+compile. Both Chromium and WebKit pass Triangle Grid and Circles Gradient preset,
+custom URL, new/legacy snapshot, keyboard/mobile, Reset/Randomize/Undo, zoom,
+header and 2320 × 1524 PNG checks. Both also pass Waveform LFO audio/interaction
+checks. Chromium passes Nucleotide's 30–50-base input, export, Randomize/Undo/Reset
+and responsive checks. Chromium also passes four sidebar overflow layouts and
+six delayed-start/refresh cases with stable Undo positions. Desktop and mobile
+screenshots for both parameterized styles were visually inspected. An initial concurrent Chromium PNG check crashed;
+the unchanged test passed in the serial final run. This is local verification,
+not owner acceptance, physical-device testing, formal brand approval or deployment.
+
+## November 4 parametric Triangle Grid
+
+Issue #103 makes Triangle Grid adjustable with Wide/Balanced/Fine starting
+presets, rows, density, stroke weight and row offset. Its prior preset line
+geometry is preserved and regression-tested against the shipped SVG samples.
+Shared preview/export geometry uses bounded control ranges and direct-neighbor
+construction, capped below 1200 line segments. Historical state migration,
+custom URLs, Reset/Randomize/Undo and mobile/keyboard flows are covered by
+targeted tests. Triangle Grid moves to Dynamic; alphabetical ordering within
+each group is retained. No automatic animation is added.
+Validation on the text-validation baseline: all 696 unit tests pass. Chromium
+and WebKit pass preset/custom-state, legacy/new snapshot, keyboard, mobile
+reopen/pointer, Reset/Randomize/Undo and PNG/header checks. Physical devices,
+owner acceptance and formal brand approval remain separate.
+
+## November 4 parametric Circles Gradient
+
+Issue #104 alphabetizes the style picker within its existing Dynamic and Static
+groups, without changing the Home sample order. Issue #96 adds parameter-driven Circles Gradient with three named starting
+presets and controls for columns, rows, dot size, size contrast, row offset and
+Reverse. Existing preset geometry remains identical, including the supplied
+reference restored in #89. Custom compositions are bounded to 240 complete
+circles and use the shared preview/header/SVG/PNG renderer. The style moves to
+Dynamic because its parameters are adjustable; it does not add time animation.
+URL restoration, old/new snapshots, Reset, Randomize and Undo preserve the
+controls. See the scientific notes and circleGradientControlsSmoke.js for the
+model and reproducible browser checks.
+Validation after integrating the text-validation release: all 698 unit tests
+pass. Chromium and WebKit pass focused preset/custom URL, new and legacy
+snapshot, keyboard, Reset/Randomize/Undo, mobile reopen and PNG/header checks.
+Browser emulation does not establish physical-device or owner acceptance.
+
 ## November 4 parameter overflow cue and icon consistency
 
 A passive “More below” chevron appears in the sidebar's existing bottom fade only

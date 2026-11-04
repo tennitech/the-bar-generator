@@ -43,7 +43,7 @@
   },
   "circles-gradient": {
     "title": "Circles Gradient",
-    "text": "Rows of circles change size to create an apparent shift in tone using a single foreground color. Switch variants to compare directional and centered arrangements; the effect comes from circle area and spacing rather than a measured quantity or color blending."
+    "text": "Rows of circles change size to create an apparent shift in tone using a single foreground color. Start from reference rows, a directional ramp or a center peak, then change dot count, rows, size, contrast and offset. The effect comes from circle area and spacing, not color blending or measured data."
   },
   "gradient": {
     "title": "Gradient",
@@ -63,7 +63,7 @@
   },
   "triangle-grid": {
     "title": "Triangle Grid",
-    "text": "Repeating triangular geometry builds a grid across the bar, creating different balances of edges and open space. Compare the variants to explore those arrangements; the pattern is a geometric study rather than a diagram of a physical material or structure."
+    "text": "Repeating triangular geometry builds a grid across the bar, creating different balances of edges and open space. Start from a wide, balanced or fine preset, then adjust rows, density, stroke weight and row offset. This triangulated lattice is a geometric study, not a measured physical material or structure."
   },
   "triangles": {
     "title": "Triangles",

@@ -11,29 +11,29 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261104-lfo-integrated" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261104-parametric-lfo-recovery" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261104-lfo-integrated"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261104-parametric-lfo-recovery"></script>
   <script src="js/utils/themeMode.js?v=20261103-save-removal"></script>
   <script src="js/utils/selectorPreviews.js?v=20261103-nucleotide"></script>
   <script src="js/utils/customDropdowns.js?v=20261103-save-removal"></script>
-  <script src="js/utils/parameterControls.js?v=20261104-lfo-integrated"></script>
+  <script src="js/utils/parameterControls.js?v=20261104-parametric-lfo-recovery"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/loopingGif.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/featherIcons.js?v=20261103-save-removal"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/utils/shareState.js?v=20261104-parametric-lfo-recovery"></script>
   <script src="js/utils/randomizeHistory.js?v=20261104-undo-startup"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/nucleotidePattern.js?v=20261104-nucleotide-minimum"></script>
-  <script src="js/utils/barPattern.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/utils/nucleotidePattern.js?v=20261104-parametric-lfo-recovery"></script>
+  <script src="js/utils/barPattern.js?v=20261104-parametric-lfo-recovery"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/quantumModel.js"></script>
-  <script src="js/utils/waveformLfo.js?v=20261104-lfo-integrated"></script>
-  <script src="js/utils/generatorParameters.js?v=20261104-lfo-integrated"></script>
-  <script src="js/utils/generatorInitialState.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/utils/waveformLfo.js?v=20261104-parametric-lfo-recovery"></script>
+  <script src="js/utils/generatorParameters.js?v=20261104-parametric-lfo-recovery"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261104-parametric-lfo-recovery"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
 </head>
@@ -177,27 +177,27 @@
             <div class="select-wrapper">
               <select id="style-select" data-url-parameter="style" class="control-select">
                 <optgroup label="Dynamic">
+                  <option value="binary">Binary</option>
+                  <option value="circles">Circles</option>
+                  <option value="circles-gradient">Circles Gradient</option>
+                  <option value="morse">Morse Code</option>
+                  <option value="neural-network">Neural Network</option>
+                  <option value="nucleotide">Nucleotide</option>
+                  <option value="numeric">Numeric</option>
+                  <option value="wave-quantum">Quantum</option>
                   <option value="ruler">Ruler</option>
                   <option value="ticker">Ticker</option>
-                  <option value="binary">Binary</option>
-                  <option value="morse">Morse Code</option>
-                  <option value="nucleotide">Nucleotide</option>
+                  <option value="triangle-grid">Triangle Grid</option>
                   <option value="waveform">Waveform</option>
-                  <option value="wave-quantum">Quantum</option>
-                  <option value="circles">Circles</option>
-                  <option value="numeric">Numeric</option>
-                  <option value="neural-network">Neural Network</option>
                 </optgroup>
                 <optgroup label="Static">
-                  <option value="solid">Solid</option>
-                  <option value="circles-gradient">Circles Gradient</option>
+                  <option value="fibonacci-sequence">Fibonacci Sequence</option>
                   <option value="gradient">Gradient</option>
+                  <option value="grid">Grid</option>
                   <option value="lines">Lines</option>
                   <option value="point-connect">Point Connect</option>
-                  <option value="grid">Grid</option>
-                  <option value="triangle-grid">Triangle Grid</option>
+                  <option value="solid">Solid</option>
                   <option value="triangles">Triangles</option>
-                  <option value="fibonacci-sequence">Fibonacci Sequence</option>
                   <option value="union">Union</option>
                 </optgroup>
                 <optgroup label="Organizations">
@@ -752,11 +752,37 @@
 
         <div id="circles-gradient-group" data-parameter-actions="circles-gradient" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
+          <div class="control">
+            <label for="circles-gradient-variant-slider" class="control-label">PRESET</label>
+            <select id="circles-gradient-variant-slider" class="control-select" data-url-parameter="circlesGradientVariant" aria-label="Circles Gradient Preset">
+              <option value="1">Reference rows</option>
+              <option value="2">Left to right</option>
+              <option value="3">Center peak</option>
+            </select>
+          </div>
           <div class="control slider-control">
-            <label for="circles-gradient-variant-slider" class="control-label">VARIANT <span
-                id="circles-gradient-variant-display" data-slider-value>1</span></label>
-            <input type="range" id="circles-gradient-variant-slider" data-url-parameter="circlesGradientVariant" min="1" max="3" value="1"
-              class="control-slider" aria-label="Circles Gradient Variant">
+            <label for="circles-gradient-columns" class="control-label">COLUMNS <span id="circles-gradient-columns-display" data-slider-value>29</span></label>
+            <input type="range" id="circles-gradient-columns" data-url-parameter="circlesGradientColumns" min="8" max="48" step="1" value="29" class="control-slider" aria-label="Circles Gradient Columns">
+          </div>
+          <div class="control slider-control">
+            <label for="circles-gradient-rows" class="control-label">ROWS <span id="circles-gradient-rows-display" data-slider-value>3</span></label>
+            <input type="range" id="circles-gradient-rows" data-url-parameter="circlesGradientRows" min="1" max="5" step="1" value="3" class="control-slider" aria-label="Circles Gradient Rows">
+          </div>
+          <div class="control slider-control">
+            <label for="circles-gradient-size" class="control-label">DOT SIZE <span id="circles-gradient-size-display" data-slider-value>100</span></label>
+            <input type="range" id="circles-gradient-size" data-url-parameter="circlesGradientSize" min="25" max="100" step="1" value="100" class="control-slider" aria-label="Circles Gradient Dot Size">
+          </div>
+          <div class="control slider-control">
+            <label for="circles-gradient-contrast" class="control-label">SIZE CONTRAST <span id="circles-gradient-contrast-display" data-slider-value>100</span></label>
+            <input type="range" id="circles-gradient-contrast" data-url-parameter="circlesGradientContrast" min="0" max="100" step="1" value="100" class="control-slider" aria-label="Circles Gradient Size Contrast">
+          </div>
+          <div class="control slider-control">
+            <label for="circles-gradient-stagger" class="control-label">ROW OFFSET <span id="circles-gradient-stagger-display" data-slider-value>100</span></label>
+            <input type="range" id="circles-gradient-stagger" data-url-parameter="circlesGradientStagger" min="0" max="100" step="1" value="100" class="control-slider" aria-label="Circles Gradient Row Offset">
+          </div>
+          <div class="control control_row control_row-toggle">
+            <label for="circles-gradient-reverse" class="control-label control_row-label">REVERSE</label>
+            <label class="switch"><input type="checkbox" id="circles-gradient-reverse" data-url-parameter="circlesGradientReverse"><span class="slider round"></span></label>
           </div>
         </div>
 
@@ -838,11 +864,27 @@
 
         <div id="triangle-grid-group" data-parameter-actions="triangle-grid" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
+          <div class="control">
+            <label for="triangle-grid-variant-slider" class="control-label">PRESET</label>
+            <select id="triangle-grid-variant-slider" data-url-parameter="triangleGridVariant" class="control-select" aria-label="Triangle Grid Preset">
+              <option value="1">Wide</option><option value="2" selected>Balanced</option><option value="3">Fine</option>
+            </select>
+          </div>
           <div class="control slider-control">
-            <label for="triangle-grid-variant-slider" class="control-label">VARIANT <span
-                id="triangle-grid-variant-display" data-slider-value>2</span></label>
-            <input type="range" id="triangle-grid-variant-slider" data-url-parameter="triangleGridVariant" min="1" max="3" value="2" class="control-slider"
-              aria-label="Triangle Grid Variant">
+            <label for="triangle-grid-rows" class="control-label">ROWS <span id="triangle-grid-rows-display" data-slider-value>3</span></label>
+            <input type="range" id="triangle-grid-rows" data-url-parameter="triangleGridRows" min="1" max="6" step="1" value="3" class="control-slider" aria-label="Triangle Grid Rows">
+          </div>
+          <div class="control slider-control">
+            <label for="triangle-grid-density" class="control-label">DENSITY <span id="triangle-grid-density-display" data-slider-value>100</span></label>
+            <input type="range" id="triangle-grid-density" data-url-parameter="triangleGridDensity" min="50" max="150" step="1" value="100" class="control-slider" aria-label="Triangle Grid Density">
+          </div>
+          <div class="control slider-control">
+            <label for="triangle-grid-stroke" class="control-label">STROKE WEIGHT <span id="triangle-grid-stroke-display" data-slider-value>100</span></label>
+            <input type="range" id="triangle-grid-stroke" data-url-parameter="triangleGridStroke" min="40" max="160" step="1" value="100" class="control-slider" aria-label="Triangle Grid Stroke Weight">
+          </div>
+          <div class="control slider-control">
+            <label for="triangle-grid-stagger" class="control-label">ROW OFFSET <span id="triangle-grid-stagger-display" data-slider-value>50</span></label>
+            <input type="range" id="triangle-grid-stagger" data-url-parameter="triangleGridStagger" min="0" max="100" step="1" value="50" class="control-slider" aria-label="Triangle Grid Row Offset">
           </div>
         </div>
 
@@ -997,14 +1039,14 @@
   <script src="js/utils/exportOptions.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportUi.js?v=20261104-nucleotide-minimum"></script>
-  <script src="js/utils/barInformation.js?v=20261104-lfo-integrated"></script>
+  <script src="js/utils/exportUi.js?v=20261104-parametric-lfo-recovery"></script>
+  <script src="js/utils/barInformation.js?v=20261104-parametric-lfo-recovery"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
-  <script src="js/main.js?v=20261104-lfo-integrated"></script>
-  <script src="js/utils/logoClipboard.js?v=20261104-nucleotide-minimum"></script>
-  <script src="js/drawing.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/main.js?v=20261104-parametric-lfo-recovery"></script>
+  <script src="js/utils/logoClipboard.js?v=20261104-parametric-lfo-recovery"></script>
+  <script src="js/drawing.js?v=20261104-parametric-lfo-recovery"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =
