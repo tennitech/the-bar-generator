@@ -3,6 +3,29 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 parameter overflow cue and icon consistency
+
+A passive “More below” chevron appears in the sidebar's existing bottom fade only
+when parameter content remains below its visible boundary. It accounts for the
+sticky About card, short viewports, resized content, and scroll position. The
+cue takes no pointer events or focus; native wheel/touch scrolling is unchanged.
+The scroll region itself supports keyboard focus and Home/End scrolling. There
+is no bouncing, timer, or continuous animation loop. A floating button was not
+chosen because it could obscure controls or suggest a second scrolling model.
+
+The cue reuses the pinned Feather v4.29.2 chevron. Toast dismissal and selected
+option checks now also use the pinned Feather shapes rather than a typographic
+× or a CSS-drawn check. This is consistency with the project's existing icon
+system, not a claim that Feather is an officially mandated RPI icon library.
+See [covered surfaces and audit record](icon_consistency.md).
+
+After integration with #118 (378c2cf), 716 unit tests pass. The new Nucleotide
+minimum/cap behavior, renderer, catalog and controls remain unchanged. Chromium and WebKit pass desktop, 390 px,
+320 px and landscape checks for overflow/end states, keyboard/touch-compatible
+scrolling, resize/style/detail changes, no pointer interception, and toast
+recovery. Visual review confirms the cue sits in the fade without layout shifts.
+These checks do not establish owner acceptance or physical-device certification.
+
 ## November 4 stable Undo startup
 
 The parameter shell now creates the disabled Undo button alongside Randomize and

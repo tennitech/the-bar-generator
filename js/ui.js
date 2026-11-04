@@ -46,7 +46,7 @@ class Toast {
         dismiss.type = 'button';
         dismiss.className = 'toast_dismiss';
         dismiss.setAttribute('aria-label', 'Dismiss message');
-        dismiss.textContent = '×';
+        dismiss.innerHTML = window.FeatherIcons.getIconMarkup('x', 'toast_dismiss-icon');
         toast.append(icon, text, dismiss);
         this.container.appendChild(toast);
         // Keep a persistent live region; a newly inserted status with content
