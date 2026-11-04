@@ -69,6 +69,7 @@
       button.addEventListener('click', () => {
         try {
           if (controller.undo(style)) {
+            scope.ParameterControls?.feedback(button, 'undo');
             randomizeButton.focus({ preventScroll: true });
             announce('Previous variation restored.');
           }

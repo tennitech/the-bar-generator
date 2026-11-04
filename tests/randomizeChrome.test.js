@@ -5,7 +5,9 @@ function fixture() {
   const nodes = [];
   function element(tag = 'div') {
     const node = { tag, dataset: {}, attributes: {}, children: [], listeners: {},
-      className: '', textContent: '', disabled: false,
+      className: '', _text: '', disabled: false,
+      get textContent() { return this._text + this.children.map(child => child.textContent).join(''); },
+      set textContent(value) { this._text = String(value); this.children = []; },
       appendChild(child) { this.children.push(child); child.parentElement = this; },
       replaceChildren(...children) { this.children = []; children.forEach(child => this.appendChild(child)); },
       setAttribute(name, value) { this.attributes[name] = value; },
