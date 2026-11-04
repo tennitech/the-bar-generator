@@ -535,8 +535,10 @@ const MORSE_DICT = {
 function textToMorse(text) {
   if (typeof text !== 'string') text = "RPI";
 
-  text = Array.from(sanitizeBarText(text).normalize('NFKD').replace(/\p{M}/gu, '')
-    .trim().toUpperCase()).slice(0, 100).join('');
+  text = normalizeBinaryText(text);
+  const moderated = sanitizeBarText(text);
+  if (moderated !== text || /\*{3,}/.test(moderated)) return [];
+  text = moderated.normalize('NFKD').replace(/\p{M}/gu, '').trim().toUpperCase();
   if (!text) return [];
 
   const words = text.split(/\s+/).map(word =>
@@ -1859,7 +1861,10 @@ function textToBinary(text) {
 
   // UTF-8 preserves the user's text; the old ASCII fallback silently encoded
   // every non-ASCII character as "A".
-  text = normalizeBinaryText(sanitizeBarText(normalizeBinaryText(text)));
+  text = normalizeBinaryText(text);
+  const moderated = sanitizeBarText(text);
+  if (moderated !== text || /\*{3,}/.test(moderated)) return [];
+  text = moderated;
 
   let binary = [];
   const bytes = new TextEncoder().encode(text);
@@ -3475,29 +3480,30 @@ function handleMorseInput() {
   updateMorseData(morseInput.value);
 }
 
+function updateEncodedTextInput(field, text, kind) {
+  const normalized = normalizeBinaryText(typeof text === 'string' ? text : 'RPI');
+  const clean = sanitizeBarText(normalized);
+  const blocked = clean !== normalized || /\*{3,}/.test(clean);
+  if (field) {
+    // Keep the draft editable: masking 'hell' mid-keystroke prevents typing 'hello'.
+    // Shared/query values and renderer inputs are still sanitized separately.
+    field.value = normalized;
+    field.setAttribute('aria-invalid', String(blocked));
+    const error = document.getElementById(`${kind}-input-error`);
+    if (error) error.textContent = blocked ? 'This text is not allowed. Enter different text to show the bar.' : '';
+  }
+  return clean;
+}
+
 function updateBinaryData(text) {
-  const cleanText = normalizeBinaryText(sanitizeBarText(normalizeBinaryText(text)));
-  if (binaryInput) binaryInput.value = cleanText;
+  const cleanText = updateEncodedTextInput(binaryInput, text, 'binary');
   binaryData = { text: cleanText, binary: textToBinary(cleanText) };
   binaryLength = binaryData.binary.length;
 }
 
 function updateMorseData(text) {
-  let cleanText = typeof text === 'string' ? text : "RPI";
-  if (window.ProfanityFilter && typeof window.ProfanityFilter.sanitizeText === 'function') {
-    cleanText = window.ProfanityFilter.sanitizeText(cleanText);
-    if (cleanText !== text) {
-      console.log('Profanity filtered from morse input');
-      if (morseInput && morseInput.value === text) {
-        morseInput.value = cleanText;
-      }
-    }
-  }
-
-  morseData = {
-    text: cleanText,
-    morse: textToMorse(cleanText)
-  };
+  const cleanText = updateEncodedTextInput(morseInput, text, 'morse');
+  morseData = { text: cleanText, morse: textToMorse(cleanText) };
   morseLength = morseData.morse.length;
 }
 
@@ -4290,7 +4296,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     ...(typeof getTrianglePatternControlValues === 'function'
       ? getTrianglePatternControlValues()
       : { trianglesDirection: 'down-right', trianglesCount: 14 }),
-    morseText: morseInput ? sanitizeBarText(morseInput.value) : 'RPI',
+    morseText: morseInput ? sanitizeBarText(normalizeBinaryText(morseInput.value)) : 'RPI',
     trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
     trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
     trussThickness: trussThicknessSlider ? trussThicknessSlider.value : 2,

@@ -3,6 +3,22 @@
 **Last Updated:** 2026-11-03
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 encoded-text validation
+
+Binary and Morse now keep text drafts editable while suppressing rejected text
+in their shared preview/export encoders and show a persistent inline recovery message. Masked query values also
+stay blocked after reload, and entering clean text restores the bar. Both fields
+use the same ten-code-point limit before encoding, including URL restoration and
+migration of older share snapshots. Benign “hello” remains accepted by the existing
+whole-word filter. Issue #12 was a joke and #13 needs owner clarification; no new broad
+numeric restrictions or unrelated field limits are included.
+
+Validation on main 792e917: 685 unit tests in 60 suites pass. Chromium desktop (1440 × 900)
+and phone-sized (390 × 844) checks pass for both fields: initial blocked URLs,
+sequential typing of hello, ten-character limits, repeated key handling, reload,
+and shared preview/export geometry. WebKit execution is blocked by missing host
+libraries; physical-device and screen-reader behavior were not verified.
+
 ## November 4 Ticker audio removal
 
 Ticker no longer offers audio, as requested in issue #44. Its audio button,

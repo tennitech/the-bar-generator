@@ -286,8 +286,9 @@
           <div class="control">
             <label for="binary-input" class="control-label">INPUT TEXT</label>
             <input type="text" id="binary-input" data-url-parameter="binaryText" value="RPI" placeholder="Enter text..." class="control-input"
-              maxlength="20" data-max-code-points="10" aria-label="Binary Text Input" aria-describedby="binary-input-hint">
+              maxlength="20" data-max-code-points="10" aria-label="Binary Text Input" aria-describedby="binary-input-hint binary-input-error">
             <div id="binary-input-hint" class="control-hint">Up to 10 characters, encoded as UTF-8 bytes.</div>
+            <div id="binary-input-error" class="control-hint" role="status" aria-live="polite"></div>
           </div>
         </div>
 
@@ -324,8 +325,9 @@
           <div class="control">
             <label for="morse-input" class="control-label">INPUT TEXT</label>
             <input type="text" id="morse-input" data-url-parameter="morseText" value="RPI" placeholder="Enter text..." class="control-input"
-              maxlength="100" aria-label="Morse Text Input" aria-describedby="morse-input-hint">
-            <div id="morse-input-hint" class="control-hint">A–Z, 0–9 and common punctuation. Other characters are omitted.</div>
+              maxlength="20" data-max-code-points="10" aria-label="Morse Text Input" aria-describedby="morse-input-hint morse-input-error">
+            <div id="morse-input-hint" class="control-hint">Up to 10 characters. A–Z, 0–9 and common punctuation. Other characters are omitted.</div>
+            <div id="morse-input-error" class="control-hint" role="status" aria-live="polite"></div>
           </div>
           <div class="runtime_section audio_section">
             <div class="control-header">PREVIEW</div>
