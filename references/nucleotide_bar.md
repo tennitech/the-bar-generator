@@ -2,17 +2,19 @@
 
 ## Encoding and input
 
-Enter 30–50 bases to export. This is the tool's layout rule, not a biological
-requirement. Input accepts A, T, C, G and U, converts lowercase to uppercase,
-removes other characters and caps the sequence at 50 bases. Mixed T/U is allowed
+Choose a Sequence length from 30 to 50 bases, then fill every slot to export.
+This is the tool's layout rule, not a biological requirement. Input accepts A, T, C, G and U, converts lowercase to uppercase,
+removes other characters and stops at the chosen length (50 by default). Mixed T/U is allowed
 and labeled as mixed DNA/RNA notation. Input, query, share and rendering paths
-apply the same bound. Older longer links are capped at 50; short links remain
-editable without padding or repetition.
+apply the same bound. Links retain the chosen length. Older links without that field use 50; longer
+legacy sequences are capped at that target. Short links remain editable without
+padding or repetition. A deliberate length reduction keeps the first bases and
+shows a notice; length increases add empty slots.
 
 One filled tooth represents one entered base, read from left to right in the
-conventional 5′ to 3′ direction. Below 30 bases, a fixed 30-slot preview uses
-dashed neutral rectangles for empty positions. At 30–50 bases, the entered
-sequence fills the full bar. Preview, header and exports share that geometry.
+conventional 5′ to 3′ direction. The preview keeps exactly the chosen number of slots. Dashed neutral rectangles
+mark empty positions. The target never moves as the user types. Filling the
+chosen length completes the bar. Preview, header and exports share that geometry.
 The connected variant adds the intentional backbone from the second supplied
 reference. No letters, positions or scientific measurements are invented.
 
@@ -47,6 +49,9 @@ GenBank CDS starts and literal ORIGIN sequences were checked through EFetch.
 | Human HBB | [NM_000518.5](https://www.ncbi.nlm.nih.gov/nuccore/NM_000518.5) | 51–100 | `ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGG` |
 | INS RNA letters | Same INS record | 60–109 | Same 50 bases with T replaced by U |
 
+The table gives the 50-base maximum excerpts. Choosing a shorter target uses
+the corresponding prefix and updates the displayed source coordinates.
+
 Edits update the preset and source label. Arbitrary sequences are never assigned
 a gene identity. Randomize chooses a different verified preset. Reset restores
 INS and separate bases. URL restoration and Undo preserve the accepted sequence
@@ -54,19 +59,33 @@ and structure. The three Home samples come from the shared renderer.
 
 ## Completion and exports
 
-Progress shows readiness at the 30-base minimum. The Parameters panel retains a
+Progress shows readiness at the chosen target. The Parameters panel retains a
 green border and check mark once ready. A brief green confirmation runs only
 when crossing from incomplete to ready. Reduced motion removes that animation.
 These controls do not recolor or animate the official artwork.
 
-Below 30, Export has a dashed border and `aria-disabled` state. The trigger stays
+Before the target is filled, Export has a dashed border and `aria-disabled` state. The trigger stays
 focusable so hover, keyboard focus, Enter/Space and touch can explain the lock
 in a small pop-up. Escape and outside interaction dismiss it. File/copy actions
-and direct snapshot capture enforce the same requirement. At 30–50, the normal
+and direct snapshot capture enforce the same requirement. When every chosen slot is filled, the normal
 export menu returns. All exports contain actual bases only; no dashed slots,
 green indicators or completion UI enter the files.
 
 ## Verification
+
+The integrated tree based on main `47a3028` passes 700 unit tests in 63 suites.
+Chromium and WebKit checks pass chosen lengths of 30, 40 and 50, every empty-slot
+count through the boundary, capped typing without target movement, target changes,
+shortening notices, query reload, presets, Reset/Randomize, keyboard access,
+readiness animation and reduced motion. SVG downloads at 30/50 and PNG dimensions
+and source checks confirm placeholder-free output. Emulated touch verifies the
+unavailable Export pop-up, dismissal, visible progress and 320 px containment.
+Shared-state tests cover target restoration and legacy sequence bounds.
+
+Both engines also pass the retained export feedback checks. All three generated
+Home samples match the shared renderer exactly. Desktop and emulated touch
+screenshots were inspected. These checks do not prove native Safari or physical
+mobile behavior.
 
 Review images: [partial desktop](review-images/nucleotide-completion/desktop-incomplete.png),
 [ready desktop](review-images/nucleotide-completion/desktop-ready.png),

@@ -29,7 +29,8 @@ function read() {
     style,
     colorMode,
 
-    nucleotideSequence: window.NucleotidePattern.normalize(params.has('nucleotideSequence') ? params.get('nucleotideSequence') : window.NucleotidePattern.DEFAULT_SEQUENCE),
+    nucleotideLength: window.NucleotidePattern.normalizeLength(params.get('nucleotideLength')),
+    nucleotideSequence: window.NucleotidePattern.normalize(params.has('nucleotideSequence') ? params.get('nucleotideSequence') : window.NucleotidePattern.DEFAULT_SEQUENCE, window.NucleotidePattern.normalizeLength(params.get('nucleotideLength'))),
     nucleotideVariant: params.get('nucleotideVariant') === 'backbone' ? 'backbone' : 'separate',
 
     // Binary parameters

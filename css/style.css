@@ -4401,10 +4401,15 @@ body.theme-white { --color-ready: #83d9a4; }
 .nucleotide_sequence[data-ready="true"] .nucleotide_feedback { border-style: solid; border-color: var(--color-ready); }
 .nucleotide_sequence[data-ready="true"] .nucleotide_progress { accent-color: var(--color-ready); }
 .nucleotide_sequence.is-newly-ready .nucleotide_feedback { animation: nucleotideReady var(--duration-ready) ease-out; }
+.nucleotide_sequence.is-newly-ready .control-input { animation: nucleotideInputReady var(--duration-ready) ease-out; }
 .nucleotide_sequence.is-newly-ready .nucleotide_ready-icon polyline { stroke-dasharray: 28; animation: feedbackCheck var(--duration-ready) ease-out; }
 @keyframes nucleotideReady {
   from { background-color: color-mix(in srgb, var(--color-ready) 18%, transparent); }
   to { background-color: transparent; }
+}
+@keyframes nucleotideInputReady {
+  from { background-color: color-mix(in srgb, var(--color-ready) 18%, var(--control-surface)); }
+  to { background-color: var(--control-surface); }
 }
 .save-button.primary-button[aria-disabled="true"] { border-style: dashed; color: color-mix(in srgb, var(--header-control-text) 55%, var(--header-control-bg)); cursor: not-allowed; box-shadow: none; transform: none; }
 .save-button.primary-button[aria-disabled="true"]:is(:hover, :focus-visible) { background: var(--header-control-bg); border-color: var(--header-control-border); box-shadow: none; }
@@ -4412,5 +4417,6 @@ body.theme-white { --color-ready: #83d9a4; }
 .export_blocked-note { position: absolute; z-index: 1200; top: calc(100% + .5rem); right: 0; width: min(20rem, calc(100vw - 6rem)); padding: .75rem 1rem; color: var(--text-primary); background: var(--surface-panel); border: 1px solid var(--border-color); border-radius: var(--control-radius); box-shadow: var(--shadow-soft); font: 400 .8125rem/1.5 'RPIGeist', sans-serif; }
 @media (prefers-reduced-motion: reduce) {
   .nucleotide_sequence.is-newly-ready .nucleotide_feedback,
+  .nucleotide_sequence.is-newly-ready .control-input,
   .nucleotide_sequence.is-newly-ready .nucleotide_ready-icon polyline { animation: none !important; }
 }

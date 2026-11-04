@@ -7,13 +7,17 @@
     { label: 'Beta-globin · human HBB', sequence: 'ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGG', accession: 'NM_000518.5', range: '51–100' },
     { label: 'Insulin · RNA letters', sequence: DEFAULT_SEQUENCE.replace(/T/g, 'U'), accession: 'NM_000207.3', range: '60–109' }
   ]);
-  function normalize(value) { return String(value ?? '').toUpperCase().replace(/[^ATCGU]/g, '').slice(0, MAX_BASES); }
-  function svg({ sequence = DEFAULT_SEQUENCE, variant = 'separate', x = 0, y = 0, width = 250, height = 18, fill = 'currentColor', preview = false } = {}) {
-    const bases = normalize(sequence);
+  function normalizeLength(value) {
+    const number = value === null || value === '' ? NaN : Number(value);
+    return Number.isFinite(number) ? Math.max(MIN_BASES, Math.min(MAX_BASES, Math.round(number))) : MAX_BASES;
+  }
+  function normalize(value, length = MAX_BASES) { return String(value ?? '').toUpperCase().replace(/[^ATCGU]/g, '').slice(0, normalizeLength(length)); }
+  function targetLength(root) { return normalizeLength(root.querySelector('#nucleotide-length')?.value); }
+  function svg({ sequence = DEFAULT_SEQUENCE, targetLength = MAX_BASES, variant = 'separate', x = 0, y = 0, width = 250, height = 18, fill = 'currentColor', preview = false } = {}) {
+    const slots = normalizeLength(targetLength);
+    const bases = normalize(sequence, slots);
     if (!bases && !preview) return '';
-    // Build toward the 30-base minimum. Ready sequences fill the full bar,
-    // including every entered base up to 50. Empty slots never enter exports.
-    const slots = Math.max(MIN_BASES, bases.length);
+    // The chosen length stays fixed while typing. Empty slots never enter files.
     const pitch = width / slots;
     const w = pitch * .714, radius = Math.min(w / 2, height * .175);
     const left = x;
@@ -38,16 +42,20 @@
   }
   function exportBlocker(root) {
     if (root?.querySelector('#style-select')?.value !== 'nucleotide') return '';
-    const remaining = MIN_BASES - normalize(root.querySelector('#nucleotide-input')?.value).length;
-    return remaining > 0 ? `Add ${remaining} ${remaining === 1 ? 'base' : 'bases'} to export. Enter 30–50 bases; dashed outlines are empty slots.` : '';
+    const target = targetLength(root);
+    const remaining = target - normalize(root.querySelector('#nucleotide-input')?.value).length;
+    if (remaining < 0) return `Remove ${-remaining} bases to match the chosen ${target}-base length.`;
+    return remaining ? `Add ${remaining} ${remaining === 1 ? 'base' : 'bases'} to export. Fill all ${target} slots, or change Sequence length.` : '';
   }
   function syncControls(root, edited = false) {
     const model = { normalize, presets };
     const input = root.querySelector('#nucleotide-input');
     if (!input) return;
+    const target = targetLength(root);
     const original = input.value;
-    input.value = model.normalize(original);
-    const index = model.presets.findIndex(preset => preset.sequence === input.value);
+    input.maxLength = target;
+    input.value = model.normalize(original, target);
+    const index = model.presets.findIndex(preset => preset.sequence.slice(0,target) === input.value);
     root.querySelector('#nucleotide-preset').value = index < 0 ? 'custom' : String(index);
     const source = root.querySelector('#nucleotide-source');
     source.replaceChildren();
@@ -56,20 +64,22 @@
       const link = (root.ownerDocument || root).createElement('a');
       link.className = 'nucleotide_source-link';
       link.href = `https://www.ncbi.nlm.nih.gov/nuccore/${preset.accession}`;
-      link.textContent = `${preset.accession}, bases ${preset.range} (${preset.sequence.length} bases)`;
+      const start = Number(preset.range.split('–')[0]);
+      link.textContent = `${preset.accession}, bases ${start}–${start + target - 1} (${target} bases)`;
       link.target = '_blank'; link.rel = 'noopener noreferrer';
       source.append(link);
       if (index === 2) source.append(' · T replaced by U for RNA notation.');
     } else source.textContent = 'Custom sequence; no gene identity is inferred.';
     const status = root.querySelector('#nucleotide-status');
     const count = input.value.length;
-    const remaining = Math.max(0, MIN_BASES - count);
-    const notice = /T/.test(input.value) && /U/.test(input.value) ? ' Mixed DNA/RNA letters.'
+    const remaining = target - count;
+    const notice = edited === 'length' && normalize(original).length > target ? ` Kept the first ${target} bases.`
+      : /T/.test(input.value) && /U/.test(input.value) ? ' Mixed DNA/RNA letters.'
       : edited && original.toUpperCase() !== input.value ? ' Only A, T, C, G and U are kept.' : '';
-    status.textContent = `${count}/50 bases. ${remaining ? `Add ${remaining} to export, or choose a gene snippet.` : 'Ready to export.'}${notice}`;
+    status.textContent = `${count}/${target} bases. ${remaining ? `Add ${remaining} to export, or choose a gene snippet.` : 'Ready to export.'}${notice}`;
     const progress = root.querySelector('#nucleotide-progress');
     if (progress) {
-      progress.max = MIN_BASES; progress.value = Math.min(count, MIN_BASES);
+      progress.max = target; progress.value = count;
       progress.setAttribute('aria-valuetext', `${count} bases entered; ${remaining ? `${remaining} more needed` : 'ready to export'}`);
     }
     const control = root.querySelector('#nucleotide-sequence-control');
@@ -84,7 +94,7 @@
       }
     }
   }
-  const api = { MIN_BASES, MAX_BASES, DEFAULT_SEQUENCE, presets, normalize, svg, syncControls, exportBlocker };
+  const api = { MIN_BASES, MAX_BASES, DEFAULT_SEQUENCE, presets, normalizeLength, targetLength, normalize, svg, syncControls, exportBlocker };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   scope.NucleotidePattern = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -126,23 +126,26 @@ responsive layouts. This does not establish owner or physical-device testing.
 
 ## November 4 nucleotide completion feedback
 
-Nucleotide accepts 30–50 bases for export. This is a tool layout rule, not a
-biological requirement. Below 30 bases, the preview has 30 slots and dashed empty
-positions. At 30–50, every entered base fills its share of the full bar. No bases
-are repeated or fabricated, and placeholders never enter SVG, PNG or clipboard
-output. INS/HBB presets contain the first 50 verified CDS bases.
+Nucleotide has an explicit Sequence length control from 30 to 50 bases. The
+chosen target stays fixed while typing. The preview contains exactly that many
+slots, with dashed outlines for missing bases. The field stops at the chosen
+length, and export requires every slot to be filled. Changing to a longer length
+adds empty slots. A shorter length keeps the first bases and displays a notice.
+This is a tool layout rule, not a biological requirement.
 
-The Parameters panel shows progress to the 30-base minimum. Crossing that
-minimum gives a brief green confirmation, a persistent check mark and a green
-feedback border. Reduced motion retains the ready state without animation.
-Below the minimum, Export has a dashed border and unavailable state. Hover,
-keyboard focus and tap expose the same explanation. The trigger remains
-focusable to explain the lock; file actions and snapshot capture remain blocked.
-Ready input restores normal export behavior. Green is used only for control
-feedback and does not change the official artwork.
+The Parameters panel shows progress to the chosen target. Completion gives a
+brief green confirmation, a persistent check mark and a green control border.
+Reduced motion retains readiness without animation. Incomplete input gives
+Export a dashed border and unavailable state. Hover, keyboard focus and tap
+expose the same explanation. The trigger remains focusable to explain the lock;
+file/copy actions and snapshot capture enforce it. Ready input restores normal
+export behavior. Placeholders and green control feedback never enter artwork
+exports. Presets use verified CDS excerpts at the selected length.
 
-The fix retains main `21bed8c`'s grouped export controls and state feedback.
-See [source, checks and review images](nucleotide_bar.md).
+The fix retains main `47a3028`'s grouped export controls, feedback and stable Undo
+startup. Validation passes 700 unit tests in 63 suites, focused Chromium/WebKit
+completion and export checks, retained export feedback and exact Home sample
+parity. See [source, checks and review images](nucleotide_bar.md).
 
 ## November 3 compact export actions
 

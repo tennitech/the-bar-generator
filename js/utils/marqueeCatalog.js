@@ -38,7 +38,7 @@
   ].map(([value, label]) => {
     const variants = ['', ...(configurations[value] || [])].map((query, variant) => Object.freeze({
       value, label, query, variant,
-      path: `assets/images/marquee-bars/${value}${variant ? `-${variant}` : ''}.svg?v=${value === 'nucleotide' ? '20261104-nucleotide-range' : value === 'circles-gradient' && variant === 0 ? '20261104-gradient-reference' : value === 'ruler' ? '20261103-resting-motion-ruler' : value === 'binary' ? '20261103-binary-seams' : '20261103-configurations'}`
+      path: `assets/images/marquee-bars/${value}${variant ? `-${variant}` : ''}.svg?v=${value === 'nucleotide' ? '20261104-nucleotide-target' : value === 'circles-gradient' && variant === 0 ? '20261104-gradient-reference' : value === 'ruler' ? '20261103-resting-motion-ruler' : value === 'binary' ? '20261103-binary-seams' : '20261103-configurations'}`
     }));
     return Object.freeze({ ...variants[0], variants: Object.freeze(variants) });
   });

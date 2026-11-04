@@ -94,10 +94,12 @@
         if (spec.step && Math.abs((number - spec.min) / spec.step - Math.round((number - spec.min) / spec.step)) > 1e-6) throw new Error('This share link has an invalid control step.');
         controls[id] = String(number);
       } else {
-        if (typeof raw !== 'string' || Array.from(raw).length > Math.min(spec.maxLength || MAX_TEXT_LENGTH, MAX_TEXT_LENGTH)) throw new Error('Text in this share link is too long.');
+        const limit = id === 'nucleotide-input' ? MAX_TEXT_LENGTH : Math.min(spec.maxLength || MAX_TEXT_LENGTH, MAX_TEXT_LENGTH);
+        if (typeof raw !== 'string' || Array.from(raw).length > limit) throw new Error('Text in this share link is too long.');
         controls[id] = id === 'nucleotide-input' ? raw.toUpperCase().replace(/[^ATCGU]/g, '').slice(0, 50) : raw;
       }
     }
+    if (controls['nucleotide-input'] && controls['nucleotide-length']) controls['nucleotide-input'] = controls['nucleotide-input'].slice(0, Number(controls['nucleotide-length']));
     if (controls['color-mode-select'] === 'lunar' && controls['style-select'] !== 'lunar') throw new Error('This share link uses a theme unavailable for this bar.');
     return { v: VERSION, name: safeText(value.name, MAX_NAME_LENGTH), controls, runtime: normalizeRuntime(value.runtime) };
   }
@@ -170,7 +172,7 @@
       manifest[field.id] = {
         type: field.type,
         min: Number(field.min || 0), max: Number(field.max || 100), step: Number(field.step || 1),
-        maxLength: Number(field.dataset.maxCodePoints) || (field.maxLength > 0 ? field.maxLength : MAX_TEXT_LENGTH),
+        maxLength: field.id === 'nucleotide-input' ? 50 : Number(field.dataset.maxCodePoints) || (field.maxLength > 0 ? field.maxLength : MAX_TEXT_LENGTH),
         ...(field.tagName === 'SELECT' ? { options: Array.from(field.options).filter(option => field.id !== 'style-select' || !option.disabled).map(option => option.value) } : {})
       };
     }

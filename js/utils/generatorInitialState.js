@@ -114,7 +114,7 @@
       root.querySelectorAll('#app-sidebar input[id], #app-sidebar select[id]').forEach(field => {
         manifest[field.id] = {
           type: field.type, min: Number(field.min || 0), max: Number(field.max || 100), step: Number(field.step || 1),
-          maxLength: Number(field.dataset.maxCodePoints) || (field.maxLength > 0 ? field.maxLength : 4096),
+          maxLength: field.id === 'nucleotide-input' ? 50 : Number(field.dataset.maxCodePoints) || (field.maxLength > 0 ? field.maxLength : 4096),
           ...(field.tagName === 'SELECT' ? { options: Array.from(field.options).filter(option => field.id !== 'style-select' || !option.disabled).map(option => option.value) } : {})
         };
       });
