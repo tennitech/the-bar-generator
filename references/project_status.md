@@ -3,6 +3,15 @@
 **Last Updated:** 2026-11-03
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 Ticker audio removal
+
+Ticker no longer offers audio, as requested in issue #44. Its audio button,
+dispatch and polyrhythmic synthesizer are removed. Ticker motion, visual ratios
+and exports are unchanged. Binary remains silent following the earlier #47 fix.
+Regression coverage verifies unsupported audio cannot start and supported styles
+remain available. See `scripts/audioAvailabilitySmoke.js` for the focused
+browser check of navigation, Ticker motion and phone-width layout.
+
 ## November 3 compact export actions
 
 Download and Copy now sit side by side, with distinct tray and overlapping-sheet
