@@ -4286,3 +4286,7 @@ body.theme-lunar .export_menu { min-width: 0; }
   border-width: 0 1.5px 1.5px 0;
   transform: translateY(-65%) rotate(45deg);
 }
+
+/* Versioned public sequence provenance, kept within the sidebar palette. */
+.nucleotide_source-link { color: inherit; text-underline-offset: .15em; }
+.nucleotide_source-link:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }

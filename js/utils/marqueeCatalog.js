@@ -13,6 +13,7 @@
     waveform: ['waveformType=1&waveformFrequency=12', 'waveformType=0&waveformFrequency=36&waveformEnvelope=true&waveformEnvelopeWaves=2'],
     circles: ['circlesFill=fill&circlesDensity=35&circlesSizeVariation=60', 'circlesFill=stroke&circlesDensity=75&circlesSizeVariation=35'],
     numeric: ['numericSource=formula&numericFormula=e&numericMode=dotmatrix', 'numericSource=formula&numericFormula=phi&numericMode=dotmatrix'],
+    nucleotide: ['nucleotideVariant=backbone', 'nucleotideSequence=ATGGTGCATCTGACTCCTGAGGAGAAGTCT'],
     morse: ['morseText=1824', 'morseText=WHY+NOT'],
     'circles-gradient': ['circlesGradientVariant=2', 'circlesGradientVariant=3'],
     gradient: ['gradientVariant=2'],
@@ -27,7 +28,7 @@
   const entries = [
     ['solid', 'Solid'], ['ruler', 'Ruler'], ['ticker', 'Ticker'],
     ['binary', 'Binary'], ['waveform', 'Waveform'], ['circles', 'Circles'],
-    ['numeric', 'Numeric'], ['morse', 'Morse Code'],
+    ['nucleotide', 'Nucleotide'], ['numeric', 'Numeric'], ['morse', 'Morse Code'],
     ['circles-gradient', 'Circles Gradient'], ['gradient', 'Gradient'],
     ['grid', 'Grid'], ['lines', 'Lines'], ['point-connect', 'Point Connect'],
     ['neural-network', 'Neural Network'], ['triangle-grid', 'Triangle Grid'],

@@ -1547,6 +1547,11 @@ function createBarPatternSVG(config) {
     values
   } = config;
 
+  if (currentShader === 25) {
+    const model = typeof module !== 'undefined' && module.exports ? require('./nucleotidePattern') : window.NucleotidePattern;
+    return model.svg({ sequence: values.nucleotideSequence, variant: values.nucleotideVariant, x: barStartX, y: barY, width: exactBarWidth, height: barHeight, fill: fgColor });
+  }
+
   let pattern = '';
 
   if (currentShader === 1) {

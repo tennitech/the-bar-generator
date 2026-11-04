@@ -666,7 +666,7 @@ function getWorkspaceDisplaySize() {
 
 const AVAILABLE_STYLE_VALUES = new Set([
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
-  'numeric', 'morse', 'circles-gradient', 'gradient', 'grid',
+  'numeric', 'morse', 'nucleotide', 'circles-gradient', 'gradient', 'grid',
   'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles',
   'fibonacci-sequence', 'union', 'wave-quantum',
   'runway', 'lunar', 'truss', 'music', 'graph'
@@ -692,6 +692,7 @@ const RESETTABLE_GROUP_STYLE_MAP = {
   'ruler-group': 'ruler',
   'binary-group': 'binary',
   'morse-group': 'morse',
+  'nucleotide-group': 'nucleotide',
   'ticker-group': 'ticker',
   'waveform-group': 'waveform',
   'circles-group': 'circles',
@@ -1275,11 +1276,21 @@ function togglePreviewAudio(type) {
   startAudio();
 }
 
+function syncNucleotideControls(edited = false) {
+  window.NucleotidePattern.syncControls(document, edited);
+  if (typeof syncAllCustomSelects === 'function') syncAllCustomSelects();
+}
+
 function resetStyleParameters(style) {
   if (!window.ParameterControls.supportsActions(style)) return;
   stopAudio();
 
   switch (style) {
+    case 'nucleotide':
+      document.getElementById('nucleotide-input').value = window.NucleotidePattern.DEFAULT_SEQUENCE;
+      document.getElementById('nucleotide-variant').value = 'separate';
+      syncNucleotideControls();
+      break;
     case 'ruler':
       liveMotionPhase = 0;
       if (rulerRepeatsSlider) rulerRepeatsSlider.value = 10;
@@ -1452,6 +1463,10 @@ function randomizeStyleParameters(style) {
   stopAudio();
 
   switch (style) {
+    case 'nucleotide':
+      document.getElementById('nucleotide-input').value = pickDifferent(window.NucleotidePattern.presets.map(preset => preset.sequence), document.getElementById('nucleotide-input').value);
+      syncNucleotideControls();
+      break;
     case 'ruler':
       liveMotionPhase = 0;
       if (rulerRepeatsSlider) rulerRepeatsSlider.value = randomDifferentStep(rulerRepeatsSlider, 1, 20);
@@ -2816,6 +2831,14 @@ function setup() {
   // Setup color mode selector
   colorModeSelect.addEventListener('change', handleColorModeChange);
 
+  document.getElementById('nucleotide-input').addEventListener('input', () => { syncNucleotideControls(true); updateUrlParameters(); requestUpdate(); });
+  document.getElementById('nucleotide-variant').addEventListener('change', () => { updateUrlParameters(); requestUpdate(); });
+  document.getElementById('nucleotide-preset').addEventListener('change', event => {
+    const preset = window.NucleotidePattern.presets[Number(event.target.value)];
+    if (event.target.value !== 'custom' && preset) document.getElementById('nucleotide-input').value = preset.sequence;
+    syncNucleotideControls(); updateUrlParameters(); requestUpdate();
+  });
+
   // Setup binary input with real-time updates
   binaryInput.addEventListener('input', function () {
     handleBinaryInput();
@@ -3983,8 +4006,14 @@ function handleStyleChange() {
     applyColorMode(lastNonLunarColorMode || DEFAULT_COLOR_MODE);
   }
 
+  document.getElementById('nucleotide-group').style.display = selectedStyle === 'nucleotide' ? 'block' : 'none';
+  syncNucleotideControls();
+
   // Set currentShader based on selected style
   switch (selectedStyle) {
+    case 'nucleotide':
+      currentShader = 25;
+      break;
     case 'solid':
       currentShader = 0;
       break;
@@ -4240,6 +4269,8 @@ function getCurrentBarPatternValues(exactBarWidth) {
     tickerRatio: tickerRatioSlider ? tickerRatioSlider.value : 2,
     tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
     loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
+    nucleotideSequence: window.NucleotidePattern.normalize(document.getElementById('nucleotide-input').value),
+    nucleotideVariant: document.getElementById('nucleotide-variant').value,
     binaryText: binaryInput ? normalizeBinaryText(sanitizeBarText(normalizeBinaryText(binaryInput.value || 'RPI'))) : 'RPI',
     waveformPoints: getWaveformRenderPointCount(exactBarWidth, waveformFrequencySlider ? Number(waveformFrequencySlider.value) : 24),
     waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
@@ -5909,6 +5940,11 @@ function updateUrlParameters() {
     params.set('colorMode', colorModeSelect.value);
   }
 
+  if (selectedStyle === 'nucleotide') {
+    params.set('nucleotideSequence', window.NucleotidePattern.normalize(document.getElementById('nucleotide-input').value));
+    params.set('nucleotideVariant', document.getElementById('nucleotide-variant').value);
+  }
+
   // Add style-specific parameters only when that style is active
   if (styleSelect && styleSelect.value === 'binary') {
     if (binaryInput && binaryInput.value !== 'RPI') {
@@ -6163,6 +6199,10 @@ function applyUrlParameters() {
   if (binaryInput) {
     binaryInput.value = params.binaryText;
   }
+
+  document.getElementById('nucleotide-input').value = params.nucleotideSequence;
+  document.getElementById('nucleotide-variant').value = params.nucleotideVariant;
+  syncNucleotideControls();
 
   // Apply morse parameters
   if (morseInput) {

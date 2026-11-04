@@ -1,6 +1,10 @@
 // Descriptions explain the implemented pattern; source records live in references/bar_information_cards.md.
 (function (globalScope) {
   const descriptions = {
+  "nucleotide": {
+    "title": "Nucleotide",
+    "text": "One tooth per base, read 5′ to 3′. Complementary shapes reflect A–T in DNA, A–U in RNA, and C–G pairing. The shape key is a design convention, not standard molecular symbols. Presets are short transcript excerpts, not complete genes."
+  },
   "solid": {
     "title": "Solid",
     "text": "One continuous shape fills the bar, keeping the focus on the official mark’s proportions. Use it as a quiet starting point, or compare it with the other styles to see how a small design area can carry very different systems."
