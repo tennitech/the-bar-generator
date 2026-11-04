@@ -145,7 +145,9 @@ exports. Presets use verified CDS excerpts at the selected length.
 The fix retains main `47a3028`'s grouped export controls, feedback and stable Undo
 startup. Validation passes 700 unit tests in 63 suites, focused Chromium/WebKit
 completion and export checks, retained export feedback and exact Home sample
-parity. See [source, checks and review images](nucleotide_bar.md).
+parity. The full Chromium browser check also passes prior styles, exports, five
+widths, text safety, reduced motion and fallback/recovery. See
+[source, checks and review images](nucleotide_bar.md).
 
 ## November 3 compact export actions
 

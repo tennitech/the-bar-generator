@@ -74,14 +74,17 @@ green indicators or completion UI enter the files.
 ## Verification
 
 The integrated tree based on main `47a3028` passes 700 unit tests in 63 suites.
-Chromium and WebKit checks pass chosen lengths of 30, 40 and 50, every empty-slot
-count through the boundary, capped typing without target movement, target changes,
+Chromium and WebKit checks pass chosen lengths of 30, 40 and 50, empty/short
+input and completion boundaries, capped typing without target movement, target changes,
 shortening notices, query reload, presets, Reset/Randomize, keyboard access,
 readiness animation and reduced motion. SVG downloads at 30/50 and PNG dimensions
 and source checks confirm placeholder-free output. Emulated touch verifies the
 unavailable Export pop-up, dismissal, visible progress and 320 px containment.
 Shared-state tests cover target restoration and legacy sequence bounds.
 
+The full Chromium browser check passes 21 prior styles and their SVG exports,
+PNG, five viewport widths, text safety, reduced motion, 2D fallback and renderer
+recovery. Its text assertions follow the editable-draft behavior from #92.
 Both engines also pass the retained export feedback checks. All three generated
 Home samples match the shared renderer exactly. Desktop and emulated touch
 screenshots were inspected. These checks do not prove native Safari or physical
