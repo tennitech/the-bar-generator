@@ -85,3 +85,17 @@ test('Ticker validates width against the restored count ratio rather than the pr
     else global.getTickerWidthRatioMax = previous;
   }
 });
+
+
+test('nucleotide restores the selected target and caps legacy sequences without rejecting them', () => {
+  const {normalizeState}=require('../js/utils/shareState');
+  const manifest={'nucleotide-input':{type:'text',maxLength:30},'nucleotide-length':{options:['30','40','50']}};
+  for (const target of ['30','40','50']) {
+    const state=normalizeState({v:1,name:'',controls:{'nucleotide-input':'a'.repeat(60),'nucleotide-length':target},runtime:{}},manifest);
+    expect(state.controls['nucleotide-input']).toBe('A'.repeat(Number(target)));
+    expect(state.controls['nucleotide-length']).toBe(target);
+  }
+  const legacy=normalizeState({v:1,name:'',controls:{'nucleotide-input':'A'.repeat(60)},runtime:{}},manifest);
+  expect(legacy.controls['nucleotide-length']).toBe('50');
+  expect(legacy.controls['nucleotide-input']).toHaveLength(50);
+});

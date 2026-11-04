@@ -1247,6 +1247,7 @@ function togglePreviewAudio(type) {
 
 function syncNucleotideControls(edited = false) {
   window.NucleotidePattern.syncControls(document, edited);
+  window.logoExportUI?.sync(false);
   if (typeof syncAllCustomSelects === 'function') syncAllCustomSelects();
 }
 
@@ -1256,6 +1257,7 @@ function resetStyleParameters(style) {
 
   switch (style) {
     case 'nucleotide':
+      document.getElementById('nucleotide-length').value = '50';
       document.getElementById('nucleotide-input').value = window.NucleotidePattern.DEFAULT_SEQUENCE;
       document.getElementById('nucleotide-variant').value = 'separate';
       syncNucleotideControls();
@@ -1425,7 +1427,7 @@ function randomizeStyleParameters(style) {
 
   switch (style) {
     case 'nucleotide':
-      document.getElementById('nucleotide-input').value = pickDifferent(window.NucleotidePattern.presets.map(preset => preset.sequence), document.getElementById('nucleotide-input').value);
+      document.getElementById('nucleotide-input').value = pickDifferent(window.NucleotidePattern.presets.map(preset => preset.sequence.slice(0,window.NucleotidePattern.targetLength(document))), document.getElementById('nucleotide-input').value);
       syncNucleotideControls();
       break;
     case 'ruler':
@@ -2736,6 +2738,7 @@ function setup() {
   colorModeSelect.addEventListener('change', handleColorModeChange);
 
   document.getElementById('nucleotide-input').addEventListener('input', () => { syncNucleotideControls(true); updateUrlParameters(); requestUpdate(); });
+  document.getElementById('nucleotide-length').addEventListener('change', () => { syncNucleotideControls('length'); updateUrlParameters(); requestUpdate(); });
   document.getElementById('nucleotide-variant').addEventListener('change', () => { updateUrlParameters(); requestUpdate(); });
   document.getElementById('nucleotide-preset').addEventListener('change', event => {
     const preset = window.NucleotidePattern.presets[Number(event.target.value)];
@@ -3798,6 +3801,10 @@ function toggleSaveMenu(e) {
 
   if (saveMenu) {
     syncSaveMenuCopy();
+    if (window.logoExportUI?.explainBlocked()) {
+      hideSaveMenu();
+      return;
+    }
     saveMenu.classList.toggle('hidden');
     const isExpanded = !saveMenu.classList.contains('hidden');
     if (saveButton) saveButton.setAttribute('aria-expanded', isExpanded);
@@ -4143,6 +4150,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
     loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
     nucleotideSequence: window.NucleotidePattern.normalize(document.getElementById('nucleotide-input').value),
+    nucleotideLength: window.NucleotidePattern.targetLength(document),
     nucleotideVariant: document.getElementById('nucleotide-variant').value,
     binaryText: binaryInput ? normalizeBinaryText(sanitizeBarText(normalizeBinaryText(binaryInput.value || 'RPI'))) : 'RPI',
     waveformPoints: getWaveformRenderPointCount(exactBarWidth, waveformFrequencySlider ? Number(waveformFrequencySlider.value) : 24),
@@ -4193,6 +4201,7 @@ function buildCurrentBarPatternSVGFragment({
   exactBarWidth = REFERENCE_WIDTH,
   barHeight = REFERENCE_BAR_HEIGHT,
   fgColor = 'currentColor',
+  preview = true,
   values = getCurrentBarPatternValues(exactBarWidth)
 } = {}) {
   if (currentShader === 0) {
@@ -4213,7 +4222,7 @@ function buildCurrentBarPatternSVGFragment({
     markup = createBarPatternSVG({
       currentShader, currentColorMode, barStartX, barY, exactBarWidth, barHeight, fgColor,
       textToBinary, textToMorse, parseNumericString, generateGridCircles,
-      generateStaticPackedCircles: getCachedBarCircleGeometry, values
+      generateStaticPackedCircles: getCachedBarCircleGeometry, values: { ...values, nucleotidePreview: preview }
     });
   }
   if (!markup.trim()) return '';
@@ -5753,6 +5762,7 @@ function updateUrlParameters() {
   }
 
   if (selectedStyle === 'nucleotide') {
+    params.set('nucleotideLength', window.NucleotidePattern.targetLength(document));
     params.set('nucleotideSequence', window.NucleotidePattern.normalize(document.getElementById('nucleotide-input').value));
     params.set('nucleotideVariant', document.getElementById('nucleotide-variant').value);
   }
@@ -5987,6 +5997,7 @@ function applyUrlParameters() {
     binaryInput.value = params.binaryText;
   }
 
+  document.getElementById('nucleotide-length').value = String(params.nucleotideLength);
   document.getElementById('nucleotide-input').value = params.nucleotideSequence;
   document.getElementById('nucleotide-variant').value = params.nucleotideVariant;
   syncNucleotideControls();

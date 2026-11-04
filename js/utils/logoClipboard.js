@@ -23,6 +23,7 @@
     for (const format of ['svg', 'png']) {
       const button = document.getElementById(`copy-${format}`), unavailable = mode(format) === 'unavailable';
       const label = `Copy ${format.toUpperCase()}`;
+      const blocker = root.NucleotidePattern?.exportBlocker(document) || '';
       const dimensions = root.RPI_LOGO_GEOMETRY && root.logoExportOptions
         ? root.logoExportOptions.dimensions(root.logoExportUI.size(), root.RPI_LOGO_GEOMETRY) : null;
       const description = root.embedSupport?.clipboardBlocked() ? 'Blocked by this site’s embed permissions'
@@ -33,8 +34,8 @@
       button.querySelector('.option-desc').textContent = unavailable ? (root.embedSupport?.clipboardBlocked() ? 'Blocked by site' : 'Use download') : (format === 'svg' ? 'Scalable vector' : 'Transparent image');
       button.title = unavailable ? description : '';
       button.setAttribute('aria-label', `${label}: ${description}`);
-      button.setAttribute('aria-disabled', String(unavailable));
-      button.disabled = unavailable || Boolean(root.logoExportUI?.isBusy());
+      button.setAttribute('aria-disabled', String(unavailable || Boolean(blocker)));
+      button.disabled = unavailable || Boolean(blocker) || Boolean(root.logoExportUI?.isBusy());
     }
   }
   async function copy(format) {

@@ -1024,13 +1024,15 @@ function escapeExportXML(value) {
 }
 
 function captureLogoExportSnapshot() {
+  const nucleotideBlocker = window.NucleotidePattern?.exportBlocker(document);
+  if (nucleotideBlocker) throw new Error(nucleotideBlocker);
   const foreground = colors[currentColorMode] ? colors[currentColorMode].fg : '#000000';
   // Still files and clipboard images always use the default resting phase.
   // GIF adds its full cycle to this same captured origin without changing live playback.
   const values = JSON.parse(JSON.stringify({ ...getCurrentBarPatternValues(REFERENCE_WIDTH), ...getLoopRuntimeValues(),
     loopOffsetX: 0, timeSeconds: 0, quantumPhase: 0 }));
   const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
-  const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values });
+  const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values, preview: false });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
   const rawTitle = window.barShareController?.getName?.() || '';
   const safeName = typeof sanitizeBarText === 'function' ? sanitizeBarText(rawTitle) : rawTitle;

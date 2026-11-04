@@ -124,6 +124,31 @@ The About text and marquee preset no longer advertise the removed feature.
 Focused browser checks cover legacy-query/export parity, Randomize/Reset and
 responsive layouts. This does not establish owner or physical-device testing.
 
+## November 4 nucleotide completion feedback
+
+Nucleotide has an explicit Sequence length control from 30 to 50 bases. The
+chosen target stays fixed while typing. The preview contains exactly that many
+slots, with dashed outlines for missing bases. The field stops at the chosen
+length, and export requires every slot to be filled. Changing to a longer length
+adds empty slots. A shorter length keeps the first bases and displays a notice.
+This is a tool layout rule, not a biological requirement.
+
+The Parameters panel shows progress to the chosen target. Completion gives a
+brief green confirmation, a persistent check mark and a green control border.
+Reduced motion retains readiness without animation. Incomplete input gives
+Export a dashed border and unavailable state. Hover, keyboard focus and tap
+expose the same explanation. The trigger remains focusable to explain the lock;
+file/copy actions and snapshot capture enforce it. Ready input restores normal
+export behavior. Placeholders and green control feedback never enter artwork
+exports. Presets use verified CDS excerpts at the selected length.
+
+The fix retains main `47a3028`'s grouped export controls, feedback and stable Undo
+startup. Validation passes 700 unit tests in 63 suites, focused Chromium/WebKit
+completion and export checks, retained export feedback and exact Home sample
+parity. The full Chromium browser check also passes prior styles, exports, five
+widths, text safety, reduced motion and fallback/recovery. See
+[source, checks and review images](nucleotide_bar.md).
+
 ## November 3 compact export actions
 
 Download and Copy now sit side by side, with distinct tray and overlapping-sheet
