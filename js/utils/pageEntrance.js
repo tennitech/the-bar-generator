@@ -5,13 +5,14 @@
   const completed = new WeakSet();
   let active = null;
   let observer = null;
+  let generatorSource = null;
   const supported = typeof document.startViewTransition === 'function';
   // Read in the head, before Home's first paint. This does not rely on body markup
   // that has not been parsed yet, or on View Transition support.
   const selectorPage = document.currentScript?.dataset.entryKind === 'selector';
   let savedPause = false;
   try { savedPause = selectorPage && scope.localStorage.getItem('rpi-marquee-motion') === 'paused'; } catch (_) {}
-  let stopped = motion.matches || savedPause || (!selectorPage && !supported)
+  let stopped = motion.matches || savedPause || (!selectorPage && !supported && !scope.AsciiEntrance)
     || performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
   let selectorPending = selectorPage && !stopped;
   let readinessTimer = 0;
@@ -27,6 +28,7 @@
   function finish(pass = active) {
     if (!pass || active !== pass) return;
     cancelAnimationFrame(pass.frame);
+    pass.ascii?.cleanup();
     clearTimeout(pass.timer);
     pass.reveal?.removeEventListener('transitionend', pass.onTransitionEnd);
     clearTimeout(readinessTimer);
@@ -37,7 +39,7 @@
     active = null;
     stopped = true;
     selectorPending = false;
-    root.classList.remove('has-page-entrance', 'has-selector-entrance', 'is-selector-entering');
+    root.classList.remove('has-page-entrance', 'has-selector-entrance', 'is-selector-entering', 'has-ascii-entrance');
   }
   function cancel() {
     stopped = true;
@@ -64,7 +66,7 @@
       cancel();
       return;
     }
-    const duration = remember('selector') ? 400 : 680;
+    const duration = remember('selector') ? 400 : 580;
     const pass = { plane, kind: 'selector', frame: 0, styles: [], hold: true, timer: 0,
       reveal: document.querySelector('[data-entrance-page="selector"]') };
     pass.onTransitionEnd = event => {
@@ -75,6 +77,25 @@
     selectorPending = false;
     Object.assign(plane.dataset, { entryKind: 'selector', entryMode: 'fade', entryDuration: String(duration), entryBuffer: '0', entryActive: 'true' });
     root.style.setProperty('--selector-entry-duration', `${duration}ms`);
+    if (scope.AsciiEntrance) {
+      pass.frame = requestAnimationFrame(() => {
+        pass.frame = requestAnimationFrame(() => {
+          if (active !== pass) return;
+          scope.AsciiEntrance.prepare(Array.from(document.querySelectorAll('.bar_asset')),
+            Array.from(document.querySelectorAll('.hero_title-line, .credit_line, .hero_browse-link, .hero_motion-control')),
+            () => active !== pass || stopped || motion.matches || document.hidden).then(ascii => {
+              if (active !== pass) { ascii?.cleanup(); return; }
+              pass.ascii = ascii;
+              plane.dataset.entryMode = ascii ? 'ascii' : 'fade';
+              if (ascii) root.classList.add('has-ascii-entrance');
+              ascii?.start(duration);
+              root.classList.add('is-selector-entering');
+              pass.timer = setTimeout(() => finish(pass), duration + 100);
+            });
+        });
+      });
+      return;
+    }
     // Two frames commit the concealed state even with memory-cached SVGs/fonts.
     // The whole composition fades together without a captured page-sized image.
     pass.frame = requestAnimationFrame(() => {
@@ -96,6 +117,23 @@
       completed.add(plane);
       stopped = true;
       root.classList.remove('has-page-entrance');
+      return;
+    }
+    if (scope.AsciiEntrance) {
+      const pass = { plane, kind, frame: 0, styles: [], hold: true, timer: 0, reveal: plane };
+      active = pass;
+      Object.assign(plane.dataset, { entryKind: kind, entryMode: 'preparing', entryDuration: '580', entryActive: 'true' });
+      scope.AsciiEntrance.prepare(Array.from(plane.querySelectorAll('canvas')), [],
+        () => active !== pass || stopped || motion.matches || document.hidden, generatorSource).then(ascii => {
+          if (active !== pass) { ascii?.cleanup(); return; }
+          pass.ascii = ascii;
+          plane.dataset.entryMode = ascii ? 'ascii' : 'fallback';
+          plane.classList.add('is-entry-complete');
+          if (!ascii) { finish(pass); return; }
+          // Only the actual canvas fades; the sampled overlay remains legible.
+          ascii.start(580);
+          pass.timer = setTimeout(() => finish(pass), 680);
+        });
       return;
     }
     const repeat = remember(kind);
@@ -146,7 +184,8 @@
       pass.frame = requestAnimationFrame(print);
     });
   }
-  function prepareCanvas() {
+  function prepareCanvas(source) {
+    if (typeof source === 'function') generatorSource = source;
     const canvas = document.querySelector('#p5-container > canvas');
     if (!canvas) return;
     const artwork = canvas.parentElement;
@@ -204,7 +243,11 @@
   }
   motion.addEventListener('change', () => { if (motion.matches) cancel(); });
   // Home uses live layout, not a fixed snapshot; browser chrome/font resize is harmless.
-  if (!selectorPage) scope.addEventListener('resize', cancel);
+  scope.addEventListener('resize', () => {
+    // A sampled ASCII frame must not outlive its layout. Pending Home assets
+    // can still settle naturally before the entrance has actually started.
+    if (!selectorPage || active) cancel();
+  });
   scope.addEventListener('popstate', cancel);
   scope.addEventListener('hashchange', cancel);
   scope.addEventListener('pagehide', () => { cancel(); scope.ThemeMotion?.cancel(); });

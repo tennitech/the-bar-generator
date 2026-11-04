@@ -69,6 +69,9 @@ RPI_SITE_URL=http://127.0.0.1:8000 node scripts/patternExportSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/firstPaintSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/sharedFirstPaintSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/pageEntranceSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/asciiEntranceSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit node scripts/asciiEntranceSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_CPU_THROTTLE=4 node scripts/asciiEntranceSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=firefox npm run test:browser
 RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit npm run test:browser
 ```
@@ -151,6 +154,9 @@ RPI_SITE_URL=http://127.0.0.1:8000 node scripts/geometryEdgesSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/quantumIntegrationSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/firstPaintSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/pageEntranceSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/asciiEntranceSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit node scripts/asciiEntranceSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_CPU_THROTTLE=4 node scripts/asciiEntranceSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/headerMotionSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/headerLayoutSmoke.js
 RPI_SITE_URL=http://127.0.0.1:8000 node scripts/introLifecycleSmoke.js

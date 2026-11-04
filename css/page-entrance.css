@@ -32,3 +32,23 @@ html.has-page-entrance::view-transition-new(page-artwork) {
   html.has-page-entrance [data-entrance-plane] { mask-image: none; }
   html.has-page-entrance::view-transition-new(page-artwork) { animation: none; }
 }
+
+.entrance_ascii {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  pointer-events: none;
+  user-select: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .entrance_ascii { display: none; }
+}
+
+.entrance_ascii-artwork { position: absolute; pointer-events: none; user-select: none; z-index: 2; }
+@media (prefers-reduced-motion: reduce) { .entrance_ascii-artwork { display: none; } }
+
+html.has-selector-entrance.has-ascii-entrance [data-entrance-page="selector"] { opacity: 1; transition: none; }
+.is-ascii-original { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .is-ascii-original { opacity: 1; } }
