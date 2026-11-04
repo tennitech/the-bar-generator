@@ -95,6 +95,10 @@
     return modelPromise;
   }
 
+  function shouldHoldPreview(asset) {
+    return asset.classList.contains('is-hovered') || asset.classList.contains('is-pressed');
+  }
+
   function create(entries, random = Math.random) {
     const settings = new Map(entries.map(entry => [entry.path, createSettings(entry, random)]).filter(([, value]) => value));
     const assets = new Map();
@@ -162,7 +166,10 @@
       for (const state of settings.values()) state.phase = advancePhase(state, elapsed);
       const visible = new Map();
       for (const [asset, item] of assets) {
-        if (!item.visible || !asset.isConnected) continue;
+        // Retain this sample's last complete canvas (or its static fallback
+        // before enhancement). Other copies keep using the shared live frame.
+        // Leaving hover/hold rejoins that frame without another timer or model.
+        if (!item.visible || !asset.isConnected || shouldHoldPreview(asset)) continue;
         const list = visible.get(item.state) || [];
         list.push([asset, item]); visible.set(item.state, list);
       }
@@ -201,7 +208,7 @@
     return { settings, decorate, resize, start, tick, hold };
   }
 
-  const api = { STYLES, FRAME_INTERVAL, createSettings, advancePhase, createGeometry, paintGeometry, rasterWidth, consumeFrameTime, create };
+  const api = { STYLES, FRAME_INTERVAL, createSettings, advancePhase, createGeometry, paintGeometry, rasterWidth, consumeFrameTime, shouldHoldPreview, create };
   if (node) module.exports = api;
   scope.MarqueeAnimation = api;
 })(typeof window !== 'undefined' ? window : globalThis);
