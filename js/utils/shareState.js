@@ -41,10 +41,12 @@
       }
       delete sourceControls['ruler-units-slider'];
     }
-    // Older Binary shares allowed 100 code points. Migrate only that field.
-    if (manifest['binary-input']?.maxLength === 10 && typeof sourceControls['binary-input'] === 'string') {
-      if (Array.from(sourceControls['binary-input']).length > 100) throw new Error('Text in this share link is too long.');
-      sourceControls['binary-input'] = safeText(sourceControls['binary-input'], 10);
+    // Older encoded-text shares allowed 100 code points. Migrate these fields.
+    for (const id of ['binary-input', 'morse-input']) {
+      if (manifest[id]?.maxLength === 10 && typeof sourceControls[id] === 'string') {
+        if (Array.from(sourceControls[id]).length > 100) throw new Error('Text in this share link is too long.');
+        sourceControls[id] = safeText(sourceControls[id], 10);
+      }
     }
     if (scope.NumericControls && manifest['numeric-source-select']) {
       if (!Object.hasOwn(sourceControls, 'numeric-source-select')) {

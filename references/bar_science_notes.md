@@ -21,8 +21,8 @@ The owner clarified that the fixed viewport is a containment boundary, not a dem
 
 | Style | Meaning and current assumption |
 | --- | --- |
-| Binary | Encodes up to 10 input Unicode code points as UTF-8 bytes, most-significant bit first. Offensive text is masked before encoding. |
-| Morse | Uses International Morse symbols for A–Z, digits, and supported punctuation. Dots are one time unit, dashes three, element gaps one, letter gaps three, and word gaps seven. Accents are transliterated to base letters; unsupported characters are omitted. |
+| Binary | Encodes up to 10 input Unicode code points as UTF-8 bytes, most-significant bit first. Rejected text stays editable but produces no encoded bar in preview or export; shared/query text is masked. |
+| Morse | Encodes up to 10 input Unicode code points. Rejected text produces no bar. Uses International Morse symbols for A–Z, digits, and supported punctuation. Dots are one time unit, dashes three, element gaps one, letter gaps three, and word gaps seven. Accents are transliterated to base letters; unsupported characters are omitted. |
 | Fibonacci Sequence | Segment widths follow consecutive values `34, 21, 13, 8, 5, 3, 2, 1` in descending order. Gaps separate the values visually. |
 | Ruler | REPEATS counts major intervals across the fixed width; DIVISIONS counts equal subdivisions of each interval. Major ticks are full-height, halves 3/4-height, thirds/quarters/fifths 1/2-height, and finer fractions 1/4-height. It is a dimensionless illustrative scale, not a calibrated physical ruler. |
 | Numeric | Visualizes digits supplied by the user or generated from the selected formula. It does not claim to measure an external quantity. |

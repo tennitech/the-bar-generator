@@ -106,7 +106,7 @@ function read() {
     graphScale: Math.max(4, parseInt(params.get('graphScale')) || 10),
 
     // Additional parameters
-    morseText: params.has('morseText') ? params.get('morseText') : 'RPI'
+    morseText: normalizeBinaryText(params.has('morseText') ? params.get('morseText') : 'RPI')
   };
 }
 

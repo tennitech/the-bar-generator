@@ -19,11 +19,11 @@
   },
   "binary": {
     "title": "Binary",
-    "text": "Up to 10 characters become UTF-8 bytes, drawn as a sequence of binary bits from most significant to least significant. Try a different word or character to compare the resulting pattern; the content filter masks offensive text before the bar encodes it."
+    "text": "Up to 10 characters become UTF-8 bytes, drawn as a sequence of binary bits from most significant to least significant. Try a different word or character to compare the resulting pattern; the content filter hides the bar until rejected text is corrected."
   },
   "morse": {
     "title": "Morse Code",
-    "text": "Your text becomes International Morse code, with dots, dashes, and gaps following their relative timing units. Compare short and long messages to explore their rhythm; accented letters are simplified, unsupported characters are omitted, and offensive text is masked before encoding."
+    "text": "Up to 10 characters become International Morse code, with dots, dashes, and gaps following their relative timing units. Compare short and long messages to explore their rhythm; accented letters are simplified, unsupported characters are omitted, and rejected text hides the bar until corrected."
   },
   "waveform": {
     "title": "Waveform",

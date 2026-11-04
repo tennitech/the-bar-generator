@@ -23,7 +23,7 @@
   <script src="js/utils/loopingGif.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/featherIcons.js?v=20261103-save-removal"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261103-nucleotide"></script>
+  <script src="js/utils/shareState.js?v=20261104-text-validation"></script>
   <script src="js/utils/randomizeHistory.js?v=20261103-undo-randomize"></script>
   <script src="js/utils/musicStyle.js"></script>
   <script src="js/utils/nucleotidePattern.js?v=20261103-nucleotide"></script>
@@ -31,7 +31,7 @@
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/quantumModel.js"></script>
-  <script src="js/utils/generatorParameters.js?v=20261103-nucleotide"></script>
+  <script src="js/utils/generatorParameters.js?v=20261104-text-validation"></script>
   <script src="js/utils/generatorInitialState.js?v=20261103-nucleotide"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
@@ -286,8 +286,9 @@
           <div class="control">
             <label for="binary-input" class="control-label">INPUT TEXT</label>
             <input type="text" id="binary-input" data-url-parameter="binaryText" value="RPI" placeholder="Enter text..." class="control-input"
-              maxlength="20" data-max-code-points="10" aria-label="Binary Text Input" aria-describedby="binary-input-hint">
+              maxlength="20" data-max-code-points="10" aria-label="Binary Text Input" aria-describedby="binary-input-hint binary-input-error">
             <div id="binary-input-hint" class="control-hint">Up to 10 characters, encoded as UTF-8 bytes.</div>
+            <div id="binary-input-error" class="control-hint" role="status" aria-live="polite"></div>
           </div>
         </div>
 
@@ -324,8 +325,9 @@
           <div class="control">
             <label for="morse-input" class="control-label">INPUT TEXT</label>
             <input type="text" id="morse-input" data-url-parameter="morseText" value="RPI" placeholder="Enter text..." class="control-input"
-              maxlength="100" aria-label="Morse Text Input" aria-describedby="morse-input-hint">
-            <div id="morse-input-hint" class="control-hint">A–Z, 0–9 and common punctuation. Other characters are omitted.</div>
+              maxlength="20" data-max-code-points="10" aria-label="Morse Text Input" aria-describedby="morse-input-hint morse-input-error">
+            <div id="morse-input-hint" class="control-hint">Up to 10 characters. A–Z, 0–9 and common punctuation. Other characters are omitted.</div>
+            <div id="morse-input-error" class="control-hint" role="status" aria-live="polite"></div>
           </div>
           <div class="runtime_section audio_section">
             <div class="control-header">PREVIEW</div>
@@ -960,11 +962,11 @@
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportUi.js?v=20261103-compact-export-actions"></script>
-  <script src="js/utils/barInformation.js?v=20261103-nucleotide"></script>
+  <script src="js/utils/barInformation.js?v=20261104-text-validation"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
-  <script src="js/main.js?v=20261103-nucleotide"></script>
+  <script src="js/main.js?v=20261104-text-validation"></script>
   <script src="js/utils/logoClipboard.js?v=20261103-compact-export-actions"></script>
   <script src="js/drawing.js?v=20261104-numeric-seams"></script>
   <script>

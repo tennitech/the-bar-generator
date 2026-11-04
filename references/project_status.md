@@ -3,6 +3,23 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 encoded-text validation
+
+Binary and Morse now keep text drafts editable while suppressing rejected text
+in their shared preview/export encoders and show a persistent inline recovery message. Masked query values also
+stay blocked after reload, and entering clean text restores the bar. Both fields
+use the same ten-code-point limit before encoding, including URL restoration and
+migration of older share snapshots. Benign “hello” remains accepted by the existing
+whole-word filter. Issue #12 was a joke and #13 needs owner clarification; no new broad
+numeric restrictions or unrelated field limits are included. Updated text assets
+and every generator source route use `20261104-text-validation` cache keys.
+
+Validation on main 0dd693a: 691 unit tests in 62 suites pass. Chromium desktop (1440 × 900)
+and phone-sized (390 × 844) checks pass for both fields: initial blocked URLs,
+sequential typing of hello, ten-character limits, repeated key handling, reload,
+and shared preview/export geometry. WebKit execution is blocked by missing host
+libraries; physical-device and screen-reader behavior were not verified.
+
 ## November 4 Numeric release cache refresh
 
 Generator route shells, Numeric rendering dependencies, and the Home dependency
