@@ -179,3 +179,17 @@ gaps stay at 1.33 units without overlap or a
 change to official mark geometry. This spacing is a visual density convention, not a molecular
 measurement. Green/red controls and dashed placeholders never enter exports.
 INS/HBB presets retain their recorded versioned CDS prefixes. See nucleotide_bar.md.
+
+## Audible Waveform LFO — November 4, 2026
+
+The owner asked to implement LFO behavior instead of removing the old envelope.
+The new audio-only sine LFO is amplitude modulation (tremolo), not pitch modulation:
+`gain(t) = 1 - depth/2 + (depth/2) sin(2π rate t)`, with depth normalized to 0–1.
+Rate is in real audio-clock hertz; gain stays between 1-depth and 1. The modulator
+feeds a GainNode AudioParam after the carrier mix and before the existing fade.
+It does not increase the carrier's peak gain. Toggle/parameter changes use a
+15 ms time constant; audio transport remains explicitly user initiated.
+Visual motion speed is independent, and exports show the unmodulated carrier.
+The UI calls this Volume pulse so it does not imply a spatial mask, measured
+signal, pitch vibrato or an audio-bearing export. Legacy spatial-envelope fields
+remain retired; new LFO settings use separate bounded query/share controls.

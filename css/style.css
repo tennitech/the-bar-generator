@@ -4469,3 +4469,10 @@ body:is(.theme-white, .theme-silver, .theme-gray, .theme-lunar) { --color-ready:
 }
 .toast_dismiss { display: grid; place-items: center; }
 .toast_dismiss-icon { width: 1rem; height: 1rem; }
+
+/* One compact audio modifier; its two parameters appear only when enabled. */
+.waveform_lfo { border-top: 1px solid var(--border-color); padding-top: 1rem; }
+.waveform_lfo-caption { color: var(--text-secondary); font-weight: normal; text-transform: none; letter-spacing: normal; margin-left: .5rem; }
+.waveform_lfo [hidden] { display: none !important; }
+.waveform_lfo #waveform-lfo-settings { padding-top: 1rem; }
+.waveform_lfo #waveform-lfo-settings .control:last-child { margin-bottom: 0; }

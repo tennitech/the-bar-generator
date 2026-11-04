@@ -70,7 +70,7 @@ test('historical division sliders migrate narrowly without changing transport or
 
 test('route bootstrap loads scale normalizers before motion, shared state, and initial parameter parsing', () => {
   const html = fs.readFileSync(require.resolve('../generator/index.html'), 'utf8');
-  for (const script of ['loopingGif', 'shareState', 'barPattern', 'generatorParameters']) {
+  for (const script of ['loopingGif', 'shareState', 'barPattern', 'waveformLfo', 'generatorParameters']) {
     expect(html.indexOf('js/utils/rulerScale.js')).toBeLessThan(html.indexOf(`js/utils/${script}.js`));
   }
   const bootstrap = fs.readFileSync(require.resolve('../js/generatorBootstrap'), 'utf8');
