@@ -53,8 +53,10 @@ The table gives the 50-base maximum excerpts. Choosing a shorter target uses
 the corresponding prefix and updates the displayed source coordinates.
 
 Edits update the preset and source label. Arbitrary sequences are never assigned
-a gene identity. Randomize chooses a different verified preset. Reset restores
-INS and separate bases. URL restoration and Undo preserve the accepted sequence
+a gene identity. Randomize chooses a different length from 30 to 50 and a
+different verified preset, then fills the new target with that excerpt. Undo
+restores the preceding length and sequence. Reset restores 50 bases, INS and
+separate bases. URL restoration and Undo preserve the accepted sequence
 and structure. The three Home samples come from the shared renderer.
 
 ## Completion and exports
@@ -98,3 +100,10 @@ Review images: [partial desktop](review-images/nucleotide-completion/desktop-inc
 Automated checks and visual review do not establish owner acceptance,
 screen-reader output, physical mobile behavior, native-app paste acceptance or
 formal RPI approval. Existing asset permission questions remain separate.
+
+
+Randomize length follow-up: 703 unit tests pass. Focused Chromium and WebKit
+checks verify repeated changes to both the length and preset, a fully filled
+matching sequence, synchronized labels/limits, export readiness, exact Undo and
+query reload. Emulated touch also checks Randomize from incomplete input and
+Undo restoring that incomplete sequence and its export lock.

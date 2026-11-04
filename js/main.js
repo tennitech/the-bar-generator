@@ -1426,10 +1426,16 @@ function randomizeStyleParameters(style) {
   stopAudio();
 
   switch (style) {
-    case 'nucleotide':
-      document.getElementById('nucleotide-input').value = pickDifferent(window.NucleotidePattern.presets.map(preset => preset.sequence.slice(0,window.NucleotidePattern.targetLength(document))), document.getElementById('nucleotide-input').value);
+    case 'nucleotide': {
+      const model = window.NucleotidePattern;
+      const length = document.getElementById('nucleotide-length');
+      const currentPreset = document.getElementById('nucleotide-preset').value;
+      length.value = randomDifferentStep(length, model.MIN_BASES, model.MAX_BASES);
+      const choices = model.presets.filter((preset, index) => String(index) !== currentPreset);
+      document.getElementById('nucleotide-input').value = pickRandom(choices).sequence.slice(0, Number(length.value));
       syncNucleotideControls();
       break;
+    }
     case 'ruler':
       liveMotionPhase = 0;
       if (rulerRepeatsSlider) rulerRepeatsSlider.value = randomDifferentStep(rulerRepeatsSlider, 1, 20);
