@@ -131,7 +131,7 @@ describe('marquee hover motion and fixed per-load samples', () => {
   });
 
   test('bounded lane patterns cover every selected family without altering the sample set', () => {
-    const entries = Array.from({ length: 21 }, (_, i) => ({ path: `sample-${i}` }));
+    const entries = Array.from({ length: 21 }, (_, i) => ({ value: `style-${i}`, path: `sample-${i}` }));
     const patterns = createRowPatterns(entries);
     expect(patterns).toHaveLength(10);
     expect(patterns.every(row => row.length === 7 && new Set(row).size === 7)).toBe(true);
