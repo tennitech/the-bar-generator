@@ -4,6 +4,16 @@ const geometry = require('../js/utils/barPattern');
 const looping = require('../js/utils/loopingGif');
 const quantum = require('../js/utils/quantumModel');
 
+test.each([[], ['is-hovered'], ['is-pressed'], ['is-hovered', 'is-pressed']].map(classes => [classes]))('preview hold is local to hover/press classes %j', classes => {
+  const { shouldHoldPreview } = require('../js/utils/marqueeAnimation');
+  const set = new Set(classes);
+  const asset = { classList: { contains: name => set.has(name) } };
+  expect(shouldHoldPreview(asset)).toBe(classes.length > 0);
+  expect(shouldHoldPreview({ classList: { contains: () => false } })).toBe(false);
+  set.clear();
+  expect(shouldHoldPreview(asset)).toBe(false);
+});
+
 test('only the three genuinely animated styles get motion settings', () => {
   expect(entries.filter(entry => createSettings(entry)).map(entry => entry.value)).toEqual(STYLES);
 });

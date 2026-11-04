@@ -3,6 +3,21 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 per-preview hover pause release
+
+Issue #111 holds the last rendered frame of an individually hovered or pressed
+animated Home sample. Other samples continue on the shared phase; leaving or
+releasing rejoins that phase without another timer or model. Global pause,
+reduced motion and touch cancellation remain intact.
+
+This additive change is based on merged PR #125's exact tree. Its redesigned
+entrance, all generator controls, style separation, Home physics and prior work
+remain unchanged. Both Home pages update only the marqueeAnimation cache key.
+Validation: 71 focused tests pass. Chromium verifies native hover, hold, leave,
+interruption, global pause, reduced motion and emulated touch cancellation.
+All prior branches remain preserved. Software checks do not establish owner
+acceptance or formal brand approval.
+
 ## November 4 automatic ASCII wake refinement
 
 Issue #124 replaces the static full-frame ASCII crossfade with a travelling
