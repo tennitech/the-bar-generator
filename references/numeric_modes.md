@@ -44,3 +44,13 @@ Historical v1 shares without a source control and old query links migrate explic
 ## Validation
 
 See `scripts/numericSmoke.js`, the focused `scripts/numericLimitSmoke.js`, and the Numeric tests. Browser evidence and limitations are recorded in project status when the feature checks complete. No physical-device, screen-reader or formal RPI approval is implied.
+
+## Height continuity — November 4, 2026
+
+Height Encoding maps 0–9 to 10–100% of the fixed bar height. A decimal leaves
+an empty cell, unlike zero's 10% height. Contiguous digits now share one polygon
+silhouette rather than individually antialiased rectangles, eliminating thin
+raster seams at fractional display widths without altering encoded geometry.
+Dot Matrix keeps zero as an empty cell and a decimal as one bottom-aligned dot.
+Neither mode adds side strips or a bottom baseline. See
+`scripts/numericSeamsSmoke.js` and `tests/numericGeometry.test.js` for regressions.

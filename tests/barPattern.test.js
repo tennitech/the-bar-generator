@@ -281,7 +281,7 @@ describe('createBarPatternSVG', () => {
     expect(ruler).toContain('<rect');
     expect(ticker).toContain('<rect');
     expect(binary).toContain('<rect');
-    expect(numeric).toContain('<rect');
+    expect(numeric).toContain('<path');
   });
 
   test('clips ticker SVG rectangles to the visible ticker pattern bounds for wide bottom ticks', () => {
