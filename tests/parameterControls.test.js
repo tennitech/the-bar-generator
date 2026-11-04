@@ -57,6 +57,7 @@ function fixture(random = 0) {
     randomStepValue: (min, max, step = 1) => min + Math.floor(random * (Math.round((max - min) / step) + 1)) * step,
     randomChance: probability => random < probability,
     getDefaultLoopSpeed: style => ({ ruler: .3, ticker: .4, waveform: .3 })[style],
+    NucleotidePattern: require('../js/utils/nucleotidePattern'), syncNucleotideControls: jest.fn(),
     NumericControls: { ...numeric, sync: jest.fn() },
     quantumModel: require('../js/utils/quantumModel'),
     applyTickerWidthRatioBounds: () => {}, stopAudio: jest.fn() };
@@ -80,11 +81,11 @@ function fixture(random = 0) {
   return { context, fields, groups, buttons, snapshot };
 }
 
-const active = ['ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
+const active = ['nucleotide', 'ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
   'circles-gradient', 'gradient', 'grid', 'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles'];
 const fixed = ['solid', 'fibonacci-sequence', 'union', 'runway', 'lunar'];
 
-test('explicit capabilities cover exactly all 21 selectable styles and reject construction/prototype names', () => {
+test('explicit capabilities cover exactly all 22 selectable styles and reject construction/prototype names', () => {
   const h = fixture();
   expect(Object.keys(h.context.ParameterControls.capabilities).sort()).toEqual([...active, ...fixed].sort());
   expect(h.fields['style-select'].options.filter(option => !option.disabled).map(option => option.value).sort())

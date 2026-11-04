@@ -54,6 +54,17 @@ motion. Chromium's initial 1440 px geometry assertion passed, but renderer
 crashes during the particle animation prevented a complete Chromium run.
 This is automated browser coverage, not owner or physical-device testing.
 
+## November 3 nucleotide bar
+
+Adds Nucleotide with separate-base and connected-backbone variants from the two
+user references. ATCGU-only input, 60-base bound, explicit design-shape legend,
+versioned human INS/HBB excerpts, Randomize/Reset and shared static export geometry.
+See [scientific conventions, sequence provenance and limits](nucleotide_bar.md).
+Validation: all 647 unit tests pass after integration with export #84. Chromium and WebKit both pass the focused
+sequence/control, keyboard, restore, SVG/PNG export and mobile-width checks.
+See the linked validation record for scope; tests do not imply formal RPI
+approval or owner acceptance.
+
 ## November 3 combined release validation
 
 The combined candidate includes responsive display and complete first-frame

@@ -93,7 +93,7 @@
         controls[id] = String(number);
       } else {
         if (typeof raw !== 'string' || Array.from(raw).length > Math.min(spec.maxLength || MAX_TEXT_LENGTH, MAX_TEXT_LENGTH)) throw new Error('Text in this share link is too long.');
-        controls[id] = raw;
+        controls[id] = id === 'nucleotide-input' ? raw.toUpperCase().replace(/[^ATCGU]/g, '').slice(0, 60) : raw;
       }
     }
     if (controls['color-mode-select'] === 'lunar' && controls['style-select'] !== 'lunar') throw new Error('This share link uses a theme unavailable for this bar.');
