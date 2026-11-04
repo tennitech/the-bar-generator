@@ -3,6 +3,25 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 automatic ASCII wake refinement
+
+Issue #124 replaces the static full-frame ASCII crossfade with a travelling
+terminal-density wake. The actual heading letter silhouettes and canonical
+generator artwork are sampled; held glyph shimmer and halftone dots resolve left to right
+into the unchanged live originals through complementary clips. No mouseover,
+React, dependency, replacement logo, or export change is involved. Home controls
+and credits stay still; gallery bars are not resampled. Glyph sprites are rasterized
+once and reused so the loop avoids repeated font shaping. The 580 ms first entrance / 400 ms repeat Home timing,
+preparation deadline, reduced-motion bypass, saved pause and interruption cleanup
+remain intact. All sampling and display canvases are bounded; the short render
+loop ends with the entrance and does not become an idle effect.
+
+The supplied Bencho ASCII wake source was read as a visual reference for density,
+held shimmer and dots. This implementation is original vanilla JavaScript, not
+an imported copy of the React cube or pointer/heat simulation. Existing font,
+logo and brand-approval questions remain open. No new external assets are added.
+See `review-images/ascii-wake/validation.md` for checks and image provenance.
+
 ## November 4 independent neighboring-style separation
 
 Issue #113 partitions selected Home style families into disjoint palettes for

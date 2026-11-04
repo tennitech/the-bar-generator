@@ -52,3 +52,7 @@ html.has-page-entrance::view-transition-new(page-artwork) {
 html.has-selector-entrance.has-ascii-entrance [data-entrance-page="selector"] { opacity: 1; transition: none; }
 .is-ascii-original { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .is-ascii-original { opacity: 1; } }
+
+/* Text fields follow their measured viewport bounds without touching layout. */
+.entrance_ascii-text { position: fixed; pointer-events: none; user-select: none; z-index: 50; }
+@media (prefers-reduced-motion: reduce) { .entrance_ascii-text { display: none; } }
