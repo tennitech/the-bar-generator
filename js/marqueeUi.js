@@ -76,11 +76,36 @@ function createMarqueeMotionPreference(getStorage, reduced = false) {
 const marqueeCatalogApi = typeof module !== 'undefined' && module.exports
   ? require('./utils/marqueeCatalog') : window.MarqueeCatalog;
 const marqueeCatalog = marqueeCatalogApi.entries;
-// A coprime stride distributes every family through short repeating lanes.
-// Seven slots per row keep both wrapping DOM and image decoding bounded.
+// Neighboring lanes use disjoint family palettes, independent of their drifting
+// alignment. Each circular lane has at most seven distinct families, including
+// its repeat seam. Group variants before partitioning so they cannot collide.
 function createRowPatterns(entries) {
-  return Array.from({ length: ROW_COUNT }, (_, row) =>
-    Array.from({ length: 7 }, (_, slot) => entries[(row * 7 + slot * 5) % entries.length].path));
+  const byStyle = new Map();
+  entries.forEach(entry => {
+    if (!byStyle.has(entry.value)) byStyle.set(entry.value, []);
+    byStyle.get(entry.value).push(entry);
+  });
+  const families = [...byStyle.values()];
+  if (families.length < 2) {
+    throw new RangeError('Marquee rows need at least two distinct bar styles.');
+  }
+  // Two disjoint circular palettes each need at least two families. A smaller
+  // catalog can only guarantee separation within a lane, not between lanes.
+  const palettes = families.length >= 4
+    ? [families.filter((_, index) => index % 2 === 0), families.filter((_, index) => index % 2 === 1)]
+    : [families];
+  const gcd = (a, b) => b ? gcd(b, a % b) : a;
+  return Array.from({ length: ROW_COUNT }, (_, row) => {
+    const palette = palettes[row % palettes.length];
+    const slots = Math.min(7, palette.length);
+    let stride = Math.min(5, palette.length - 1);
+    while (gcd(stride, palette.length) !== 1) stride--;
+    return Array.from({ length: slots }, (_, slot) => {
+      const position = Math.floor(row / palettes.length) * slots + slot;
+      const variants = palette[(position * stride) % palette.length];
+      return variants[Math.floor(position / palette.length) % variants.length].path;
+    });
+  });
 }
 // Choose the small static sample set once. Resize and every animation frame reuse it.
 const selectedMarqueeEntries = marqueeCatalogApi.selectEntries();

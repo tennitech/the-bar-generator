@@ -3,6 +3,26 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 independent neighboring-style separation
+
+Issue #113 partitions selected Home style families into disjoint palettes for
+neighboring rows. Each circular row uses distinct families, including its repeat
+seam; configurations of one family remain grouped. All selected families remain
+represented, with at most seven slots per row and no new per-frame work.
+The algorithm is byte-identical to the earlier tested neighbor candidate.
+
+This independent release builds on the final playful Home/ASCII/parameter tree
+`5477832`. It does not include per-preview hover pause. Preview animation,
+playful drag, hover focus, ASCII entrance, generator controls and exports are
+unchanged. Both Home pages change only the marqueeUi script cache reference.
+
+Validation: 144 focused tests in six suites pass, including 100 deterministic
+random selections, circular seams, disjoint adjacent-row families, variant
+catalogs, small catalogs and bounded row sizes. The prior neighbor browser
+evidence is reused for the identical algorithm; no browser matrix is repeated.
+Original branches are preserved. Software verification does not establish owner
+acceptance, physical-device testing or formal brand approval.
+
 ## November 4 final playful Home release reconciliation
 
 The verified PR109 candidate `f814077` is applied additively onto ASCII candidate
