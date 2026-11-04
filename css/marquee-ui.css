@@ -568,6 +568,32 @@ img {
   opacity: 1;
 }
 
+/* Pointer-only focus: lift artwork inside its unchanged native hit area.
+   Group the other clipped rows to avoid filtering every duplicated sample.
+   Coarse pointers and reduced motion keep crisp, stationary artwork. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .marquee_row,
+  .bar_asset_wrap {
+    transition: filter 180ms ease;
+  }
+  .bar_asset {
+    transition: opacity 160ms ease, transform 180ms ease;
+  }
+  .marquee_stage.has-bar-focus .marquee_row:not(.is-focus-row),
+  .marquee_stage.has-bar-focus .is-focus-row .bar_asset_wrap:not(.is-hovered) {
+    filter: blur(1.5px);
+  }
+  .bar_asset_wrap.is-hovered .bar_asset {
+    opacity: 1;
+    transform: translateY(calc(-0.25rem * var(--composition-scale)));
+  }
+  /* Keyboard focus must never sit behind a mouse-hover blur. */
+  .marquee_stage.has-bar-focus:has(.bar_asset_wrap:focus-visible) .marquee_row,
+  .marquee_stage.has-bar-focus:has(.bar_asset_wrap:focus-visible) .bar_asset_wrap {
+    filter: none;
+  }
+}
+
 /* Keep navigation and motion choices readable rather than scaling them with
    the expressive hero. Native controls retain their keyboard/touch behavior. */
 .hero_controls {
