@@ -610,40 +610,59 @@ img {
   line-height: 1.5;
 }
 
-.hero_browse-link,
+.hero_generator-link,
 .hero_motion-control {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.75rem;
-  padding: 0.5rem 0.75rem;
-  color: var(--rpi-white);
-  background: var(--rpi-black);
+  min-height: 3rem;
   font: inherit;
   white-space: nowrap;
+  border: 1px solid var(--rpi-white);
 }
 
-.hero_browse-link {
-  text-underline-offset: 0.25rem;
+.hero_generator-link {
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  color: var(--rpi-black);
+  background: var(--rpi-white);
+  font-weight: 500;
+  text-decoration: none;
+}
+.hero_entrance-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  transform: rotate(-90deg);
 }
 
 .hero_motion-control {
-  /* Reserve the longest label so Pause/Resume never reflows the composition. */
-  min-width: 9rem;
-  border: 1px solid currentColor;
-  border-radius: 0.5rem;
+  width: 3rem;
+  height: 3rem;
+  flex: none;
+  padding: 0;
+  color: var(--rpi-white);
+  background: var(--rpi-black);
+  border-radius: 50%;
   cursor: pointer;
 }
-
-.hero_motion-control:disabled { cursor: default; }
+.hero_motion-icon { width: 1.25rem; height: 1.25rem; pointer-events: none; }
+.hero_motion-icon[data-feather='play'] { display: none; }
+.hero_motion-control[data-motion-paused='true'] [data-feather='play'] { display: block; }
+.hero_motion-control[data-motion-paused='true'] [data-feather='pause'] { display: none; }
+.hero_motion-control:disabled { cursor: default; opacity: 0.6; }
 .hero_motion-control[hidden] { display: none; }
-.hero_browse-link:hover { text-decoration-thickness: 2px; }
+.hero_generator-link:hover {
+  color: var(--rpi-white);
+  background: var(--rpi-black);
+}
 .hero_motion-control:hover:not(:disabled) {
   color: var(--rpi-black);
   background: var(--rpi-white);
 }
 
-.hero_browse-link:focus-visible,
+.hero_generator-link:focus-visible,
 .hero_motion-control:focus-visible {
   outline: 2px solid var(--rpi-white);
   outline-offset: 0.25rem;

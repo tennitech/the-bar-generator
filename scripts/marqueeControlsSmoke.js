@@ -9,6 +9,12 @@ const evidence = process.env.RPI_MARQUEE_EVIDENCE || '/tmp/marquee-controls-evid
 const key = 'rpi-marquee-motion';
 const pause = page => page.getByRole('button', { name: 'Pause motion', exact: true });
 const resume = page => page.getByRole('button', { name: 'Resume motion', exact: true });
+// Normal navigation checks wait for the actual artwork and startup worklet,
+// not just p5's early canvas insertion. Gesture interruption is tested separately.
+async function generatorReady(page) {
+  await page.waitForFunction(() => document.querySelector('#p5-container canvas')?.dataset.previewReady === 'true'
+    && (typeof gainNode !== 'undefined' && gainNode));
+}
 async function ready(page) {
   await page.waitForFunction(() => [...document.images].length > 0
     && [...document.images].every(image => image.complete)
@@ -80,9 +86,19 @@ async function geometry(page) {
       page.on('pageerror', error => errors.push(error.message));
       await page.addInitScript(() => Math.random = () => 0.37);
       await page.goto(base); await ready(page); await running(page);
+      const toggle = page.locator('#marquee-motion-toggle');
+      assert.equal(await toggle.innerText(), '', 'motion control has no visible text');
+      assert.equal(await toggle.locator('[data-feather="pause"]').isVisible(), true);
+      assert.equal(await toggle.locator('[data-feather="play"]').isVisible(), false);
       const beforePause = await page.locator('[data-marquee-controls]').boundingBox();
       await pause(page).click(); await resume(page).waitFor(); await page.waitForTimeout(100); await frozen(page);
       assert.deepEqual(await page.locator('[data-marquee-controls]').boundingBox(), beforePause, 'labels never reflow the hero or lanes');
+      assert.equal(await toggle.locator('[data-feather="pause"]').isVisible(), false);
+      assert.equal(await toggle.locator('[data-feather="play"]').isVisible(), true);
+      assert.equal(await toggle.getAttribute('title'), 'Resume motion');
+      const buttonBounds = await toggle.boundingBox();
+      assert.equal(buttonBounds.width, buttonBounds.height, 'compact square icon target');
+
       const bounds = await geometry(page);
       assert.equal(bounds.overflow,false);
       for (const control of bounds.controls) {
@@ -106,16 +122,16 @@ async function geometry(page) {
         assert.notEqual(await page.locator('[data-entrance-plane="selector"]').getAttribute('data-entry-mode'),'native');
         // Normal keyboard order retains skip first, then visible navigation and motion.
         await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.className),'marquee_skip-link');
-        await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.textContent),'Browse styles');
+        await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.textContent.trim()),'Enter generator');
         await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.id),'marquee-motion-toggle');
         assert.notEqual(await resume(page).evaluate(e=>getComputedStyle(e).outlineStyle),'none');
         await page.keyboard.press('Space'); await pause(page).waitFor(); await running(page);
         await page.keyboard.press('Enter'); await resume(page).waitFor(); await frozen(page);
-        await page.getByRole('link',{name:'Browse styles',exact:true}).click();
-        await page.waitForURL(`${base}/generator/solid/`); await page.locator('#p5-container canvas').waitFor();
+        await page.getByRole('link',{name:'Enter generator',exact:true}).click();
+        await page.waitForURL(`${base}/generator/solid/`); await generatorReady(page);
         assert.equal(await page.locator('#style-select').inputValue(),'solid');
         await page.goBack(); await ready(page); await resume(page).waitFor(); await frozen(page);
-        await page.goForward(); await page.waitForURL(`${base}/generator/solid/`); await page.locator('#p5-container canvas').waitFor();
+        await page.goForward(); await page.waitForURL(`${base}/generator/solid/`); await generatorReady(page);
         await page.goBack(); await ready(page); await resume(page).click(); await running(page);
         await page.emulateMedia({reducedMotion:'reduce'}); await page.getByRole('button',{name:'Motion paused',exact:true}).waitFor();
         assert.equal(await page.locator('#marquee-motion-toggle').isDisabled(),true); await frozen(page);
@@ -149,7 +165,7 @@ async function geometry(page) {
     assert.equal(await reduced.locator('canvas').count(),0);
     await reduced.close();
     const noScript=await browser.newPage({javaScriptEnabled:false}); await noScript.goto(base);
-    await noScript.getByRole('link',{name:'Browse styles',exact:true}).click(); await noScript.waitForURL(`${base}/generator/solid/`);
+    await noScript.getByRole('link',{name:'Enter generator',exact:true}).click(); await noScript.waitForURL(`${base}/generator/solid/`);
     await noScript.close();
     assert.deepEqual(errors,[]);
     await fs.writeFile(path.join(evidence,`${engine}-results.json`),JSON.stringify({engine,results},null,2));
