@@ -68,13 +68,23 @@ The progress display has a 30-base minimum marker and a 50-base maximum. Below
 30, the input border and progress feedback are red and Export is unavailable.
 At 30, a brief green confirmation, check mark and green border show readiness.
 The user can keep typing through 50 while the export actions remain enabled.
+At 50, the neutral count says “Maximum reached. Ready to export.”
 Only the artwork uses the base data; no control color enters the files.
 
 An attempt to exceed 50 leaves the accepted sequence at 50, flashes the input
-outline red and shakes it briefly. An inline alert explains the maximum and
-remains until the next accepted edit. The existing valid sequence can still be
-exported. Reduced motion removes translation and animation while keeping the
-short red outline and text. The error message itself never moves.
+outline red and shakes it briefly. A polite inline notice explains the maximum.
+Its red color ends with the 650 ms outline cue. The notice then uses the normal
+secondary text color and clears four seconds after the last rejected edit.
+An accepted edit or leaving the field clears it immediately. The 50-base cap,
+neutral maximum label and export readiness remain. Reduced motion removes
+translation and animation while keeping the short red outline and text. The
+notice itself never moves. Repeated rejected edits renew its timeout without
+rewriting the same live-region text.
+
+[Carbon's character-counter guidance](https://www.carbondesignsystem.com/building-blocks/core/components/text-input/guidelines)
+supports a visible count, an enforced maximum and feedback when that maximum
+is reached. The four-second notice duration is a project choice, not an
+industry requirement. A valid capped sequence does not carry a lasting error.
 
 Input handlers cover ordinary typing, paste, selection replacement and
 composition commits. WebKit's early native maxlength path has a key-event
@@ -89,9 +99,10 @@ clipboard output contain no dashed slots, green/red indicators or limit UI.
 
 ## Verification
 
-All 709 unit tests in 63 suites pass. Focused Chromium and WebKit checks cover
+All 711 unit tests in 63 suites pass. Focused Chromium and WebKit checks cover
 empty and partial input, 29/30/31 and 49/50
 boundaries, the same gap at every count in previews and exports, fixed containment, native over-limit typing,
+notice expiry and renewal, blur/edit dismissal, polite live-region markup,
 formatted/overlong paste, selection replacement, simulated composition commit, reduced
 motion, SVG/PNG downloads, Randomize/Undo/Reset, reload, retired query/share
 fields and desktop/phone layouts. Review images are stored in

@@ -4419,7 +4419,8 @@ body:is(.theme-white, .theme-silver, .theme-gray, .theme-lunar) { --color-ready:
   from { background-color: color-mix(in srgb, var(--color-ready) 18%, var(--control-surface)); }
   to { background-color: var(--control-surface); }
 }
-.nucleotide_limit-error { margin-top: .375rem; color: var(--color-incomplete); font: 400 .75rem/1.5 'RPIGeist', sans-serif; }
+.nucleotide_limit-error { margin-top: .375rem; color: var(--text-secondary); font: 400 .75rem/1.5 'RPIGeist', sans-serif; }
+.nucleotide_sequence.is-limit-error .nucleotide_limit-error { color: var(--color-incomplete); }
 .nucleotide_sequence.is-limit-error .control-input,
 .nucleotide_sequence.is-limit-error .control-input:focus { border-color: var(--color-incomplete); outline-color: var(--color-incomplete); box-shadow: 0 0 0 1px var(--color-incomplete); transition: none; animation: nucleotideLimitShake var(--duration-limit) ease-out, nucleotideLimitFlash var(--duration-limit) ease-out; }
 @keyframes nucleotideLimitShake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-3px); } 40%, 80% { transform: translateX(3px); } }

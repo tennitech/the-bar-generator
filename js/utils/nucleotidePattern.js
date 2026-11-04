@@ -75,11 +75,13 @@
     const remaining = Math.max(0, MIN_BASES - count);
     const notice = /T/.test(input.value) && /U/.test(input.value) ? ' Mixed DNA/RNA letters.'
       : edited && original.toUpperCase() !== input.value ? ' Only A, T, C, G and U are kept.' : '';
-    status.textContent = `${count}/50 bases. ${remaining ? `Add ${remaining} to export.` : 'Ready to export.'}${notice}`;
+    const readiness = remaining ? `Add ${remaining} to export.`
+      : count === MAX_BASES ? 'Maximum reached. Ready to export.' : 'Ready to export.';
+    status.textContent = `${count}/50 bases. ${readiness}${notice}`;
     const progress = root.querySelector('#nucleotide-progress');
     if (progress) {
       progress.max = MAX_BASES; progress.value = count;
-      progress.setAttribute('aria-valuetext', `${count} bases entered; ${remaining ? `${remaining} more needed` : 'ready to export'}`);
+      progress.setAttribute('aria-valuetext', `${count} bases entered; ${remaining ? `${remaining} more needed` : count === MAX_BASES ? 'maximum reached; ready to export' : 'ready to export'}`);
     }
     const control = root.querySelector('#nucleotide-sequence-control');
     if (control) {
@@ -97,7 +99,10 @@
   function clearLimit(root) {
     const input = root.querySelector('#nucleotide-input');
     const state = inputStates.get(input);
-    if (state?.timer) { clearTimeout(state.timer); state.timer = null; }
+    if (state) {
+      clearTimeout(state.flashTimer); state.flashTimer = null;
+      clearTimeout(state.noticeTimer); state.noticeTimer = null;
+    }
     root.querySelector('#nucleotide-sequence-control')?.classList.remove('is-limit-error');
     const error = root.querySelector('#nucleotide-limit-error');
     if (error) { error.hidden = true; error.textContent = ''; }
@@ -107,20 +112,25 @@
     const state = inputStates.get(input);
     const control = root.querySelector('#nucleotide-sequence-control');
     const error = root.querySelector('#nucleotide-limit-error');
-    if (error) { error.textContent = '50-base limit. Remove a base before adding another.'; error.hidden = false; }
+    if (error?.hidden) { error.textContent = '50-base limit. Remove a base before adding another.'; error.hidden = false; }
     if (!control || !state) return;
-    clearTimeout(state.timer);
+    clearTimeout(state.flashTimer);
+    clearTimeout(state.noticeTimer);
     control.classList.remove('is-limit-error');
     // Restart feedback only after an explicit rejected edit, never during idle.
     void control.offsetWidth;
     control.classList.add('is-limit-error');
-    state.timer = setTimeout(() => { control.classList.remove('is-limit-error'); state.timer = null; }, 650);
+    state.flashTimer = setTimeout(() => { control.classList.remove('is-limit-error'); state.flashTimer = null; }, 650);
+    state.noticeTimer = setTimeout(() => {
+      if (error) { error.hidden = true; error.textContent = ''; }
+      state.noticeTimer = null;
+    }, 4000);
   }
   function bindInput(root, onEdit) {
     const input = root.querySelector('#nucleotide-input');
     if (!input) return;
     if (inputStates.has(input)) { inputStates.get(input).onEdit = onEdit; return; }
-    const state = { onEdit, composing: false, compositionValue: null, timer: null };
+    const state = { onEdit, composing: false, compositionValue: null, flashTimer: null, noticeTimer: null };
     inputStates.set(input, state);
     const handleInput = () => {
       const overflow = letters(input.value).length > MAX_BASES;
@@ -158,6 +168,7 @@
       if (!event.clipboardData) return;
       event.preventDefault(); insert(event.clipboardData.getData('text/plain'));
     });
+    input.addEventListener('blur', () => clearLimit(root));
     input.addEventListener('compositionstart', () => { state.composing = true; });
     input.addEventListener('compositionend', () => { state.composing = false; handleInput(); state.compositionValue = input.value; });
     input.addEventListener('input', event => {

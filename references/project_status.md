@@ -137,15 +137,17 @@ width 250, this is 1.33 units. Teeth remain 7 units wide through 30 bases, then
 shrink to 3.67 units at 50 so extra bases fit the fixed official bar viewport.
 The renderer uses only entered
 bases. Placeholders and control feedback never enter exports. A rejected edit
-above 50 gives a brief red input outline and shake with an inline limit message.
-The valid 50-base sequence remains exportable. Reduced motion removes the shake
+above 50 gives a brief red input outline and shake with a polite inline notice.
+The notice returns to normal text color with the outline and clears after four
+seconds, an accepted edit or blur. A neutral “Maximum reached” count remains at
+50; the sequence stays exportable. Reduced motion removes the shake
 and animation while retaining the red feedback and text.
 
 Typing, formatted/overlong paste, selected-text replacement and composition
 commit use the same 50-base cap. Randomize chooses an actual sequence of 30–50
 bases; Undo restores the previous sequence and export lock. Old target-length
 query/share fields are ignored without shortening valid input. The Home samples
-are regenerated from the shared renderer. Validation passes 709 unit tests,
+are regenerated from the shared renderer. Validation passes 711 unit tests,
 focused Chromium/WebKit edit/export and emulated-touch flows, and exact Home
 sample parity. Desktop, limit and phone states were visually inspected. See
 [source and checks](nucleotide_bar.md).

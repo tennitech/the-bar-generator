@@ -62,3 +62,53 @@ test('the 30-base gap stays fixed as segments shrink to fit more bases, without 
     if(count===50) expect(toothWidth).toBeCloseTo(11/3);
   }
 });
+
+describe('maximum feedback lifecycle', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+  function setup() {
+    const handlers={},classes=new Set();
+    const input={value:'A'.repeat(50),selectionStart:50,selectionEnd:50,
+      addEventListener:(type,handler)=>{handlers[type]=handler;}};
+    const error={hidden:true,textContent:''};
+    const control={offsetWidth:0,classList:{add:name=>classes.add(name),remove:name=>classes.delete(name)}};
+    const nodes={'#nucleotide-input':input,'#nucleotide-limit-error':error,
+      '#nucleotide-sequence-control':control,'#style-select':{value:'nucleotide'}};
+    const root={querySelector:selector=>nodes[selector]||null};
+    const onEdit=jest.fn();
+    model.bindInput(root,onEdit);
+    const reject=()=>{const event={key:'A',preventDefault:jest.fn()};handlers.keydown(event);return event;};
+    return {root,input,error,classes,onEdit,reject,blur:()=>handlers.blur()};
+  }
+  test('a blocked edit clears its notice after four seconds while the valid sequence stays exportable', () => {
+    const state=setup();
+    expect(state.reject().preventDefault).toHaveBeenCalled();
+    expect(state.error.hidden).toBe(false);
+    expect(state.classes.has('is-limit-error')).toBe(true);
+    jest.advanceTimersByTime(650);
+    expect(state.classes.has('is-limit-error')).toBe(false);
+    expect(state.error.hidden).toBe(false);
+    jest.advanceTimersByTime(3349);
+    expect(state.error.hidden).toBe(false);
+    jest.advanceTimersByTime(1);
+    expect(state.error.hidden).toBe(true);
+    expect(state.error.textContent).toBe('');
+    expect(state.input.value).toHaveLength(50);
+    expect(model.exportBlocker(state.root)).toBe('');
+    expect(state.onEdit).not.toHaveBeenCalled();
+  });
+  test('repeated attempts renew the notice and leaving the field clears pending feedback', () => {
+    const state=setup();
+    state.reject();jest.advanceTimersByTime(3000);
+    state.reject();jest.advanceTimersByTime(1000);
+    expect(state.error.hidden).toBe(false);
+    state.blur();
+    expect(state.error.hidden).toBe(true);
+    expect(state.classes.has('is-limit-error')).toBe(false);
+    jest.advanceTimersByTime(5000);
+    state.reject();
+    expect(state.error.hidden).toBe(false);
+    jest.advanceTimersByTime(4000);
+    expect(state.error.hidden).toBe(true);
+  });
+});
