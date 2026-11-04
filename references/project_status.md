@@ -3,6 +3,24 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 stable Undo startup
+
+The parameter shell now creates the disabled Undo button alongside Randomize and
+Reset before renderer setup. History initialization binds that existing control
+instead of inserting it later, preventing the refresh-time action-row shift in
+issue #105. Undo availability, one-step history, keyboard focus and exact artwork
+restoration are unchanged. Generator routes and the Home prefetch use aligned
+`20261104-undo-startup` cache keys for the affected shell and control scripts.
+
+Validation: 63 focused control, history, startup and routing tests pass. A delayed
+renderer-start regression fails against the previous main because Undo is absent
+from the initial action row, and passes six fresh-load/refresh cases in each of
+Chromium and WebKit at 1280, 375 and 320 px. Button positions stay identical across
+initialization, repeated preparation adds no duplicates, reload clears available
+history, keyboard Undo restores exact SVG artwork, and narrow layouts stay within
+the viewport. These checks do not establish physical-device or screen-reader
+behavior, owner acceptance, or formal brand approval.
+
 ## November 4 encoded-text validation
 
 Binary and Morse now keep text drafts editable while suppressing rejected text
