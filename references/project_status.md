@@ -3,6 +3,81 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 final ASCII, parameter feedback and Home integration
+
+The verified ASCII candidate `cfecad2` is combined with parameter-feedback/Home
+candidate `ffecb15` (tree `be381ee10be5826578a35c816c4ae2c30c73fbdc`, matching PR
+#121 head `38b89741`). ASCII runtime, entrance CSS, generator runtime and both
+review screenshots remain byte-identical to the checked ASCII candidate.
+Parameter-feedback and Home hover runtime, styling, model and history files
+remain byte-identical to the checked combined candidate. Only HTML/bootstrap
+cache references and additive status sections needed integration; the shared
+ASCII/shell key is `20261104-ascii-release`. Current parameter and Home asset
+cache keys remain intact.
+
+All 165 focused tests in ten suites pass, all 84 inline scripts compile, and the
+diff passes whitespace validation. The preceding Chromium/WebKit entrance,
+export, parameter and Home evidence applies to these unchanged runtime files;
+those browser matrices were not repeated for this cache/document-only merge.
+No owner testing or formal RPI approval is inferred.
+
+## November 4 ASCII release integration recovery
+
+The bounded ASCII entrance is integrated with the parametric Triangle Grid and
+Circles Gradient release (deployed main `635e4de7`, identical local base tree
+`879e029e5c7d368fcfdd3acb53abd3e33bb2e2a0`). Its models and controls are unchanged.
+Shell, bootstrap, Home prefetch and entrance cache keys use
+`20261104-ascii-parametric`; other current-main cache references are preserved.
+
+Validation: 732 tests in 69 suites pass, and all 84 inline scripts compile.
+Chromium and WebKit pass desktop/mobile ASCII cleanup, interruption, resize and
+reduced-motion checks, all 34 entrance/navigation/control scenarios, and exact
+SVG/PNG snapshot regressions for Triangles and Wave Quantum. Initial browser
+runs hit process crashes while the temporary filesystem was 97% full; the
+unchanged checks passed serially with browser temporary files on workspace disk.
+The original two approved review screenshots and their source record are retained;
+fresh Chromium captures were also visually inspected. This is implementation
+verification, not physical-device acceptance or formal RPI approval.
+
+## November 4 bounded ASCII entrance
+
+Issue #101 adds a one-time sampled ASCII reveal. Home samples visible
+bars once and places temporary symbol text over the existing semantic labels.
+The generator samples a low-resolution rendering of its canonical vector mark,
+then resolves into the real canvas. It does not sample the GPU canvas, alter
+logo geometry or exports, or change parameter values. Artwork animation remains
+held only during the entrance, through the existing PageEntrance contract.
+
+The reveal is 580 ms on first load, shorter on repeated Home loads. Samples
+are bounded to 100 by 64 cells, cached by source and size, and prepared in short
+yielding tasks. A 180 ms preparation budget falls back to the normal reveal if
+the device cannot keep up. There is no continuing ASCII render loop. Reduced
+motion, saved Home pause, Back/Forward restore, input, visibility and navigation
+cancel or bypass the entrance. Visual layers have no pointer events and are
+hidden from assistive technology; actual text is never scrambled in the DOM.
+
+Initial Linux headless measurements: Chromium generator source plus sampling
+was roughly 3–4 ms normally and 12–13 ms at 4x CPU slowdown. Home preparation
+was roughly 13–30 ms total, divided over tasks; slower runs can skip. WebKit
+generator preparation was about 4–5 ms, while its Home scheduling sometimes
+exceeded the budget and correctly fell back. These are not phone battery or
+physical-device measurements. An early GPU capture prototype stalled for about
+90–106 ms and was replaced rather than accepted as negligible overhead.
+
+After integration with #118, #117 and LFO #102 (main 4af090b), 720 unit tests pass.
+Chromium and WebKit desktop/390 px checks cover normal
+completion or deadline fallback, refresh, keyboard interruption, reduced motion,
+layer cleanup and page errors. Screenshots were inspected. Both engines pass
+34 combined entrance/navigation/control scenarios and exact SVG/PNG snapshot
+regressions for Triangles and Wave Quantum during asynchronous export. Cache
+keys are aligned. The existing Home entry hooks remain compatible with pending
+Home interaction releases; those changes are not included in this feature.
+Additional Chromium checks
+passed Gradient, Nucleotide, Lunar, Circles, Waveform, Neural Network, Triangle
+Grid and Wave Quantum with live reduced-motion cancellation and no page errors.
+Their measured source-plus-sampling work ranged from about 4 to 15 ms. No claim of formal brand approval
+or owner acceptance is made.
+
 ## November 4 parameter feedback and Home release integration
 
 The parameter-feedback candidate `25b6232` is combined with Home hover candidate

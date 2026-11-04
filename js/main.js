@@ -6616,7 +6616,11 @@ function draw() {
   const previewCanvas = window._renderer?.canvas;
   if (previewCanvas?.dataset && previewCanvas.dataset.previewReady !== 'true') {
     previewCanvas.dataset.previewReady = 'true';
-    window.PageEntrance?.revealGenerator?.();
+    window.PageEntrance?.revealGenerator?.(() => {
+      // Sample the same vector geometry, not the GPU canvas (readback can stall).
+      const mark = buildHeaderPreviewSVG().replace(/<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="color:${colorScheme?.fg || '#000000'}"><g transform="translate(${width / 2} ${(height - getPreviewFitLayout().controlSpace) / 2}) scale(${responsiveLogoScale}) translate(${panOffset.x} ${panOffset.y}) scale(${zoomLevel}) translate(${-currentWidth / 2} ${LOGO_VERTICAL_OFFSET})">${mark}</g></svg>`;
+    });
   }
 
   if (lunarFrameKey && isLunarBarVectorPreviewReady()) {

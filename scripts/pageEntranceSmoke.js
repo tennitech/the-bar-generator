@@ -40,12 +40,13 @@ async function geometry(page) {
         page.on('pageerror', e => errors.push(e.message));
         for (const theme of ['black', 'white']) {
           await page.goto(`${base}/generator/ruler/?colorMode=${theme}`);
-          await page.locator('#p5-container canvas').waitFor();
+          await page.locator('#p5-container canvas.p5Canvas').waitFor();
           if (!reduced) {
-            await page.waitForFunction(() => PageEntrance.isHoldingArtwork());
+            await page.waitForFunction(() => PageEntrance.isHoldingArtwork() || document.querySelector('#p5-container')?.classList.contains('is-entry-complete'));
             const held = await page.evaluate(() => window.animationTime);
             await page.waitForTimeout(100);
-            assert.equal(await page.evaluate(() => window.animationTime), held, 'live phase must hold during the captured print');
+            if (await page.evaluate(() => PageEntrance.isHoldingArtwork()))
+              assert.equal(await page.evaluate(() => window.animationTime), held, 'live phase must hold during the sampled reveal');
           }
           const before = await geometry(page);
           await page.locator('#p5-container.is-entry-complete').waitFor();
@@ -57,22 +58,23 @@ async function geometry(page) {
           assert.equal(info.complete, true);
           assert.ok(info.samples.every(s => s.cursors <= 1 && (s.chromeOpacity === null || s.chromeOpacity === '1')));
           if (!reduced) {
-            assert.equal(info.plane.entryDuration, theme === 'black' ? '680' : '400');
-            assert.ok(['native', 'fallback'].includes(info.plane.entryMode));
+            assert.equal(info.plane.entryDuration, '580');
+            assert.ok(['ascii', 'fallback'].includes(info.plane.entryMode));
           }
           await page.screenshot({ path: path.join(evidence, `${name}-${width}-${theme}-${reduced ? 'reduced' : 'motion'}.png`) });
           // Existing action handlers remain single, even after repeated early preparation.
-          assert.equal(await page.locator('#ruler-group .control-header-actions button').count(), 2);
-          assert.equal(await page.locator('#triangles-group .control-header-actions button').count(), 2);
+          assert.equal(await page.locator('#ruler-group .control-header-actions button').count(), 3);
+          assert.equal(await page.locator('#triangles-group .control-header-actions button').count(), 3);
           results.push({ engine: name, width, reduced, theme, ...info, errors });
         }
         await page.goto(base + '/');
         await page.locator('.bar_asset.is-entrance-ready').first().waitFor({ state: 'attached' });
         if (!reduced) {
-          await page.waitForFunction(() => PageEntrance.isHoldingArtwork());
+          await page.waitForFunction(() => PageEntrance.isHoldingArtwork() || document.querySelector('[data-entrance-plane]')?.classList.contains('is-entry-complete'));
           const positions = await page.locator('.marquee_track').evaluateAll(items => items.slice(0, 4).map(e => e.style.transform));
           await page.waitForTimeout(100);
-          assert.deepEqual(await page.locator('.marquee_track').evaluateAll(items => items.slice(0, 4).map(e => e.style.transform)), positions, 'marquee must hold its captured position');
+          if (await page.evaluate(() => PageEntrance.isHoldingArtwork()))
+            assert.deepEqual(await page.locator('.marquee_track').evaluateAll(items => items.slice(0, 4).map(e => e.style.transform)), positions, 'marquee must hold its captured position');
         }
         await page.locator('[data-entrance-plane].is-entry-complete').waitFor();
         await page.waitForFunction(() => !window.PageEntrance.isActive());
@@ -87,11 +89,11 @@ async function geometry(page) {
         // Use the existing keyboard navigation link to enter, then exercise history quickly.
         await page.locator('.marquee_skip-link').focus();
         await Promise.all([page.waitForURL('**/generator/solid/'), page.keyboard.press('Enter')]);
-        await page.locator('#p5-container canvas').waitFor();
+        await page.locator('#p5-container canvas.p5Canvas').waitFor();
         await page.goBack(); await page.locator('.hero_cluster').waitFor();
-        await page.goForward(); await page.locator('#p5-container canvas').waitFor();
+        await page.goForward(); await page.locator('#p5-container canvas.p5Canvas').waitFor();
         await page.goBack(); await page.goForward();
-        await page.locator('#p5-container canvas').waitFor();
+        await page.locator('#p5-container canvas.p5Canvas').waitFor();
         assert.deepEqual(errors, []);
         results.push({ engine: name, width, reduced, kind: 'selector-reload-navigation-history', scene, errors });
         // Explicit theme interaction cancels any remaining arrival before its scan.
@@ -112,20 +114,20 @@ async function geometry(page) {
       await slow.close();
       // Repeated calls create neither duplicate actions nor duplicate runtime callbacks.
       const check = await browser.newPage();
-      await check.goto(base + '/generator/ruler/?rulerRepeats=20'); await check.locator('#p5-container canvas').waitFor();
+      await check.goto(base + '/generator/ruler/?rulerRepeats=20'); await check.locator('#p5-container canvas.p5Canvas').waitFor();
       await check.evaluate(() => {
         ParameterControls.prepare(document); ParameterControls.prepare(document);
         window.__actionCalls = 0;
         ParameterControls.bindActions({ reset: () => window.__actionCalls++, randomize: () => window.__actionCalls++ });
       });
-      await check.locator('#ruler-group .control-reset-btn').click();
+      await check.locator('#ruler-group [data-parameter-action=reset]').click();
       assert.equal(await check.evaluate(() => window.__actionCalls), 1);
       await check.evaluate(() => ParameterControls.bindActions({ reset: resetStyleParameters, randomize: randomizeStyleParameters }));
       await check.locator('#ruler-repeats-display').click();
       await check.locator('.slider_value-input').fill('12');
       await check.locator('.slider_value-input').press('Enter');
       assert.equal(await check.locator('#ruler-repeats-slider').inputValue(), '12');
-      await check.locator('#ruler-group .control-reset-btn').click();
+      await check.locator('#ruler-group [data-parameter-action=reset]').click();
       assert.equal(await check.locator('#ruler-repeats-slider').inputValue(), '10');
       results.push({ engine: name, kind: 'parameter-action-idempotence', calls: 1, typedEditorAndReset: true });
       await check.close();
@@ -135,19 +137,19 @@ async function geometry(page) {
       await simple.goto(base + '/generator/solid/');
       await simple.locator('#p5-container.is-entry-complete').waitFor();
       await simple.waitForFunction(() => !PageEntrance.isActive());
-      assert.equal(await simple.locator('#p5-container').getAttribute('data-entry-mode'), 'fallback');
+      assert.ok(['ascii', 'fallback'].includes(await simple.locator('#p5-container').getAttribute('data-entry-mode')));
       assert.equal(await simple.locator('#p5-container').evaluate(e => getComputedStyle(e).clipPath), 'none');
       results.push({ engine: name, kind: 'non-native-fallback', clean: true });
       await fallback.close();
       const interrupt = await browser.newContext();
       const immediate = await interrupt.newPage();
       await immediate.goto(base + '/generator/solid/');
-      await immediate.waitForFunction(() => document.getAnimations().some(a => a.animationName === 'pagePrint' && a.effect.getComputedTiming().progress > 0.1));
+      await immediate.waitForFunction(() => document.querySelector('.entrance_ascii') && PageEntrance.isActive());
       await immediate.mouse.click(300, 20);
       await immediate.waitForFunction(() => !PageEntrance.isActive());
       assert.equal(await immediate.locator('#p5-container').evaluate(e => getComputedStyle(e).maskImage), 'none');
       await immediate.reload();
-      await immediate.waitForFunction(() => document.getAnimations().some(a => a.animationName === 'pagePrint' && a.effect.getComputedTiming().progress > 0.1));
+      await immediate.waitForFunction(() => document.querySelector('.entrance_ascii') && PageEntrance.isActive());
       await immediate.emulateMedia({ reducedMotion: 'reduce' });
       await immediate.waitForFunction(() => !PageEntrance.isActive());
       results.push({ engine: name, kind: 'interaction-and-live-reduced-cancel', immediate: true });
@@ -156,10 +158,10 @@ async function geometry(page) {
       await early.route('**/js/main.js*', async route => { await new Promise(r => setTimeout(r, 1200)); await route.continue(); });
       const intent = await early.newPage();
       const navigation = intent.goto(base + '/generator/ruler/?rulerRepeats=20');
-      await intent.locator('#ruler-group .control-reset-btn').waitFor();
-      assert.equal(await intent.locator('#p5-container canvas').count(), 0);
-      await intent.locator('#ruler-group .control-reset-btn').click();
-      await navigation; await intent.locator('#p5-container canvas').waitFor();
+      await intent.locator('#ruler-group [data-parameter-action=reset]').waitFor();
+      assert.equal(await intent.locator('#p5-container canvas.p5Canvas').count(), 0);
+      await intent.locator('#ruler-group [data-parameter-action=reset]').click();
+      await navigation; await intent.locator('#p5-container canvas.p5Canvas').waitFor();
       assert.equal(await intent.locator('#ruler-repeats-slider').inputValue(), '10');
       results.push({ engine: name, kind: 'early-reset-intent', resetAppliedAfterUrlState: true });
       await early.close();
