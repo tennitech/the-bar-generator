@@ -1,7 +1,24 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-11-03
+**Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
+
+## November 4 Circles Gradient reference repair
+
+Issue #56 remained reproducible after the October 28 alignment repair: variant 1
+used a generic upright 28 × 3 grid rather than the supplied reference. It now
+preserves the source's 29/28/29 staggered dots, original radii and small coordinate
+offsets. Uniform containment of the 509 × 36 source frame keeps complete circular
+primitives inside the official viewport without stretching or forced edge paint.
+Variants 2 and 3 are unchanged. Preview, header, SVG and PNG share this geometry;
+the Home sample is regenerated from that renderer.
+
+The targeted source-oracle regression compares every circle with the supplied
+SVG at three sizes, including a nonstandard aspect ratio. Existing complete
+Circles stroke and Neural Network ring-bounds regressions also pass, confirming
+that issues #51 and #55 were already repaired in merged PR #57. Browser/export
+verification is recorded in the associated pull request. No formal RPI approval,
+physical-device testing or owner acceptance is inferred.
 
 ## November 3 compact export actions
 
