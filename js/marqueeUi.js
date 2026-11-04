@@ -13,7 +13,10 @@ const PRESS_SPEED_FACTOR = 0;
 const EASE_RATE = 5.2;
 const BRAKE_RATE = 28;
 const DRAG_THRESHOLD = 8;
-const INERTIA_FRICTION = 5.5;
+// An exponential glide keeps quick flicks lively without unbounded travel.
+const INERTIA_FRICTION = 2.8;
+const INERTIA_CATCH_GRACE_MS = 180;
+const INERTIA_CATCH_DISTANCE = 18;
 const INERTIA_STOP_SPEED = 8;
 const STARTUP_STYLE_PROMPT_DELAY = 5000;
 const BASE_SPEEDS = [24, 28, 26, 30, 27, 29, 25, 28, 26, 30];
@@ -357,6 +360,15 @@ function sampleDragVelocity(previous, distance, seconds, maximum) {
   return previous + (instant - previous) * (1 - Math.exp(-seconds / 0.035));
 }
 
+// A deliberate hold should settle the lane, while small release/event delays
+// should taper the throw instead of switching it off at one abrupt threshold.
+function getReleaseVelocity(velocity, idleMilliseconds) {
+  if (!Number.isFinite(velocity) || !Number.isFinite(idleMilliseconds)) return 0;
+  const idle = Math.max(0, idleMilliseconds);
+  if (idle >= 160) return 0;
+  return velocity * Math.exp(-Math.max(0, idle - 35) / 45);
+}
+
 function advanceRowInertia(velocity, seconds) {
   if (!velocity || !(seconds > 0)) return { velocity: velocity || 0, distance: 0 };
   const decay = Math.exp(-INERTIA_FRICTION * seconds);
@@ -386,11 +398,13 @@ function resetRowInteraction(state) {
 
 function bindAssetInteractions(asset, state) {
   function catchMovingLane(event) {
-    // Transform-driven enter/move events at the release point must not kill a
-    // deliberate throw. Moving the mouse to inspect a bar does catch the lane.
+    // Let a deliberate flick leave the hand. Release jitter and synthetic
+    // boundary events must not cancel it; later movement to inspect a bar does.
     if (state.inertiaVelocity && state.inertiaOrigin && event.pointerType !== 'touch'
-      && Math.hypot(event.clientX - state.inertiaOrigin.x, event.clientY - state.inertiaOrigin.y) > 2) {
+      && event.timeStamp - state.inertiaOrigin.time >= INERTIA_CATCH_GRACE_MS
+      && Math.hypot(event.clientX - state.inertiaOrigin.x, event.clientY - state.inertiaOrigin.y) > INERTIA_CATCH_DISTANCE) {
       state.inertiaVelocity = 0;
+      state.inertiaOrigin = null;
     }
   }
   function hoverAsset(event) {
@@ -485,8 +499,8 @@ function bindAssetInteractions(asset, state) {
     const paused = document.documentElement?.dataset.marqueeMotionPaused === 'true';
     // A held release, cancellation, or any motion pause never throws.
     state.inertiaVelocity = released && drag.moved && !reduced && !paused
-      && event.timeStamp - drag.time < 100 ? drag.velocity : 0;
-    state.inertiaOrigin = { x: event.clientX, y: event.clientY };
+      ? getReleaseVelocity(drag.velocity, event.timeStamp - drag.time) : 0;
+    state.inertiaOrigin = { x: event.clientX, y: event.clientY, time: event.timeStamp };
     state.drag = null;
     state.isPressed = false;
     state.element.classList.remove('is-dragging');
@@ -883,12 +897,14 @@ function initMarqueeScene() {
     root.dataset.marqueeMotionPaused = String(motion.paused);
     if (motionButton) {
       motionButton.disabled = motion.reduced;
-      motionButton.title = motion.reduced ? 'Reduced motion is on in your device settings.' : '';
-      motionButton.textContent = motion.reduced ? 'Motion paused' : motion.paused ? 'Resume motion' : 'Pause motion';
+      const label = motion.reduced ? 'Motion paused' : motion.paused ? 'Resume motion' : 'Pause motion';
+      motionButton.setAttribute('aria-label', label);
+      motionButton.dataset.motionPaused = String(motion.paused);
+      motionButton.title = motion.reduced ? 'Reduced motion is on in your device settings.' : label;
     }
     if (motionDescription) motionDescription.textContent = motion.reduced
       ? 'Motion is paused by your device’s reduced motion setting. Dragging still works.'
-      : 'Pauses the moving rows and animated bar previews. Dragging still works.';
+      : 'Controls the moving rows and animated bar previews. Dragging still works while paused.';
     if (motion.paused) window.PageEntrance?.cancel?.();
     handleResize();
     if (document.hidden || motion.paused) {
@@ -949,6 +965,7 @@ if (typeof module !== 'undefined' && module.exports) {
     advanceRowSpeed,
     projectLaneDelta,
     sampleDragVelocity,
+    getReleaseVelocity,
     advanceRowInertia,
     bindAssetInteractions,
     bindStageFocus,

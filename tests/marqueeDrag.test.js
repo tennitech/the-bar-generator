@@ -1,4 +1,4 @@
-const { projectLaneDelta, sampleDragVelocity, advanceRowInertia,
+const { projectLaneDelta, sampleDragVelocity, getReleaseVelocity, advanceRowInertia,
   bindAssetInteractions, bindStageFocus, resetRowInteraction } = require('../js/marqueeUi');
 
 const angle = 17 * Math.PI / 180;
@@ -27,9 +27,27 @@ describe('lane drag physics', () => {
       velocity = next.velocity; distance += next.distance;
     }
     expect(velocity).toBe(0);
-    expect(steps).toBeLessThan(130);
-    expect(Math.abs(distance)).toBeLessThan(Math.abs(initial) / 5.5);
+    expect(steps).toBeLessThan(250);
+    expect(Math.abs(distance)).toBeLessThan(Math.abs(initial) / 2.8);
     expect(Math.sign(distance)).toBe(Math.sign(initial));
+  });
+
+  test('a flick keeps a useful glide instead of braking almost immediately', () => {
+    const next = advanceRowInertia(1000, 0.5);
+    expect(next.distance).toBeGreaterThan(250);
+    expect(next.distance).toBeLessThan(300);
+    expect(next.velocity).toBeGreaterThan(200);
+  });
+
+  test('release timing tapers old samples and a held drag settles completely', () => {
+    expect(getReleaseVelocity(1000, 20)).toBe(1000);
+    expect(getReleaseVelocity(1000, 105)).toBeGreaterThan(150);
+    expect(getReleaseVelocity(1000, 105)).toBeLessThan(250);
+    expect(getReleaseVelocity(1000, 160)).toBe(0);
+    expect(getReleaseVelocity(1000, -1)).toBe(1000);
+    expect(getReleaseVelocity(NaN, 0)).toBe(0);
+    expect(getReleaseVelocity(1000, Infinity)).toBe(0);
+    expect(getReleaseVelocity(-1000, 20)).toBe(-1000);
   });
 
   test('inertia integrates the same distance at different frame rates', () => {
@@ -163,7 +181,7 @@ describe('native-link and gesture lifecycle', () => {
     expect(send('click').preventDefault).toHaveBeenCalledTimes(1);
   });
 
-  test('moving the mouse to inspect a coasting bar catches it, but stationary boundary events do not', () => {
+  test('a flick survives release jitter, then deliberate hover inspection catches it', () => {
     const { state, send } = fixture();
     send('pointerdown'); send('pointermove', { clientX: 180, timeStamp: 40 });
     send('pointerup', { clientX: 180, timeStamp: 50 });
@@ -173,6 +191,12 @@ describe('native-link and gesture lifecycle', () => {
     send('pointermove', { clientX: 180, buttons: 0, timeStamp: 65 });
     expect(state.inertiaVelocity).toBe(velocity);
     send('pointermove', { clientX: 190, buttons: 0, timeStamp: 70 });
+    expect(state.inertiaVelocity).toBe(velocity);
+    send('pointermove', { clientX: 210, buttons: 0, timeStamp: 100 });
+    expect(state.inertiaVelocity).toBe(velocity);
+    send('pointermove', { clientX: 186, buttons: 0, timeStamp: 400 });
+    expect(state.inertiaVelocity).toBe(velocity);
+    send('pointermove', { clientX: 210, buttons: 0, timeStamp: 420 });
     expect(state.inertiaVelocity).toBe(0);
     expect(state.currentFactor).toBe(0);
   });

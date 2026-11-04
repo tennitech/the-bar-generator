@@ -3,6 +3,37 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 final playful Home release reconciliation
+
+The verified PR109 candidate `f814077` is applied additively onto ASCII candidate
+`a1144f3` (tree `5255c33f613d63e4ac5441075941a402f4881d40`), which already includes
+parameter feedback and the published Home hover/off-row fixes. Home runtime and
+CSS remain byte-identical to the verified PR109 candidate; ASCII, generator,
+parameter, preview-animation and catalog runtime remain byte-identical to the
+ASCII base. Both Home HTML files preserve ASCII entrance references and load
+the new Home controls. Documentation sections are additive. Per-preview hover
+pause and neighbor ordering are not included.
+
+Validation: 194 focused tests in nine suites pass, all 84 inline scripts compile,
+and the diff passes whitespace validation. The previously checked Chromium and
+WebKit drag/control flows apply to the unchanged Home runtime. Browser matrices
+were not repeated for this cache/document-only reconciliation. This is not
+owner acceptance, physical-device certification or formal brand approval.
+
+## November 4 playful Home controls integration
+
+PR109's Home feature is isolated onto the published hover/off-row fix tree:
+exponential glide uses gentler friction, a brief release grace period prevents
+pointer jitter from catching a throw, and delayed releases taper naturally.
+Perpendicular off-row movement still preserves velocity; holds, interruptions,
+reduced motion and global pause still stop momentum. Home now has an accessible
+icon-only play/pause control and a native Enter generator link. Both Home pages
+load updated control assets without changing their animation/catalog references.
+
+This integration does not include the pending per-preview hover-pause or
+neighbor-ordering changes. Current generator controls and routing are unchanged.
+Original feature and cumulative integration branches remain preserved.
+
 ## November 4 final ASCII, parameter feedback and Home integration
 
 The verified ASCII candidate `cfecad2` is combined with parameter-feedback/Home
