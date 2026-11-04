@@ -82,7 +82,7 @@
   function loadScript(name) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = `js/utils/${name}.js?v=20261103-marquee-animation`;
+      script.src = `js/utils/${name}.js?v=20261104-numeric-seams`;
       script.onload = resolve;
       script.onerror = reject;
       document.head.append(script);

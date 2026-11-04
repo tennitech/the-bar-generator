@@ -3,6 +3,13 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 Numeric release cache refresh
+
+Generator route shells, Numeric rendering dependencies, and the Home dependency
+loader now use `20261104-numeric-seams` cache keys so returning sessions fetch
+the released seam repair instead of a previously cached renderer. Encoding and
+geometry are unchanged.
+
 ## November 4 Numeric height seams
 
 Numeric Height Encoding now joins neighboring digit cells into one silhouette
