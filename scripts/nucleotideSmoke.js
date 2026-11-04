@@ -40,6 +40,11 @@ async function main() {
     const {markup}=await state();
     assert.equal((markup.match(/data-base=/g)||[]).length,count);
     assert.equal((markup.match(/data-placeholder=/g)||[]).length,Math.max(0,30-count));
+    if(count) {
+     const tooth=markup.match(/data-base="[ATCGU]" d="M([\d.e+-]+) 0 H([\d.e+-]+)/);
+     const slotWidth=250/Math.max(30,count),toothWidth=Number(tooth[2])-Number(tooth[1]);
+     assert.ok(toothWidth>=slotWidth*.8 && toothWidth<slotWidth*.95,'Teeth must fill their slots with small visible gaps');
+    }
     if (count<30) assert.match(markup,/stroke-dasharray=/);
     assert.equal(await page.locator('#nucleotide-progress').evaluate(el=>el.max),50);
     assert.equal(await page.locator('#nucleotide-progress').evaluate(el=>el.value),count);
@@ -120,14 +125,16 @@ async function main() {
    assert.doesNotMatch(output,/data-placeholder|NaN|undefined/);
    await page.locator('#save-button').focus();await page.keyboard.press('Escape');
   }
-  await input.fill(bases(50));await page.locator('#save-button').click();
+  await input.fill(bases(30));await page.locator('#save-button').click();
   await page.locator('#export-size-standard').check();
   await page.evaluate(()=>{const render=createRasterExportBlob;createRasterExportBlob=(snapshot,...args)=>{window.__nucleotidePNGSource=snapshot.svgSource;return render(snapshot,...args)}});
   const [png]=await Promise.all([page.waitForEvent('download'),page.locator('#save-png').click()]);
   const bytes=await fs.readFile(await png.path());
   assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
   assert.equal(bytes.readUInt32BE(16),1160);assert.equal(bytes.readUInt32BE(20),762);
-  assert.doesNotMatch(await page.evaluate(()=>window.__nucleotidePNGSource),/data-placeholder/);
+  const pngSource=await page.evaluate(()=>window.__nucleotidePNGSource);
+  assert.doesNotMatch(pngSource,/data-placeholder/);
+  assert.equal((pngSource.match(/data-base=/g)||[]).length,30);
   await page.waitForFunction(()=>!logoExportUI.isBusy());
   await page.locator('#save-button').focus();await page.keyboard.press('Escape');
   for (let repeat=0;repeat<5;repeat++) {
@@ -183,7 +190,7 @@ async function main() {
   assert.ok(await touch.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await touch.close();
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({engine,passed:true,coverage:'30 minimum / 50 maximum, no length selector, 0/1/5/29/30/31/40/49/50, dashed slots, thicker teeth, red/green progress, native overflow typing, formatted/overlong paste, selection replacement, composition commit, reduced motion, SVG/PNG, Randomize/Undo/Reset, reload/legacy query, responsive and touch'}));
+  console.log(JSON.stringify({engine,passed:true,coverage:'30 minimum / 50 maximum, no length selector, 0/1/5/29/30/31/40/49/50, dashed slots, wide teeth and small gaps, red/green progress, native overflow typing, formatted/overlong paste, selection replacement, composition commit, reduced motion, SVG/PNG, Randomize/Undo/Reset, reload/legacy query, responsive and touch'}));
  } catch(error) {
   console.log(await page.evaluate(()=>document.body.innerText.slice(-2500)));
   await page.screenshot({path:`/tmp/nucleotide-${engine}-failure.png`,fullPage:true});throw error;

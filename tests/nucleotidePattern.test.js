@@ -46,15 +46,20 @@ test('every entered count from 30 through 50 is export-ready, independent of old
   }
   sequence='';style='solid';expect(model.exportBlocker(root)).toBe('');
 });
-test('adding bases above 30 increases tooth width while all geometry stays within the fixed bar', () => {
-  let previousWidth=0;
-  for (let count=30;count<=50;count++) {
+test('teeth fill their slots with small gaps below and above the minimum, without overlap', () => {
+  let previousGap=Infinity;
+  for (let count=1;count<=50;count++) {
     const paths=[...model.svg({sequence:'A'.repeat(count)}).matchAll(/d="M([\d.e+-]+) 0 H([\d.e+-]+)/g)];
     expect(paths).toHaveLength(count);
     const toothWidth=Number(paths[0][2])-Number(paths[0][1]);
-    expect(toothWidth).toBeGreaterThan(previousWidth);
+    const pitch=250/Math.max(30,count),gap=pitch-toothWidth;
+    expect(toothWidth).toBeGreaterThanOrEqual(pitch*.8);
+    expect(toothWidth).toBeLessThan(pitch*.95);
+    expect(Number(paths[0][1])).toBeGreaterThanOrEqual(0);
     expect(Number(paths.at(-1)[2])).toBeLessThanOrEqual(250);
-    expect(toothWidth).toBeLessThan(250/count);
-    previousWidth=toothWidth;
+    expect(gap).toBeLessThanOrEqual(previousGap+1e-10);
+    if(count<=30) expect(toothWidth).toBeCloseTo(7);
+    if(count===50) expect(toothWidth).toBeCloseTo(4.5);
+    previousGap=gap;
   }
 });
