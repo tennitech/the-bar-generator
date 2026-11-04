@@ -3,6 +3,48 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 parameter feedback and Home release integration
+
+The parameter-feedback candidate `25b6232` is combined with Home hover candidate
+`0cab095`. Only the two additive project-status sections conflicted. All parameter
+runtime, CSS, routed HTML and test files are byte-identical to the fully checked
+feedback candidate; Home runtime, CSS, mirror HTML and tests are byte-identical
+to the checked hover candidate. The primary Home HTML retains both hover cache
+references plus the newer generator-shell prefetch key. No browser matrix is
+repeated for unchanged runtime files; focused units and inline compilation are
+rerun for this combined tree: all 129 focused tests in eight suites pass, and
+all 84 inline scripts compile.
+
+## November 4 parameter feedback recovery
+
+The original action-feedback branch remains preserved at `5b02024`. Its feature
+commit is integrated additively on the tested `e58f86c` tree, equivalent to deployed
+main `635e4de`. Triangle Grid, Circles Gradient, Waveform LFO, Nucleotide and the
+initial disabled Undo control are retained. Only appended CSS and status sections
+needed conflict resolution; no bar algorithm or export renderer was replaced.
+Changed assets, routed shells and bootstrap references use
+`20261104-parameter-action-recovery`; unrelated runtime cache keys are unchanged.
+
+The shuffle SVG and retained MIT license match the official Feather v4.29.2
+GitHub blobs `116e2d42104d2ddc3998190087e8f3db5b5f3cd9` and
+`1f4f4336baff1185dc78ae9e78cac46628dcc869` respectively. The 20-icon notice and
+provenance table now include Randomize. Source/hash tests cover the registry.
+
+Validation: 735 unit tests in 69 suites pass; all 84 inline scripts compile.
+Chromium and WebKit pass the expanded 12-case Waveform/Triangle Grid/Circles
+Gradient feedback matrix: 1280/320 px, full/reduced motion, repeated actions,
+exact-artwork Undo/Reset, stable hit targets and live preference changes.
+Both also pass six delayed-start/refresh cases at 1280/375/320 px, including
+keyboard Undo and preserved startup positions. Unit coverage additionally checks
+background/page-exit cancellation. Desktop and 320 px action rows were visually
+inspected. These are local software checks, not owner testing or brand approval.
+Both engines also pass complete Triangle Grid and Circles Gradient preset,
+custom-query, legacy/current snapshot, keyboard/mobile, control/history, zoom,
+header and 2320 × 1524 PNG integration checks. Initial Chromium screenshot and
+WebKit broad checks crashed/stalled amid concurrent browsers and a 97%-full
+`/tmp` tmpfs. The unchanged Chromium retry and serialized WebKit runs with an
+invocation-scoped disk-backed temporary directory passed. No application code
+or browser security setting was changed to obtain those passes.
 ## November 4 Home hover focus and off-row inertia
 
 Captured pointer travel perpendicular to a marquee row retains a naturally decaying
@@ -91,6 +133,26 @@ minimum/cap behavior, renderer, catalog and controls remain unchanged. Chromium 
 scrolling, resize/style/detail changes, no pointer interception, and toast
 recovery. Visual review confirms the cue sits in the fade without layout shifts.
 These checks do not establish owner acceptance or physical-device certification.
+## November 4 parameter action feedback
+
+Randomize now has the pinned Feather shuffle icon and one brief response after
+an action succeeds. Undo's label moves back by 2 px, and Reset's label settles
+back to full opacity. Button hit targets, labels and row layout remain fixed.
+This feedback is tied to completed synchronous actions, never an idle loop or
+a simulated progress indicator. Repeated presses replace the current animation.
+Reduced motion, backgrounding, and page exit cancel or skip the feedback.
+
+The added shuffle SVG comes unchanged from Feather v4.29.2 with its source hash
+recorded alongside the existing MIT subset. No second icon family or runtime
+library was introduced. Nucleotide generation/target rules and all parameter
+algorithms are unchanged. Existing preview play/pause transitions were retained
+rather than adding another layer of motion.
+
+Validation: 707 unit tests pass, including replacement/cancellation and preference
+checks. Chromium and WebKit pass desktop/320 px normal/reduced-motion cases,
+repeated Randomize, exact SVG restoration with Undo and Reset, stable button
+geometry, accessible glyphs, and live preference changes. No formal RPI approval,
+owner testing, physical-device or assistive-technology certification is implied.
 
 ## November 4 stable Undo startup
 

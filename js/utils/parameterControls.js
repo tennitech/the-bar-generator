@@ -13,6 +13,33 @@
     'triangle-grid': 'triangle-grid', triangles: 'triangles',
     'fibonacci-sequence': null, union: null, runway: null, lunar: null
   });
+  const feedbackAnimations = new Map();
+  let feedbackMotion;
+  function cancelFeedback() {
+    feedbackAnimations.forEach(animation => animation.cancel());
+    feedbackAnimations.clear();
+  }
+  function feedback(button, action) {
+    if (!button || !scope.matchMedia) return;
+    if (!feedbackMotion) {
+      feedbackMotion = scope.matchMedia('(prefers-reduced-motion: reduce)');
+      feedbackMotion.addEventListener('change', event => { if (event.matches) cancelFeedback(); });
+      scope.addEventListener('pagehide', cancelFeedback);
+      document.addEventListener('visibilitychange', () => { if (document.hidden) cancelFeedback(); });
+    }
+    if (feedbackMotion.matches || document.hidden) return;
+    const target = button.querySelector(action === 'randomize' ? '.parameter_action-icon' : '.parameter_action-label');
+    if (!target?.animate) return;
+    feedbackAnimations.get(target)?.cancel();
+    const frames = action === 'randomize'
+      ? [{ transform: 'rotate(0deg)' }, { transform: 'rotate(-18deg)', offset: 0.4 }, { transform: 'rotate(0deg)' }]
+      : action === 'undo' ? [{ transform: 'translateX(-2px)', opacity: 0.7 }, { transform: 'translateX(0)', opacity: 1 }]
+      : [{ opacity: 0.6 }, { opacity: 1 }];
+    const animation = target.animate(frames, { duration: action === 'randomize' ? 220 : 160, easing: 'ease-out' });
+    feedbackAnimations.set(target, animation);
+    const done = () => { if (feedbackAnimations.get(target) === animation) feedbackAnimations.delete(target); };
+    animation.finished.then(done, done);
+  }
   function supportsActions(style) {
     return Object.prototype.hasOwnProperty.call(capabilities, style) && Boolean(capabilities[style]);
   }
@@ -181,7 +208,17 @@
         const button = document.createElement('button');
         button.type = 'button';
         button.className = className;
-        button.textContent = text;
+        const actionLabel = document.createElement('span');
+        actionLabel.className = 'parameter_action-label';
+        actionLabel.textContent = text;
+        if (action === 'randomize' && scope.FeatherIcons) {
+          const glyph = document.createElement('span');
+          glyph.className = 'parameter_action-glyph';
+          glyph.setAttribute('aria-hidden', 'true');
+          glyph.innerHTML = scope.FeatherIcons.getIconMarkup('shuffle', 'parameter_action-icon');
+          button.appendChild(glyph);
+        }
+        button.appendChild(actionLabel);
         if (action === 'undo') {
           // Reserve the real button in the initial chrome. History setup only
           // binds it later, so Randomize never moves when the renderer is ready.
@@ -198,8 +235,10 @@
           button.setAttribute('aria-label', `${text} ${style} parameters`);
           button.addEventListener('click', event => {
             event.preventDefault();
-            if (callbacks[action]) callbacks[action](style);
-            else pendingActions.push({ action, style });
+            if (callbacks[action]) {
+              callbacks[action](style);
+              feedback(button, action);
+            } else pendingActions.push({ action, style, button });
           });
         }
         actions.appendChild(button);
@@ -244,10 +283,10 @@
     refresh();
     // Apply an intentional early click once setup finishes; never install duplicate handlers.
     while (pendingActions.length) {
-      const { action, style } = pendingActions.shift();
-      if (callbacks[action]) callbacks[action](style);
+      const { action, style, button } = pendingActions.shift();
+      if (callbacks[action]) { callbacks[action](style); feedback(button, action); }
     }
   }
   scope.ParameterControls = { prepareSliderValueLabel, prepare, bindActions, capabilities, supportsActions, fieldsFor,
-    isDefaultField, defaultValueLabel, refresh, refreshStyle };
+    isDefaultField, defaultValueLabel, refresh, refreshStyle, feedback, cancelFeedback };
 })(typeof window !== 'undefined' ? window : globalThis);

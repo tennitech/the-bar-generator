@@ -15,6 +15,7 @@ No npm package, CDN or remote runtime icon request is introduced.
 
 | UI action | Feather source |
 | --- | --- |
+| Randomize | shuffle |
 | Share / Copy / Copied | share / copy / check |
 | Download / mission information | download / book-open |
 | Header Menu / Close / repository | menu / x / github |
