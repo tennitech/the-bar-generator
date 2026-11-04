@@ -106,6 +106,26 @@ The About text and marquee preset no longer advertise the removed feature.
 Focused browser checks cover legacy-query/export parity, Randomize/Reset and
 responsive layouts. This does not establish owner or physical-device testing.
 
+## November 4 nucleotide completion feedback
+
+Nucleotide accepts 30–50 bases for export. This is a tool layout rule, not a
+biological requirement. Below 30 bases, the preview has 30 slots and dashed empty
+positions. At 30–50, every entered base fills its share of the full bar. No bases
+are repeated or fabricated, and placeholders never enter SVG, PNG or clipboard
+output. INS/HBB presets contain the first 50 verified CDS bases.
+
+The Parameters panel shows progress to the 30-base minimum. Crossing that
+minimum gives a brief green confirmation, a persistent check mark and a green
+feedback border. Reduced motion retains the ready state without animation.
+Below the minimum, Export has a dashed border and unavailable state. Hover,
+keyboard focus and tap expose the same explanation. The trigger remains
+focusable to explain the lock; file actions and snapshot capture remain blocked.
+Ready input restores normal export behavior. Green is used only for control
+feedback and does not change the official artwork.
+
+The fix retains main `21bed8c`'s grouped export controls and state feedback.
+See [source, checks and review images](nucleotide_bar.md).
+
 ## November 3 compact export actions
 
 Download and Copy now sit side by side, with distinct tray and overlapping-sheet

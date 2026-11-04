@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261104-interaction-feedback" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261104-nucleotide-range" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
   <script src="js/utils/generatorRoutes.js?v=20261103-nucleotide"></script>
@@ -23,11 +23,11 @@
   <script src="js/utils/loopingGif.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/featherIcons.js?v=20261103-save-removal"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261104-text-validation"></script>
+  <script src="js/utils/shareState.js?v=20261104-nucleotide-range"></script>
   <script src="js/utils/randomizeHistory.js?v=20261103-undo-randomize"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/nucleotidePattern.js?v=20261103-nucleotide"></script>
-  <script src="js/utils/barPattern.js?v=20261104-numeric-seams"></script>
+  <script src="js/utils/nucleotidePattern.js?v=20261104-nucleotide-range"></script>
+  <script src="js/utils/barPattern.js?v=20261104-nucleotide-range"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/quantumModel.js"></script>
@@ -94,6 +94,7 @@
           <span id="save-button-label">Export</span>
           <svg data-feather="download" class="icon-right icon-download" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
+        <p id="export-blocked-note" class="export_blocked-note" role="tooltip" hidden></p>
         <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Export asset">
           <div id="export-settings" class="export_settings">
             <span id="export-size-label" class="export_size-label">Image size</span>
@@ -136,6 +137,7 @@
             <button id="copy-svg" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="option-label">SVG</span><span class="option-desc">Scalable vector</span></button>
           </div>
           </div>
+          <p id="export-input-note" class="export_host-note" role="status" hidden></p>
           <p id="export-host-note" class="export_host-note" hidden>Downloads and copying depend on this site’s embed permissions.</p>
           <div id="export-progress" class="export_progress" hidden>
             <div class="export_status-heading">
@@ -294,11 +296,17 @@
 
         <div id="nucleotide-group" data-parameter-actions="nucleotide" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
-          <div class="control">
-            <label for="nucleotide-input" class="control-label">SEQUENCE</label>
-            <input type="text" id="nucleotide-input" data-url-parameter="nucleotideSequence" value="ATGGCCCTGTGGATGCGCCTCCTGCCCCTG" maxlength="60" pattern="[ATCGUatcgu]*" spellcheck="false" autocapitalize="characters" autocomplete="off" class="control-input" aria-describedby="nucleotide-hint nucleotide-status">
-            <div id="nucleotide-hint" class="control-hint">A, T, C, G and U only. Up to 60 bases, read 5′ → 3′. T is DNA; U is RNA.</div>
-            <div id="nucleotide-status" class="control-hint" role="status" aria-live="polite"></div>
+          <div id="nucleotide-sequence-control" class="control nucleotide_sequence">
+            <div class="nucleotide_label-row">
+              <label for="nucleotide-input" class="control-label">SEQUENCE</label>
+              <span class="nucleotide_ready" aria-hidden="true"><svg class="nucleotide_ready-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Ready</span>
+            </div>
+            <input type="text" id="nucleotide-input" data-url-parameter="nucleotideSequence" value="ATGGCCCTGTGGATGCGCCTCCTGCCCCTGCTGGCGCTGCTGGCCCTCTG" maxlength="50" pattern="[ATCGUatcgu]*" spellcheck="false" autocapitalize="characters" autocomplete="off" class="control-input" aria-describedby="nucleotide-hint nucleotide-status">
+            <div id="nucleotide-hint" class="control-hint">Enter 30–50 bases using A, T, C, G and U. Dashed slots are empty. Read 5′ → 3′.</div>
+            <div class="nucleotide_feedback">
+              <progress id="nucleotide-progress" class="nucleotide_progress" max="30" value="30" aria-label="Export readiness"></progress>
+              <div id="nucleotide-status" class="control-hint" role="status" aria-live="polite"></div>
+            </div>
           </div>
           <div class="control">
             <label for="nucleotide-preset" class="control-label">GENE SNIPPET</label>
@@ -961,14 +969,14 @@
   <script src="js/utils/exportOptions.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportUi.js?v=20261103-compact-export-actions"></script>
-  <script src="js/utils/barInformation.js?v=20261104-text-validation"></script>
+  <script src="js/utils/exportUi.js?v=20261104-nucleotide-range"></script>
+  <script src="js/utils/barInformation.js?v=20261104-nucleotide-range"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
-  <script src="js/main.js?v=20261104-text-validation"></script>
-  <script src="js/utils/logoClipboard.js?v=20261103-compact-export-actions"></script>
-  <script src="js/drawing.js?v=20261104-numeric-seams"></script>
+  <script src="js/main.js?v=20261104-nucleotide-range"></script>
+  <script src="js/utils/logoClipboard.js?v=20261104-nucleotide-range"></script>
+  <script src="js/drawing.js?v=20261104-nucleotide-range"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

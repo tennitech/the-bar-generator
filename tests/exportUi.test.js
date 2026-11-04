@@ -1,11 +1,11 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-function fixture(clipboard) {
+function fixture(clipboard, nucleotide) {
   const document = { readyState: 'complete', addEventListener() {}, activeElement: null };
   const ids = ['save-menu', 'save-button', 'save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'export-size-large', 'export-size-standard',
     'export-progress', 'export-message', 'export-meter', 'export-cancel', 'copy-png', 'copy-svg',
-    'export-track', 'export-fill', 'export-percent', 'export-detail'];
+    'export-track', 'export-fill', 'export-percent', 'export-detail', 'export-blocked-note', 'export-input-note'];
   const elements = Object.fromEntries(ids.map(id => [id, {
     id, textContent: '', value: 0, listeners: {}, style: {}, attributes: {},
     addEventListener(type, callback) { this.listeners[type] = callback; },
@@ -14,16 +14,17 @@ function fixture(clipboard) {
       if (value && document.activeElement === this) document.activeElement = null;
     },
     get disabled() { return this.isDisabled; },
-    focus() { document.activeElement = this; },
+    focus() { document.activeElement = this; }, contains: () => false,
     setAttribute(name, value) { this.attributes[name] = value; }, removeAttribute(name) { delete this.attributes[name]; }, classList: { add() {}, contains: () => false },
     set hidden(value) {
       this.isHidden = value;
       if (value && document.activeElement === this) document.activeElement = null;
-    }
+    }, get hidden() { return this.isHidden; }
   }]));
+  elements['export-blocked-note'].hidden = true;
   elements['save-menu'].contains = element => element && !['save-menu', 'save-button'].includes(element.id);
   document.getElementById = id => elements[id];
-  const context = { document, AbortController, performance, logoClipboard: clipboard, hideSaveMenu: jest.fn() };
+  const context = { document, AbortController, performance, logoClipboard: clipboard, NucleotidePattern: nucleotide, hideSaveMenu: jest.fn() };
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/exportUi'), 'utf8'), context);
   return { ui: context.logoExportUI, elements, document, hideSaveMenu: context.hideSaveMenu };
 }
@@ -181,4 +182,24 @@ test('custom size choices synchronize the export size and lock during export', (
   expect(elements['export-size-standard'].disabled).toBe(false);
   elements['export-size-large'].listeners.change({ target: { checked: true } });
   expect(ui.size()).toBe('large');
+});
+
+
+test('incomplete nucleotide blocks exports, then becomes ready without stale disabled state', () => {
+  let reason = 'Add 1 base to export.';
+  const {ui,elements}=fixture(null,{exportBlocker:()=>reason});
+  expect(elements['save-svg'].disabled).toBe(true);
+  expect(elements['save-button'].attributes['aria-disabled']).toBe('true');
+  expect(ui.explainBlocked()).toBe(true);
+  expect(elements['export-blocked-note'].hidden).toBe(false);
+  elements['save-button'].listeners.keydown({key:'Escape',preventDefault(){},stopPropagation(){}});
+  expect(elements['export-blocked-note'].hidden).toBe(true);
+  expect(ui.begin('svg')).toBe(null);
+  reason='';ui.sync();
+  expect(elements['save-button'].attributes['aria-disabled']).toBe('false');
+  expect(ui.explainBlocked()).toBe(false);
+  expect(elements['save-svg'].disabled).toBe(false);
+  const job=ui.begin('svg');expect(job).not.toBe(null);
+  reason='Add 1 base to export.';ui.finish(job,'started','Done');
+  expect(elements['save-svg'].disabled).toBe(true);
 });

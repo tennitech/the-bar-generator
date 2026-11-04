@@ -13,7 +13,7 @@
     waveform: ['waveformType=1&waveformFrequency=12', 'waveformType=0&waveformFrequency=36'],
     circles: ['circlesFill=fill&circlesDensity=35&circlesSizeVariation=60', 'circlesFill=stroke&circlesDensity=75&circlesSizeVariation=35'],
     numeric: ['numericSource=formula&numericFormula=e&numericMode=dotmatrix', 'numericSource=formula&numericFormula=phi&numericMode=dotmatrix'],
-    nucleotide: ['nucleotideVariant=backbone', 'nucleotideSequence=ATGGTGCATCTGACTCCTGAGGAGAAGTCT'],
+    nucleotide: ['nucleotideVariant=backbone', 'nucleotideSequence=ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGG'],
     morse: ['morseText=1824', 'morseText=WHY+NOT'],
     'circles-gradient': ['circlesGradientVariant=2', 'circlesGradientVariant=3'],
     gradient: ['gradientVariant=2'],
@@ -38,7 +38,7 @@
   ].map(([value, label]) => {
     const variants = ['', ...(configurations[value] || [])].map((query, variant) => Object.freeze({
       value, label, query, variant,
-      path: `assets/images/marquee-bars/${value}${variant ? `-${variant}` : ''}.svg?v=${value === 'circles-gradient' && variant === 0 ? '20261104-gradient-reference' : value === 'ruler' ? '20261103-resting-motion-ruler' : value === 'binary' ? '20261103-binary-seams' : '20261103-configurations'}`
+      path: `assets/images/marquee-bars/${value}${variant ? `-${variant}` : ''}.svg?v=${value === 'nucleotide' ? '20261104-nucleotide-range' : value === 'circles-gradient' && variant === 0 ? '20261104-gradient-reference' : value === 'ruler' ? '20261103-resting-motion-ruler' : value === 'binary' ? '20261103-binary-seams' : '20261103-configurations'}`
     }));
     return Object.freeze({ ...variants[0], variants: Object.freeze(variants) });
   });

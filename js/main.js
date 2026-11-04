@@ -1247,6 +1247,7 @@ function togglePreviewAudio(type) {
 
 function syncNucleotideControls(edited = false) {
   window.NucleotidePattern.syncControls(document, edited);
+  window.logoExportUI?.sync(false);
   if (typeof syncAllCustomSelects === 'function') syncAllCustomSelects();
 }
 
@@ -3798,6 +3799,10 @@ function toggleSaveMenu(e) {
 
   if (saveMenu) {
     syncSaveMenuCopy();
+    if (window.logoExportUI?.explainBlocked()) {
+      hideSaveMenu();
+      return;
+    }
     saveMenu.classList.toggle('hidden');
     const isExpanded = !saveMenu.classList.contains('hidden');
     if (saveButton) saveButton.setAttribute('aria-expanded', isExpanded);
@@ -4193,6 +4198,7 @@ function buildCurrentBarPatternSVGFragment({
   exactBarWidth = REFERENCE_WIDTH,
   barHeight = REFERENCE_BAR_HEIGHT,
   fgColor = 'currentColor',
+  preview = true,
   values = getCurrentBarPatternValues(exactBarWidth)
 } = {}) {
   if (currentShader === 0) {
@@ -4213,7 +4219,7 @@ function buildCurrentBarPatternSVGFragment({
     markup = createBarPatternSVG({
       currentShader, currentColorMode, barStartX, barY, exactBarWidth, barHeight, fgColor,
       textToBinary, textToMorse, parseNumericString, generateGridCircles,
-      generateStaticPackedCircles: getCachedBarCircleGeometry, values
+      generateStaticPackedCircles: getCachedBarCircleGeometry, values: { ...values, nucleotidePreview: preview }
     });
   }
   if (!markup.trim()) return '';

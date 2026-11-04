@@ -31,7 +31,35 @@
       }
     }
     root.logoClipboard?.sync(credits);
+    const blocker = credits ? '' : root.NucleotidePattern?.exportBlocker(document) || '';
+    const note = byId('export-input-note');
+    if (note) { note.hidden = !blocker; note.textContent = blocker; }
+    const trigger = byId('save-button'), explanation = byId('export-blocked-note');
+    if (trigger) {
+      trigger.setAttribute('aria-disabled', String(Boolean(blocker)));
+      trigger.setAttribute('aria-label', blocker ? `Export unavailable. ${blocker}` : 'Open export menu');
+      if (blocker) trigger.setAttribute('aria-describedby', 'export-blocked-note');
+      else trigger.removeAttribute('aria-describedby');
+    }
+    if (explanation) {
+      explanation.textContent = blocker;
+      if (!blocker) explanation.hidden = true;
+    }
+    for (const id of ['save-png', 'save-svg', 'save-loop-gif']) {
+      const button = byId(id);
+      if (button) { button.disabled = Boolean(active || blocker); button.setAttribute('aria-disabled', String(button.disabled)); }
+    }
   }
+  // Keep the unavailable trigger focusable so pointer, keyboard and touch users
+  // can get the same explanation. The actions and snapshot guard enforce it.
+  function explainBlocked() {
+    const blocker = root.NucleotidePattern?.exportBlocker(document) || '';
+    if (!blocker) return false;
+    const note = byId('export-blocked-note');
+    if (note) { note.textContent = blocker; note.hidden = false; }
+    return true;
+  }
+  function hideBlockedNote() { if (byId('export-blocked-note')) byId('export-blocked-note').hidden = true; }
   function meter(value = null) {
     const indeterminate = value === null;
     byId('export-track')?.setAttribute('data-indeterminate', String(indeterminate));
@@ -41,7 +69,7 @@
     text('export-percent', indeterminate ? '' : `${Math.floor(Math.max(0, Math.min(1, value)) * 100)}%`);
   }
   function begin(format) {
-    if (active) return null;
+    if (active || root.NucleotidePattern?.exportBlocker(document)) return null;
     active = { id: ++nextId, format, controller: new AbortController() };
     const menu = byId('save-menu'), cancel = byId('export-cancel');
     const focusWasInMenu = menu?.contains(document.activeElement);
@@ -126,6 +154,13 @@
     }
   }
   function init() {
+    byId('save-button')?.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') explainBlocked(); });
+    byId('save-button')?.addEventListener('pointerleave', event => { if (event.pointerType !== 'touch') hideBlockedNote(); });
+    byId('save-button')?.addEventListener('focus', explainBlocked);
+    byId('save-button')?.addEventListener('blur', hideBlockedNote);
+    document.addEventListener('click', event => {
+      if (!byId('save-button')?.contains(event.target) && !byId('export-blocked-note')?.contains(event.target)) hideBlockedNote();
+    });
     for (const value of ['large', 'standard']) {
       byId(`export-size-${value}`)?.addEventListener('change', event => {
         if (!event.target.checked || active) return;
@@ -142,7 +177,13 @@
       active.controller.abort();
     });
     const dismiss = event => {
-      if (event.key !== 'Escape' || byId('save-menu')?.classList.contains('hidden')) return;
+      if (event.key !== 'Escape') return;
+      const note = byId('export-blocked-note');
+      if (note && !note.hidden) {
+        event.preventDefault(); event.stopPropagation(); hideBlockedNote();
+        return;
+      }
+      if (byId('save-menu')?.classList.contains('hidden')) return;
       event.preventDefault(); event.stopPropagation();
       if (typeof hideSaveMenu === 'function') hideSaveMenu();
       byId('save-button')?.focus();
@@ -151,7 +192,7 @@
     byId('save-button')?.addEventListener('keydown', dismiss);
     sync(false);
   }
-  root.logoExportUI = { size, sync, begin, describe, report, message, ready, finish, isBusy: () => !!active };
+  root.logoExportUI = { size, sync, explainBlocked, begin, describe, report, message, ready, finish, isBusy: () => !!active };
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();

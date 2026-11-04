@@ -101,11 +101,21 @@ async function main() {
     }));
     assert.equal(encoding.accentedBytes, 16, 'UTF-8 binary encoding');
     assert.ok(encoding.commaMorse > 0, 'Morse comma encoding');
-    assert.equal(await page.locator('#binary-input').inputValue(), '*****');
+    // Rejected drafts stay editable; only URL state is masked (#92).
+    assert.equal(await page.locator('#binary-input').inputValue(), 'nigga');
+    assert.equal(await page.locator('#binary-input').getAttribute('aria-invalid'), 'true');
+    assert.equal(await page.evaluate(() => buildCurrentBarPatternSVGFragment()), '');
+    await page.evaluate(() => window.URLState.flush());
     assert.ok(!page.url().includes('nigga'), 'unsafe text removed from initial share URL');
     await page.locator('#binary-input').fill('ｆｕｃｋ');
-    assert.equal(await page.locator('#binary-input').inputValue(), '****');
+    assert.equal(await page.locator('#binary-input').inputValue(), 'ｆｕｃｋ');
+    assert.equal(await page.locator('#binary-input').getAttribute('aria-invalid'), 'true');
+    assert.equal(await page.evaluate(() => buildCurrentBarPatternSVGFragment()), '');
+    await page.evaluate(() => window.URLState.flush());
     assert.ok(page.url().includes('binaryText=****'));
+    await page.locator('#binary-input').fill('hello');
+    assert.equal(await page.locator('#binary-input').getAttribute('aria-invalid'), 'false');
+    assert.ok((await page.evaluate(() => captureLogoExportSnapshot().svgSource)).length > 0);
 
     const reduced = await browser.newPage({ reducedMotion: 'reduce' });
     await openGenerator(reduced, 'ruler');

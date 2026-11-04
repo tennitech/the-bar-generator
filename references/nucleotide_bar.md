@@ -1,81 +1,78 @@
-# Nucleotide bar — November 3, 2026
+# Nucleotide bar
 
-The two user-supplied SVG references (`rna bar 1.svg` and `RNA Bar 2.svg`)
-show the same four end shapes, first separated and then attached to a top
-backbone. Both were rendered and inspected. New original primitives reproduce
-that visual grammar inside the existing official 500 × 36 design area (250 × 18
-at reference scale); the supplied lettering is not imported or redrawn.
+## Encoding and input
 
-## Encoding and limits
+Enter 30–50 bases to export. This is the tool's layout rule, not a biological
+requirement. Input accepts A, T, C, G and U, converts lowercase to uppercase,
+removes other characters and caps the sequence at 50 bases. Mixed T/U is allowed
+and labeled as mixed DNA/RNA notation. Input, query, share and rendering paths
+apply the same bound. Older longer links are capped at 50; short links remain
+editable without padding or repetition.
 
-The input accepts only A, T, C, G and U, converts lowercase to uppercase, removes
-other characters, and caps work at 60 bases. One tooth represents one base,
-left to right in the conventional 5′ to 3′ sequence direction. Short sequences
-remain centered with natural whitespace rather than stretching tooth shapes.
-The connected variant adds the intentional backbone from reference 2; this is
-not an artificial extent-fitting strip. Empty input stays empty with a recovery
-hint. Mixed T/U is allowed but identified as mixed DNA/RNA notation.
+One filled tooth represents one entered base, read from left to right in the
+conventional 5′ to 3′ direction. Below 30 bases, a fixed 30-slot preview uses
+dashed neutral rectangles for empty positions. At 30–50 bases, the entered
+sequence fills the full bar. Preview, header and exports share that geometry.
+The connected variant adds the intentional backbone from the second supplied
+reference. No letters, positions or scientific measurements are invented.
 
-The shape key is **our design convention**, not a universal scientific symbol
-standard: A rounded tip; T/U rounded notch; G pointed tip; C angular notch.
-Complementary visual pairs reflect canonical A–T (DNA), A–U (RNA), and C–G
-pairing. They do not portray atoms, bonds, molecular size, a duplex, or a
-physical molecule. U intentionally shares T's shape, so the artwork alone does
-not distinguish DNA from RNA notation.
+The two user-supplied references, `rna bar 1.svg` and `RNA Bar 2.svg`, establish
+the separated and backbone shape treatments. Original primitives implement them
+inside the existing 500 × 36 design area, scaled to 250 × 18 reference units.
+Official lettering, spacing and export clear space are unchanged.
 
-Primary sources checked November 3, 2026:
+## Shape convention
+
+A has a rounded tip; T/U a rounded notch; G a pointed tip; C an angular notch.
+This is a design convention. It is not a universal molecular symbol standard or
+a diagram of atoms, bonds, a duplex or molecular size. The complementary shapes
+refer to canonical A–T in DNA, A–U in RNA and C–G pairing. U shares T's shape,
+so the artwork alone does not distinguish DNA from RNA notation.
+
+Primary sources:
+
 - [NHGRI base pair](https://www.genome.gov/genetics-glossary/Base-Pair)
 - [NHGRI uracil](https://www.genome.gov/genetics-glossary/Uracil)
 - [Jackson Laboratory base pairing](https://www.informatics.jax.org/glossary/base_pair)
 
-## Presets and provenance
+## Presets
 
-These are short excerpts, **not complete genes or unique gene identifiers**.
-NCBI GenBank records were retrieved with EFetch and the annotated CDS starts
-and literal ORIGIN sequences checked. All positions are one-based inclusive
-within the versioned transcript record, not genomic coordinates.
+Presets are transcript excerpts, not complete genes or unique identifiers.
+Coordinates are one-based inclusive positions within the versioned NCBI record.
+GenBank CDS starts and literal ORIGIN sequences were checked through EFetch.
 
-- Human INS: [NM_000207.3](https://www.ncbi.nlm.nih.gov/nuccore/NM_000207.3),
-  positions 60–89, first 30 CDS bases: `ATGGCCCTGTGGATGCGCCTCCTGCCCCTG`.
-- Human HBB: [NM_000518.5](https://www.ncbi.nlm.nih.gov/nuccore/NM_000518.5),
-  positions 51–80, first 30 CDS bases: `ATGGTGCATCTGACTCCTGAGGAGAAGTCT`.
-- INS RNA letters: same INS excerpt with T replaced by U, explicitly labeled.
-  NCBI transcript records use the DNA alphabet for their sequence representation.
+| Preset | Source | Coordinates | Bases |
+| --- | --- | --- | --- |
+| Human INS | [NM_000207.3](https://www.ncbi.nlm.nih.gov/nuccore/NM_000207.3) | 60–109 | `ATGGCCCTGTGGATGCGCCTCCTGCCCCTGCTGGCGCTGCTGGCCCTCTG` |
+| Human HBB | [NM_000518.5](https://www.ncbi.nlm.nih.gov/nuccore/NM_000518.5) | 51–100 | `ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGG` |
+| INS RNA letters | Same INS record | 60–109 | Same 50 bases with T replaced by U |
 
-Sequence edits update the preset label and source; arbitrary inputs are never
-assigned a gene identity. Randomize selects a different verified excerpt; Reset
-restores INS and separate bases. URL restore, legacy snapshots and Undo preserve
-the actual sequence and structure. Input/query/share and rendering boundaries
-all enforce the five-letter alphabet.
+Edits update the preset and source label. Arbitrary sequences are never assigned
+a gene identity. Randomize chooses a different verified preset. Reset restores
+INS and separate bases. URL restoration and Undo preserve the accepted sequence
+and structure. The three Home samples come from the shared renderer.
 
-Static preview, header, SVG, PNG and clipboard exports use the same SVG pattern
-and frozen export collector. No animation, audio, network request for user input,
-new runtime dependency or external asset is introduced. Existing RPI asset
-permissions and formal brand approval remain unresolved independently of testing.
+## Completion and exports
 
-## Validation
+Progress shows readiness at the 30-base minimum. The Parameters panel retains a
+green border and check mark once ready. A brief green confirmation runs only
+when crossing from incomplete to ready. Reduced motion removes that animation.
+These controls do not recolor or animate the official artwork.
 
-At the candidate based on production `c72ac00`, all 642 unit tests pass.
-Focused Chromium and WebKit runs pass sequence sanitization/empty handling,
-all three presets and their source labels, structure changes, query reload SVG
-parity, real SVG/PNG downloads, Reset/Randomize, keyboard selection, shared-state
-normalization, and 320/390/768 px layout checks. The 390 px controls open, accept
-edits and close successfully. Desktop/backbone and mobile states were rendered
-and visually inspected. The three homepage samples were generated from the
-shared export renderer, not independently drawn. First paint synchronizes the
-preset/source before insertion and waits for the complete rendered mark.
+Below 30, Export has a dashed border and `aria-disabled` state. The trigger stays
+focusable so hover, keyboard focus, Enter/Space and touch can explain the lock
+in a small pop-up. Escape and outside interaction dismiss it. File/copy actions
+and direct snapshot capture enforce the same requirement. At 30–50, the normal
+export menu returns. All exports contain actual bases only; no dashed slots,
+green indicators or completion UI enter the files.
 
-The initial smoke harness wrongly toggled the still-open Export menu closed
-before requesting PNG; the corrected test passed in both engines. One earlier
-Chromium process also crashed during the blocked test. These are not evidence
-of an application export failure. Physical Safari/mobile hardware, screen-reader
-output, native-app paste acceptance and formal RPI approval were not tested.
+## Verification
 
-The existing Chromium browser regression suite also passes all 21 prior styles
-and their SVG exports, PNG, five widths, text safety, reduced motion, 2D fallback
-and renderer recovery. This is separate from the added Nucleotide-specific run.
+Review images: [partial desktop](review-images/nucleotide-completion/desktop-incomplete.png),
+[ready desktop](review-images/nucleotide-completion/desktop-ready.png),
+[phone progress](review-images/nucleotide-completion/mobile-progress.png) and
+[phone export explanation](review-images/nucleotide-completion/mobile-blocked.png).
 
-Final integration on production `684673b` (export #84) passes all 647 unit tests
-and repeats the complete focused Chromium/WebKit sequence and export flows.
-The export side-by-side controls, quiet intro dropdown and their cache versions
-are retained. Owner approval to publish the feature was received November 3, 2026.
+Automated checks and visual review do not establish owner acceptance,
+screen-reader output, physical mobile behavior, native-app paste acceptance or
+formal RPI approval. Existing asset permission questions remain separate.

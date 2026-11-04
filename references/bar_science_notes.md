@@ -168,3 +168,10 @@ independent motion/audio transport. Old envelope query/share fields are ignored
 while the remaining settings restore normally; new exports use the unmasked
 waveform. Historical low-level envelope geometry helpers remain available to
 existing renderer consumers and retain their tests, but are not active controls.
+
+Nucleotide completion update (November 4): exports accept 30–50 entered bases
+as a tool layout rule, not a biological requirement. Below 30, dashed empty
+slots indicate progress to the minimum. Ready sequences fill the full viewport
+with only their actual bases. Placeholders and green control feedback never
+enter exports. INS/HBB presets use the first 50 CDS bases of the same versioned
+transcripts. See nucleotide_bar.md for coordinates and validation.

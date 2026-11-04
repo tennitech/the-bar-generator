@@ -3,7 +3,7 @@
   const descriptions = {
   "nucleotide": {
     "title": "Nucleotide",
-    "text": "One tooth per base, read 5′ to 3′. Complementary shapes reflect A–T in DNA, A–U in RNA, and C–G pairing. The shape key is a design convention, not standard molecular symbols. Presets are short transcript excerpts, not complete genes."
+    "text": "Enter 30–50 bases to export. Dashed outlines mark empty preview slots until 30 bases are entered. Shapes reflect A–T/U and C–G pairing as a design convention, not standard molecular symbols. Presets are transcript excerpts, not complete genes."
   },
   "solid": {
     "title": "Solid",

@@ -97,3 +97,11 @@ existing identity/font/artwork assets; no external image, replacement artwork
 or font was added or relicensed. The source tree retains only the validation
 record and structured browser results under `references/review-images/marquee-home/`.
 Existing permission and approval questions remain unchanged.
+
+
+## Nucleotide completion review images — November 4, 2026
+
+The four PNG files in `references/review-images/nucleotide-completion/` were
+captured from this application in Chromium and WebKit. They use the existing
+identity, fonts and licensed Feather icons. No external image was added.
+The existing asset permission and formal approval limits still apply.
