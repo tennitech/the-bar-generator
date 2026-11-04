@@ -124,41 +124,29 @@ The About text and marquee preset no longer advertise the removed feature.
 Focused browser checks cover legacy-query/export parity, Randomize/Reset and
 responsive layouts. This does not establish owner or physical-device testing.
 
-## November 4 nucleotide Randomize length
+## November 4 nucleotide minimum and maximum
 
-Randomize now chooses a different Sequence length from 30 to 50 along with a
-different verified preset. It fills the chosen length, updates the dropdown,
-count and provenance, and keeps exports ready. Undo restores the exact preceding
-length and sequence. Reset returns to 50 bases, INS and separate bases.
+Nucleotide uses a fixed 30-base minimum for export and a 50-base maximum. The
+length dropdown is removed. Input remains editable after 30, and exports stay
+available through 50. The progress display marks 30 minimum and 50 maximum;
+controls are red below 30 and green at or above it. A brief green cue marks the
+first ready state. Dashed preview slots appear only for missing bases below 30.
 
-Validation: 703 unit tests pass. Chromium and WebKit checks pass repeated length
-randomization, synchronized controls and export readiness, exact Undo, query
-reload and emulated touch. Source/shell cache keys refresh the released callback.
+Extra bases make the pattern denser. Tooth widths grow slightly and gaps narrow
+within the fixed official bar viewport. The renderer still uses only entered
+bases. Placeholders and control feedback never enter exports. A rejected edit
+above 50 gives a brief red input outline and shake with an inline limit message.
+The valid 50-base sequence remains exportable. Reduced motion removes the shake
+and animation while retaining the red feedback and text.
 
-## November 4 nucleotide completion feedback
-
-Nucleotide has an explicit Sequence length control from 30 to 50 bases. The
-chosen target stays fixed while typing. The preview contains exactly that many
-slots, with dashed outlines for missing bases. The field stops at the chosen
-length, and export requires every slot to be filled. Changing to a longer length
-adds empty slots. A shorter length keeps the first bases and displays a notice.
-This is a tool layout rule, not a biological requirement.
-
-The Parameters panel shows progress to the chosen target. Completion gives a
-brief green confirmation, a persistent check mark and a green control border.
-Reduced motion retains readiness without animation. Incomplete input gives
-Export a dashed border and unavailable state. Hover, keyboard focus and tap
-expose the same explanation. The trigger remains focusable to explain the lock;
-file/copy actions and snapshot capture enforce it. Ready input restores normal
-export behavior. Placeholders and green control feedback never enter artwork
-exports. Presets use verified CDS excerpts at the selected length.
-
-The fix retains main `47a3028`'s grouped export controls, feedback and stable Undo
-startup. Validation passes 700 unit tests in 63 suites, focused Chromium/WebKit
-completion and export checks, retained export feedback and exact Home sample
-parity. The full Chromium browser check also passes prior styles, exports, five
-widths, text safety, reduced motion and fallback/recovery. See
-[source, checks and review images](nucleotide_bar.md).
+Typing, formatted/overlong paste, selected-text replacement and composition
+commit use the same 50-base cap. Randomize chooses an actual sequence of 30–50
+bases; Undo restores the previous sequence and export lock. Old target-length
+query/share fields are ignored without shortening valid input. The Home samples
+are regenerated from the shared renderer. Validation passes 709 unit tests,
+focused Chromium/WebKit edit/export and emulated-touch flows, and exact Home
+sample parity. Desktop, limit and phone states were visually inspected. See
+[source and checks](nucleotide_bar.md).
 
 ## November 3 compact export actions
 

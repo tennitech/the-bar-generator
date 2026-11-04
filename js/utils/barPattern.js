@@ -1596,7 +1596,7 @@ function createBarPatternSVG(config) {
 
   if (currentShader === 25) {
     const model = typeof module !== 'undefined' && module.exports ? require('./nucleotidePattern') : window.NucleotidePattern;
-    return model.svg({ preview: values.nucleotidePreview === true, targetLength: values.nucleotideLength, sequence: values.nucleotideSequence, variant: values.nucleotideVariant, x: barStartX, y: barY, width: exactBarWidth, height: barHeight, fill: fgColor });
+    return model.svg({ preview: values.nucleotidePreview === true, sequence: values.nucleotideSequence, variant: values.nucleotideVariant, x: barStartX, y: barY, width: exactBarWidth, height: barHeight, fill: fgColor });
   }
 
   let pattern = '';

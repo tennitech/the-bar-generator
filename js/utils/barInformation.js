@@ -3,7 +3,7 @@
   const descriptions = {
   "nucleotide": {
     "title": "Nucleotide",
-    "text": "Choose a length from 30 to 50 bases, then fill every slot to export. Dashed outlines mark empty positions. Shapes reflect A–T/U and C–G pairing as a design convention, not standard molecular symbols. Presets are transcript excerpts, not complete genes."
+    "text": "Enter at least 30 bases to export, with up to 50 allowed. Dashed outlines mark missing bases below the minimum. Extra bases make the pattern denser. Shapes reflect A–T/U and C–G pairing as a design convention, not standard molecular symbols. Presets are transcript excerpts, not complete genes."
   },
   "solid": {
     "title": "Solid",
