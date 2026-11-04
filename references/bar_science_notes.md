@@ -143,3 +143,9 @@ Nucleotide adds the two supplied tooth/backbone variants, using a custom shape
 key for canonical A–T/U and C–G pairs. Only ATCGU is accepted. Versioned short
 human INS/HBB transcript excerpts have explicit accession/coordinate provenance;
 no custom input is claimed to identify a gene. See [encoding and source record](nucleotide_bar.md).
+
+## Ticker audio removal — November 4, 2026
+
+Ticker is visual-only. The former arbitrary four-second polyrhythmic audio
+mapping is removed; repeat counts, motion timing and exported geometry are
+unchanged. Morse, Music and Waveform retain their independent audio previews.
