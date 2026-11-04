@@ -38,7 +38,6 @@ let tickerMotionToggle;
 let tickerReverseToggle;
 let tickerSpeedSlider;
 let tickerSpeedDisplay;
-let tickerAudioBtn;
 let waveformGroup;
 let waveformTypeSlider;
 let waveformTypeDisplay;
@@ -753,7 +752,6 @@ function initializePreviewButtons() {
   [
     [morseAudioBtn, 'audio'],
     [lunarAudioBtn, 'audio'],
-    [tickerAudioBtn, 'audio'],
     [waveformAudioBtn, 'audio'],
     [staffAudioBtn, 'audio']
   ].forEach(([button, kind]) => ensurePreviewButtonMarkup(button, kind));
@@ -1171,8 +1169,6 @@ function getLiveWaveformGeometry(barStartX, barY, exactBarWidth, barHeight, time
 
 function getCurrentAudioPreviewType() {
   switch (currentShader) {
-    case 2:
-      return 'ticker';
     case 4:
       return 'waveform';
     case 7:
@@ -1223,7 +1219,6 @@ function getWaveformEnvelopeSettings() {
 function getAudioButtonConfig() {
   return [
     { type: 'morse', button: morseAudioBtn, currentShader: 7 },
-    { type: 'ticker', button: tickerAudioBtn, currentShader: 2 },
     { type: 'waveform', button: waveformAudioBtn, currentShader: 4 },
     { type: 'lunar', button: lunarAudioBtn, currentShader: 24 },
     { type: 'staff', button: staffAudioBtn, currentShader: 10 }
@@ -2330,7 +2325,6 @@ function setup() {
   tickerReverseToggle = document.getElementById('ticker-reverse-toggle');
   tickerSpeedSlider = document.getElementById('ticker-speed-slider');
   tickerSpeedDisplay = document.getElementById('ticker-speed-display');
-  tickerAudioBtn = document.getElementById('ticker-audio-btn');
   waveformGroup = document.getElementById('waveform-group');
   waveformTypeSlider = document.getElementById('waveform-type-slider');
   waveformTypeDisplay = document.getElementById('waveform-type-display');
@@ -2642,13 +2636,6 @@ function setup() {
     waveformAudioBtn.addEventListener('click', function (e) {
       e.preventDefault();
       togglePreviewAudio('waveform');
-    });
-  }
-
-  if (tickerAudioBtn) {
-    tickerAudioBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      togglePreviewAudio('ticker');
     });
   }
 
@@ -5328,8 +5315,6 @@ async function startAudio() {
         startWaveformAudio();
       } else if (requestedType === 'morse') {
         startSequenceAudio('morse');
-      } else if (requestedType === 'ticker') {
-        startSequenceAudio('ticker');
       } else if (requestedType === 'staff') {
         if (!currentStaffNotes || currentStaffNotes.length === 0) {
           showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
@@ -5546,7 +5531,7 @@ function stopWaveformAudio() {
 }
 
 function startSequenceAudio(type) {
-  if (!['morse', 'ticker', 'staff'].includes(type) || sequenceContext.active) return;
+  if (!['morse', 'staff'].includes(type) || sequenceContext.active) return;
   const previousType = sequenceContext.type;
   sequenceContext.active = true;
   isAudioPlaying = true;
@@ -5564,17 +5549,7 @@ function startSequenceAudio(type) {
     sequenceContext.gain1.gain.setValueAtTime(0, audioContext.currentTime);
   }
 
-  if (type === 'ticker') {
-    sequenceContext.osc2 = audioContext.createOscillator();
-    sequenceContext.gain2 = audioContext.createGain();
-    sequenceContext.osc2.connect(sequenceContext.gain2);
-    sequenceContext.gain2.connect(audioContext.destination);
-    sequenceContext.gain2.gain.setValueAtTime(0, audioContext.currentTime);
-
-    sequenceContext.osc1.type = 'triangle'; // Top ticker
-    sequenceContext.osc2.type = 'square';   // Bottom ticker
-    sequenceContext.osc2.start(audioContext.currentTime);
-  } else if (type === 'morse') {
+  if (type === 'morse') {
     sequenceContext.osc1.type = 'sine'; // CW
   }
 
@@ -5667,8 +5642,6 @@ function scheduleSequenceLoop() {
   while (sequenceContext.active && sequenceContext.nextNoteTime < t + lookahead) {
     if (sequenceContext.type === 'morse') {
       scheduleMorseNote();
-    } else if (sequenceContext.type === 'ticker') {
-      scheduleTickerNote();
     } else if (sequenceContext.type === 'staff') {
       scheduleStaffNote();
     }
@@ -5716,44 +5689,6 @@ function scheduleMorseNote() {
 
   sequenceContext.nextNoteTime += unitDuration;
   sequenceContext.currentNote++;
-}
-
-function scheduleTickerNote() {
-  // Use ratio to sync two polyrhythmic tick sequences within a total loop duration
-  const totalDuration = 4.0;
-  const topRepeats = tickerSlider ? parseInt(tickerSlider.value) : 34;
-  const countRatio = tickerRatioSlider ? parseInt(tickerRatioSlider.value) : 2;
-  const bottomRepeats = Math.max(1, Math.floor(topRepeats / countRatio));
-
-  const time = sequenceContext.nextNoteTime;
-
-  // This will play a tick for whichever stream is active.
-  // We'll manage both streams simultaneously in this tick since there's no data array.
-
-  const topInterval = totalDuration / topRepeats;
-
-  // Play top tick
-  sequenceContext.osc1.frequency.setValueAtTime(1000, time);
-  sequenceContext.osc1.frequency.exponentialRampToValueAtTime(1, time + 0.05);
-  sequenceContext.gain1.gain.setValueAtTime(0.5, time);
-  sequenceContext.gain1.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
-
-  // Determine if bottom tick should play
-  // To avoid complex dual scheduling, just map bottom ticks to when they theoretically hit
-  // Given we are moving at `topInterval` steps, bottom hits exactly when:
-  if (sequenceContext.currentNote % countRatio === 0) {
-    sequenceContext.osc2.frequency.setValueAtTime(300, time);
-    sequenceContext.osc2.frequency.exponentialRampToValueAtTime(1, time + 0.05);
-    sequenceContext.gain2.gain.setValueAtTime(0.8, time);
-    sequenceContext.gain2.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
-  }
-
-  sequenceContext.nextNoteTime += topInterval;
-  sequenceContext.currentNote++;
-
-  if (sequenceContext.currentNote % topRepeats === 0) {
-    sequenceContext.nextNoteTime += 1.0; // 1s pause
-  }
 }
 
 // Map notes to frequencies
