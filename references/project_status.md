@@ -132,9 +132,10 @@ available through 50. The progress display marks 30 minimum and 50 maximum;
 controls are red below 30 and green at or above it. A brief green cue marks the
 first ready state. Dashed preview slots appear only for missing bases below 30.
 
-Extra bases make the pattern denser. Teeth fill 84% of each slot through 30 bases
-and up to 90% at 50. Short sequences use wider teeth, and gaps narrow smoothly
-as more bases fill the fixed official bar viewport. The renderer uses only entered
+The gap stays equal to the accepted 30-base gap for all counts. At reference
+width 250, this is 1.33 units. Teeth remain 7 units wide through 30 bases, then
+shrink to 3.67 units at 50 so extra bases fit the fixed official bar viewport.
+The renderer uses only entered
 bases. Placeholders and control feedback never enter exports. A rejected edit
 above 50 gives a brief red input outline and shake with an inline limit message.
 The valid 50-base sequence remains exportable. Reduced motion removes the shake
@@ -149,7 +150,7 @@ focused Chromium/WebKit edit/export and emulated-touch flows, and exact Home
 sample parity. Desktop, limit and phone states were visually inspected. See
 [source and checks](nucleotide_bar.md).
 
-The wider-slot correction remains on `codex/fix-nucleotide-completion` for owner
+The spacing correction remains on `codex/fix-nucleotide-completion` for owner
 review. Merge requires the owner's explicit approval.
 
 ## November 3 compact export actions

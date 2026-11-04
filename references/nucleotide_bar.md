@@ -13,10 +13,11 @@ One tooth represents one entered base, from left to right in the conventional
 5′ to 3′ direction. Below 30, the preview uses 30 positions with dashed outlines
 for missing bases. From 30 to 50, all positions contain actual bases. Tooth width
 uses the current slot pitch, 250 / max(30, count) at reference width 250.
-Each tooth fills 84% of its slot through 30 bases, increasing to 90% at 50.
-At 30 bases or fewer, teeth are 7 units wide with 1.33-unit gaps. At 50,
-teeth are 4.5 units wide with 0.5-unit gaps. Widths and gaps change smoothly
-above 30. This keeps short sequences wide and denser sequences separated.
+The gap stays fixed at 16% of the 30-base pitch for all counts. At reference
+width 250, teeth are 7 units wide through 30 bases, then shrink smoothly to
+3.67 units at 50. The gap remains 1.33 units throughout. Other bar sizes scale
+this gap proportionally. This keeps the accepted short-sequence spacing as
+more bases enter the bar.
 The final gap remains positive. This is a visual encoding rule,
 not a claim about molecular size. Preview, header and exports share the geometry.
 
@@ -90,7 +91,7 @@ clipboard output contain no dashed slots, green/red indicators or limit UI.
 
 All 709 unit tests in 63 suites pass. Focused Chromium and WebKit checks cover
 empty and partial input, 29/30/31 and 49/50
-boundaries, wide teeth and small gaps at every count, fixed containment, native over-limit typing,
+boundaries, the same gap at every count in previews and exports, fixed containment, native over-limit typing,
 formatted/overlong paste, selection replacement, simulated composition commit, reduced
 motion, SVG/PNG downloads, Randomize/Undo/Reset, reload, retired query/share
 fields and desktop/phone layouts. Review images are stored in

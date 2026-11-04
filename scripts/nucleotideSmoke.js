@@ -4,6 +4,14 @@ const { chromium, webkit } = require('playwright');
 const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8797';
 const engine = process.env.RPI_BROWSER || 'chromium';
 const bases = count => 'ATCGU'.repeat(11).slice(0,count);
+function assertSpacing(markup) {
+ const teeth=[...markup.matchAll(/data-base="[ATCGU]" d="M([\d.e+-]+) [\d.e+-]+ H([\d.e+-]+)/g)];
+ assert.equal(teeth.length,(markup.match(/data-base=/g)||[]).length);
+ for(let index=1;index<teeth.length;index++) {
+  const gap=Number(teeth[index][1])-Number(teeth[index-1][2]);
+  assert.ok(Math.abs(gap-4/3)<1e-9,'The gap must stay equal to the 30-base gap');
+ }
+}
 async function main() {
  const browser = await ({ chromium, webkit }[engine]).launch({ headless:true });
  const page = await browser.newPage({ viewport:{width:1440,height:1000}, reducedMotion:'reduce' });
@@ -40,11 +48,7 @@ async function main() {
     const {markup}=await state();
     assert.equal((markup.match(/data-base=/g)||[]).length,count);
     assert.equal((markup.match(/data-placeholder=/g)||[]).length,Math.max(0,30-count));
-    if(count) {
-     const tooth=markup.match(/data-base="[ATCGU]" d="M([\d.e+-]+) 0 H([\d.e+-]+)/);
-     const slotWidth=250/Math.max(30,count),toothWidth=Number(tooth[2])-Number(tooth[1]);
-     assert.ok(toothWidth>=slotWidth*.8 && toothWidth<slotWidth*.95,'Teeth must fill their slots with small visible gaps');
-    }
+    assertSpacing(markup);
     if (count<30) assert.match(markup,/stroke-dasharray=/);
     assert.equal(await page.locator('#nucleotide-progress').evaluate(el=>el.max),50);
     assert.equal(await page.locator('#nucleotide-progress').evaluate(el=>el.value),count);
@@ -122,10 +126,11 @@ async function main() {
    const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#save-svg').click()]);
    const output=await fs.readFile(await download.path(),'utf8');
    assert.equal((output.match(/data-base=/g)||[]).length,count);
+   assertSpacing(output);
    assert.doesNotMatch(output,/data-placeholder|NaN|undefined/);
    await page.locator('#save-button').focus();await page.keyboard.press('Escape');
   }
-  await input.fill(bases(30));await page.locator('#save-button').click();
+  await input.fill(bases(50));await page.locator('#save-button').click();
   await page.locator('#export-size-standard').check();
   await page.evaluate(()=>{const render=createRasterExportBlob;createRasterExportBlob=(snapshot,...args)=>{window.__nucleotidePNGSource=snapshot.svgSource;return render(snapshot,...args)}});
   const [png]=await Promise.all([page.waitForEvent('download'),page.locator('#save-png').click()]);
@@ -134,7 +139,8 @@ async function main() {
   assert.equal(bytes.readUInt32BE(16),1160);assert.equal(bytes.readUInt32BE(20),762);
   const pngSource=await page.evaluate(()=>window.__nucleotidePNGSource);
   assert.doesNotMatch(pngSource,/data-placeholder/);
-  assert.equal((pngSource.match(/data-base=/g)||[]).length,30);
+  assert.equal((pngSource.match(/data-base=/g)||[]).length,50);
+  assertSpacing(pngSource);
   await page.waitForFunction(()=>!logoExportUI.isBusy());
   await page.locator('#save-button').focus();await page.keyboard.press('Escape');
   for (let repeat=0;repeat<5;repeat++) {

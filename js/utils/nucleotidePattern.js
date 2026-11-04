@@ -13,11 +13,10 @@
     const bases = normalize(sequence);
     const slots = Math.max(MIN_BASES, bases.length);
     if (!bases && !preview) return '';
-    // Size teeth from the visible slots, including missing minimum positions.
-    // Gaps narrow from 16% of each slot at 30 bases to 10% at 50.
+    // Keep the 30-slot gap at every count; shrink teeth to fit extra bases.
     const pitch = width / slots;
-    const extra = Math.max(0, bases.length - MIN_BASES) / (MAX_BASES - MIN_BASES);
-    const w = pitch * (.9 - .06 * (1 - extra)), radius = Math.min(w / 2, height * .175);
+    const gap = width / MIN_BASES * .16;
+    const w = pitch - gap, radius = Math.min(w / 2, height * .175);
     const left = x;
     const bottom = y + height, shoulder = bottom - radius;
     let result = variant === 'backbone' ? `<rect x="${left}" y="${y}" width="${pitch * bases.length}" height="${height / 3}" fill="${fill}"/>` : '';
