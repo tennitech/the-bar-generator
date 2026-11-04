@@ -263,16 +263,15 @@ test('default descriptions reflect authored values, not the current edited value
 });
 
 
-test.each([0, .5, .999])('nucleotide Randomize changes length and fills its chosen target (random %s)', random => {
+test.each([0, .5, .999])('nucleotide Randomize varies the entered length from 30 to 50 (random %s)', random => {
   const h=fixture(random);
   const model=require('../js/utils/nucleotidePattern');
   for (const previousLength of [30,40,50]) {
-    h.fields['nucleotide-length'].value=String(previousLength);
     h.fields['nucleotide-input'].value=model.DEFAULT_SEQUENCE.slice(0,previousLength);
     h.fields['nucleotide-preset'].value='0';
     h.context.randomizeStyleParameters('nucleotide');
-    const target=Number(h.fields['nucleotide-length'].value);
     const sequence=h.fields['nucleotide-input'].value;
+    const target=sequence.length;
     expect(target).toBeGreaterThanOrEqual(30);
     expect(target).toBeLessThanOrEqual(50);
     expect(target).not.toBe(previousLength);

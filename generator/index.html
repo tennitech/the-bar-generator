@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261104-nucleotide-target" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261104-nucleotide-minimum" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
   <script src="js/utils/generatorRoutes.js?v=20261103-nucleotide"></script>
@@ -23,16 +23,16 @@
   <script src="js/utils/loopingGif.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/featherIcons.js?v=20261103-save-removal"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261104-nucleotide-target"></script>
+  <script src="js/utils/shareState.js?v=20261104-nucleotide-minimum"></script>
   <script src="js/utils/randomizeHistory.js?v=20261104-undo-startup"></script>
   <script src="js/utils/musicStyle.js"></script>
-  <script src="js/utils/nucleotidePattern.js?v=20261104-nucleotide-target"></script>
-  <script src="js/utils/barPattern.js?v=20261104-nucleotide-target"></script>
+  <script src="js/utils/nucleotidePattern.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/utils/barPattern.js?v=20261104-nucleotide-minimum"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/quantumModel.js"></script>
-  <script src="js/utils/generatorParameters.js?v=20261104-nucleotide-target"></script>
-  <script src="js/utils/generatorInitialState.js?v=20261104-nucleotide-target"></script>
+  <script src="js/utils/generatorParameters.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261104-nucleotide-minimum"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
 </head>
@@ -296,43 +296,21 @@
 
         <div id="nucleotide-group" data-parameter-actions="nucleotide" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
-          <div class="control">
-            <label for="nucleotide-length" class="control-label">SEQUENCE LENGTH</label>
-            <div class="select-wrapper"><select id="nucleotide-length" data-url-parameter="nucleotideLength" class="control-select">
-              <option value="30">30 bases</option>
-              <option value="31">31 bases</option>
-              <option value="32">32 bases</option>
-              <option value="33">33 bases</option>
-              <option value="34">34 bases</option>
-              <option value="35">35 bases</option>
-              <option value="36">36 bases</option>
-              <option value="37">37 bases</option>
-              <option value="38">38 bases</option>
-              <option value="39">39 bases</option>
-              <option value="40">40 bases</option>
-              <option value="41">41 bases</option>
-              <option value="42">42 bases</option>
-              <option value="43">43 bases</option>
-              <option value="44">44 bases</option>
-              <option value="45">45 bases</option>
-              <option value="46">46 bases</option>
-              <option value="47">47 bases</option>
-              <option value="48">48 bases</option>
-              <option value="49">49 bases</option>
-              <option value="50" selected>50 bases</option>
-            </select></div>
-            <div class="control-hint">Choose 30–50 bases. A shorter length keeps the first bases of your sequence.</div>
-          </div>
           <div id="nucleotide-sequence-control" class="control nucleotide_sequence">
             <div class="nucleotide_label-row">
               <label for="nucleotide-input" class="control-label">SEQUENCE</label>
               <span class="nucleotide_ready" aria-hidden="true"><svg class="nucleotide_ready-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Ready</span>
             </div>
-            <input type="text" id="nucleotide-input" data-url-parameter="nucleotideSequence" value="ATGGCCCTGTGGATGCGCCTCCTGCCCCTGCTGGCGCTGCTGGCCCTCTG" maxlength="50" pattern="[ATCGUatcgu]*" spellcheck="false" autocapitalize="characters" autocomplete="off" class="control-input" aria-describedby="nucleotide-hint nucleotide-status">
-            <div id="nucleotide-hint" class="control-hint">A, T, C, G and U only. Fill every slot to export. Dashed slots are empty. Read 5′ → 3′.</div>
+            <input type="text" id="nucleotide-input" data-url-parameter="nucleotideSequence" value="ATGGCCCTGTGGATGCGCCTCCTGCCCCTGCTGGCGCTGCTGGCCCTCTG" maxlength="50" pattern="[ATCGUatcgu]*" spellcheck="false" autocapitalize="characters" autocomplete="off" class="control-input" minlength="30" aria-describedby="nucleotide-hint nucleotide-status nucleotide-limit-error">
+            <div id="nucleotide-hint" class="control-hint">A, T, C, G and U only. 30 bases minimum; 50 maximum. Read 5′ → 3′.</div>
             <div class="nucleotide_feedback">
-              <progress id="nucleotide-progress" class="nucleotide_progress" max="50" value="50" aria-label="Export readiness"></progress>
+              <div class="nucleotide_progress-track">
+                <progress id="nucleotide-progress" class="nucleotide_progress" max="50" value="50" aria-label="Sequence length"></progress>
+                <span class="nucleotide_minimum-marker" aria-hidden="true"></span>
+              </div>
+              <div class="nucleotide_progress-labels" aria-hidden="true"><span>0</span><span class="nucleotide_minimum-label">30 min</span><span>50 max</span></div>
               <div id="nucleotide-status" class="control-hint" role="status" aria-live="polite"></div>
+              <p id="nucleotide-limit-error" class="nucleotide_limit-error" role="status" aria-live="polite" aria-atomic="true" hidden></p>
             </div>
           </div>
           <div class="control">
@@ -996,14 +974,14 @@
   <script src="js/utils/exportOptions.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportUi.js?v=20261104-nucleotide-target"></script>
-  <script src="js/utils/barInformation.js?v=20261104-nucleotide-target"></script>
+  <script src="js/utils/exportUi.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/utils/barInformation.js?v=20261104-nucleotide-minimum"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
-  <script src="js/main.js?v=20261104-nucleotide-random-length"></script>
-  <script src="js/utils/logoClipboard.js?v=20261104-nucleotide-target"></script>
-  <script src="js/drawing.js?v=20261104-nucleotide-target"></script>
+  <script src="js/main.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/utils/logoClipboard.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/drawing.js?v=20261104-nucleotide-minimum"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

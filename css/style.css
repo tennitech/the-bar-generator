@@ -4386,15 +4386,23 @@ body.theme-lunar .export_menu { min-width: 0; }
 }
 
 /* Functional readiness color applies to controls, never to the RPI artwork. */
-:root { --color-ready: #18733c; --duration-ready: 650ms; }
-body.theme-white { --color-ready: #83d9a4; }
+:root { --color-ready: #18733c; --color-incomplete: #b51026; --duration-ready: 650ms; --duration-limit: 450ms; }
+body:is(.theme-white, .theme-silver, .theme-gray, .theme-lunar) { --color-ready: #83d9a4; --color-incomplete: #ff9aaa; }
 .nucleotide_label-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
 .nucleotide_label-row .control-label { margin-bottom: 0; }
 .nucleotide_ready { display: inline-flex; align-items: center; gap: .25rem; color: var(--color-ready); font: 500 .6875rem/1.5 'RPIGeistMono', monospace; opacity: 0; }
 .nucleotide_ready-icon { flex: 0 0 .875rem; }
 .nucleotide_feedback { margin-top: .625rem; padding: .625rem .75rem; border: 1px dashed var(--border-color); border-radius: var(--control-radius); }
 .nucleotide_feedback .control-hint { margin-top: .375rem; }
-.nucleotide_progress { display: block; width: 100%; height: .25rem; accent-color: currentColor; }
+.nucleotide_progress-track { position: relative; height: .625rem; display: flex; align-items: center; }
+.nucleotide_progress { display: block; width: 100%; height: .25rem; accent-color: var(--color-incomplete); }
+.nucleotide_minimum-marker { position: absolute; top: 0; bottom: 0; left: 60%; border-left: 1px solid var(--text-secondary); }
+.nucleotide_progress-labels { position: relative; display: flex; justify-content: space-between; margin-top: .25rem; color: var(--text-secondary); font: 400 .625rem/1.5 'RPIGeistMono', monospace; }
+.nucleotide_minimum-label { position: absolute; left: 60%; transform: translateX(-50%); }
+.nucleotide_sequence[data-ready="false"] .control-input { border-color: var(--color-incomplete); }
+.nucleotide_sequence[data-ready="false"] .control-input:focus { outline-color: var(--color-incomplete); }
+.nucleotide_sequence[data-ready="false"] .nucleotide_feedback { border-color: var(--color-incomplete); }
+.nucleotide_sequence[data-ready="false"] #nucleotide-status { color: var(--color-incomplete); }
 .nucleotide_sequence[data-ready="true"] .nucleotide_ready { opacity: 1; }
 .nucleotide_sequence[data-ready="true"] .control-input { border-color: var(--color-ready); }
 .nucleotide_sequence[data-ready="true"] .control-input:focus { outline-color: var(--color-ready); box-shadow: 0 0 0 1px var(--color-ready); }
@@ -4411,6 +4419,12 @@ body.theme-white { --color-ready: #83d9a4; }
   from { background-color: color-mix(in srgb, var(--color-ready) 18%, var(--control-surface)); }
   to { background-color: var(--control-surface); }
 }
+.nucleotide_limit-error { margin-top: .375rem; color: var(--text-secondary); font: 400 .75rem/1.5 'RPIGeist', sans-serif; }
+.nucleotide_sequence.is-limit-error .nucleotide_limit-error { color: var(--color-incomplete); }
+.nucleotide_sequence.is-limit-error .control-input,
+.nucleotide_sequence.is-limit-error .control-input:focus { border-color: var(--color-incomplete); outline-color: var(--color-incomplete); box-shadow: 0 0 0 1px var(--color-incomplete); transition: none; animation: nucleotideLimitShake var(--duration-limit) ease-out, nucleotideLimitFlash var(--duration-limit) ease-out; }
+@keyframes nucleotideLimitShake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-3px); } 40%, 80% { transform: translateX(3px); } }
+@keyframes nucleotideLimitFlash { from { background-color: color-mix(in srgb, var(--color-incomplete) 18%, var(--control-surface)); } to { background-color: var(--control-surface); } }
 .save-button.primary-button[aria-disabled="true"] { border-style: dashed; color: color-mix(in srgb, var(--header-control-text) 55%, var(--header-control-bg)); cursor: not-allowed; box-shadow: none; transform: none; }
 .save-button.primary-button[aria-disabled="true"]:is(:hover, :focus-visible) { background: var(--header-control-bg); border-color: var(--header-control-border); box-shadow: none; }
 .save-button.primary-button[aria-disabled="true"]:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
@@ -4418,5 +4432,6 @@ body.theme-white { --color-ready: #83d9a4; }
 @media (prefers-reduced-motion: reduce) {
   .nucleotide_sequence.is-newly-ready .nucleotide_feedback,
   .nucleotide_sequence.is-newly-ready .control-input,
-  .nucleotide_sequence.is-newly-ready .nucleotide_ready-icon polyline { animation: none !important; }
+  .nucleotide_sequence.is-newly-ready .nucleotide_ready-icon polyline,
+  .nucleotide_sequence.is-limit-error .control-input { animation: none !important; }
 }

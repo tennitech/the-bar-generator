@@ -7,19 +7,16 @@
     { label: 'Beta-globin · human HBB', sequence: 'ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGG', accession: 'NM_000518.5', range: '51–100' },
     { label: 'Insulin · RNA letters', sequence: DEFAULT_SEQUENCE.replace(/T/g, 'U'), accession: 'NM_000207.3', range: '60–109' }
   ]);
-  function normalizeLength(value) {
-    const number = value === null || value === '' ? NaN : Number(value);
-    return Number.isFinite(number) ? Math.max(MIN_BASES, Math.min(MAX_BASES, Math.round(number))) : MAX_BASES;
-  }
-  function normalize(value, length = MAX_BASES) { return String(value ?? '').toUpperCase().replace(/[^ATCGU]/g, '').slice(0, normalizeLength(length)); }
-  function targetLength(root) { return normalizeLength(root.querySelector('#nucleotide-length')?.value); }
-  function svg({ sequence = DEFAULT_SEQUENCE, targetLength = MAX_BASES, variant = 'separate', x = 0, y = 0, width = 250, height = 18, fill = 'currentColor', preview = false } = {}) {
-    const slots = normalizeLength(targetLength);
-    const bases = normalize(sequence, slots);
+  function letters(value) { return String(value ?? '').toUpperCase().replace(/[^ATCGU]/g, ''); }
+  function normalize(value) { return letters(value).slice(0, MAX_BASES); }
+  function svg({ sequence = DEFAULT_SEQUENCE, variant = 'separate', x = 0, y = 0, width = 250, height = 18, fill = 'currentColor', preview = false } = {}) {
+    const bases = normalize(sequence);
+    const slots = Math.max(MIN_BASES, bases.length);
     if (!bases && !preview) return '';
-    // The chosen length stays fixed while typing. Empty slots never enter files.
+    // Keep the 30-slot gap at every count; shrink teeth to fit extra bases.
     const pitch = width / slots;
-    const w = pitch * .714, radius = Math.min(w / 2, height * .175);
+    const gap = width / MIN_BASES * .16;
+    const w = pitch - gap, radius = Math.min(w / 2, height * .175);
     const left = x;
     const bottom = y + height, shoulder = bottom - radius;
     let result = variant === 'backbone' ? `<rect x="${left}" y="${y}" width="${pitch * bases.length}" height="${height / 3}" fill="${fill}"/>` : '';
@@ -42,20 +39,24 @@
   }
   function exportBlocker(root) {
     if (root?.querySelector('#style-select')?.value !== 'nucleotide') return '';
-    const target = targetLength(root);
-    const remaining = target - normalize(root.querySelector('#nucleotide-input')?.value).length;
-    if (remaining < 0) return `Remove ${-remaining} bases to match the chosen ${target}-base length.`;
-    return remaining ? `Add ${remaining} ${remaining === 1 ? 'base' : 'bases'} to export. Fill all ${target} slots, or change Sequence length.` : '';
+    const remaining = MIN_BASES - normalize(root.querySelector('#nucleotide-input')?.value).length;
+    return remaining > 0 ? `Add ${remaining} ${remaining === 1 ? 'base' : 'bases'} to export. 30 bases minimum; 50 maximum.` : '';
   }
   function syncControls(root, edited = false) {
     const model = { normalize, presets };
     const input = root.querySelector('#nucleotide-input');
     if (!input) return;
-    const target = targetLength(root);
+    clearLimit(root);
     const original = input.value;
-    input.maxLength = target;
-    input.value = model.normalize(original, target);
-    const index = model.presets.findIndex(preset => preset.sequence.slice(0,target) === input.value);
+    const start = input.selectionStart, end = input.selectionEnd;
+    const normalized = model.normalize(original);
+    if (normalized !== original) {
+      input.value = normalized;
+      if (start !== null && end !== null) input.setSelectionRange?.(normalize(original.slice(0,start)).length, normalize(original.slice(0,end)).length);
+    }
+    input.maxLength = MAX_BASES;
+    const count = input.value.length;
+    const index = count >= MIN_BASES ? model.presets.findIndex(preset => preset.sequence.slice(0,count) === input.value) : -1;
     root.querySelector('#nucleotide-preset').value = index < 0 ? 'custom' : String(index);
     const source = root.querySelector('#nucleotide-source');
     source.replaceChildren();
@@ -65,22 +66,22 @@
       link.className = 'nucleotide_source-link';
       link.href = `https://www.ncbi.nlm.nih.gov/nuccore/${preset.accession}`;
       const start = Number(preset.range.split('–')[0]);
-      link.textContent = `${preset.accession}, bases ${start}–${start + target - 1} (${target} bases)`;
+      link.textContent = `${preset.accession}, bases ${start}–${start + count - 1} (${count} bases)`;
       link.target = '_blank'; link.rel = 'noopener noreferrer';
       source.append(link);
       if (index === 2) source.append(' · T replaced by U for RNA notation.');
     } else source.textContent = 'Custom sequence; no gene identity is inferred.';
     const status = root.querySelector('#nucleotide-status');
-    const count = input.value.length;
-    const remaining = target - count;
-    const notice = edited === 'length' && normalize(original).length > target ? ` Kept the first ${target} bases.`
-      : /T/.test(input.value) && /U/.test(input.value) ? ' Mixed DNA/RNA letters.'
+    const remaining = Math.max(0, MIN_BASES - count);
+    const notice = /T/.test(input.value) && /U/.test(input.value) ? ' Mixed DNA/RNA letters.'
       : edited && original.toUpperCase() !== input.value ? ' Only A, T, C, G and U are kept.' : '';
-    status.textContent = `${count}/${target} bases. ${remaining ? `Add ${remaining} to export, or choose a gene snippet.` : 'Ready to export.'}${notice}`;
+    const readiness = remaining ? `Add ${remaining} to export.`
+      : count === MAX_BASES ? 'Maximum reached. Ready to export.' : 'Ready to export.';
+    status.textContent = `${count}/50 bases. ${readiness}${notice}`;
     const progress = root.querySelector('#nucleotide-progress');
     if (progress) {
-      progress.max = target; progress.value = count;
-      progress.setAttribute('aria-valuetext', `${count} bases entered; ${remaining ? `${remaining} more needed` : 'ready to export'}`);
+      progress.max = MAX_BASES; progress.value = count;
+      progress.setAttribute('aria-valuetext', `${count} bases entered; ${remaining ? `${remaining} more needed` : count === MAX_BASES ? 'maximum reached; ready to export' : 'ready to export'}`);
     }
     const control = root.querySelector('#nucleotide-sequence-control');
     if (control) {
@@ -94,7 +95,90 @@
       }
     }
   }
-  const api = { MIN_BASES, MAX_BASES, DEFAULT_SEQUENCE, presets, normalizeLength, targetLength, normalize, svg, syncControls, exportBlocker };
+  const inputStates = new WeakMap();
+  function clearLimit(root) {
+    const input = root.querySelector('#nucleotide-input');
+    const state = inputStates.get(input);
+    if (state) {
+      clearTimeout(state.flashTimer); state.flashTimer = null;
+      clearTimeout(state.noticeTimer); state.noticeTimer = null;
+    }
+    root.querySelector('#nucleotide-sequence-control')?.classList.remove('is-limit-error');
+    const error = root.querySelector('#nucleotide-limit-error');
+    if (error) { error.hidden = true; error.textContent = ''; }
+  }
+  function signalLimit(root) {
+    const input = root.querySelector('#nucleotide-input');
+    const state = inputStates.get(input);
+    const control = root.querySelector('#nucleotide-sequence-control');
+    const error = root.querySelector('#nucleotide-limit-error');
+    if (error?.hidden) { error.textContent = '50-base limit. Remove a base before adding another.'; error.hidden = false; }
+    if (!control || !state) return;
+    clearTimeout(state.flashTimer);
+    clearTimeout(state.noticeTimer);
+    control.classList.remove('is-limit-error');
+    // Restart feedback only after an explicit rejected edit, never during idle.
+    void control.offsetWidth;
+    control.classList.add('is-limit-error');
+    state.flashTimer = setTimeout(() => { control.classList.remove('is-limit-error'); state.flashTimer = null; }, 650);
+    state.noticeTimer = setTimeout(() => {
+      if (error) { error.hidden = true; error.textContent = ''; }
+      state.noticeTimer = null;
+    }, 4000);
+  }
+  function bindInput(root, onEdit) {
+    const input = root.querySelector('#nucleotide-input');
+    if (!input) return;
+    if (inputStates.has(input)) { inputStates.get(input).onEdit = onEdit; return; }
+    const state = { onEdit, composing: false, compositionValue: null, flashTimer: null, noticeTimer: null };
+    inputStates.set(input, state);
+    const handleInput = () => {
+      const overflow = letters(input.value).length > MAX_BASES;
+      state.onEdit();
+      if (overflow) signalLimit(root);
+    };
+    const insert = raw => {
+      const text = letters(raw);
+      const start = input.selectionStart ?? input.value.length, end = input.selectionEnd ?? start;
+      const available = Math.max(0, MAX_BASES - (input.value.length - (end - start)));
+      const accepted = text.slice(0,available);
+      if (accepted || end > start) {
+        input.setRangeText(accepted, start, end, 'end');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      if (text.length > available) signalLimit(root);
+    };
+    input.addEventListener('beforeinput', event => {
+      if (state.composing || event.isComposing || !event.inputType?.startsWith('insert') || event.data == null) return;
+      const selected = (input.selectionEnd ?? 0) - (input.selectionStart ?? 0);
+      if (letters(input.value).length - selected + letters(event.data).length > MAX_BASES && event.cancelable) {
+        event.preventDefault(); insert(event.data);
+      }
+    });
+    // WebKit can enforce maxlength before emitting beforeinput. Keep the same
+    // feedback for an ordinary key attempt, while allowing shortcuts and edits.
+    input.addEventListener('keydown', event => {
+      if (state.composing || event.isComposing || event.ctrlKey || event.metaKey || event.altKey || !/^[ATCGU]$/i.test(event.key)) return;
+      const selected = (input.selectionEnd ?? 0) - (input.selectionStart ?? 0);
+      if (letters(input.value).length - selected >= MAX_BASES) {
+        event.preventDefault(); signalLimit(root);
+      }
+    });
+    input.addEventListener('paste', event => {
+      if (!event.clipboardData) return;
+      event.preventDefault(); insert(event.clipboardData.getData('text/plain'));
+    });
+    input.addEventListener('blur', () => clearLimit(root));
+    input.addEventListener('compositionstart', () => { state.composing = true; });
+    input.addEventListener('compositionend', () => { state.composing = false; handleInput(); state.compositionValue = input.value; });
+    input.addEventListener('input', event => {
+      if (state.composing || event.isComposing) return;
+      const duplicateCommit = state.compositionValue !== null && state.compositionValue === input.value;
+      state.compositionValue = null;
+      if (!duplicateCommit) handleInput();
+    });
+  }
+  const api = { MIN_BASES, MAX_BASES, DEFAULT_SEQUENCE, presets, normalize, svg, syncControls, exportBlocker, bindInput };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   scope.NucleotidePattern = api;
 })(typeof window !== 'undefined' ? window : globalThis);
