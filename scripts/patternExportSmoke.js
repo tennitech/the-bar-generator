@@ -22,8 +22,12 @@ const circleCases = [1, 2, 3].map(circlesGradientVariant => ({ style: 'circles-g
 for (const circlesDensity of [10, 100]) for (const circlesSizeVariation of [0, 100]) {
   for (const circlesFill of ['fill', 'stroke']) circleCases.push({ style: 'circles', circlesDensity, circlesSizeVariation, circlesFill });
 }
-const activeCases = process.env.RPI_PATTERN_CIRCLES === '1' ? circleCases
+const candidateCases = process.env.RPI_PATTERN_CIRCLES === '1' ? circleCases
   : process.env.RPI_PATTERN_LIMIT ? selectedCases.slice(0, Number(process.env.RPI_PATTERN_LIMIT)) : selectedCases;
+
+const activeCases = process.env.RPI_PATTERN_STYLE
+  ? candidateCases.filter(entry => entry.style === process.env.RPI_PATTERN_STYLE) : candidateCases;
+assert.ok(activeCases.length, 'No selected pattern cases');
 
 async function download(page, kind) {
   await page.locator('#save-button').click();
@@ -241,7 +245,10 @@ async function main() {
         assert.ok(result.exportMaskOverlap > 0.999, `${label}: SVG/PNG mask overlap ${result.exportMaskOverlap}`);
       }
       assert.deepEqual(result.firstOpaqueRGB, colorMode === 'white' ? [255, 255, 255] : [0, 0, 0], `${label}: export foreground color`);
-      assert.ok(result.barPixels > 0 && result.leftPixels > 0 && result.rightPixels > 0, `${label}: actual PNG bar and both painted edges`);
+      assert.ok(result.barPixels > 0, `${label}: actual PNG bar`);
+      if (!(style === 'circles-gradient' && values.circlesGradientVariant === 1)) {
+        assert.ok(result.leftPixels > 0 && result.rightPixels > 0, `${label}: natural painted edges`);
+      }
       assert.ok(result.previewInteriorAgreement > 0.995,
         `${label}: preview interior agreement ${result.previewInteriorAgreement}, raw overlap ${result.previewOverlap}`);
       if (style === 'triangles') assert.equal(result.svgGeometry.length, values.trianglesCount || 14, `${label}: triangle count`);

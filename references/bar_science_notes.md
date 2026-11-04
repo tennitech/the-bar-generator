@@ -78,7 +78,7 @@ Button zoom keeps the bar as the inspection focus. Pointer zoom uses the pointer
 - **Triangles:** Each of 6–28 equal-width cells is split along one diagonal with a single filled half. Four orientations reflect the same cells horizontally and/or vertically, preserving count and spacing. Default: 14 cells, Down right. The October 28 selector refinement removes the redundant variant control and new variant URL/share/filename fields. Historical variant 2 state maps to the opposite direction (Down right ↔ Up left; Up right ↔ Down left), preserving its painted geometry. The low-level complementary geometry remains available for historical consumers and regression checks. Direction order is Down right, Up right, Up left, Down left. Legacy `up` and `down` mean Up right and Down right respectively. Explicit directions remain explicit in query URLs, including the default direction. The count interval is an app control range, not an official universal minimum-size rule. Parameter changes redraw immediately; there is no new animation phase or measured physical quantity.
 - **Lines:** 20 or 32 equally spaced strokes sample a static standing-wave height envelope, `barHeight × (0.35 + 0.65 × abs(cos(3πt)))`. The first/last strokes paint the exact boundaries. This is an illustrative geometric system, not an observed signal.
 - **Gradient:** Apparent tone uses area coverage in one foreground color. Variant 1 linearly tapers full-height stripe widths; variant 2 uses three rows with a symmetric triangular coverage envelope. There is no opacity or color interpolation. The existing Gradient name/treatment still needs owner review against the dated Pattern restriction.
-- **Circles Gradient:** Variant 1 uses three rows with radius factors 1, .72, .46. Variant 2 increases circle area linearly left to right in two rows; variant 3 has symmetric triangular area coverage strongest at the center in three rows. Radii are bounded by row/cell dimensions. Every row shares the same column centers, so vertical columns remain upright; the largest endpoint circles are tangent to the exact left/right edges. Smaller endpoint dots retain their radius and sit inside those edges rather than shifting sideways. These are geometric patterns, not external datasets.
+- **Circles Gradient:** Variant 1 preserves all 86 circles from `assets/bar references/Style=Circles Gradient 1.svg`: 29 large, 28 staggered medium and 29 small dots, with source radii 8, 6 and 4.5 and the original small coordinate offsets. Its 509 × 36 source frame is uniformly scaled and centered within the caller viewport, retaining complete circles and natural whitespace. Variant 2 increases circle area linearly left to right in two rows; variant 3 has symmetric triangular area coverage strongest at the center in three rows. Radii are bounded by row/cell dimensions. Variants 2 and 3 share the same column centers, so their vertical columns remain upright; the largest endpoint circles are tangent to the exact left/right edges. Smaller endpoint dots retain their radius and sit inside those edges rather than shifting sideways. These are geometric patterns, not external datasets.
 
 The configurable static families retain their natural composition within the canonical viewport. The combined renderer uses the complete official vector basis and one selected-control collector for header/preview/SVG/PNG across all static families, superseding the isolated four-family export bypass. Exports capture controls, color, phase, title and Standard/Large size before asynchronous work begins. PNG rasterizes that captured vector; GIF streams captured frames with true palette transparency and disposal2. GIF uses binary alpha with coverage dithering, so PNG/SVG remain the smooth-alpha alternatives. See [transparent exports](transparent_gif_exports.md) for timing, streaming memory budgets, measured benchmarks and limits.
 
@@ -94,7 +94,7 @@ Static live bars rasterize the shared clipped SVG at the requested inspection re
 
 Circles packing radii now describe the complete outer painted radius. Each generated or fallback circle is bounded geometrically before rendering. Stroke paths subtract half of their centered stroke width from that radius, equivalent to an inside stroke; tiny circles use at most their outer radius as stroke width to retain a positive path radius. When stroke width equals the outer radius, the centered stroke reaches the center; very small stroked circles can therefore appear as dots. Filled circles keep their complete outer radius. The two extreme circles are moved to exact left/right tangency, avoiding horizontal stretching, ellipses, forced boundary blocks or visibly clipped arcs. Packing may gain minor overlaps where formerly overflowing circles are moved inward. This geometric pattern does not claim physical non-overlapping disk packing.
 
-Circles Gradient shares column centers across all rows, including variant 1's shrinking radii. This retains the vertical area progression while keeping columns straight; smaller dots no longer touch each horizontal edge independently. All variants stay inside the official 250 × 18 viewport, at the fixed official bar placement. Preview/header/SVG/PNG use the shared geometry and inspection zoom does not change exports. The outer clip remains a defensive viewport, not the means of trimming circles. Existing gradient brand-review questions remain unresolved.
+The October 28 repair shared Circles Gradient column centers across all rows. The November 4 issue #56 correction supersedes that arrangement for variant 1, restoring the supplied staggered reference with uniform containment. Variants 2 and 3 still share column centers. This retains the vertical area progression while keeping columns straight; smaller dots no longer touch each horizontal edge independently. All variants stay inside the official 250 × 18 viewport, at the fixed official bar placement. Preview/header/SVG/PNG use the shared geometry and inspection zoom does not change exports. The outer clip remains a defensive viewport, not the means of trimming circles. Existing gradient brand-review questions remain unresolved.
 
 ## Numeric source separation — October 28, 2026
 
@@ -152,3 +152,19 @@ are represented by a joined polygon with their original exact coordinates, so
 raster antialiasing cannot reveal internal seams. Separate runs on either side
 of a decimal remain separate; no baseline or side reference is added. Dot Matrix
 remains a count encoding: zero dots for zero, one bottom dot for a decimal.
+
+## Ticker audio removal — November 4, 2026
+
+Ticker is visual-only. The former arbitrary four-second polyrhythmic audio
+mapping is removed; repeat counts, motion timing and exported geometry are
+unchanged. Morse, Music and Waveform retain their independent audio previews.
+
+## Waveform envelope retirement — November 4, 2026
+
+The envelope control was a spatial-only amplitude mask, not an audible LFO.
+Issue #49 explicitly offered removal as an alternative to introducing audio
+modulation. The generator now exposes only waveform type and frequency, plus
+independent motion/audio transport. Old envelope query/share fields are ignored
+while the remaining settings restore normally; new exports use the unmasked
+waveform. Historical low-level envelope geometry helpers remain available to
+existing renderer consumers and retain their tests, but are not active controls.

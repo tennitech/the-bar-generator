@@ -38,6 +38,7 @@ describe('experimental pattern compositions', () => {
       for (const variant of [1, 2, 3, 0, 99, '2']) {
         for (const helper of [createLinesPatternGeometry, createGradientPatternGeometry,
           createCirclesGradientPatternGeometry, createTrianglesPatternGeometry]) {
+          if (helper === createCirclesGradientPatternGeometry && [0, 1].includes(variant)) continue;
           const geometry = helper({ ...bounds, variant });
           const intervals = [
             ...(geometry.rects || []).map(r => [r.x, r.x + r.width]),
@@ -107,7 +108,7 @@ describe('experimental pattern compositions', () => {
     }
   });
 
-  test.each([1, 2, 3])('circle gradient %s keeps columns upright', variant => {
+  test.each([2, 3])('circle gradient %s keeps columns upright', variant => {
     const circles = createCirclesGradientPatternGeometry({ variant }).circles;
     const columns = variant === 2 ? 24 : 28;
     for (let i = columns; i < circles.length; i++) {
@@ -136,12 +137,37 @@ describe('experimental pattern compositions', () => {
 
   test('circle variants encode vertical, directional, and symmetric area progressions', () => {
     const vertical = createCirclesGradientPatternGeometry({ variant: 1 }).circles;
-    expect(vertical[0].r).toBeGreaterThan(vertical[28].r);
-    expect(vertical[28].r).toBeGreaterThan(vertical[56].r);
+    expect(vertical[0].r).toBeGreaterThan(vertical[29].r);
+    expect(vertical[29].r).toBeGreaterThan(vertical[57].r);
     const directional = createCirclesGradientPatternGeometry({ variant: 2 }).circles.slice(0, 24);
     directional.slice(1).forEach((c, i) => expect(c.r).toBeGreaterThan(directional[i].r));
     const lens = createCirclesGradientPatternGeometry({ variant: 3 }).circles.slice(0, 28);
     lens.forEach((c, i) => expect(c.r).toBeCloseTo(lens[27 - i].r));
     expect(lens[13].r).toBeGreaterThan(lens[0].r * 2);
   });
+});
+
+// The supplied reference is the oracle, including its deliberate stagger and
+// small irregular offsets. A generic aligned grid does not satisfy issue #56.
+test('circle gradient 1 preserves every supplied reference circle with uniform scaling', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const source = fs.readFileSync(path.join(__dirname, '../assets/bar references/Style=Circles Gradient 1.svg'), 'utf8');
+  const expected = [...source.matchAll(/<path d="M([\d.]+) ([\d.]+)/g)].map(match => {
+    const top = Number(match[2]);
+    const radius = top === 0 ? 8 : top === 27 ? 4.5 : 6;
+    return { cx: Number(match[1]), cy: top + radius, r: radius };
+  });
+  expect(expected).toHaveLength(86);
+  for (const [width, height, x, y] of [[250, 18, 0, 0], [500, 36, -25, 132.4885], [100, 30, 10, 15]]) {
+    const actual = createCirclesGradientPatternGeometry({ variant: 1, exactBarWidth: width, barHeight: height, barStartX: x, barY: y }).circles;
+    const scale = Math.min(width / 509, height / 36);
+    const originX = x + (width - 509 * scale) / 2;
+    const originY = y + (height - 36 * scale) / 2;
+    expect(actual).toHaveLength(expected.length);
+    for (const circle of expected) {
+      expect(actual.some(c => Math.abs(c.cx - originX - circle.cx * scale) < 1e-7 &&
+        Math.abs(c.cy - originY - circle.cy * scale) < 1e-7 && Math.abs(c.r - circle.r * scale) < 1e-7)).toBe(true);
+    }
+  }
 });

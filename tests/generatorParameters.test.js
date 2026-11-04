@@ -17,8 +17,8 @@ test('startup and runtime share query precedence, typed controls and existing no
   const state = read('?style=solid&colorMode=white&waveformEnvelope=true&waveformEnvelopeWaves=99&waveformSpeed=999');
   expect(state.style).toBe('waveform');
   expect(state.colorMode).toBe('white');
-  expect(state.waveformEnvelope).toBe('true');
-  expect(state.waveformEnvelopeWaves).toBe(10);
+  expect(state.waveformEnvelope).toBeUndefined();
+  expect(state.waveformEnvelopeWaves).toBeUndefined();
   expect(state.waveformSpeed).toBe(1);
   expect(read('?trianglesDirection=up&trianglesCount=99','/generator/triangles/').trianglesDirection).toBe('up-right');
   expect(read('?trussFamily=pratt','/generator/truss/').trussFamily).toBe('queen-post');

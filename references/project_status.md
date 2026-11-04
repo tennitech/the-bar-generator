@@ -23,6 +23,43 @@ actual SVG snapshot equality and pixel-identical PNG/vector output. Desktop
 screenshots were inspected. These checks do not establish physical-device,
 screen-reader, formal brand approval, or owner testing.
 
+## November 4 Circles Gradient reference repair
+
+Issue #56 remained reproducible after the October 28 alignment repair: variant 1
+used a generic upright 28 × 3 grid rather than the supplied reference. It now
+preserves the source's 29/28/29 staggered dots, original radii and small coordinate
+offsets. Uniform containment of the 509 × 36 source frame keeps complete circular
+primitives inside the official viewport without stretching or forced edge paint.
+Variants 2 and 3 are unchanged. Preview, header, SVG and PNG share this geometry;
+the Home sample is regenerated from that renderer.
+
+The targeted source-oracle regression compares every circle with the supplied
+SVG at three sizes, including a nonstandard aspect ratio. Existing complete
+Circles stroke and Neural Network ring-bounds regressions also pass, confirming
+that issues #51 and #55 were already repaired in merged PR #57. Browser/export
+verification is recorded in the associated pull request. No formal RPI approval,
+physical-device testing or owner acceptance is inferred.
+
+## November 4 Ticker audio removal
+
+Ticker no longer offers audio, as requested in issue #44. Its audio button,
+dispatch and polyrhythmic synthesizer are removed. Ticker motion, visual ratios
+and exports are unchanged. Binary remains silent following the earlier #47 fix.
+Regression coverage verifies unsupported audio cannot start and supported styles
+remain available. See `scripts/audioAvailabilitySmoke.js` for the focused
+browser check of navigation, Ticker motion and phone-width layout.
+
+## November 4 Waveform envelope retirement
+
+Removed the spatial-only envelope controls under issue #49's removal option.
+They never affected the audio preview. Type, frequency, Loop/Reverse, speed and
+audio remain available. Old envelope query/share fields no longer apply; other
+historical settings restore normally. Preview/header/export use the same unmasked
+waveform. Low-level historical geometry helpers remain tested for compatibility.
+The About text and marquee preset no longer advertise the removed feature.
+Focused browser checks cover legacy-query/export parity, Randomize/Reset and
+responsive layouts. This does not establish owner or physical-device testing.
+
 ## November 3 compact export actions
 
 Download and Copy now sit side by side, with distinct tray and overlapping-sheet
