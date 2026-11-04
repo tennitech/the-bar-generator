@@ -4420,3 +4420,37 @@ body.theme-white { --color-ready: #83d9a4; }
   .nucleotide_sequence.is-newly-ready .control-input,
   .nucleotide_sequence.is-newly-ready .nucleotide_ready-icon polyline { animation: none !important; }
 }
+
+/* A quiet cue in the existing fade signals more controls, never taking input. */
+.sidebar_scroll-cue {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  height: 1.25rem;
+  font: 0.625rem/1.2 'RPIGeistMono', monospace;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: var(--bg-sidebar);
+  border-radius: var(--control-radius);
+  pointer-events: none;
+  user-select: none;
+}
+.sidebar_scroll-cue[hidden] { display: none; }
+.sidebar_scroll-cue-icon { width: 1rem; height: 1rem; }
+.sidebar-scroll:focus-visible { outline: 2px solid var(--accent-color); outline-offset: -2px; }
+
+#app-sidebar .custom-option[aria-selected="true"]::after {
+  width: 1rem;
+  height: 1rem;
+  border: 0;
+  background: currentColor;
+  mask: var(--icon-feedback-ready) center / contain no-repeat;
+  transform: translateY(-50%);
+}
+.toast_dismiss { display: grid; place-items: center; }
+.toast_dismiss-icon { width: 1rem; height: 1rem; }

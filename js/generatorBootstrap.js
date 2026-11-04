@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261104-nucleotide-random-length';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261104-scroll-cue';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
