@@ -11,14 +11,14 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261104-scroll-cue-minimum" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261104-lfo-integrated" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261103-save-removal" rel="stylesheet" type="text/css">
   <script src="js/utils/pageEntrance.js?v=20261103-save-removal"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261103-nucleotide"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261104-lfo-integrated"></script>
   <script src="js/utils/themeMode.js?v=20261103-save-removal"></script>
   <script src="js/utils/selectorPreviews.js?v=20261103-nucleotide"></script>
   <script src="js/utils/customDropdowns.js?v=20261103-save-removal"></script>
-  <script src="js/utils/parameterControls.js?v=20261104-undo-startup"></script>
+  <script src="js/utils/parameterControls.js?v=20261104-lfo-integrated"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/loopingGif.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/featherIcons.js?v=20261103-save-removal"></script>
@@ -31,7 +31,8 @@
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/quantumModel.js"></script>
-  <script src="js/utils/generatorParameters.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/utils/waveformLfo.js?v=20261104-lfo-integrated"></script>
+  <script src="js/utils/generatorParameters.js?v=20261104-lfo-integrated"></script>
   <script src="js/utils/generatorInitialState.js?v=20261104-nucleotide-minimum"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
@@ -479,6 +480,27 @@
                   aria-label="Play audio preview"></button>
               </div>
             </div>
+            <div class="control waveform_lfo">
+              <div class="control_row control_row-toggle">
+                <label for="waveform-lfo-toggle" class="control-label control_row-label">LFO <span class="waveform_lfo-caption">Volume pulse</span></label>
+                <label class="switch">
+                  <input type="checkbox" id="waveform-lfo-toggle" data-url-parameter="waveformLfo" aria-controls="waveform-lfo-settings" aria-describedby="waveform-lfo-hint">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+              <p id="waveform-lfo-hint" class="control-hint">A slow sine wave pulses the audio volume. Press Audio to listen.</p>
+              <div id="waveform-lfo-settings" hidden>
+                <div class="control slider-control">
+                  <label for="waveform-lfo-rate" class="control-label">RATE <span id="waveform-lfo-rate-display" data-slider-value>2 Hz</span></label>
+                  <input type="range" id="waveform-lfo-rate" data-url-parameter="waveformLfoRate" min="0.2" max="8" step="0.1" value="2" class="control-slider" aria-label="LFO rate in hertz">
+                </div>
+                <div class="control slider-control">
+                  <label for="waveform-lfo-depth" class="control-label">DEPTH <span id="waveform-lfo-depth-display" data-slider-value>60%</span></label>
+                  <input type="range" id="waveform-lfo-depth" data-url-parameter="waveformLfoDepth" min="0" max="100" step="1" value="60" class="control-slider" aria-label="LFO depth in percent">
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -976,11 +998,11 @@
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportUi.js?v=20261104-nucleotide-minimum"></script>
-  <script src="js/utils/barInformation.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/utils/barInformation.js?v=20261104-lfo-integrated"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
-  <script src="js/main.js?v=20261104-nucleotide-minimum"></script>
+  <script src="js/main.js?v=20261104-lfo-integrated"></script>
   <script src="js/utils/logoClipboard.js?v=20261104-nucleotide-minimum"></script>
   <script src="js/drawing.js?v=20261104-nucleotide-minimum"></script>
   <script>

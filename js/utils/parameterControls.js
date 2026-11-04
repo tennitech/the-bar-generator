@@ -42,6 +42,8 @@
     const value = field.defaultValue;
     if (field.id === 'waveform-type-slider') return ['Sine', 'Sawtooth', 'Square', 'Pulse'][Math.round(Number(value))];
     if (field.id === 'lines-variant-slider') return Number(value) === 1 ? 'LG' : 'MD';
+    if (field.id === 'waveform-lfo-rate') return `${value} Hz`;
+    if (field.id === 'waveform-lfo-depth') return `${value}%`;
     if (field.id === 'quantum-phase') return `${(Number(value) * 100).toFixed(1)}%`;
     if (field.id === 'ticker-ratio-slider') return `${value}:1`;
     if (field.id === 'ticker-width-ratio-slider') return `1:${value}`;

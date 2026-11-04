@@ -73,6 +73,7 @@ function fixture(random = 0) {
   vm.createContext(context);
   vm.runInContext(fs.readFileSync(require.resolve('../js/utils/parameterControls'), 'utf8'), context);
   vm.runInContext(source.slice(source.indexOf('const NEURAL_CONTROL_DEFAULTS'), source.indexOf('function updateTriangleGridVariantDisplay')), context);
+  vm.runInContext(source.slice(source.indexOf('function resetWaveformLfo()'), source.indexOf('function getCurrentAudioPreviewType()')), context);
   vm.runInContext(source.slice(source.indexOf('function resetStyleParameters'), source.indexOf('function getBugReportContextLabel')), context);
   context.ParameterControls.bindActions({ reset: context.resetStyleParameters, randomize: context.randomizeStyleParameters,
     isDefaultSeed: () => context.sharePatternSeed === 1 });

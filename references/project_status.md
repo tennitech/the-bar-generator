@@ -44,6 +44,22 @@ history, keyboard Undo restores exact SVG artwork, and narrow layouts stay withi
 the viewport. These checks do not establish physical-device or screen-reader
 behavior, owner acceptance, or formal brand approval.
 
+## November 4 audible Waveform LFO
+
+The owner's correction supersedes the envelope-retirement choice below. Waveform
+now offers an actual sine amplitude LFO (tremolo): one Volume pulse toggle,
+Rate in Hz and Depth in percent. The two settings appear only when enabled;
+keyboard controls, numeric editing, Reset/Randomize, Undo and query/share restore
+use the existing control system. Rate is 0.2–8 Hz and Depth is 0–100%.
+Audio modulation remains independent of visual carrier motion and static/GIF
+geometry. No autoplay is introduced; reduced motion still pauses visual travel.
+Audio changes ramp smoothly; stop/restart and style changes dispose the old LFO.
+The browser smoke renders actual OfflineAudioContext samples to verify audible
+amplitude modulation, rather than relying on UI changes or a connection mock. Both Chromium and WebKit
+measure RMS 0.7069 at the LFO peak and 0.00029 at its trough (2 Hz, 100% depth),
+while bypass stays 0.7071. The integrated candidate on main 378c2cf passes 713 unit tests. Chromium and WebKit
+pass the LFO audio/interaction smoke, including Undo and inline numeric editing.
+
 ## November 4 encoded-text validation
 
 Binary and Morse now keep text drafts editable while suppressing rejected text
