@@ -43,8 +43,7 @@ async function main() {
     if(count) {
      const tooth=markup.match(/data-base="[ATCGU]" d="M([\d.e+-]+) 0 H([\d.e+-]+)/);
      const slotWidth=250/Math.max(30,count),toothWidth=Number(tooth[2])-Number(tooth[1]);
-     assert.ok(toothWidth>=slotWidth*.89 && toothWidth<slotWidth*.99,'Teeth must fill their slots with small visible gaps');
-     if(count<=30) assert.ok(toothWidth>=slotWidth*.95,'At or below 30, only a very narrow gap may remain');
+     assert.ok(toothWidth>=slotWidth*.8 && toothWidth<slotWidth*.95,'Teeth must fill their slots with small visible gaps');
     }
     if (count<30) assert.match(markup,/stroke-dasharray=/);
     assert.equal(await page.locator('#nucleotide-progress').evaluate(el=>el.max),50);

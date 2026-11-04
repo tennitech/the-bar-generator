@@ -13,10 +13,10 @@ One tooth represents one entered base, from left to right in the conventional
 5′ to 3′ direction. Below 30, the preview uses 30 positions with dashed outlines
 for missing bases. From 30 to 50, all positions contain actual bases. Tooth width
 uses the current slot pitch, 250 / max(30, count) at reference width 250.
-Each tooth fills 96% of its slot through 30 bases, easing to 90% at 50.
-At 30 bases or fewer, teeth are 8 units wide with 0.33-unit gaps. At 50,
+Each tooth fills 84% of its slot through 30 bases, increasing to 90% at 50.
+At 30 bases or fewer, teeth are 7 units wide with 1.33-unit gaps. At 50,
 teeth are 4.5 units wide with 0.5-unit gaps. Widths and gaps change smoothly
-above 30. This keeps short sequences close together and denser sequences separated.
+above 30. This keeps short sequences wide and denser sequences separated.
 The final gap remains positive. This is a visual encoding rule,
 not a claim about molecular size. Preview, header and exports share the geometry.
 
