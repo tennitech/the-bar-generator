@@ -132,9 +132,10 @@ available through 50. The progress display marks 30 minimum and 50 maximum;
 controls are red below 30 and green at or above it. A brief green cue marks the
 first ready state. Dashed preview slots appear only for missing bases below 30.
 
-Extra bases make the pattern denser. Teeth fill 84% of each slot through 30 bases
-and up to 90% at 50. Short sequences use wider teeth, and gaps narrow smoothly
-as more bases fill the fixed official bar viewport. The renderer uses only entered
+Extra bases make the pattern denser. Teeth fill 96% of each slot through 30 bases
+and ease to 90% at 50. Gaps through 30 are 75% smaller than the prior 84%-coverage
+version. Widths adjust smoothly as more bases fill the fixed official bar
+viewport. The renderer uses only entered
 bases. Placeholders and control feedback never enter exports. A rejected edit
 above 50 gives a brief red input outline and shake with an inline limit message.
 The valid 50-base sequence remains exportable. Reduced motion removes the shake
