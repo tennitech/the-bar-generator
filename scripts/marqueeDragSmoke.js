@@ -109,7 +109,8 @@ async function atRest(page) {
     // Resize and lost capture must not leave a lane in the grabbing state.
     point = await target(page); await page.mouse.move(point.x, point.y); await page.mouse.down();
     await move(page, point, 40);
-    await page.setViewportSize({ width: 1300, height: 860 }); await page.waitForTimeout(100);
+    await page.setViewportSize({ width: 1300, height: 860 });
+    await page.waitForFunction(() => !document.querySelector('.is-pressed,.is-dragging'), null, { timeout: 3000 });
     assert.equal(await page.locator('.is-pressed,.is-dragging').count(), 0);
     await page.mouse.up();
     point = await target(page); await page.mouse.move(point.x, point.y); await page.mouse.down(); await move(page, point, 40);

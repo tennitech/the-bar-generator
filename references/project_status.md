@@ -3,6 +3,21 @@
 **Last Updated:** 2026-11-04
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 4 Home hover focus and off-row inertia
+
+Captured pointer travel perpendicular to a marquee row retains a naturally decaying
+throw rather than cancelling it. Hover lifts the artwork within its fixed hit area
+and softly blurs other samples; touch, keyboard focus and reduced motion remain
+crisp. This release preserves existing Home button text and inertia policy; the
+playful controls and preview hover-pause remain separate work.
+
+The runtime and focused browser harnesses are unchanged from the prior tested
+PR110 candidate. Integrated with the parametric Gradient/Triangle main tree,
+83 focused unit tests pass. Existing Chromium/WebKit off-row, focus, cancellation
+and touch checks passed on these exact runtime files. Current-main navigation
+into both parameter families and Back/Forward also passed in the cumulative Home
+candidate. No artwork, export, dependency, workflow or file deletion.
+
 ## November 4 parametric-controls integration recovery
 
 The preserved Triangle Grid and Circles Gradient branches are combined with main
