@@ -63,15 +63,9 @@
     });
     document.querySelectorAll('[data-parameter-action="randomize"]').forEach(randomizeButton => {
       const style = randomizeButton.dataset.parameterStyle;
-      const label = Array.from(document.getElementById('style-select').options).find(option => option.value === style)?.textContent.trim() || style;
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'control-reset-btn control_undo-button';
-      button.textContent = 'Undo';
+      const button = randomizeButton.parentElement.querySelector(`[data-randomize-undo="${style}"]`);
+      if (!button) return;
       button.disabled = true;
-      button.dataset.randomizeUndo = style;
-      button.setAttribute('aria-label', `Undo last ${label} randomization`);
-      button.title = 'Available after Randomize, until your next edit';
       button.addEventListener('click', () => {
         try {
           if (controller.undo(style)) {
@@ -83,7 +77,6 @@
           console.error('Unable to undo randomization.', error);
         }
       });
-      randomizeButton.after(button);
       buttons.push({ button, style });
     });
     const sidebar = document.getElementById('app-sidebar');
