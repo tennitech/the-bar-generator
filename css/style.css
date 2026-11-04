@@ -4290,3 +4290,97 @@ body.theme-lunar .export_menu { min-width: 0; }
 /* Versioned public sequence provenance, kept within the sidebar palette. */
 .nucleotide_source-link { color: inherit; text-underline-offset: .15em; }
 .nucleotide_source-link:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+
+/* Quiet state feedback: respond to a result or selection, never decorate idle UI. */
+:root {
+  --duration-feedback: 180ms;
+  --icon-feedback-ready: url('../third_party/feather/icons/check.svg');
+  --icon-feedback-error: url('../third_party/feather/icons/x-circle.svg');
+  --icon-feedback-cancelled: url('../third_party/feather/icons/x.svg');
+}
+.export_message { display: flex; align-items: flex-start; gap: 0.5rem; }
+.export_message::before {
+  content: '';
+  flex: 0 0 1rem;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.125rem;
+  background: currentColor;
+  mask: var(--icon-loader) center / contain no-repeat;
+}
+.export_progress:is([data-outcome="started"], [data-outcome="requested"], [data-outcome="copied"]) .export_message::before {
+  mask-image: var(--icon-feedback-ready);
+  animation: feedbackResolve var(--duration-feedback) ease-out;
+}
+.export_progress[data-outcome="error"] .export_message::before { mask-image: var(--icon-feedback-error); }
+.export_progress[data-outcome="cancelled"] .export_message::before { mask-image: var(--icon-feedback-cancelled); }
+/* A check confirms preparation/copy, not receipt by a browser or destination app.
+   Keep the explanatory text authoritative, and never shake an error message. */
+@keyframes feedbackResolve {
+  from { opacity: 0.35; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.toast.success .toast_icon polyline {
+  stroke-dasharray: 28;
+  animation: feedbackCheck var(--duration-normal) ease-out;
+}
+@keyframes feedbackCheck { from { stroke-dashoffset: 28; } to { stroke-dashoffset: 0; } }
+/* The selected marker appears in place; option rows and labels never move. */
+#app-sidebar .custom-option[aria-selected="true"]::after {
+  animation: feedbackSelection var(--duration-feedback) ease-out;
+}
+@keyframes feedbackSelection { from { opacity: 0; } to { opacity: 1; } }
+/* Press the icon, not the layout. Avoid transforms on the official RPI artwork. */
+.preview-control-btn svg {
+  transition: transform var(--duration-fast) ease-out;
+  transform-origin: center;
+}
+.preview-control-btn:not(:disabled):not([aria-disabled="true"]):active svg {
+  transform: scale(0.92);
+}
+/* Pseudo-elements do not inherit the older descendant motion override. */
+@media (prefers-reduced-motion: reduce) {
+  .export_message::before,
+  .toast.success .toast_icon polyline,
+  #app-sidebar .custom-option[aria-selected="true"]::after,
+  .audio-indicator::before { animation: none !important; }
+  .audio-indicator::before { box-shadow: none; }
+  .slider::before { transition: none !important; }
+  .preview-control-btn svg {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* Two clear action groups, with the action glyph beside each format. */
+.export_action-columns { gap: 0; padding: 0.875rem 0.125rem; }
+.export_download-actions, .export_copy-actions { padding-inline: 0.75rem; }
+.export_copy-actions { border-left: 1px solid var(--border-color); }
+.export_group-label {
+  margin-bottom: 0.25rem;
+  color: var(--text-secondary);
+  font: 500 0.6875rem/1.5 'RPIGeistMono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.export_menu .save-option {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
+  align-content: center;
+  align-items: center;
+}
+.export_action-icon { width: 1rem; height: 1rem; grid-column: 1; grid-row: 1; }
+.export_menu .save-option .option-label { grid-column: 2; grid-row: 1; }
+.export_menu .save-option .option-desc { grid-column: 1 / -1; grid-row: 2; }
+.export_action-icon :is(line, polyline, path) { transition: transform var(--duration-fast) ease-out; }
+@media (hover: hover) and (pointer: fine) {
+  .export_download-actions .save-option:not(:disabled):hover .export_action-icon :is(line, polyline) { transform: translateY(1.5px); }
+  .export_copy-actions .save-option:not(:disabled):hover .export_action-icon path { transform: translate(-1px, -1px); }
+}
+.export_download-actions .save-option:not(:disabled):focus-visible .export_action-icon :is(line, polyline) { transform: translateY(1.5px); }
+.export_copy-actions .save-option:not(:disabled):focus-visible .export_action-icon path { transform: translate(-1px, -1px); }
+@media (prefers-reduced-motion: reduce) {
+  .export_action-icon :is(line, polyline, path) { transition: none !important; transform: none !important; }
+}
