@@ -95,4 +95,7 @@ test('nucleotide restores the selected target and caps legacy sequences without 
     expect(state.controls['nucleotide-input']).toBe('A'.repeat(Number(target)));
     expect(state.controls['nucleotide-length']).toBe(target);
   }
+  const legacy=normalizeState({v:1,name:'',controls:{'nucleotide-input':'A'.repeat(60)},runtime:{}},manifest);
+  expect(legacy.controls['nucleotide-length']).toBe('50');
+  expect(legacy.controls['nucleotide-input']).toHaveLength(50);
 });

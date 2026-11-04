@@ -99,7 +99,11 @@
         controls[id] = id === 'nucleotide-input' ? raw.toUpperCase().replace(/[^ATCGU]/g, '').slice(0, 50) : raw;
       }
     }
-    if (controls['nucleotide-input'] && controls['nucleotide-length']) controls['nucleotide-input'] = controls['nucleotide-input'].slice(0, Number(controls['nucleotide-length']));
+    if (Object.hasOwn(controls, 'nucleotide-input') && manifest['nucleotide-length']) {
+      // Legacy snapshots predate this control. Do not inherit a later target.
+      if (!Object.hasOwn(controls, 'nucleotide-length')) controls['nucleotide-length'] = '50';
+      controls['nucleotide-input'] = controls['nucleotide-input'].slice(0, Number(controls['nucleotide-length']));
+    }
     if (controls['color-mode-select'] === 'lunar' && controls['style-select'] !== 'lunar') throw new Error('This share link uses a theme unavailable for this bar.');
     return { v: VERSION, name: safeText(value.name, MAX_NAME_LENGTH), controls, runtime: normalizeRuntime(value.runtime) };
   }
