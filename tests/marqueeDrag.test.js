@@ -1,5 +1,5 @@
 const { projectLaneDelta, sampleDragVelocity, advanceRowInertia,
-  bindAssetInteractions, resetRowInteraction } = require('../js/marqueeUi');
+  bindAssetInteractions, bindStageFocus, resetRowInteraction } = require('../js/marqueeUi');
 
 const angle = 17 * Math.PI / 180;
 const axis = { x: Math.cos(angle), y: Math.sin(angle) };
@@ -76,6 +76,55 @@ afterEach(() => {
 });
 
 describe('native-link and gesture lifecycle', () => {
+  test.each([-1, 1])('leaving row %i perpendicular to a captured flick preserves release momentum', direction => {
+    const { state, asset, send } = fixture(direction);
+    send('pointerdown');
+    send('pointermove', { clientX: 100 + 120 * axis.x, clientY: 100 + 120 * axis.y, timeStamp: 70 });
+    const velocity = state.drag.velocity;
+    send('pointerleave');
+    expect(asset.hasPointerCapture(1)).toBe(true);
+    for (let i = 1; i <= 8; i++) {
+      send('pointermove', { clientX: 100 + 120 * axis.x - 12 * i * axis.y,
+        clientY: 100 + 120 * axis.y + 12 * i * axis.x, timeStamp: 70 + i * 15 });
+    }
+    expect(state.travel).toBeCloseTo(400 + 120 * direction);
+    document.elementFromPoint = () => null;
+    send('pointerup', { timeStamp: 200 });
+    expect(state.inertiaVelocity).toBeGreaterThan(velocity * 0.5);
+    expect(state.inertiaVelocity).toBeLessThan(velocity);
+    expect(state.hoveredAsset).toBe(null);
+    expect(asset.hasPointerCapture(1)).toBe(false);
+    expect(send('click').preventDefault).toHaveBeenCalledTimes(1);
+  });
+
+  test('a stationary hold or browser cancellation after an off-row movement still stops the throw', () => {
+    for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+      const { state, send } = fixture();
+      send('pointerdown');
+      send('pointermove', { clientX: 200, timeStamp: 50 });
+      send('pointermove', { clientX: 200 - 60 * axis.y, clientY: 100 + 60 * axis.x, timeStamp: 90 });
+      send(type, { timeStamp: 300 });
+      expect(state.inertiaVelocity).toBe(0);
+    }
+  });
+
+  test('focus follows the latest hovered row and clears on reset without stale boundary events', () => {
+    const first = fixture(), second = fixture();
+    const stage = fixture().asset;
+    bindStageFocus(stage, [first.state, second.state]);
+    first.send('pointerenter');
+    expect(stage.classList.contains('has-bar-focus')).toBe(true);
+    expect(first.state.element.classList.contains('is-focus-row')).toBe(true);
+    second.send('pointerenter');
+    first.send('pointerleave');
+    expect(first.state.element.classList.contains('is-focus-row')).toBe(false);
+    expect(second.state.element.classList.contains('is-focus-row')).toBe(true);
+    expect(stage.classList.contains('has-bar-focus')).toBe(true);
+    resetRowInteraction(second.state);
+    expect(stage.classList.contains('has-bar-focus')).toBe(false);
+    expect(second.state.element.classList.contains('is-focus-row')).toBe(false);
+  });
+
   test('a tap or tiny jitter preserves a native click and starts no momentum', () => {
     const { state, send } = fixture();
     send('pointerdown');

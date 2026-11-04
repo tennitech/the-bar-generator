@@ -49,7 +49,9 @@ async function dragWhilePaused(page, pauseDuringCoast = false) {
   assert.notEqual(await track.getAttribute('style'), before, 'direct drag remains available');
   if (pauseDuringCoast) {
     const released = await track.getAttribute('style');
-    await page.waitForTimeout(80);
+    // Wait for a rendered coast frame rather than a headless frame-rate deadline.
+    await page.waitForFunction(released => document.querySelector('#paused-drag')
+      .closest('.marquee_track').getAttribute('style') !== released, released, { timeout: 3000 });
     assert.notEqual(await track.getAttribute('style'), released, 'the test begins with active momentum');
     await pause(page).evaluate(button => button.click());
     await resume(page).waitFor();

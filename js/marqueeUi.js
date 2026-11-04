@@ -307,6 +307,27 @@ function setHoveredAsset(state, asset) {
   if (state.hoveredAsset) {
     state.hoveredAsset.classList.add('is-hovered');
   }
+  state.onHoverChange?.(state, asset);
+}
+
+// One focus owner keeps boundary events from an old row from clearing a newer
+// hover. Other lanes are filtered as clipped groups, not individual canvases.
+function bindStageFocus(stage, rowStates) {
+  let focusedRow = null;
+  rowStates.forEach(state => {
+    state.onHoverChange = (_, asset) => {
+      if (asset) {
+        focusedRow?.element.classList.remove('is-focus-row');
+        focusedRow = state;
+        state.element.classList.add('is-focus-row');
+        stage.classList.add('has-bar-focus');
+      } else if (focusedRow === state) {
+        state.element.classList.remove('is-focus-row');
+        stage.classList.remove('has-bar-focus');
+        focusedRow = null;
+      }
+    };
+  });
 }
 
 function setPressedAsset(state, asset) {
@@ -439,9 +460,17 @@ function bindAssetInteractions(asset, state) {
       state.element.classList.add('is-dragging');
     }
     if (event.cancelable) event.preventDefault();
-    const delta = projectLaneDelta(event.clientX - drag.lastX, event.clientY - drag.lastY, drag.axis);
+    const stepX = event.clientX - drag.lastX, stepY = event.clientY - drag.lastY;
+    const delta = projectLaneDelta(stepX, stepY, drag.axis);
+    const across = projectLaneDelta(stepX, stepY, { x: -drag.axis.y, y: drag.axis.x });
     const seconds = (event.timeStamp - drag.time) / 1000;
-    drag.velocity = sampleDragVelocity(drag.velocity, delta, seconds, state.slotWidth * 4);
+    // A hand leaving the lane sideways is still throwing it. Sampling those
+    // near-zero along-lane deltas as braking erased the flick before release.
+    // Let that velocity decay naturally instead; a stationary hold still
+    // settles through the release guard, and cancellation never throws.
+    drag.velocity = Math.abs(across) > Math.abs(delta) * 2
+      ? drag.velocity * Math.exp(-INERTIA_FRICTION * (seconds > 0 ? seconds : 0))
+      : sampleDragVelocity(drag.velocity, delta, seconds, state.slotWidth * 4);
     state.travel += delta * state.direction;
     drag.lastX = event.clientX; drag.lastY = event.clientY; drag.time = event.timeStamp;
     updateRowLayout(state);
@@ -748,9 +777,15 @@ function initMarqueeScene() {
 
   const rowStates = Array.from({ length: ROW_COUNT }, (_, index) => createRow(index));
   rowStates.forEach(state => stage.append(state.element));
+  bindStageFocus(stage, rowStates);
   const cancelInteractions = () => rowStates.forEach(resetRowInteraction);
   stage.addEventListener('pointerdown', event => {
     if (event.isPrimary === false) cancelInteractions();
+    else if (event.pointerType === 'touch') rowStates.forEach(state => {
+      state.isHovered = false;
+      setHoveredAsset(state, null);
+      syncRowTargetFactor(state);
+    });
   }, true);
   window.addEventListener('blur', cancelInteractions);
 
@@ -916,6 +951,7 @@ if (typeof module !== 'undefined' && module.exports) {
     sampleDragVelocity,
     advanceRowInertia,
     bindAssetInteractions,
+    bindStageFocus,
     resetRowInteraction,
     createRowPatterns,
     syncRowTargetFactor,
