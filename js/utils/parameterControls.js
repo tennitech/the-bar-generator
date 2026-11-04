@@ -172,20 +172,34 @@
       const actions = document.createElement('div');
       actions.className = 'control-header-actions';
       for (const [action, text, className] of [
-        ['randomize', 'Randomize', 'control-surprise-btn'], ['reset', 'Reset', 'control-reset-btn']
+        ['randomize', 'Randomize', 'control-surprise-btn'],
+        ['undo', 'Undo', 'control-reset-btn control_undo-button'],
+        ['reset', 'Reset', 'control-reset-btn']
       ]) {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = className;
         button.textContent = text;
-        button.dataset.parameterAction = action;
-        button.dataset.parameterStyle = style;
-        button.setAttribute('aria-label', `${text} ${style} parameters`);
-        button.addEventListener('click', event => {
-          event.preventDefault();
-          if (callbacks[action]) callbacks[action](style);
-          else pendingActions.push({ action, style });
-        });
+        if (action === 'undo') {
+          // Reserve the real button in the initial chrome. History setup only
+          // binds it later, so Randomize never moves when the renderer is ready.
+          const option = Array.from(root.querySelector('#style-select')?.options || [])
+            .find(item => item.value === style);
+          const styleLabel = option?.textContent.trim() || style;
+          button.dataset.randomizeUndo = style;
+          button.disabled = true;
+          button.title = 'Available after Randomize, until your next edit';
+          button.setAttribute('aria-label', `Undo last ${styleLabel} randomization`);
+        } else {
+          button.dataset.parameterAction = action;
+          button.dataset.parameterStyle = style;
+          button.setAttribute('aria-label', `${text} ${style} parameters`);
+          button.addEventListener('click', event => {
+            event.preventDefault();
+            if (callbacks[action]) callbacks[action](style);
+            else pendingActions.push({ action, style });
+          });
+        }
         actions.appendChild(button);
       }
       header.replaceChildren(label, actions);
