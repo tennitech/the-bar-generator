@@ -1257,7 +1257,6 @@ function resetStyleParameters(style) {
 
   switch (style) {
     case 'nucleotide':
-      document.getElementById('nucleotide-length').value = '50';
       document.getElementById('nucleotide-input').value = window.NucleotidePattern.DEFAULT_SEQUENCE;
       document.getElementById('nucleotide-variant').value = 'separate';
       syncNucleotideControls();
@@ -1428,11 +1427,11 @@ function randomizeStyleParameters(style) {
   switch (style) {
     case 'nucleotide': {
       const model = window.NucleotidePattern;
-      const length = document.getElementById('nucleotide-length');
+      const input = document.getElementById('nucleotide-input');
       const currentPreset = document.getElementById('nucleotide-preset').value;
-      length.value = randomDifferentStep(length, model.MIN_BASES, model.MAX_BASES);
+      const length = pickDifferent(Array.from({ length: model.MAX_BASES - model.MIN_BASES + 1 }, (_, index) => model.MIN_BASES + index), model.normalize(input.value).length);
       const choices = model.presets.filter((preset, index) => String(index) !== currentPreset);
-      document.getElementById('nucleotide-input').value = pickRandom(choices).sequence.slice(0, Number(length.value));
+      input.value = pickRandom(choices).sequence.slice(0, length);
       syncNucleotideControls();
       break;
     }
@@ -2743,8 +2742,7 @@ function setup() {
   // Setup color mode selector
   colorModeSelect.addEventListener('change', handleColorModeChange);
 
-  document.getElementById('nucleotide-input').addEventListener('input', () => { syncNucleotideControls(true); updateUrlParameters(); requestUpdate(); });
-  document.getElementById('nucleotide-length').addEventListener('change', () => { syncNucleotideControls('length'); updateUrlParameters(); requestUpdate(); });
+  window.NucleotidePattern.bindInput(document, () => { syncNucleotideControls(true); updateUrlParameters(); requestUpdate(); });
   document.getElementById('nucleotide-variant').addEventListener('change', () => { updateUrlParameters(); requestUpdate(); });
   document.getElementById('nucleotide-preset').addEventListener('change', event => {
     const preset = window.NucleotidePattern.presets[Number(event.target.value)];
@@ -4156,7 +4154,6 @@ function getCurrentBarPatternValues(exactBarWidth) {
     tickerWidthRatio: tickerWidthRatioSlider ? tickerWidthRatioSlider.value : 2,
     loopOffsetX: loopAnimationState ? loopAnimationState.loopOffsetX : 0,
     nucleotideSequence: window.NucleotidePattern.normalize(document.getElementById('nucleotide-input').value),
-    nucleotideLength: window.NucleotidePattern.targetLength(document),
     nucleotideVariant: document.getElementById('nucleotide-variant').value,
     binaryText: binaryInput ? normalizeBinaryText(sanitizeBarText(normalizeBinaryText(binaryInput.value || 'RPI'))) : 'RPI',
     waveformPoints: getWaveformRenderPointCount(exactBarWidth, waveformFrequencySlider ? Number(waveformFrequencySlider.value) : 24),
@@ -5768,7 +5765,6 @@ function updateUrlParameters() {
   }
 
   if (selectedStyle === 'nucleotide') {
-    params.set('nucleotideLength', window.NucleotidePattern.targetLength(document));
     params.set('nucleotideSequence', window.NucleotidePattern.normalize(document.getElementById('nucleotide-input').value));
     params.set('nucleotideVariant', document.getElementById('nucleotide-variant').value);
   }
@@ -6003,7 +5999,6 @@ function applyUrlParameters() {
     binaryInput.value = params.binaryText;
   }
 
-  document.getElementById('nucleotide-length').value = String(params.nucleotideLength);
   document.getElementById('nucleotide-input').value = params.nucleotideSequence;
   document.getElementById('nucleotide-variant').value = params.nucleotideVariant;
   syncNucleotideControls();

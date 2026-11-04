@@ -87,15 +87,12 @@ test('Ticker validates width against the restored count ratio rather than the pr
 });
 
 
-test('nucleotide restores the selected target and caps legacy sequences without rejecting them', () => {
+test('nucleotide ignores retired target controls and preserves actual bases up to 50', () => {
   const {normalizeState}=require('../js/utils/shareState');
-  const manifest={'nucleotide-input':{type:'text',maxLength:30},'nucleotide-length':{options:['30','40','50']}};
-  for (const target of ['30','40','50']) {
-    const state=normalizeState({v:1,name:'',controls:{'nucleotide-input':'a'.repeat(60),'nucleotide-length':target},runtime:{}},manifest);
-    expect(state.controls['nucleotide-input']).toBe('A'.repeat(Number(target)));
-    expect(state.controls['nucleotide-length']).toBe(target);
+  const manifest={'nucleotide-input':{type:'text',maxLength:50}};
+  for (const count of [5,30,40,50,60]) {
+    const state=normalizeState({v:1,name:'',controls:{'nucleotide-input':'a'.repeat(count),'nucleotide-length':'30'},runtime:{}},manifest);
+    expect(state.controls['nucleotide-input']).toBe('A'.repeat(Math.min(50,count)));
+    expect(state.controls).not.toHaveProperty('nucleotide-length');
   }
-  const legacy=normalizeState({v:1,name:'',controls:{'nucleotide-input':'A'.repeat(60)},runtime:{}},manifest);
-  expect(legacy.controls['nucleotide-length']).toBe('50');
-  expect(legacy.controls['nucleotide-input']).toHaveLength(50);
 });

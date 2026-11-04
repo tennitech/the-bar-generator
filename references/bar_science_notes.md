@@ -169,10 +169,13 @@ while the remaining settings restore normally; new exports use the unmasked
 waveform. Historical low-level envelope geometry helpers remain available to
 existing renderer consumers and retain their tests, but are not active controls.
 
-Nucleotide completion update (November 4): the user chooses a target from 30 to
-50 bases as a tool layout rule, not a biological requirement. The preview keeps
-that fixed number of slots; dashed empty positions show incomplete input. The
-field stops at the selected length and exports require every slot to be filled.
-Placeholders and green control feedback never enter exported artwork. INS/HBB
-presets use the first selected number of CDS bases from the versioned transcripts,
-up to 50. See nucleotide_bar.md for coordinates and validation.
+Nucleotide completion update (November 4): 30 actual bases are required for
+export, with up to 50 allowed. These are tool limits, not biological requirements.
+The length selector is retired. Preview slots represent the 30-base minimum;
+ready sequences contain only actual bases. Tooth width uses the current pitch,
+width / max(30, count), minus the fixed gap width / 30 × 0.16. At reference
+width 250, teeth are 7 units wide through 30 bases and shrink to 3.67 at 50;
+gaps stay at 1.33 units without overlap or a
+change to official mark geometry. This spacing is a visual density convention, not a molecular
+measurement. Green/red controls and dashed placeholders never enter exports.
+INS/HBB presets retain their recorded versioned CDS prefixes. See nucleotide_bar.md.
