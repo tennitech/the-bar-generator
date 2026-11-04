@@ -149,3 +149,13 @@ no custom input is claimed to identify a gene. See [encoding and source record](
 Ticker is visual-only. The former arbitrary four-second polyrhythmic audio
 mapping is removed; repeat counts, motion timing and exported geometry are
 unchanged. Morse, Music and Waveform retain their independent audio previews.
+
+## Waveform envelope retirement — November 4, 2026
+
+The envelope control was a spatial-only amplitude mask, not an audible LFO.
+Issue #49 explicitly offered removal as an alternative to introducing audio
+modulation. The generator now exposes only waveform type and frequency, plus
+independent motion/audio transport. Old envelope query/share fields are ignored
+while the remaining settings restore normally; new exports use the unmasked
+waveform. Historical low-level envelope geometry helpers remain available to
+existing renderer consumers and retain their tests, but are not active controls.

@@ -131,8 +131,6 @@
             if (field.type === 'checkbox') field.checked = value;
             else field.value = field.type === 'text' ? scope.ProfanityFilter.sanitizeText(value) : value;
           });
-          const envelope = root.querySelector('#envelope-settings-group');
-          if (envelope) envelope.style.display = root.querySelector('#waveform-envelope-toggle')?.checked ? '' : 'none';
           theme = state.controls['color-mode-select'] || 'black';
           style = state.controls['style-select'] || 'solid';
         }
@@ -150,8 +148,6 @@
     if (scope.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       root.querySelectorAll('input[id$="-motion-toggle"]').forEach(toggle => { toggle.checked = false; });
     }
-    const envelope = root.querySelector('#envelope-settings-group');
-    if (envelope) envelope.style.display = root.querySelector('#waveform-envelope-toggle')?.checked ? 'block' : 'none';
     const series = root.querySelector('#graph-multi-inputs');
     if (series) series.style.display = root.querySelector('#graph-multi-toggle')?.checked ? 'block' : 'none';
     scope.applyTickerWidthRatioBounds?.(root.querySelector('#ticker-ratio-slider'), root.querySelector('#ticker-width-ratio-slider'));

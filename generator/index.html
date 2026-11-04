@@ -431,45 +431,6 @@
               aria-label="Waveform Frequency">
           </div>
 
-          <div class="control control_row control_row-toggle">
-            <label for="waveform-envelope-toggle" class="control-label control_row-label">ENVELOPE</label>
-            <label class="switch">
-              <input type="checkbox" id="waveform-envelope-toggle" data-url-parameter="waveformEnvelope">
-              <span class="slider round"></span>
-            </label>
-          </div>
-
-          <div id="envelope-settings-group" class="control_subgroup" style="display: none;">
-            <div class="control">
-              <label for="waveform-envelope-type" class="control-label">SHAPE</label>
-              <select id="waveform-envelope-type" data-url-parameter="waveformEnvelopeType" class="control-select" aria-label="Envelope Shape">
-                <option value="sine">Sine</option>
-                <option value="cosine">Cosine</option>
-                <option value="linear">Linear</option>
-                <option value="inverse">Inverse Sine</option>
-              </select>
-            </div>
-            <div class="control slider-control">
-              <label for="waveform-envelope-waves-slider" class="control-label">WAVES <span
-                  id="waveform-envelope-waves-display" data-slider-value>1</span></label>
-              <input type="range" id="waveform-envelope-waves-slider" data-url-parameter="waveformEnvelopeWaves" min="1" max="10" step="1" value="1"
-                class="control-slider" aria-label="Envelope Waves">
-            </div>
-            <div class="control slider-control">
-              <label for="waveform-envelope-center-slider" class="control-label">CENTER OFFSET <span
-                  id="waveform-envelope-center-display" data-slider-value>0</span></label>
-              <input type="range" id="waveform-envelope-center-slider" data-url-parameter="waveformEnvelopeCenter" min="-0.5" max="0.5" step="0.1" value="0"
-                class="control-slider" aria-label="Envelope Center Offset">
-            </div>
-            <div class="control control_row control_row-toggle">
-              <label for="waveform-envelope-bipolar-toggle" class="control-label control_row-label">BIPOLAR</label>
-              <label class="switch">
-                <input type="checkbox" id="waveform-envelope-bipolar-toggle" data-url-parameter="waveformEnvelopeBipolar">
-                <span class="slider round"></span>
-              </label>
-            </div>
-          </div>
-
           <div class="runtime_section motion_section">
             <div class="control-header">MOTION</div>
             <div class="control control_row control_row-toggle">

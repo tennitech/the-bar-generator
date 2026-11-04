@@ -27,7 +27,7 @@
   },
   "waveform": {
     "title": "Waveform",
-    "text": "A synthetic signal traces a repeating shape across the bar, using the waveform and frequency you choose. Explore its motion and envelope to see how the shape changes; this is a generated signal rather than an audio recording or measured observation."
+    "text": "A synthetic signal traces a repeating shape across the bar, using the waveform and frequency you choose. Explore its motion to see how the shape changes; this is a generated signal rather than an audio recording or measured observation."
   },
   "circles": {
     "title": "Circles",
