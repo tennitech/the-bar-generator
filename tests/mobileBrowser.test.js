@@ -21,3 +21,42 @@ test.each([['#000000','dark'],['#ffffff','light'],['rgb(0, 0, 0)','dark'],['rgb(
   expect(s.root.style.colorScheme).toBe(scheme);
   s.close();expect(s.root.style.colorScheme).toBe('dark');expect(s.themeColor.content).toBe('rgb(16, 22, 29)');
 });
+
+test.each([
+  ['rgb(255, 255, 255)', 'rgb(245, 245, 245)', 'light'],
+  ['rgb(0, 0, 0)', 'rgb(22, 22, 22)', 'dark'],
+  ['rgb(16, 22, 29)', 'rgb(32, 38, 45)', 'dark'],
+])('mobile header %s stays independent of the open controls', (top, bottom, scheme) => {
+  let callback;
+  let active = false;
+  const root = { hasAttribute: () => false, dataset: {}, style: {} };
+  const body = { backgroundColor: top, classList: { contains: () => false },
+    style: { setProperty: jest.fn() } };
+  const header = { backgroundColor: top };
+  const canvas = { backgroundColor: top };
+  const panel = { backgroundColor: bottom, classList: { contains: () => active } };
+  const hint = { content: '' };
+  const document = { documentElement: root, body, addEventListener: jest.fn(),
+    querySelector: selector => selector === '.app-header' ? header
+      : selector === '.logo-container' ? canvas : hint,
+    getElementById: id => id === 'app-sidebar' ? panel : null };
+  const media = { matches: true, addEventListener: jest.fn() };
+  const window = { matchMedia: () => media, addEventListener: jest.fn() };
+  function MutationObserver(fn) { callback = fn; this.observe = jest.fn(); }
+  vm.runInNewContext(source, { document, window, MutationObserver, getComputedStyle: element => element });
+  for (const open of [true, false, true, false]) {
+    active = open;
+    callback();
+    expect(hint.content).toBe(top);
+    expect(root.style.backgroundColor).toBe(top);
+    expect(root.style.colorScheme).toBe(scheme);
+    expect(body.style.setProperty).toHaveBeenLastCalledWith('--browser-surface', open ? bottom : top);
+  }
+  active = true;
+  header.backgroundColor = 'rgb(220, 220, 220)';
+  panel.backgroundColor = 'rgb(200, 200, 200)';
+  callback();
+  expect(hint.content).toBe(header.backgroundColor);
+  expect(root.style.colorScheme).toBe('light');
+  expect(body.style.setProperty).toHaveBeenLastCalledWith('--browser-surface', panel.backgroundColor);
+});

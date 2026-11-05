@@ -33,14 +33,21 @@
 
   const sidebar = document.getElementById('app-sidebar');
   const canvasSurface = document.querySelector('.logo-container');
+  const headerSurface = document.querySelector('.app-header');
   const touchLayout = window.matchMedia('(pointer: coarse) and (max-width: 1100px)');
 
   function syncBrowserSurface() {
     const visibleSurface = sidebar && touchLayout.matches && sidebar.classList.contains('active')
       ? sidebar : (touchLayout.matches ? (canvasSurface || body) : body);
-    const background = body.classList.contains('has-logo-animation')
+    const introBackground = body.classList.contains('has-logo-animation')
       ? (document.getElementById('logo-animation-overlay')?.style.getPropertyValue('--intro-background') || '#000000')
-      : getComputedStyle(visibleSurface).backgroundColor;
+      : null;
+    const bottomBackground = introBackground || getComputedStyle(visibleSurface).backgroundColor;
+    // Safari's top tint follows the header, not the controls sheet at the
+    // bottom. Keep that bottom surface independent for toolbar/overscroll fill.
+    const background = introBackground || getComputedStyle(
+      touchLayout.matches && headerSurface ? headerSurface : visibleSurface
+    ).backgroundColor;
     // Computed surfaces are rgb(), while the captured intro palette uses exact
     // hex colors. Do not classify a black intro as light browser chrome.
     const channels = /^#[\da-f]{6}$/i.test(background)
@@ -50,7 +57,7 @@
       && (Number(channels[0]) * 0.2126 + Number(channels[1]) * 0.7152
         + Number(channels[2]) * 0.0722) < 128;
     if (root.style.backgroundColor !== background) root.style.backgroundColor = background;
-    if (canvasSurface) body.style.setProperty('--browser-surface', background);
+    if (canvasSurface) body.style.setProperty('--browser-surface', bottomBackground);
     root.style.colorScheme = dark ? 'dark' : 'light';
     if (themeColor.content !== background) themeColor.content = background;
   }
