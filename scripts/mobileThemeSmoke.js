@@ -48,6 +48,7 @@ async function main() {
         return { expectedColor, headerColor: getComputedStyle(header).color, paintedColor, barColor, barAlpha,
           renderedColor: motionCanvas ? headerMotionColor : expectedColor,
           surface: getComputedStyle(surface).backgroundColor,
+          topSurface: getComputedStyle(document.querySelector('.app-header')).backgroundColor,
           hint: document.querySelector('meta[name="theme-color"]').content,
           root: getComputedStyle(document.documentElement).backgroundColor,
           body: getComputedStyle(document.body).backgroundColor,
@@ -62,9 +63,9 @@ async function main() {
       const actualBar = state.barColor?.match(/\d+/g).map(Number);
       const expectedBar = state.expectedColor.match(/\d+/g).map(Number);
       assert.ok(actualBar && actualBar.every((channel, i) => Math.abs(channel - expectedBar[i]) <= Math.max(1, Math.ceil(255 / state.barAlpha))), JSON.stringify(state));
-      assert.equal(state.hint, state.surface, JSON.stringify(state));
+      assert.equal(state.hint, state.topSurface, JSON.stringify(state));
       assert.equal(state.body, state.surface);
-      assert.equal(state.root, state.surface);
+      assert.equal(state.root, state.topSurface);
       assert.equal(state.pageScale, 1);
       assert.deepEqual(state.scroll, [0, 0]);
       assert.equal(parseFloat(state.transition), 0, 'touch sheet layout must not animate under focus');
@@ -74,13 +75,13 @@ async function main() {
       for (const style of ['solid', 'ruler', 'wave-quantum', 'lunar']) {
       await page.goto(`${base}/generator/${style}/`);
       await page.locator('#p5-container canvas').waitFor();
-      const themes = style === 'lunar' ? ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray', 'lunar']
-        : ['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray'];
+      const themes = await page.locator('#color-mode-select option').evaluateAll(options =>
+        options.filter(option => !option.disabled && !option.hidden).map(option => option.value));
       for (const theme of themes) {
         await page.locator('#mobile-menu-toggle').tap();
         await page.locator('#color-mode-select').selectOption(theme);
         await checkSurface(true);
-        if (evidence && theme === 'gray') await page.screenshot({ path: path.join(evidence, `${browserName}-${style}-gray-${viewport.width}-open.png`), scale: 'css' });
+        if (evidence && theme === 'black') await page.screenshot({ path: path.join(evidence, `${browserName}-${style}-gray-${viewport.width}-open.png`), scale: 'css' });
         assert.equal(await page.locator('#color-mode-select').inputValue(), theme);
         await page.locator('#mobile-controls-close').tap();
         await checkSurface(false);

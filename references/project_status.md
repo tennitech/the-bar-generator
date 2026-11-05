@@ -1,7 +1,19 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-11-04
+**Last Updated:** 2026-11-05
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
+
+## November 5 iOS Safari top-surface repair
+
+Issue #128 separates the browser's top/header tint from the bottom controls
+surface. Opening Design controls keeps the top hint and root background matched
+to the active header, while the body continues matching the controls below.
+Theme changes and the full-screen intro retain their corresponding colors.
+
+Regression coverage checks independent top/bottom colors, repeated open/close,
+and theme changes. Native iOS Safari chrome remains controlled by Safari;
+browser-engine checks do not substitute for physical-device verification.
+The independent, unpublished ASCII revision is not included in this repair.
 
 ## November 4 per-preview hover pause release
 
