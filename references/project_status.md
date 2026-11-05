@@ -15,6 +15,27 @@ and theme changes. Native iOS Safari chrome remains controlled by Safari;
 browser-engine checks do not substitute for physical-device verification.
 The independent, unpublished ASCII revision is not included in this repair.
 
+## November 4 whole-letter entrance and stable startup
+
+Issue #127 supersedes the travelling ASCII wipe. Complete heading and generator
+letters now blend independently from a held halftone/glyph texture into the
+original artwork in place. All visible Home bars, the red RPI mark, credits and
+controls participate automatically. Responsive title metrics follow the hero's
+scale. Original content stays present behind the transition; its geometry and
+semantic text never change. Fixed letter windows only change opacity, not their
+boundaries. Cached glyph atlases and bounded sampling avoid per-frame font work.
+
+Startup summaries preserve restored values until runtime restoration completes.
+Quantum's automatic playback phase no longer counts as a user edit; intentional
+phase seeks still do. Circle seed changes remain represented. No model, export,
+canonical logo, hover-pause behavior or dependency changed. The existing p5 global
+state bridges in main.js only notify the modular controls after restoration.
+
+Validation and rendered-frame evidence are in
+[the review record](review-images/ascii-letter-resolve/validation.md).
+Owner aesthetic acceptance, physical devices and formal brand approval remain
+separate from automated and visual engineering checks.
+
 ## November 4 per-preview hover pause release
 
 Issue #111 holds the last rendered frame of an individually hovered or pressed

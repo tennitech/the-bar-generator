@@ -7589,6 +7589,7 @@ function setupShareLinks() {
         button.classList.toggle('active', Number(button.dataset.duration) === state.duration);
       });
       const quantumRunning = document.getElementById('quantum-motion-toggle').checked;
+      window.quantumControls.restoreSettingPhase?.();
       window.quantumControls.pause();
       // Historical share links open Quantum paused. Local Undo preserves transport.
       if (options.local && quantumRunning && !reduce) document.getElementById('quantum-motion-toggle').checked = true;
@@ -7624,6 +7625,7 @@ function setupShareLinks() {
       document.getElementById('quantum-phase').value = quantumModel.normalizePhase(quantumQuery.get('quantumPhase') || 0);
       document.getElementById('quantum-speed-slider').value = quantumModel.normalizeSpeed(quantumQuery.has('quantumSpeed') ? quantumQuery.get('quantumSpeed') : 1);
       document.getElementById('quantum-reverse-toggle').checked = quantumQuery.get('quantumReverse') === 'true';
+      window.quantumControls.restoreSettingPhase?.();
       window.quantumControls.select();
       syncMotionToggleState();
       syncAllCustomSelects();

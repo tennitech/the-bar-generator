@@ -25,6 +25,20 @@ Open http://127.0.0.1:8000/. Check for an existing server before starting anothe
 
 The fast Unit tests check is the only required automated check. It runs only on ready pull requests targeting main. Use a draft pull request while work is in progress; marking it ready starts the check. New pushes to that ready pull request replace older runs. There is no duplicate test run after merge. Contributors and reviewers perform the relevant UI, keyboard, accessibility, motion, and export checks. Optional browser and motion scripts are available in [README.md](README.md); run them locally when useful. They do not run in CI and are not merge requirements.
 
+## Prepare the complete release package
+
+Before requesting publication or release approval, list the destination repository,
+code changes, required project-status update, review images and other new files as
+one package. Confirm that images contain only project UI and permitted content.
+Request any missing publication permission for that complete package up front.
+A project checklist documents the intended scope; it does not grant permission or
+replace a required approval. If a step is blocked, report its exact file/action
+and wait for the applicable approval rather than omitting required documentation.
+
+Before committing transferred files, compare their Git blob/tree hashes with the
+locally tested candidate. Resolve any mismatch before opening the PR. Coordinate
+concurrent releases so additive documentation and cache-key changes survive.
+
 ## License and assets
 
 Submit original work or work that you have permission to contribute under the project's MIT license. Retain third-party license notices. Do not add assets without a source and permission record. See [asset licensing notes](references/asset_licensing.md).

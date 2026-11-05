@@ -83,13 +83,14 @@ test('fresh route loops and reduced-motion changes still pause an explicitly sta
   expect(h.phase()).toBeCloseTo(.6, 12);
 });
 
-test('running phase changes refresh only Quantum actions without writing a URL for every frame', () => {
+test('running phase refreshes retain the chosen setting instead of counting automatic time as an edit', () => {
   const h = harness();
   h.loop(true); h.controls.tick(0);
   const writes = h.window.updateUrlParameters.mock.calls.length;
   h.window.ParameterControls.refreshStyle.mockClear();
   h.controls.tick(50);
   expect(h.phase()).toBeGreaterThan(0);
+  expect(h.controls.settingPhase()).toBe(0);
   expect(h.window.ParameterControls.refreshStyle).toHaveBeenCalledWith('wave-quantum');
   expect(h.window.updateUrlParameters).toHaveBeenCalledTimes(writes);
   h.seek(0);
@@ -117,3 +118,31 @@ test.each([false, true])('menu selection defaults LOOP while respecting reduced 
  expect(h.elements['quantum-reverse-toggle'].checked).toBe(true);
  h.controls.tick(0); h.controls.tick(50); expect(h.phase()).toBe(0);
  });
+
+
+test('phase feedback follows saved state, explicit seeks and reset without following automatic ticks', () => {
+  const h = harness('?quantumPhase=.4');
+  h.controls.tick(0); h.controls.tick(50);
+  expect(h.controls.settingPhase()).toBeCloseTo(.4, 12);
+  h.seek(.2); h.controls.tick(100); h.controls.tick(150);
+  expect(h.controls.settingPhase()).toBeCloseTo(.2, 12);
+  // A same-page saved snapshot writes the field before syncing controls.
+  h.elements['quantum-phase'].value = .6;
+  h.controls.sync();
+  expect(h.controls.settingPhase()).toBeCloseTo(.6, 12);
+  h.controls.tick(200); h.controls.tick(250);
+  expect(h.controls.settingPhase()).toBeCloseTo(.6, 12);
+  h.loop(false);
+  expect(h.controls.settingPhase()).toBe(0);
+});
+
+
+test('restoring the current animated phase still records it as an intentional saved setting', () => {
+  const h = harness();
+  h.controls.tick(0); h.controls.tick(50);
+  expect(h.controls.settingPhase()).toBe(0);
+  const snapshotPhase = h.phase();
+  h.controls.restoreSettingPhase();
+  h.controls.pause();
+  expect(h.controls.settingPhase()).toBe(snapshotPhase);
+});

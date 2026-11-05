@@ -1,6 +1,7 @@
 /* First-paint state shared by routed and direct generator entry points. */
 (function (scope) {
   let pendingURLChecked = false;
+  let initialSeed = 1;
   function resolvePendingURL(record, currentURL, navigationType) {
     if (navigationType !== 'reload' || !record || record.from !== currentURL || typeof record.to !== 'string') return null;
     try {
@@ -85,6 +86,7 @@
 
   function apply(root = document.body) {
     restorePendingURL();
+    initialSeed = 1;
     let style = resolveStyle();
     let theme = resolveTheme(scope.location.search, style);
     if (scope.GeneratorParameters && root.querySelector('#color-mode-select')) {
@@ -121,6 +123,7 @@
       try {
         const state = scope.BarShareState.decodeState(scope.location.hash, manifest);
         if (state) {
+          initialSeed = state.runtime.seed;
           scope.BarShareState.prepareNameContext(root, scope.ProfanityFilter.sanitizeText(state.name));
           const countRatio = root.querySelector('#ticker-ratio-slider');
           if (countRatio && state.controls[countRatio.id] !== undefined) countRatio.value = state.controls[countRatio.id];
@@ -189,7 +192,7 @@
     if (root.isConnected) syncHeaderLayout();
     return theme;
   }
-  const api = { resolvePendingURL, resolveTheme, apply, syncHeaderLayout, isCompactLayoutViewport };
+  const api = { getInitialSeed: () => initialSeed, resolvePendingURL, resolveTheme, apply, syncHeaderLayout, isCompactLayoutViewport };
   scope.GeneratorInitialState = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

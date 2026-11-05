@@ -1,6 +1,8 @@
 /* Prepare stable parameter chrome before renderer setup; bind runtime actions once. */
 (function (scope) {
   let callbacks = {};
+  let runtimeReady = false;
+  const preparedFeedback = new WeakSet();
   const pendingActions = [];
   const fieldFeedback = new WeakMap();
   let transitionBound = false;
@@ -51,7 +53,8 @@
     if (field.type === 'checkbox') return field.checked === field.defaultChecked;
     // A full Quantum recurrence is the same model state as phase zero.
     if (field.id === 'quantum-phase' && scope.quantumModel) {
-      return scope.quantumModel.normalizePhase(field.value) === scope.quantumModel.normalizePhase(field.defaultValue);
+      const phase = scope.quantumControls?.settingPhase?.() ?? field.value;
+      return scope.quantumModel.normalizePhase(phase) === scope.quantumModel.normalizePhase(field.defaultValue);
     }
     if (field.type === 'range') return Number(field.value) === Number(field.defaultValue);
     if (field.tagName === 'SELECT') {
@@ -98,6 +101,10 @@
     }
     fieldFeedback.set(field, { marker, note, label });
   }
+  function isDefaultSeed() {
+    return callbacks.isDefaultSeed ? callbacks.isDefaultSeed()
+      : (scope.GeneratorInitialState?.getInitialSeed?.() ?? 1) === 1;
+  }
   function refreshFeedback(style, fields, root) {
     const group = root.querySelector(`[data-parameter-actions="${style}"]`);
     if (!group) return;
@@ -114,7 +121,7 @@
       // The title also makes the default discoverable without opening an editor.
       feedback.label.title = text;
     }
-    const seedChanged = style === 'circles' && callbacks.isDefaultSeed && !callbacks.isDefaultSeed();
+    const seedChanged = style === 'circles' && !isDefaultSeed();
     if (seedChanged) changed++;
     const summary = group.querySelector('[data-parameter-summary]');
     if (summary) {
@@ -124,10 +131,15 @@
     }
   }
   function refreshButton(button, root) {
+    // First-paint controls already contain the validated saved state. Renderer
+    // setup temporarily reapplies query defaults before restoring that snapshot.
+    // Keep its truthful initial feedback until the complete runtime is bound.
+    if (!runtimeReady && preparedFeedback.has(button)) return;
+    preparedFeedback.add(button);
     const style = button.dataset.parameterStyle;
     const fields = fieldsFor(style, root);
     const pristine = fields.every(isDefaultField)
-      && (style !== 'circles' || !callbacks.isDefaultSeed || callbacks.isDefaultSeed());
+      && (style !== 'circles' || isDefaultSeed());
     if (button.disabled !== pristine) button.disabled = pristine;
     const title = pristine ? 'Parameters are at their defaults' : 'Restore default parameters';
     if (button.title !== title) button.title = title;
@@ -280,6 +292,7 @@
   }
   function bindActions(nextCallbacks) {
     callbacks = nextCallbacks;
+    runtimeReady = true;
     refresh();
     // Apply an intentional early click once setup finishes; never install duplicate handlers.
     while (pendingActions.length) {

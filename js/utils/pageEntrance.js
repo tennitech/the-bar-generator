@@ -81,16 +81,19 @@
       pass.frame = requestAnimationFrame(() => {
         pass.frame = requestAnimationFrame(() => {
           if (active !== pass) return;
-          scope.AsciiEntrance.prepare([], // Keep the moving gallery untouched; resolve the headline letters.
+          scope.AsciiEntrance.prepare(Array.from(document.querySelectorAll('.bar_asset, .hero_brand')),
             Array.from(document.querySelectorAll('.hero_title-line')),
             () => active !== pass || stopped || motion.matches || document.hidden).then(ascii => {
               if (active !== pass) { ascii?.cleanup(); return; }
               pass.ascii = ascii;
               plane.dataset.entryMode = ascii ? 'ascii' : 'fade';
               if (ascii) root.classList.add('has-ascii-entrance');
-              ascii?.start(duration);
+              pass.timer = setTimeout(() => finish(pass), duration + (ascii ? 1000 : 100));
+              ascii?.start(duration, () => {
+                clearTimeout(pass.timer);
+                pass.timer = setTimeout(() => finish(pass), duration + 100);
+              });
               root.classList.add('is-selector-entering');
-              pass.timer = setTimeout(() => finish(pass), duration + 100);
             });
         });
       });
@@ -131,8 +134,11 @@
           plane.classList.add('is-entry-complete');
           if (!ascii) { finish(pass); return; }
           // The wake resolves in place into the actual canvas; chrome stays still.
-          ascii.start(580);
-          pass.timer = setTimeout(() => finish(pass), 680);
+          pass.timer = setTimeout(() => finish(pass), 1580);
+          ascii.start(580, () => {
+            clearTimeout(pass.timer);
+            pass.timer = setTimeout(() => finish(pass), 680);
+          });
         });
       return;
     }
@@ -216,6 +222,10 @@
       selectorAssets.set(image.src, decoded.catch(() => {}));
     }
     selectorAssets.get(image.src).then(() => markAssetReady(image));
+    // Decode the CSS-masked red mark alongside the gallery, not after readiness.
+    if (selectorPage && !selectorAssets.has('hero-brand') && scope.AsciiEntrance?.preloadMask) {
+      selectorAssets.set('hero-brand', scope.AsciiEntrance.preloadMask(document.querySelector('.hero_brand')));
+    }
     if (selectorScheduled) return;
     selectorScheduled = true;
     queueMicrotask(async () => {
@@ -236,7 +246,7 @@
     // An unavailable asset, font, or later script must never hide navigation
     // indefinitely. Slow images can fade in individually after this deadline.
     readinessTimer = setTimeout(startSelector, 2200);
-  } else if (!stopped) root.classList.add('has-page-entrance');
+  } else if (!stopped && !scope.AsciiEntrance) root.classList.add('has-page-entrance');
   if (!selectorPage) {
     observer = new MutationObserver(prepareCanvas);
     observer.observe(root, { childList: true, subtree: true });
