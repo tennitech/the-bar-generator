@@ -95,3 +95,48 @@ test('history wires the same early button without inserting chrome, and restores
   expect(announce).toHaveBeenCalledWith('Previous variation restored.');
   expect(actions.children).toHaveLength(3);
 });
+
+test.each([1, 87])('startup feedback includes saved seed %i and ignores intermediate renderer defaults', seed => {
+  const { scope, groups } = fixture();
+  scope.GeneratorInitialState = { getInitialSeed: () => seed };
+  const field = { type: 'range', value: '75', defaultValue: '50' };
+  groups[0].querySelectorAll = () => [field];
+  scope.ParameterControls.prepare();
+  const reset = groups[0].header.querySelector('.control-header-actions').children[2];
+  const summary = groups[0].summary;
+  const expected = `${seed === 1 ? 1 : 2} changed from defaults`;
+  expect(summary.textContent).toBe(expected);
+  expect(reset.disabled).toBe(false);
+  // setup applies legacy query defaults before the complete shared snapshot.
+  field.value = '50';
+  scope.ParameterControls.refresh();
+  scope.ParameterControls.refreshStyle('circles');
+  scope.ParameterControls.prepare();
+  expect(summary.textContent).toBe(expected);
+  expect(reset.disabled).toBe(false);
+  field.value = '75';
+  let runtimeSeed = seed;
+  scope.ParameterControls.bindActions({ isDefaultSeed: () => runtimeSeed === 1 });
+  expect(summary.textContent).toBe(expected);
+  // Real edits and same-page restoration stay live once setup is complete.
+  field.value = '50'; runtimeSeed = 1;
+  scope.ParameterControls.refresh();
+  expect(summary.textContent).toBe('Default settings');
+  expect(reset.disabled).toBe(true);
+  field.value = '60';
+  scope.ParameterControls.refreshStyle('circles');
+  expect(summary.textContent).toBe('1 changed from defaults');
+  expect(reset.disabled).toBe(false);
+});
+
+test('plain default startup stays pristine through setup and enables feedback for queued actions', () => {
+  const { scope, groups } = fixture();
+  const field = { type: 'range', value: '50', defaultValue: '50' };
+  groups[0].querySelectorAll = () => [field];
+  scope.ParameterControls.prepare();
+  expect(groups[0].summary.textContent).toBe('Default settings');
+  const randomize = groups[0].header.querySelector('.control-header-actions').children[0];
+  randomize.listeners.click({ preventDefault() {} });
+  scope.ParameterControls.bindActions({ randomize() { field.value = '75'; scope.ParameterControls.refresh(); } });
+  expect(groups[0].summary.textContent).toBe('1 changed from defaults');
+});

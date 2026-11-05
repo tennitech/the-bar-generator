@@ -2,11 +2,24 @@
 (function (root) {
   let lastTimestamp = null;
   let initialized = false;
+  let settingPhase = null;
+  let lastAnimatedPhase = null;
   let phasePointerId = null;
   let phaseEditor = null;
   const el = id => document.getElementById(id);
   function values() {
     return { quantumPhase: root.quantumModel.normalizePhase(el('quantum-phase')?.value || 0) };
+  }
+  function restoreSettingPhase() {
+    settingPhase = values().quantumPhase;
+    lastAnimatedPhase = null;
+  }
+  function syncSettingPhase() {
+    const phase = values().quantumPhase;
+    // Moving model time is not an edit. Retain the chosen phase across ticks,
+    // but recognize direct edits and restored snapshots before feedback reads.
+    if (settingPhase === null || phase !== lastAnimatedPhase) settingPhase = phase;
+    return settingPhase;
   }
   function updatePhaseLabel() {
     const percentage = (values().quantumPhase * 100).toFixed(1);
@@ -41,13 +54,16 @@
     const commit = () => { root.updateUrlParameters(); root.requestUpdate(); };
     select(); // Default motion, with reduced-motion and shared-state overrides below.
     el('quantum-motion-toggle').addEventListener('change', () => {
-      if (!el('quantum-motion-toggle').checked) el('quantum-phase').value = 0;
+      if (!el('quantum-motion-toggle').checked) {
+        el('quantum-phase').value = 0;
+        restoreSettingPhase();
+      }
       lastTimestamp = null; sync(); commit();
     });
     el('quantum-reverse-toggle').addEventListener('change', () => { lastTimestamp = null; commit(); });
     el('quantum-speed-slider').addEventListener('input', () => { lastTimestamp = null; sync(); commit(); });
     // Seeking changes model time, not the user's explicit LOOP selection.
-    const seek = () => { lastTimestamp = null; sync(); commit(); };
+    const seek = () => { restoreSettingPhase(); lastTimestamp = null; sync(); commit(); };
     el('quantum-phase').addEventListener('input', seek);
     el('quantum-phase').addEventListener('pointerdown', event => {
       phasePointerId = event.pointerId;
@@ -89,12 +105,14 @@
     const active = !suspended && !seeking && el('style-select').value === 'wave-quantum' && el('quantum-motion-toggle').checked;
     if (!active) { lastTimestamp = null; return; }
     if (lastTimestamp !== null) {
+      syncSettingPhase();
       el('quantum-phase').value = root.quantumModel.advancePhase(values().quantumPhase, timestamp - lastTimestamp, {
         speed: el('quantum-speed-slider').value, reverse: el('quantum-reverse-toggle').checked
       });
+      lastAnimatedPhase = values().quantumPhase;
       updatePhaseLabel();
     }
     lastTimestamp = timestamp;
   }
-  root.quantumControls = { setup, sync, values, tick, pause, select };
+  root.quantumControls = { setup, sync, values, tick, pause, select, settingPhase: syncSettingPhase, restoreSettingPhase };
 })(window);

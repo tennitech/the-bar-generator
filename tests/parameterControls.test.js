@@ -286,3 +286,19 @@ test.each([0, .5, .999])('nucleotide Randomize varies the entered length from 30
     expect(model.presets.slice(1).some(preset=>preset.sequence.slice(0,target)===sequence)).toBe(true);
   }
 });
+
+
+test('Quantum default feedback uses the chosen phase, not automatic motion time', () => {
+  const h = fixture();
+  let phase = 0;
+  h.context.quantumControls = { settingPhase: () => phase };
+  h.fields['quantum-phase'].value = '.123';
+  h.context.ParameterControls.refreshStyle('wave-quantum');
+  expect(h.buttons['wave-quantum'].disabled).toBe(true);
+  phase = .25;
+  h.context.ParameterControls.refreshStyle('wave-quantum');
+  expect(h.buttons['wave-quantum'].disabled).toBe(false);
+  phase = 1;
+  h.context.ParameterControls.refreshStyle('wave-quantum');
+  expect(h.buttons['wave-quantum'].disabled).toBe(true);
+});
