@@ -1,7 +1,38 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-11-05
+**Last Updated:** 2026-11-06
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
+
+## November 6 outstanding-report verification
+
+Rechecked the current release `0d86266` without changing application behavior.
+Reports #43 and #53 no longer reproduce at their original URLs and 1489 × 974
+viewport: Ticker contains only its natural ticks, and Waveform contains its
+single signal polygon with no added baseline rectangle. Chromium and WebKit
+also pass at 390 × 844, including shared preview/export source, real SVG/PNG
+downloads, no horizontal overflow and no page errors. Desktop Chromium and
+mobile WebKit screenshots were visually inspected. The new reproducible check
+is `scripts/outstandingReportsSmoke.js`; `RPI_SITE_URL`, `RPI_BROWSER` and
+`RPI_EVIDENCE_DIR` select the server, engine and local evidence destination.
+
+Binary is silent (#47), and Ruler is stationary even with historical motion
+settings (#45). Both engines pass `audioAvailabilitySmoke.js` and the repaired
+`rulerScaleSmoke.js` (45 geometry combinations, keyboard editing, reload,
+legacy state, exports and mobile controls). The Ruler harness now selects Reset
+by its action attribute instead of a class also used by Undo. All 782 unit tests
+in 71 suites pass. This is test maintenance, not another application fix.
+
+Issue #14's original URL also loads and exports in both engines at its original
+1600 × 789 size and phone width, but its missing symptom prevents a completion
+claim. Issue #13 still needs clarification of which additional fields and limits
+are wanted beyond the existing Binary/Morse, Numeric and Nucleotide limits.
+The four verified historical reports remain separate from tracker cleanup.
+
+No physical Windows/Android/iOS device or live production interaction was tested
+in this pass. Native iOS browser chrome and owner acceptance of ASCII motion
+remain unverified. Production Frontify needs administrator-managed download and
+clipboard delegation as described in `frontify_exports.md`; application changes
+cannot supply those permissions. Existing branches and prior work are retained.
 
 ## November 5 iOS Safari top-surface repair
 
