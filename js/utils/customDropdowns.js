@@ -52,6 +52,7 @@ function setupCustomDropdowns() {
     optionsList.id = `${select.id}-options`;
     optionsList.setAttribute('role', 'listbox');
     optionsList.setAttribute('aria-hidden', 'true');
+    optionsList.inert = true;
     optionsList.setAttribute('aria-label', accessibleLabel);
     trigger.setAttribute('aria-controls', optionsList.id);
     wrapper.appendChild(optionsList);
@@ -201,6 +202,9 @@ function setupCustomDropdowns() {
       wrapper.classList.toggle('open', open);
       trigger.setAttribute('aria-expanded', String(open));
       optionsList.setAttribute('aria-hidden', String(!open));
+      // The exit fade stays visible briefly; keep native scroll-container Tab
+      // stops out of the focus order as soon as dismissal starts.
+      optionsList.inert = !open;
       if (open) {
         preparePreviews();
         fitMenu();

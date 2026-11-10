@@ -79,6 +79,7 @@ function expectClosed(picker) {
   expect(picker.trigger.getAttribute('aria-expanded')).toBe('false');
   expect(picker.trigger.getAttribute('aria-activedescendant')).toBeNull();
   expect(picker.list.getAttribute('aria-hidden')).toBe('true');
+  expect(picker.list.inert).toBe(true);
   expect(picker.wrapper.querySelectorAll('.is-active')).toHaveLength(0);
 }
 
@@ -175,4 +176,16 @@ test.each(['pointerup', 'pointercancel'])('%s releases pointer protection before
   document.emit('focusin', { target: node('button') });
   expectClosed(picker);
   expect(picker.select.value).toBe('one');
+});
+
+
+test('Tab makes the fading popup inert before native focus navigation', () => {
+  const { pickers: [picker], click } = fixture();
+  click(picker);
+  expect(picker.list.inert).not.toBe(true);
+  const preventDefault = jest.fn();
+  picker.trigger.emit('keydown', { key: 'Tab', preventDefault });
+  expect(picker.list.inert).toBe(true);
+  expect(preventDefault).not.toHaveBeenCalled();
+  expectClosed(picker);
 });
