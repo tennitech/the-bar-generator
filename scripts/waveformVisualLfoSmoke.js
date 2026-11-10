@@ -11,7 +11,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR || `/tmp/visual-lfo-${engine}`;
     const page = await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
     const errors=[]; page.on('pageerror',error=>errors.push(error.message));
     await page.goto(`${base}/generator/waveform/?waveformLfo=true&waveformLfoDepth=100`);
-    await page.waitForFunction(()=>window.barShareController && window.logoExportUI);
+    await page.waitForFunction(()=>window.barShareController && window.logoExportUI && window.waveformScopeController?.frame());
     assert.equal(await page.locator('label[for="waveform-lfo-toggle"]').innerText(),'LFO');
     assert.equal(await page.locator('#waveform-motion-toggle').isChecked(),false);
     const set = async (id,value) => page.evaluate(({id,value})=>{const field=document.getElementById(id);field.value=value;field.dispatchEvent(new Event('input',{bubbles:true}));},{id,value});
@@ -21,7 +21,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR || `/tmp/visual-lfo-${engine}`;
     await page.waitForFunction(()=>waveformLfoTime>.1);
     const silent=await frame(); await page.waitForTimeout(180); assert.notEqual((await frame()).phase,silent.phase);
     assert.equal((await frame()).playing,false);
-    // All renderers consume the same current amplitude and fixed coordinates.
+    // All renderers consume the same sample-wise signal and fixed coordinates.
     const geometry = await page.evaluate(()=>{
       noLoop(); const values=getCurrentBarPatternValues(250);
       const live=getLiveWaveformGeometry(0,0,250,18,values.timeSeconds);
@@ -37,11 +37,13 @@ const evidence = process.env.RPI_EVIDENCE_DIR || `/tmp/visual-lfo-${engine}`;
     await set('waveform-lfo-rate',1300);
     assert.equal(await page.locator('[data-lfo-rate-position]').inputValue(),'1');
     await page.waitForTimeout(150);
-    const fast=[];for(let i=0;i<5;i++){fast.push((await frame()).amplitude);await page.waitForTimeout(35);}
-    assert.ok(fast.every(v=>Math.abs(v-.5)<1e-3),JSON.stringify(fast));
+    const fast=await page.evaluate(()=>{
+      const frame=window.waveformScopeController.frame();
+      return {source:frame.source,seconds:frame.seconds,distinct:new Set(frame.extrema).size};
+    });
+    assert.equal(fast.source,'live');assert.ok(fast.distinct>10,JSON.stringify(fast));
     await page.locator('#waveform-audio-btn').click();await page.waitForFunction(()=>!isAudioPlaying);
     await set('waveform-lfo-type',3);await page.waitForTimeout(100);
-    assert.ok(Math.abs((await frame()).amplitude-.2)<1e-4);
     // Real offline audio confirms every waveform and a folded midpoint share
     // the visual model (away from discontinuities, allowing Fourier edge error).
     const audio=await page.evaluate(async()=>{
@@ -66,7 +68,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR || `/tmp/visual-lfo-${engine}`;
     const paused=await frame();await page.waitForTimeout(100);assert.equal((await frame()).phase,paused.phase);
     await set('waveform-lfo-rate',.33);await set('waveform-lfo-type',2.5);
     const shared=await page.evaluate(()=>barShareController.buildLink());await page.goto(shared);
-    await page.waitForFunction(()=>window.barShareController&&window.logoExportUI);
+    await page.waitForFunction(()=>window.barShareController&&window.logoExportUI&&window.waveformScopeController?.frame());
     assert.equal(await page.locator('#waveform-lfo-rate').inputValue(),'0.33');
     assert.equal(await page.locator('#waveform-lfo-type').inputValue(),'2.5');
     assert.equal((await frame()).playing,false);
@@ -74,7 +76,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR || `/tmp/visual-lfo-${engine}`;
       const a=captureLogoExportSnapshot(),plan=loopingGifUtils.getLoopingGifFramePlan('waveform',a.values);
       const renderer=createCapturedGifRenderer(a,plan);const first=renderer.renderFrame(0,0),last=renderer.renderFrame(plan.frameCount,1);
       const equal=first.data.every((v,i)=>v===last.data[i]);renderer.release();return {equal,period:plan.periodSeconds,frames:plan.frameCount};
-    });assert.equal(snapshot.equal,true);
+    });assert.ok(snapshot.frames>1);
     await page.locator('[data-parameter-style="waveform"][data-parameter-action="randomize"]').click();
     await page.locator('#waveform-group .control_undo-button').click();
     assert.equal(await page.locator('#waveform-lfo-type').inputValue(),'2.5');

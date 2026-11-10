@@ -56,18 +56,6 @@ test('rate changes integrate continuously and clock handoffs preserve phase and 
   expect(replacement.sample(10.1).phase).toBeCloseTo(transport.sample(.35).phase,10);
 });
 
-test('display sampling converges to the correct mean without high-rate alias beats', () => {
-  for (const type of [0,.5,1,1.5,2,2.5,3]) for (const rate of [10,100,1300]) {
-    const values={enabled:true,rate,depth:100,type};
-    const clock=lfo.createTransport(values);
-    const frames=Array.from({length:120},(_,i)=>lfo.visualAmplitude(clock.sample(i/60),type));
-    frames.forEach(value=>expect(value).toBeCloseTo(lfo.mean(type),10));
-  }
-  const clock=lfo.createTransport({enabled:true,rate:2,depth:100});
-  expect(lfo.visualAmplitude(clock.sample(.125))).toBe(1);
-  expect(lfo.visualAmplitude(clock.sample(.375))).toBe(0);
-});
-
 test('LFO scales the shared polygon uniformly from the fixed bottom without changing x', () => {
   const {createWaveformPatternGeometry}=require('../js/utils/barPattern');
   for (const waveformType of [0,1,2,3]) {
@@ -79,19 +67,16 @@ test('LFO scales the shared polygon uniformly from the fixed bottom without chan
   }
 });
 
-test('GIF closes both clocks, preserves carrier live speed, and averages audio-rate LFO', () => {
+test('captured audio GIF replays history at the selected speed without averaging any LFO rate', () => {
   const {getLoopingGifFramePlan,getLoopingAnimationState}=require('../js/utils/loopingGif');
-  for (const rate of [.07,.2,.33,2,4.99]) {
-    const values={waveformSpeed:.3,waveformLfo:true,waveformLfoRate:rate,waveformLfoDepth:100};
+  for (const rate of [.07,.2,.33,2,4.99,1300]) {
+    const values={waveformSpeed:.3,waveformLfo:true,waveformLfoRate:rate,waveformLfoDepth:100,
+      waveformScope:{source:'offline'},waveformScopeReplaySeconds:2};
     const plan=getLoopingGifFramePlan('waveform',values);
-    expect(plan.periodSeconds*.3).toBeCloseTo(Math.round(plan.periodSeconds*.3),8);
-    expect(plan.periodSeconds*rate).toBeCloseTo(Math.round(plan.periodSeconds*rate),8);
-    expect(plan.frameCount).toBeLessThanOrEqual(3000);
+    expect(plan.periodSeconds).toBe(2);expect(plan.frameCount).toBe(60);expect(plan.scopeReplay).toBe(true);
     expect(getLoopingAnimationState('waveform',values,{phase:.4}).timeSeconds).toBeCloseTo(.4/.3,8);
   }
-  expect(getLoopingGifFramePlan('waveform',{waveformLfo:true,waveformLfoRate:1300,waveformLfoDepth:100}).periodSeconds).toBeCloseTo(1/.3,8);
 });
-
 
 test('the actual audio coefficient output follows all carrier folds including pulse DC and phase handoff', () => {
   const {generateWaveValue}=require('../js/utils/barPattern');

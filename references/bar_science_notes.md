@@ -348,6 +348,74 @@ QA: this cloud sandbox blocks Chromium's Unix sockets, WebKit lacks libraries,
 and the managed browser cannot reach its isolated localhost server. The browser
 harness is present; no browser or physical-device pass is claimed.
 
+## Actual audio Waveform scope — November 10, 2026
+
+The owner clarified the goal with a VCO → VCA / LFO → VCA reference and a
+hand-drawn envelope/carrier example, then explicitly requested a direct scope
+of actual audio with sensible horizontal scaling. This supersedes the uniform
+bar pulse, fast-rate average, resting-phase export policy and idealized visual
+carrier described above. The runtime never substitutes a mathematical drawing
+for missing recorded audio.
+
+The inspected audio graph sums the normalized carrier oscillator crossfades
+into a GainNode. The bipolar LFO and bias sum into its gain AudioParam, and that
+GainNode multiplies the actual carrier samples: AM/tremolo. No LFO connects to
+carrier frequency or phase. Additive carrier/LFO mixing would be a different
+signal; FM integrates varying frequency into phase, and PM varies phase itself.
+The new `waveformAudio.js` extracts the existing audible builder and parameter
+update code without changing oscillator types, starts, C1–C5 pitch mapping,
+Pulse worklet/fallback, pulse duty, normalized crossfades, coefficients, 15ms LFO
+ramps, 50ms master fade or carrier ramps. A frozen independent pre-refactor
+reference verifies event scheduling and native offline PCM equivalence.
+
+When Audio is on, a separate silent AudioWorklet branch taps the existing master
+gain output after LFO, carrier gains and fade. It emits **zero** audio and posts
+minimum/maximum values for every eight actual PCM samples. A bounded ring holds
+the requested view plus two seconds of history; it is not limited by an
+AnalyserNode's 32768-frame window. The physical window is
+`T = max(4/f, 2/r)` for enabled nonzero-depth LFO, and `4/f` otherwise. Here
+`f = 32.70 + (frequency-10)/90*(523.25-32.70)` Hz and `r` is the LFO rate.
+Thus 2Hz spans one second with about 109 carrier cycles at the default pitch;
+.07Hz spans 28.571 seconds with two real envelopes. High-rate modulation keeps
+at least four carrier cycles and its actual texture. Live history starts with
+available samples and is labeled “filling history” until the full window exists.
+
+With Audio off, the same shared graph runs in OfflineAudioContext, including
+the real Pulse worklet when supported, without rendering to audio hardware or
+resuming the audible context. It discards .25 seconds of startup settling and
+stores the actual rendered PCM extrema. A Square fallback is labeled when the
+browser cannot run the Pulse worklet and that carrier is in use. This is a
+separately generated audio signal, explicitly labeled “Offline audio render”;
+it is not called a live recording. Unsupported APIs/render failures display an
+error and empty scope, with no ideal-wave fallback. Rendering is debounced,
+serialized and generation-checked so stale settings cannot replace newer data.
+
+The 1024 horizontal bins retain actual signed extrema, not an amplitude average
+or sampled LFO equation. Fixed gain scale .1 matches the existing carrier volume;
+zero is the bar center, and lobes fill to zero without a painted baseline.
+Main/header/SVG/PNG/GIF use this same PCM geometry. The time axis is physical
+seconds; silent replay/GIF speed follows the existing 0.2–4× SPEED control.
+Live capture follows actual audio timing. Loop pause and reduced motion retain
+the exact displayed frame/recording even while explicitly started audio
+continues; hidden/style transitions retain the existing audio-stop policy.
+
+SVG, PNG and clipboard freeze the displayed frame at request time, including
+live PCM, rather than switching to an unrelated resting phase. GIF freezes the
+same recording and starts on the displayed frozen frame and replays up to two seconds of its
+captured history in the selected direction. It repeats that finite recording,
+with a possible reset when the history wraps; there is no claim that arbitrary audio pitches and LFO rates
+share a seamless short period. A still-filling live buffer without .1 seconds of
+replay history gives an actionable GIF error while SVG/PNG remain available.
+No settings changed during asynchronous encoding can change the captured data.
+
+Primary source: [W3C Web Audio specification](https://www.w3.org/TR/webaudio/),
+AudioParam, GainNode, OscillatorNode, OfflineAudioContext, AnalyserNode and
+AudioWorkletProcessor. OfflineAudioContext renders to an AudioBuffer rather
+than audio hardware; AnalyserNode time-domain history is capped at 32768 frames.
+This architecture follows those APIs and the app's inspected connections.
+See [scope QA](waveform_signal_qa.md) for actual evidence, performance bounds,
+source distinction and browser/audio limitations.
+
 ## GIF time sampling — November 10, 2026
 
 Ticker, Waveform and Gradient exports target approximately 30 frames per second

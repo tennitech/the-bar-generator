@@ -179,6 +179,24 @@ function mapWaveformToBarYFraction(wave, centerOffset = 0) {
 // smooth portions; exact one-sided vertices describe moving jumps. Sampling a
 // jump on a stationary grid makes its edge hop and its duty cycle breathe.
 function createWaveformPatternGeometry(options = {}) {
+  if (options.waveformScopeRequired || options.waveformScope) {
+    const data = options.waveformScope?.extrema;
+    if (!data?.length) return { curve: [], polygon: [] };
+    const width = Number(options.exactBarWidth) || 250, height = Number(options.barHeight) || 18;
+    const startX = Number(options.barStartX) || 0, startY = Number(options.barY) || 0;
+    const scale = Number(options.waveformScope.gainScale) || .1;
+    const count = data.length / 2, curve = [];
+    for (let i = 0; i < count; i++) {
+      const x = startX + (i + .5) / count * width;
+      // Each vertical segment retains the actual minimum and maximum PCM in
+      // its time bin. No oscillator formula or global gain is drawn here.
+      for (const value of [data[i*2+1], data[i*2]]) curve.push({ x,
+        y: startY + height * (.5 - .5 * Math.max(-1, Math.min(1, value / scale))) });
+    }
+    const zero = startY + height / 2;
+    return { curve, polygon: [{x:startX,y:zero}, ...curve, {x:startX+width,y:zero}] };
+  }
+
   const finite = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
   const width = Math.max(1, finite(options.exactBarWidth, 250));
   const height = Math.max(1, finite(options.barHeight, 18));
