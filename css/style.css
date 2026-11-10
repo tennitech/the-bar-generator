@@ -4579,8 +4579,17 @@ body:is(.theme-white, .theme-silver, .theme-gray, .theme-lunar) { --color-ready:
   text-align: left;
   cursor: pointer;
 }
-.sidebar_section-toggle::after { content: '⌃'; font-size: 1rem; }
-.sidebar_section-toggle[aria-expanded="false"]::after { transform: rotate(180deg); }
+.sidebar_section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 1rem;
+  width: 1rem;
+  height: 1rem;
+  transform: rotate(90deg);
+}
+.sidebar_section-icon svg { display: block; width: 100%; height: 100%; }
+.sidebar_section-toggle[aria-expanded="false"] .sidebar_section-icon { transform: rotate(0deg); }
 .sidebar_section-toggle:focus-visible,
 .control_help-button:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 3px; }
 .sidebar_section-body[hidden], .control_help-tooltip[hidden] { display: none; }
