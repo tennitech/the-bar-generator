@@ -3,6 +3,35 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 optional larger editor controls release candidate
+
+The generator's three-dot menu offers **Larger controls and text**, a native
+button with switch semantics, a stable accessible name and an explicit On/Off
+indicator. It starts off and stores only the editor sizing preference locally.
+Restoration precedes first paint; cross-tab changes synchronize without focus
+changes, and restricted storage leaves a usable page-session preference.
+The fetched route shell binds once when inserted.
+
+The opt-in stylesheet uses 0.875rem labels, 1rem field text and 3rem primary
+control targets, a wider sidebar and wrapping actions. It includes the current
+section disclosures, help/limit copy and export-composition labels. Integration
+preserves current main's pinned footer, independently scrollable About region,
+sidebar fade, theme palettes/states, rendering and export code. Artwork/share
+parameters and font assets are unchanged; preview fit can respond to editor width.
+
+The original candidate `07beffe` remains saved. The release is reconciled with
+`e8c0ec9` (including schematic export cards #168 and Ring Wavefunction #171) on
+`codex/feat-larger-editor-controls-release`, with a separate sibling
+menu item reserved for the ongoing keyboard-shortcuts release. Focused tests,
+JavaScript/80 inline-script syntax and whitespace checks pass. All **1,062 tests
+in 92 suites pass** across four sequential shards after correcting the shared
+shell cache references. Test interruptions and rendering limitations are recorded in [the QA record](editor_accessibility_qa.md).
+Earlier denied browser routes are not retried; no screenshot, physical-device,
+screen-reader, owner-acceptance or formal brand-approval result is claimed.
+The release coordinator granted the exclusive merge slot after #168. Required
+Unit tests must pass on the integrated PR head before normal merge, followed by
+Pages deployment and production file verification.
+
 ## November 10 Ring Wavefunction naming correction
 
 The owner-selected visible name is now **Ring Wavefunction** across Home catalogs,
