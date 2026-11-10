@@ -4569,7 +4569,7 @@ function updateHeaderBrandPreview(force = false) {
   lastHeaderPreviewMarkup = markup;
 }
 
-function loadExternalScriptOnce(src) {
+function loadExternalScriptOnce(src, isReady = () => true) {
   const normalizedSrc = String(src || '').trim();
   if (!normalizedSrc) {
     return Promise.reject(new Error('Missing script source.'));
@@ -4581,19 +4581,25 @@ function loadExternalScriptOnce(src) {
 
   const loadPromise = new Promise((resolve, reject) => {
     const existingScript = document.querySelector(`script[src="${normalizedSrc}"]`);
-    if (existingScript) {
+    if (existingScript && isReady()) {
       resolve(existingScript);
       return;
     }
-
+    // A script can fire load despite an evaluation error. Do not retain an
+    // unusable tag and permanently prevent another deliberate attempt.
+    existingScript?.remove();
     const script = document.createElement('script');
     script.src = normalizedSrc;
-    script.onload = () => resolve(script);
-    script.onerror = () => {
+    script.onload = () => {
+      if (isReady()) resolve(script);
+      else fail();
+    };
+    function fail() {
       script.remove();
       externalScriptLoadPromises.delete(normalizedSrc);
       reject(new Error(`Failed to load script: ${normalizedSrc}`));
-    };
+    }
+    script.onerror = fail;
     document.body.append(script);
   });
 
@@ -4607,7 +4613,8 @@ async function ensureHeaderLogoAnimationController() {
   }
 
   headerLogoAnimationControllerPromise = (async () => {
-    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261103-animation-buttons');
+    await loadExternalScriptOnce('js/utils/logoAnimationOverlay.js?v=20261103-animation-buttons',
+      () => typeof window.LogoAnimationOverlay?.createLogoAnimationController === 'function');
 
     if (!window.LogoAnimationOverlay
       || typeof window.LogoAnimationOverlay.createLogoAnimationController !== 'function') {

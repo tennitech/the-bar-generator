@@ -4,7 +4,7 @@ November 10, 2026. Repository: `tennitech/the-bar-generator`.
 Branch: `codex/fix-compact-sidebar-footer`, isolated worktree
 `the-bar-generator-sidebar-footer`. Started from main `05655f6`; incorporated
 export-composition release #136 / `fed8e88` and brand header repair #137 /
-`d55bdc1` before final validation. Other release
+`d55bdc1`, plus Why not retry repair #138 / `dfcc987` before final validation. Other release
 worktrees remain untouched; keep all branches after merge.
 
 ## Result
@@ -29,7 +29,7 @@ worktrees remain untouched; keep all branches after merge.
 
 ## Performed checks
 
-- **858 unit tests pass in 78 suites**, Node 24.22.1. This includes the complete
+- **863 unit tests pass in 78 suites**, Node 24.22.1. This includes the complete
   released export-composition suite. Four added regressions cover native state
   across all style descriptions, style-specific reading scroll reset, and actual
   cue initialization/event scheduling with its new sibling footer.
@@ -38,7 +38,7 @@ worktrees remain untouched; keep all branches after merge.
   and both footer actions. This is source verification, not rendered DOM QA.
 - All 26 generator entrypoints and 80 inline scripts compile. Changed runtime and
   smoke JavaScript parse. CSS/shell/bootstrap references agree; whitespace passes.
-- Diff inspection confirms the complete #136 exports and #137 header repair and tests are
+- Diff inspection confirms the complete #136 exports, #137 header repair, and #138 intro recovery and tests are
   unchanged. This footer work has no preview/export geometry change.
 
 ## Unverified rendered behavior

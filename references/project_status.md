@@ -3,6 +3,23 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 optional intro retry repair
+
+The three-dot menu's Why not... action retains its selected-bar ASCII overlay,
+reduced-motion still view and explicit one-run playback. The optional script
+loader now verifies the controller API after download. An evaluation failure
+previously left a resolved loader promise and unusable script tag cached, so
+subsequent activations could never retry. Unusable tags are now removed and
+failed loads evicted. Palette values, themes, geometry and exports are unchanged.
+
+Cloud verification: 787 unit tests in 71 suites pass. Focused coverage exercises
+actual loader caching, failed download/evaluation recovery, concurrent/repeated
+activation, default overlay creation, Escape/Close/iframe cancellation, Tab and
+Shift-Tab focus and exact existing colors. JavaScript syntax and whitespace
+checks pass. Browser launching remains sandbox-blocked; no launch bypass was
+attempted. The original live incident, rendered menu hit targets and physical
+keyboard/touch behavior remain unverified. See [intro QA and integration notes](why_not_intro_qa.md).
+
 ## November 10 header and secondary-help presentation correction
 
 Following the owner's screenshot review, the header uses the same surface token
@@ -66,10 +83,11 @@ The passive gradient/More below cue still appears only for offscreen controls;
 its resize and toggle observers follow disclosure height changes.
 
 The branch starts at `05655f6` and incorporates export-composition release #136
-at `fed8e88` and brand header repair #137 at `d55bdc1`; their source and tests are retained. Other active
+at `fed8e88`, brand header repair #137 at `d55bdc1`, and Why not retry
+repair #138 at `dfcc987`; their source and tests are retained. Other active
 release worktrees and branches remain untouched. Validation and remaining
 rendered/browser limitations are recorded in [sidebar footer QA](sidebar_footer_qa.md).
-The reconciled candidate passes **858 unit tests in 78 suites**. Browser
+The reconciled candidate passes **863 unit tests in 78 suites**. Browser
 restrictions remain respected; no rendered validation or new screenshots are claimed.
 
 ## November 10 six-feature and brand release reconciliation
