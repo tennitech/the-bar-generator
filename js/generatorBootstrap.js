@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261110-footer-lfo-sections';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261110-themes-lfo-sections';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {

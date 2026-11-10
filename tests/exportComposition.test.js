@@ -29,7 +29,7 @@ test('both compositions retain identical current bar content for every selectabl
 test('a request freezes composition, viewport, size, data and ink before asynchronous preparation', () => {
   const r = createRuntime(); r.select('triangles'); r.state.composition = 'bar'; r.state.size = 'standard';
   const snapshot = r.captureLogoExportSnapshot();
-  r.state.composition = 'logo'; r.state.size = 'large'; r.currentColorMode = 'red';
+  r.state.composition = 'logo'; r.state.size = 'large'; r.currentColorMode = 'gray';
   r.state.values.trianglesCount = 7; r.state.title = 'Changed';
   expect(snapshot).toMatchObject({ composition: 'bar', foreground: '#000000',
     title: 'Test <bar> & RPI', values: { trianglesCount: 23 }, dimensions: { width: 1160, height: 232 } });

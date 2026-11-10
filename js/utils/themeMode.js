@@ -14,7 +14,6 @@
     black: Object.freeze({ label: 'Black on White', bg: '#ffffff', fg: '#000000', secondary: false }),
     white: Object.freeze({ label: 'White on Black', bg: '#000000', fg: '#ffffff', secondary: false }),
     'white-on-red': Object.freeze({ label: 'White on Red', bg: '#d6001c', fg: '#ffffff', secondary: false }),
-    red: Object.freeze({ label: 'Red on White (limited use)', bg: '#ffffff', fg: '#d6001c', secondary: false }),
     'gray-on-red': Object.freeze({ label: 'Gray on Red', bg: '#d6001c', fg: '#b9ccd8', secondary: true }),
     blue: Object.freeze({ label: 'Silver on Blue', bg: '#0081ce', fg: '#e1edf5', secondary: true }),
     gold: Object.freeze({ label: 'Black on Gold', bg: '#cdac38', fg: '#000000', secondary: true }),
@@ -28,7 +27,8 @@
   const LEGACY_COLOR_MODE_ALIASES = {
     'black-on-white': 'black',
     'white-on-black': 'white',
-    'red-on-white': 'red',
+    red: 'black',
+    'red-on-white': 'black',
     light: 'black',
     dark: 'white'
   };
@@ -52,7 +52,27 @@
       return normalized;
     }
 
-    return legacyAliases[normalized] || defaultColorMode;
+    return Object.hasOwn(legacyAliases, normalized) ? legacyAliases[normalized] : defaultColorMode;
+  }
+
+  function syncColorSwatch(swatch, colorMode) {
+    if (!swatch) return;
+    const mode = normalizeColorModeValue(colorMode);
+    const scheme = COLOR_SCHEMES[mode];
+    // Mission Control's existing illustrated canvas uses this dark base.
+    const background = mode === 'lunar' ? '#03060d' : scheme.bg;
+    swatch.dataset.colorTheme = mode;
+    swatch.style.setProperty('--theme-swatch-background', background);
+    swatch.style.setProperty('--theme-swatch-foreground', scheme.fg);
+  }
+
+  function createColorSwatch(documentRef, colorMode) {
+    const swatch = documentRef.createElement('span');
+    swatch.className = 'color_theme-swatch';
+    swatch.dataset.colorThemeSwatch = '';
+    swatch.setAttribute('aria-hidden', 'true');
+    syncColorSwatch(swatch, colorMode);
+    return swatch;
   }
 
   function applyColorScheme(target, colorMode) {
@@ -98,7 +118,9 @@
       ? wrapperElement.querySelector('.custom-select-trigger')
       : null;
     if (triggerLabel) {
-      triggerLabel.textContent = resolvedLabel;
+      const label = triggerLabel.querySelector?.('[data-select-label]');
+      (label || triggerLabel).textContent = resolvedLabel;
+      syncColorSwatch(triggerLabel.querySelector?.('[data-color-theme-swatch]'), selectElement.value);
       if (triggerLabel.dataset && triggerLabel.dataset.label && typeof triggerLabel.setAttribute === 'function') {
         triggerLabel.setAttribute('aria-label', `${triggerLabel.dataset.label}: ${resolvedLabel}`);
       }
@@ -149,6 +171,8 @@
   }
 
   return {
+    createColorSwatch,
+    syncColorSwatch,
     COLOR_SCHEMES,
     applyColorScheme,
     DEFAULT_COLOR_MODE,
