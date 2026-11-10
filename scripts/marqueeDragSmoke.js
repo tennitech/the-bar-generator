@@ -104,7 +104,7 @@ async function atRest(page) {
     await page.emulateMedia({ reducedMotion: 'reduce' }); await atRest(page);
     await page.emulateMedia({ reducedMotion: 'no-preference' }); await atRest(page);
     // Resume deliberately without moving the pointer off its stationary bar.
-    await page.locator('#marquee-motion-toggle').evaluate(button => button.click());
+    await page.keyboard.press('Space');
     await atRest(page);
     // Re-grabbing moving content cancels its existing throw immediately.
     let point = await target(page); await page.mouse.move(point.x, point.y);
@@ -181,7 +181,7 @@ async function atRest(page) {
       // A real touch flick also coasts when motion is enabled, then pauses
       // immediately when the OS preference changes during that throw.
       await touch.emulateMedia({ reducedMotion: 'no-preference' });
-      await touch.getByRole('button', { name: 'Resume motion', exact: true }).click();
+      await touch.keyboard.press('Space');
       const flick = await target(touch);
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: flick.x, y: flick.y, id: 1 }] });
       for (let i = 1; i <= 8; i++) {

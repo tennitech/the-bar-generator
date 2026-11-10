@@ -43,6 +43,42 @@ remain separate from source and unit-test verification.
 See [brand color sources and QA](brand_color_context_qa.md) for the evidence,
 compatibility notes, rerun command, and integration concerns.
 
+## November 10 uniform marquee easing and motion button removal
+
+All complete Home bar links now use one 160 ms opacity transition in both
+directions, with `cubic-bezier(0.25, 0.46, 0.45, 0.94)` replacing `ease`.
+The curve responds earlier and settles gently within the existing duration.
+There is no gap-specific state, timing or dim hold: pointer leave still clears
+selection synchronously. Hover and visible keyboard focus retain exact 50%
+neighbor dimming, keyboard priority and the original focus outline. Static SVG
+artwork, row physics, generator rendering and exports are unchanged; reduced
+motion still disables transitions.
+
+Both Home URLs remove the play/pause button and its reserved layout space.
+Space now pauses or resumes all rows, including from the generator skip link;
+modified keys, repeated keys, editable controls and dialogs are ignored. The
+Home region advertises the shortcut and its status through assistive-technology
+guidance. Saved pause, cross-tab pause and system reduced motion keep their
+existing behavior; Space cannot override reduced motion. No replacement visible
+button is added. Both stylesheet and runtime cache keys agree on both URLs.
+
+Validation on main `04194d6`: all 797 tests in 73 suites pass in the cloud.
+The new adjacent-bar lifecycle regression verifies immediate clearing in a gap,
+selection on the next bar and protection from a stale leave event. Existing
+static-artwork, keyboard, reduced-motion, drag and export regressions pass.
+Analytical curve evaluation at 16 ms gives 18.7% transition progress instead of
+9.5%; at 40 ms the difference narrows to 45.3% versus 40.9%, with both finishing
+at 160 ms. These are calculated curve values, not rendered frame measurements.
+The shortcut regressions exercise pause/resume, reduced-motion priority and
+noninterference with typing and modified keys. Updated browser smoke scripts
+cover the removed control and keyboard alternative but remain unexecuted.
+JavaScript parsing, both Home inline scripts and whitespace checks pass.
+
+Rendered browser QA remains blocked by the previously recorded and explicitly
+denied browser runtime permissions; no browser retry, bypass, screenshots or
+visual acceptance is claimed. PR #133 remains an independent concurrent release;
+its branch and all earlier worktrees are preserved.
+
 ## November 10 static Home marquee and stable selection
 
 The Home instruction prompt starts after 450 ms instead of five seconds. The

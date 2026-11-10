@@ -188,7 +188,7 @@ async function movement(page, duration = 400) {
     assert.equal((await movement(page, 250)).distance, 0, 'hover does not override reduced motion');
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     assert.equal((await movement(page, 200)).distance, 0, 'OS preference removal waits for explicit Resume');
-    await page.getByRole('button', { name: 'Resume motion', exact: true }).click();
+    await page.keyboard.press('Space');
     await page.mouse.move(20, 880); await page.waitForTimeout(400);
     assert.ok((await movement(page)).distance > 1, 'explicit motion Resume restarts the lane');
     results.push({ normal, slowed, hoverRatio: ratio, pressed, resumed, repeatedHover: true, reducedMotion: true });

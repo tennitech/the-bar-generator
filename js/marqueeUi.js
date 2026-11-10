@@ -731,7 +731,7 @@ function syncRowVerticalLayout(rowStates, stage) {
       rowStart, rowStep, rowHeight: first.offsetHeight,
       firstBounds: first.getBoundingClientRect(),
       tiltRadians: parseFloat(getComputedStyle(stage).getPropertyValue('--marquee-tilt')) * Math.PI / 180,
-      heroRects: [...document.querySelectorAll('.hero_brand, .hero_title-line, .hero_credit, .hero_controls')]
+      heroRects: [...document.querySelectorAll('.hero_brand, .hero_title-line, .hero_credit')]
         .map(element => element.getBoundingClientRect())
     });
     if (fitted) { neededRows = fitted.rowCount; rowStart = fitted.rowStart; }
@@ -791,8 +791,7 @@ function syncHeroScale(root, metrics = null) {
     : HERO_CLUSTER_HEIGHT;
   const availableWidth = heroLayout ? heroLayout.clientWidth
     : Math.max(0, viewportWidth - (horizontalPadding * 2));
-  const controls = document.querySelector('[data-marquee-controls]');
-  const controlsReserve = controls ? controls.offsetHeight + 16 : 0;
+  const controlsReserve = 0;
   root.style.setProperty('--marquee-controls-reserve', `${controlsReserve}px`);
   const layoutHeight = heroLayout ? heroLayout.clientHeight : viewportHeight;
   const availableHeight = Math.max(0, layoutHeight - verticalPaddingTop - verticalPaddingBottom - controlsReserve);
@@ -807,6 +806,16 @@ function syncHeroScale(root, metrics = null) {
   root.dataset.heroCreditLayout = clampedScale <= HERO_COMPACT_CREDIT_SCALE ? 'compact' : 'default';
 }
 
+function bindMarqueeMotionShortcut(target, toggle) {
+  target.addEventListener('keydown', event => {
+    if ((event.code !== 'Space' && event.key !== ' ') || event.repeat || event.defaultPrevented
+      || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+      || event.target?.closest?.('input, textarea, select, button, summary, [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="dialog"]')) return;
+    event.preventDefault();
+    toggle();
+  });
+}
+
 function initMarqueeScene() {
   const stage = document.querySelector('[data-marquee-stage]');
   const startupStylePrompt = document.getElementById('startup-style-prompt');
@@ -817,9 +826,7 @@ function initMarqueeScene() {
 
   const reducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   const motion = createMarqueeMotionPreference(() => window.localStorage, reducedMotion?.matches);
-  const motionButton = document.getElementById('marquee-motion-toggle');
   const motionDescription = document.getElementById('marquee-motion-description');
-  if (motionButton) motionButton.hidden = false;
 
   const rowStates = Array.from({ length: ROW_COUNT }, (_, index) => createRow(index));
   rowStates.forEach(state => stage.append(state.element));
@@ -889,7 +896,7 @@ function initMarqueeScene() {
   function animateRows(now) {
     animationFrame = 0;
     // A browser can update matches before delivering its change event.
-    // Latch that pause immediately, including the control’s visible state.
+    // Latch that pause immediately, including the accessible status.
     if (reducedMotion?.matches && !motion.reduced) syncMotionPreference();
     if (document.hidden || motion.paused) return;
     const dt = Math.min(0.04, (now - lastTime) / 1000);
@@ -924,16 +931,10 @@ function initMarqueeScene() {
   function syncMotionPreference() {
     motion.setReducedMotion(reducedMotion?.matches);
     root.dataset.marqueeMotionPaused = String(motion.paused);
-    if (motionButton) {
-      motionButton.disabled = motion.reduced;
-      const label = motion.reduced ? 'Motion paused' : motion.paused ? 'Resume motion' : 'Pause motion';
-      motionButton.setAttribute('aria-label', label);
-      motionButton.dataset.motionPaused = String(motion.paused);
-      motionButton.title = motion.reduced ? 'Reduced motion is on in your device settings.' : label;
-    }
     if (motionDescription) motionDescription.textContent = motion.reduced
       ? 'Motion is paused by your device’s reduced motion setting. Dragging still works.'
-      : 'Controls the scrolling rows. Dragging still works while paused.';
+      : motion.paused ? 'Scrolling is paused. Press Space to resume. Dragging still works.'
+        : 'Scrolling is running. Press Space to pause. Dragging still works while paused.';
     if (motion.paused) window.PageEntrance?.cancel?.();
     handleResize();
     if (document.hidden || motion.paused) {
@@ -952,7 +953,7 @@ function initMarqueeScene() {
     }
   }
 
-  motionButton?.addEventListener('click', () => {
+  bindMarqueeMotionShortcut(document, () => {
     motion.setReducedMotion(reducedMotion?.matches);
     motion.setPaused(!motion.paused);
     syncMotionPreference();
@@ -989,6 +990,7 @@ if (typeof module !== 'undefined' && module.exports) {
     MARQUEE_MOTION_STORAGE_KEY,
     STARTUP_STYLE_PROMPT_DELAY,
     createMarqueeMotionPreference,
+    bindMarqueeMotionShortcut,
     updateRowLayout,
     advanceRowSpeed,
     projectLaneDelta,

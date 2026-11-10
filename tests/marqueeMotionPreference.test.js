@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { MARQUEE_MOTION_STORAGE_KEY, createMarqueeMotionPreference } = require('../js/marqueeUi');
+const { MARQUEE_MOTION_STORAGE_KEY, createMarqueeMotionPreference, bindMarqueeMotionShortcut } = require('../js/marqueeUi');
 
 function storage(value = null) {
   return { getItem: jest.fn(() => value), setItem: jest.fn((key, next) => { value = next; }) };
@@ -68,18 +68,44 @@ describe('Home motion preference', () => {
   });
 });
 
-test.each(['index.html', 'marquee-ui.html'])('%s retains keyboard generator access and an accessible icon-only motion control', file => {
+test.each(['index.html', 'marquee-ui.html'])('%s removes the motion button and retains keyboard guidance', file => {
   const html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
   expect(html).toMatch(/class="marquee_skip-link" href="generator\/solid\/"/);
   expect(html).not.toContain('hero_generator-link');
   expect(html).not.toContain('Enter generator');
-  const button = html.match(/<button[^>]+id="marquee-motion-toggle"[\s\S]*?<\/button>/)[0];
-  expect(button).toContain('aria-label="Pause motion"');
-  expect(button).toContain('aria-controls="marquee-stage"');
-  expect(button).toContain('aria-describedby="marquee-motion-description"');
-  expect(button).toContain('data-motion-paused="false"');
-  expect(button).toContain(' hidden>');
-  expect(button).toContain('data-feather="play"');
-  expect(button).toContain('data-feather="pause"');
-  expect(button.replace(/<[^>]*>/g, '').trim()).toBe('');
+  expect(html).not.toContain('marquee-motion-toggle');
+  expect(html).not.toContain('hero_controls');
+  expect(html).toContain('aria-keyshortcuts="Space"');
+  expect(html).toContain('aria-describedby="marquee-motion-description"');
+  expect(html).toContain('Press Space to pause or resume scrolling.');
+});
+
+function shortcutFixture() {
+  let handler;
+  const motion = createMarqueeMotionPreference(() => storage());
+  bindMarqueeMotionShortcut({ addEventListener: (_, fn) => { handler = fn; } }, () => motion.setPaused(!motion.paused));
+  const send = (overrides = {}) => {
+    const event = { key: ' ', code: 'Space', preventDefault: jest.fn(), ...overrides };
+    handler(event); return event;
+  };
+  return { motion, send };
+}
+
+test('Space stops and resumes all motion without a button and respects reduced motion', () => {
+  const { motion, send } = shortcutFixture();
+  expect(send().preventDefault).toHaveBeenCalled();
+  expect(motion.paused).toBe(true);
+  send(); expect(motion.paused).toBe(false);
+  motion.setReducedMotion(true);
+  send(); expect(motion.paused).toBe(true);
+  motion.setReducedMotion(false);
+  expect(motion.paused).toBe(true);
+  send(); expect(motion.paused).toBe(false);
+});
+
+test.each([{repeat:true}, {defaultPrevented:true}, {altKey:true}, {ctrlKey:true}, {metaKey:true}, {shiftKey:true},
+  {key:'Enter', code:'Enter'}, {target:{closest:()=>({})}}])('shortcut leaves other interactions alone: %p', overrides => {
+  const { motion, send } = shortcutFixture();
+  expect(send(overrides).preventDefault).not.toHaveBeenCalled();
+  expect(motion.paused).toBe(false);
 });
