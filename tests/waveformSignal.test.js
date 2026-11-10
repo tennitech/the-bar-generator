@@ -116,7 +116,7 @@ test('routed bootstrap loads the actual audio/scope head dependencies before mai
   const html=fs.readFileSync(require.resolve('../generator/index.html'),'utf8');
   for(const name of ['waveformLfo','waveformAudio','waveformScope']) {
     expect(early).toContain(`'${name}'`);
-    const version=name==='waveformScope'?'20261110-scope-history':'20261110-waveform-scope';
+    const version=name==='waveformScope'?'20261110-scope-motion':'20261110-waveform-scope';
     expect(html).toContain(`src="js/utils/${name}.js?v=${version}"`);
   }
 });

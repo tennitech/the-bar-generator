@@ -110,7 +110,9 @@ async function main(){
   for(const rate of [.07,2,100,1300])for(const type of [0,1.5,3])for(const depth of [25,100]) {
     const model={frequency:24,type:0,lfo:{enabled:true,rate,type,depth}};
     const recording=await scope.render(model,audio);recordings.set(`${rate}/${type}/${depth}`,recording);
-    r.waveformScopeController={capture:()=>({frame:recording.frame(0),recording})};
+    const view=scope.sweep(recording,model),first=recording.frame(view.origin);
+    const replay=scope.sweepReplay(view,0,first,false);
+    r.waveformScopeController={capture:()=>({frame:first,recording:replay})};
     Object.assign(r.state.values,{waveformLfo:true,waveformLfoRate:rate,waveformLfoType:type,waveformLfoDepth:depth,waveformScopeRequired:true});
     const snapshot=r.captureLogoExportSnapshot(),png=await r.createPNGExportBlob(snapshot,new AbortController().signal);
     assert.equal(png.type,'image/png');const bytes=Buffer.from(await png.arrayBuffer()),image=await loadImage(bytes);
@@ -133,9 +135,14 @@ async function main(){
   workers();
   for(const rate of [2,100,1300])for(const type of [0,3]) {
     const recording=recordings.get(`${rate}/${type}/100`);
-    r.waveformScopeController={capture:()=>({frame:recording.frame(0),recording})};
+    const model={frequency:24,type:0,lfo:{enabled:true,rate,type,depth:100}};
+    const view=scope.sweep(recording,model),first=recording.frame(view.origin);
+    const replay=scope.sweepReplay(view,0,first,false);
+    r.waveformScopeController={capture:()=>({frame:first,recording:replay})};
     const captured=r.captureLogoExportSnapshot(),snapshot={...captured,dimensions:{width:290,height:58,scale:1}};
-    const plan=getLoopingGifFramePlan('waveform',snapshot.values),renderer=r.createCapturedGifRenderer(snapshot,plan),expectedHashes=[];
+    const plan=getLoopingGifFramePlan('waveform',snapshot.values);
+    assert.ok(Math.abs(plan.periodSeconds-1/.3)<1e-10);
+    const renderer=r.createCapturedGifRenderer(snapshot,plan),expectedHashes=[];
     const encoded=await encode({...snapshot.dimensions,frameCount:plan.frameCount,periodSeconds:plan.periodSeconds,
       foreground:snapshot.rgb,workerScript:'trusted-local-adapter',signal:new AbortController().signal,
       renderFrame:async(index,progress)=>{

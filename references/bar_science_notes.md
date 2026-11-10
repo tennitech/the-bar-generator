@@ -491,3 +491,24 @@ without changing scientific coordinates, duty cycles, official viewport or SVG/P
 geometry. Curves and diagonals retain GIF’s binary-alpha pixel steps. Carrier,
 LFO and audio math are untouched. See [encoded evidence](gif_edge_qa.md).
 
+
+## Actual-sample sweep playback — November 10, 2026
+
+A physical X timebase is independent from playback speed. Advancing a .037s
+window at one recorded second per display second makes the roughly 109Hz
+carrier race and alias visually. The corrected display scans at most
+`1 / max(carrierHz, activeLfoHz)` recorded seconds during one visual cycle,
+which takes `1 / SPEED` display seconds. Disabled/zero-depth LFOs do not set the
+scan rate. X still spans four carrier periods or two active LFO periods,
+whichever is longer; it is never rescaled to this slower playback duration.
+
+Actual extrema pairs determine rising-zero-crossing triggers. No oscillator is
+reconstructed and no sample values are interpolated. Live capture continues
+independently; immutable triggered snapshots refresh between visual sweeps,
+after parameter edits, while filling, and once mixed history has left the
+selected window. The explicitly labeled slowed replay keeps SPEED/reverse
+consistent across live capture, silent renders and GIF. Static formats and
+freeze retain the exact shown frame. An arbitrary carrier/LFO ratio need not
+close at a short sweep boundary, and refreshed live snapshots may show a
+different envelope; this is an actual recorded scope, not a claim of periodic
+physical playback. Existing gain modulation, audio ramps and output are intact.

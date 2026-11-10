@@ -3,6 +3,40 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 scope playback speed repair
+
+Live owner QA exposed a second scope presentation defect: a roughly .037s
+unmodulated view was advanced at one recorded second per wall second, racing
+through about 109 carrier cycles/s. Live capture also ignored the selected
+SPEED, reverse and visual phase and always selected the newest packet.
+
+The scope now presents immutable actual-sample sweeps. One visual cycle scans
+at most one cycle of the fastest carrier/active LFO detail, over 1/SPEED display
+seconds (3.333s at default). Physical X duration, min/max values, fixed gain,
+continuous capture and the correct audible graph are unchanged. Actual rising
+crossings trigger the window where available. Live snapshots refresh between
+visual sweeps, immediately after edits or while filling/clearing mixed history;
+packet delivery cannot independently race the trace. The caption explicitly
+labels live capture versus offline rendering and slowed sample playback. This
+is a recorded scope presentation, not a real-time scrolling oscilloscope.
+
+Freeze holds the exact frame/recording. Reverse and SPEED apply to actual sample
+playback in both sources, with the same default 3.333s GIF duration. SVG/PNG
+still freeze the displayed samples. GIF uses the existing 50fps target and
+2–3000 frame, 100s and encoder guards; a complete fastest-detail cycle is
+required beyond the window. Replay can reset at the boundary for arbitrary
+noncommensurate signals, and a new live capture can change its envelope at the
+next sweep. Neither interpolation nor fabricated history is used.
+
+All 956 unit tests in 87 suites pass. Native checks cover 90 exact original/shared
+audio comparisons (maximum error 0), 42 post-gain AM comparisons (3.7253e-9),
+2816 exact silent-tap extrema pairs, 24 real PNG exports and six slowed GIFs /
+996 decoded frames with exact expected pixels. The permitted cloud browser
+confirmed the production default .037s offline/live window and audio start/stop;
+it did not verify this candidate after deployment. No previously denied browser
+escalation was retried. See [scope motion QA](waveform_scope_motion_qa.md).
+
+
 ## November 10 Color Theme visual scrollbar correction
 
 The Color Theme picker’s thin right-edge scrollbar is hidden using scoped
