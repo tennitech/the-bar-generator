@@ -223,11 +223,12 @@
         const actionLabel = document.createElement('span');
         actionLabel.className = 'parameter_action-label';
         actionLabel.textContent = text;
-        if (action === 'randomize' && scope.FeatherIcons) {
+        if (action === 'randomize') {
           const glyph = document.createElement('span');
           glyph.className = 'parameter_action-glyph';
           glyph.setAttribute('aria-hidden', 'true');
-          glyph.innerHTML = scope.FeatherIcons.getIconMarkup('shuffle', 'parameter_action-icon');
+          // Original project die geometry; the pinned Feather registry stays unchanged.
+          glyph.innerHTML = '<svg class="parameter_action-icon" data-control-icon="dice" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1" fill="currentColor" stroke="none"/></svg>';
           button.appendChild(glyph);
         }
         button.appendChild(actionLabel);

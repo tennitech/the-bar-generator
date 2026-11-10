@@ -10,8 +10,10 @@ function element(text = '') {
     contains(node) { return node === this; }, dispatchEvent: jest.fn() };
 }
 
-test('section disclosure keeps values, actions and nodes mounted, with state and a scroll-cue signal', () => {
-  const header = element('PARAMETERS'), label = element('PARAMETERS');
+const html = fs.readFileSync(require.resolve('../generator/index.html'), 'utf8');
+const sectionTitles = [...new Set(Array.from(html.matchAll(/<div class="control-header">([^<]+)<\/div>/g), match => match[1]))];
+test.each(sectionTitles)('%s disclosure preserves mounted values, focus and accessible state in both directions', title => {
+  const header = element(title), label = element(title);
   const input = { value: '1.037' }, field = { nodeType: 1, matches: () => false, input },
     motion = { nodeType: 1, matches: () => true };
   field.nextSibling = motion; header.nextSibling = field;
@@ -24,7 +26,15 @@ test('section disclosure keeps values, actions and nodes mounted, with state and
   disclosure(header, doc);
   expect(header.body.children).toEqual([field]);
   expect(header.button.attrs).toMatchObject({ 'aria-expanded': 'true', 'aria-controls': header.body.id });
-  expect(header.button.attrs['aria-label']).toBe('Parameters section');
+  expect(header.button.attrs['aria-label']).toBe(`${title.charAt(0)}${title.slice(1).toLowerCase()} section`);
+  expect(header.button.type).toBe('button');
+  const icon = header.button.children[0];
+  expect(icon.className).toBe('sidebar_section-icon');
+  expect(icon.attrs['aria-hidden']).toBe('true');
+  expect(icon.innerHTML).toContain('focusable="false"');
+  expect(icon.innerHTML).toContain('stroke-width="1.5"');
+  // The drawn chevron is centered at 12,12 within the 24-unit viewBox.
+  expect(icon.innerHTML).toContain('points="9 6 15 12 9 18"');
   doc.activeElement = input;
   header.body.contains = node => node === input;
   header.button.focus = jest.fn(() => { doc.activeElement = header.button; });
@@ -37,6 +47,7 @@ test('section disclosure keeps values, actions and nodes mounted, with state and
   input.value = '1.041';
   header.button.listeners.click();
   expect(header.body.hidden).toBe(false);
+  expect(header.button.attrs['aria-expanded']).toBe('true');
   expect(input.value).toBe('1.041');
   const body = header.body;
   disclosure(header, doc);
@@ -72,4 +83,20 @@ test('LFO is above Motion and Preview with independent physical Hz and folding c
   expect(waveform).toContain('data-control-help="waveform-lfo-hint"');
   expect(waveform).toMatch(/id="waveform-lfo-rate"[^>]*min="0.07" max="1300" step="0.01"/);
   expect(waveform).toMatch(/id="waveform-lfo-type"[^>]*step="0.01"/);
+});
+
+
+test('speed range descriptions stay accessible without visible helper spacing in every dynamic style', () => {
+  for (const style of ['ticker', 'quantum', 'waveform', 'gradient']) {
+    expect(html).toMatch(new RegExp(`aria-describedby="${style}-speed-unit"`));
+    expect(html).toMatch(new RegExp(`<p id="${style}-speed-unit" class="u-sr-only">0.2–4× default speed`));
+  }
+  const css = fs.readFileSync(require.resolve('../css/style.css'), 'utf8');
+  expect(css).toMatch(/\.sidebar_section-toggle\s*\{[^}]*align-items: center/s);
+  expect(css).toMatch(/\.sidebar_section-icon\s*\{[^}]*flex: 0 0 1rem;[^}]*transform: rotate\(90deg\)/s);
+  expect(css).toMatch(/\.sidebar_section-toggle\[aria-expanded="false"\] \.sidebar_section-icon\s*\{ transform: rotate\(0deg\)/);
+  expect(css).not.toMatch(/\.sidebar_section-toggle(?:::after|\[aria-expanded="false"\]::after)/);
+  // Orientation is immediate, with no new motion to override for reduced motion.
+  const rule = css.match(/\.sidebar_section-icon\s*\{([^}]+)\}/)[1];
+  expect(rule).not.toMatch(/transition|animation/);
 });

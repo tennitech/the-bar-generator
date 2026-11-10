@@ -4,6 +4,34 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 
+## November 10 screenshot-directed control presentation correction
+
+The owner's 702 × 542 PNG was materialized from the specified Library ID into
+this executor, verified as 32,271 readable bytes with SHA-256
+`c810985df5b3298300da4ae1d7c5e8ce77da1da8c5022857190b55a2ffd2e8a7`, and
+visually inspected before edits. Its visible text is “0.2–4× default speed”;
+that helper line is now screen-reader-only for Ticker, Waveform, Gradient and
+Quantum, preserving the range/snap description without its visible spacing.
+
+All sidebar section chevrons use a thin SVG stroke, centered in a fixed flex
+box beside the heading. Collapsed points right; expanded points down, a 90°
+rotation. Native button semantics, aria-expanded/controls, focus safety, mounted
+values, independent sections, scroll-cue notifications and the About footer stay
+intact. No transition or new animation is added.
+
+Randomize uses one original outlined five-pip die in the existing icon language,
+replacing shuffle across every parameter group. Existing visible and accessible
+Randomize labels, hit targets, currentColor hover/focus treatment and bounded
+reduced-motion-aware action feedback remain. The Feather registry is unchanged.
+
+Source/controller tests cover every section heading and both disclosure states,
+focus retention, speed descriptions and all generated Randomize buttons. Actual
+SVGs were rasterized and inspected at 12, 16, 18 and 24 px, including both
+chevron orientations; this is isolated icon QA, not rendered application QA. Full
+suite and exact-head CI results are recorded in the PR. Rendered desktop/mobile
+layout, native keyboard/touch, screen-reader output and visual acceptance remain
+unverified under the existing browser restriction; no denied route is retried.
+
 ## November 10 secondary-color popup corners and compact help focus
 
 The Secondary Color Usage popup now uses the same `--control-radius` token
