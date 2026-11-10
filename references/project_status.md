@@ -4,6 +4,33 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 
+## November 10 GIF cadence closer to display-driven motion
+
+The GIF planner now targets approximately 50 fps with 20 ms holds, replacing
+30/40 ms cadence while preserving full duration within 5 ms and the same
+elapsed-time phase samples. Odd centisecond durations need one 30 ms hold.
+Existing 3000-frame, 100-second, two-input-frame/32 MiB and encoded-output/64 MiB
+limits remain. Long loops may therefore have a lower cadence. SVG/PNG, palette,
+current size choices and captured composition are unchanged.
+
+Sixteen matched actual GIFs were independently decoded through all 3400 frames.
+Full-logo Standard Ticker/Waveform/Gradient examples grow from 843046/1538325/
+3019636 bytes to 1404379/2562317/5032238 bytes respectively (2.5/5/10 seconds).
+The measured maximum encoded hold halves from 40 to 20 ms; average held-sample
+age drops from 17 to 10 ms. These are encoded timing metrics, not native browser
+playback proof. All 12 periodic raster recurrence cases close exactly, and 927
+unit tests in 81 suites pass after #151 reconciliation.
+
+The separate PR #144 owns straight-edge alpha quantization; no encoder-alpha
+source is changed here. Its explicit threshold mode also passed a matched
+cadence comparison. The pending actual-PCM waveform task retains its recorded
+history and honest boundary-reset contract; this repair does not synthesize a
+seamless period for recorded audio. Preserve separately approved Quantum limits.
+See [bytes, encoding times, source evidence and format caveats](gif_cadence_benchmark.md).
+GIF retains binary alpha and viewer-dependent presentation. A separate APNG
+option is recommended for partial alpha and finer frame timing; GIF is not
+silently replaced. Publication/deployment evidence is recorded with the PR.
+
 ## November 10 neutral theme rows with contextual pair previews
 
 Color Theme now matches the default neutral dropdown until a row is hovered,

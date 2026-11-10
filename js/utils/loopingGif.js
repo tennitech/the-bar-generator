@@ -8,11 +8,12 @@
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient']);
-  const DEFAULT_CAPTURE_FPS = 30;
+  // 20 ms is an exact GIF tick interval, avoiding the old 30/40 ms cadence.
+  const DEFAULT_CAPTURE_FPS = 50;
   const MIN_CAPTURE_FPS = 12;
-  const MAX_CAPTURE_FPS = 30;
+  const MAX_CAPTURE_FPS = 50;
   const MIN_CAPTURE_FRAMES = 2;
-  // Covers the existing longest 100-second joint LFO loop at 30 fps.
+  // Retain the existing capture budget; loops over 60 s use fewer samples/s.
   const MAX_CAPTURE_FRAMES = 3000;
   const MIN_GIF_FRAME_DELAY_MS = 20;
   // p5 still uses requestAnimationFrame; this ceiling avoids skipping fast displays.

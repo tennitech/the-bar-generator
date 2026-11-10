@@ -170,14 +170,14 @@ test('invalid frame size is rejected before allocating workers or registering ca
   } finally { workers.restore(); }
 });
 
-test('30 fps schedule survives the actual codec with centisecond timing and a complete repeating loop', async () => {
+test('30 and 50 fps schedules survive the actual codec with centisecond timing and a complete repeating loop', async () => {
   const { encode, frameTiming } = require('../js/utils/transparentGif');
   const { parseGif, decodeFrames } = require('./helpers/gifDecoder');
   const { getLoopingGifFramePlan } = require('../js/utils/loopingGif');
   const workers = installCodecWorker();
   try {
-    for (const speed of [0.2, 0.3, 1.2]) {
-      const plan = getLoopingGifFramePlan('waveform', { waveformSpeed: speed });
+    for (const fps of [30, 50]) for (const speed of [0.2, 0.3, 1.2]) {
+      const plan = getLoopingGifFramePlan('waveform', { waveformSpeed: speed }, { fps });
       const timing = frameTiming(plan.periodSeconds, plan.frameCount);
       const phases = [];
       const result = await encode({ width: 24, height: 12, frameCount: plan.frameCount, periodSeconds: plan.periodSeconds,
@@ -185,6 +185,8 @@ test('30 fps schedule survives the actual codec with centisecond timing and a co
         renderFrame: (index, progress) => { phases.push({ index, progress }); return smallFrame(index % 288); } });
       const bytes = Buffer.from(await result.blob.arrayBuffer()), gif = parseGif(bytes);
       expect(gif.frames.map(frame => frame.delayMs)).toEqual(timing.delays);
+      expect(Math.min(...gif.frames.map(frame => frame.delayMs))).toBeGreaterThanOrEqual(20);
+      if (fps === 50 && speed === .2) expect(new Set(gif.frames.map(frame => frame.delayMs))).toEqual(new Set([20]));
       expect(gif.frames.reduce((sum, frame) => sum + frame.delayMs, 0)).toBe(timing.durationMs);
       expect(bytes.readUInt16LE(bytes.indexOf(Buffer.from('NETSCAPE2.0')) + 13)).toBe(0);
       let index = 0;
