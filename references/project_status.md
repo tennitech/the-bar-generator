@@ -26,6 +26,27 @@ pass. See
 Application rendering and served-file verification remain limited by existing
 restrictions; no blocked route is retried.
 
+## November 10 hidden controls marker repair
+
+The owner's iPhone screenshot shows a small isolated square below the complete
+Waveform mark. Changed-setting indicators are 0.25rem squares; their explicit
+`visibility: visible` overrode the closed touch sheet's inherited
+`visibility: hidden`. Changed indicators now inherit label/sheet visibility.
+They remain visible when the controls reopen, while default indicators retain
+their hidden state. This is a CSS-only runtime repair; audio, waveform geometry,
+zoom transforms and the scope-history transition remain unchanged.
+
+All routed stylesheet/shell/bootstrap references and Home prefetch advance
+together. The concurrent #158 exact theme-text release is retained. The mobile
+smoke script now asserts changed-marker visibility through close/reopen at each
+existing phone/tablet viewport. All 950 unit tests pass on the reconciled tree;
+changed scripts compile and whitespace checks pass. The mobile browser script
+was added/syntax-checked, not executed: local browser restrictions remain in
+force, the cloud browser cannot reach the localhost candidate and responsive
+DevTools are blocked. Production cloud desktop checks and deployment evidence
+are reported separately; no physical iPhone Safari pass is claimed. The
+owner screenshot remains private and is not added to the public repository.
+
 ## November 10 scope transition and X-scale correction
 
 Owner live testing confirmed the actual-audio scope works, then identified a
