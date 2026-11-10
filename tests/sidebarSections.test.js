@@ -94,7 +94,7 @@ test('speed range descriptions stay accessible without visible helper spacing in
   const css = fs.readFileSync(require.resolve('../css/style.css'), 'utf8');
   expect(css).toMatch(/\.sidebar_section-toggle\s*\{[^}]*align-items: center/s);
   expect(css).toMatch(/\.sidebar_section-icon\s*\{[^}]*flex: 0 0 1rem;[^}]*transform: rotate\(90deg\)/s);
-  expect(css).toMatch(/\.sidebar_section-toggle\[aria-expanded="false"\] \.sidebar_section-icon\s*\{ transform: rotate\(0deg\)/);
+  expect(css).toMatch(/\.sidebar_section-toggle\[aria-expanded="false"\] \.sidebar_section-icon,\s*\.bar_information:not\(\[open\]\) > \.bar_information-toggle \.sidebar_section-icon\s*\{ transform: rotate\(0deg\)/);
   expect(css).not.toMatch(/\.sidebar_section-toggle(?:::after|\[aria-expanded="false"\]::after)/);
   // Orientation is immediate, with no new motion to override for reduced motion.
   const rule = css.match(/\.sidebar_section-icon\s*\{([^}]+)\}/)[1];
