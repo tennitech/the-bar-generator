@@ -50,7 +50,11 @@ Owner test items after publication:
 - Check Tab focus, Escape/Close/backdrop dismissal, narrow-screen scrolling and
   reopening, then confirm normal theme switching and exports still behave.
 
-The standalone PR, required checks and Pages deployment carry the release state.
+[PR #137](https://github.com/tennitech/the-bar-generator/pull/137), its required
+checks and Pages deployment carry the release state. A fresh Git fetch confirms
+main 05655f6 is the functional candidate's direct parent (zero commits behind);
+there are no file conflicts to resolve. The candidate is reviewed and the full
+suite is rerun before the PR synchronization update.
 Live-file hash verification establishes deployed source, not rendered appearance
 or native device behavior. Existing branches remain preserved.
 

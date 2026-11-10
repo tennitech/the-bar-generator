@@ -23,6 +23,7 @@ mobile-browser and modal checks. Required PR checks run before publication. The 
 browser smoke script now checks header/sidebar equality and the text helper.
 Rendered desktop/mobile appearance and native interactions remain unverified
 under the documented browser restrictions; no denied browser action is retried.
+The standalone release is tracked by [PR #137](https://github.com/tennitech/the-bar-generator/pull/137).
 See [source and QA evidence](brand_color_context_qa.md) for user test items.
 
 ## November 10 six-feature and brand release reconciliation
