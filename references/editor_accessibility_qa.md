@@ -67,6 +67,12 @@ now complete: **1,062 tests in 92 suites pass** across the four shards
 (337 + 185 + 232 + 308 tests, 23 suites each). The required GitHub
 Unit tests check must pass on the final PR head before a normal merge.
 
+After integration with released #168, all **1,062 tests in 92 suites pass again**
+in four sequential shards (337 + 185 + 232 + 308). This run validates the
+integrated runtime tree `e4ef600dea4aae062c0fd8401227008557114228`; the following
+commit records only this completed validation. The 90 focused integration tests
+also pass, and the schematic implementation still matches released main.
+
 ## Rendering verification limits
 
 Browser launch escalation was denied earlier in this cloud session. This task
