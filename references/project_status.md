@@ -3,6 +3,34 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+
+## November 10 LFO, speed landmarks and sidebar disclosures
+
+LFO now sits with the Waveform parameters, above Motion and Preview. Its help
+icon opens explanatory text on keyboard focus, hover or deliberate touch/click;
+Escape, blur and outside press dismiss it. LFO waveform, Hz rate and depth keep
+explicit labels. The 0.07–1300 Hz logarithmic range, continuous folding, audio
+and visual transport, snapshots, URLs and export behavior are unchanged.
+
+Ticker, Waveform, Gradient and Quantum share subtle 0.5×, 1× and 2× ticks.
+Pointer input snaps within 0.025× of these landmarks before persistence/render
+listeners run. Leaving that narrow window restores granular native range input.
+Keyboard adjustments and direct numeric entry bypass snapping. Stored values
+remain physical rates with the existing precision; LFO Hz has no speed ticks.
+
+Parameters, Motion, Preview and Comms headings become independent native-button
+disclosures after parameter action setup. All default open; collapsing keeps
+controls mounted and values intact, retains focus on the button, updates
+aria-expanded and signals the existing scroll-cue controller. Choices survive
+style switches for the current page. Randomize/Undo/Reset remain separate header
+actions. The separately published compact About footer remains intact.
+
+The full local suite and exact-head CI results are recorded in the PR. The
+combined candidate preserves published Why not and compact About footer changes. Rendered desktop/mobile layout, actual touch,
+screen-reader output, native keyboard behavior and audible output remain
+unverified under the existing browser restriction; no denied browser execution
+was retried or bypassed. No screenshots or formal brand-approval claim is made.
+
 ## November 10 paired theme swatches and retired Red on White
 
 Each color theme choice and the selected trigger now show a compact background

@@ -4558,3 +4558,50 @@ body:is(.theme-white, .theme-silver, .theme-gray, .theme-lunar) { --color-ready:
   transform: translate(-50%, -50%);
   background: var(--theme-swatch-foreground);
 }
+
+/* Sidebar disclosures leave action buttons and underlying settings independent. */
+.sidebar_section-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sidebar_section-toggle::after { content: '⌃'; font-size: 1rem; }
+.sidebar_section-toggle[aria-expanded="false"]::after { transform: rotate(180deg); }
+.sidebar_section-toggle:focus-visible,
+.control_help-button:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 3px; }
+.sidebar_section-body[hidden], .control_help-tooltip[hidden] { display: none; }
+.control_help-label { display: flex; align-items: center; gap: 0.25rem; }
+.control_help-button {
+  display: grid;
+  place-items: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+.control_help-tooltip {
+  margin: 0.25rem 0 0.75rem;
+  padding: 0.625rem;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm, 0.25rem);
+  color: var(--text-primary);
+  background: var(--bg-sidebar);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.motion_speed-marks { position: relative; height: 1.25rem; margin-inline: calc(var(--slider-thumb-width) / 2); pointer-events: none; color: var(--text-secondary); }
+.motion_speed-mark { position: absolute; top: 0; transform: translateX(-50%); font-family: "RPIGeistMono", monospace; font-size: 0.625rem; line-height: 1.25rem; }
+.motion_speed-mark::before { content: ''; display: block; width: 1px; height: 0.25rem; margin-inline: auto; background: currentColor; opacity: 0.45; }
