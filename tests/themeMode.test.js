@@ -46,6 +46,7 @@ describe('theme mode utils', () => {
     expect(normalizeColorModeValue('white-on-black')).toBe('white');
     expect(normalizeColorModeValue('red')).toBe('black');
     expect(normalizeColorModeValue('RED-ON-WHITE')).toBe('black');
+    expect(normalizeColorModeValue('gray-on-red')).toBe('white-on-red');
   });
 
   test('falls back to the default color mode for unknown values', () => {
@@ -127,9 +128,9 @@ test('brand compositions apply the supplied foreground/background pair without a
   const pairs = [
     ['black', '#000000', '#ffffff'], ['white', '#ffffff', '#000000'],
     ['white-on-red', '#ffffff', '#d6001c'],
-    ['gray-on-red', '#b9ccd8', '#d6001c'], ['blue', '#e1edf5', '#0081ce'],
-    ['gold', '#000000', '#cdac38'], ['gray', '#d6001c', '#b9ccd8'],
-    ['silver', '#0081ce', '#e1edf5'], ['gray-on-black', '#b9ccd8', '#000000']
+    ['blue', '#000000', '#0081ce'],
+    ['gold', '#000000', '#cdac38'], ['gray', '#000000', '#b9ccd8'],
+    ['silver', '#000000', '#e1edf5'], ['gray-on-black', '#b9ccd8', '#000000']
   ];
   const fs = require('node:fs'), vm = require('node:vm');
   const geometry = require('../js/utils/logoGeometry').RPI_LOGO_GEOMETRY;
@@ -175,7 +176,7 @@ test('brand compositions apply the supplied foreground/background pair without a
   expect(properties['--preview-foreground']).toBe('#000000');
 });
 
-test('full-color rows retain exact pair styles and meet large-text contrast with visible two-tone state cues', () => {
+test('compact rows retain reference pair styles and meet normal-text contrast with visible two-tone state cues', () => {
   const { COLOR_SCHEMES } = require('../js/utils/themeMode');
   const luminance = hex => hex.slice(1).match(/../g).map(value => parseInt(value, 16) / 255)
     .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
@@ -191,7 +192,7 @@ test('full-color rows retain exact pair styles and meet large-text contrast with
     expect(option.dataset.colorTheme).toBe(mode);
     expect(properties['--theme-option-background']).toBe(pair.bg);
     expect(properties['--theme-option-foreground']).toBe(pair.fg);
-    expect(contrast(pair.fg, pair.bg)).toBeGreaterThanOrEqual(3);
+    expect(contrast(pair.fg, pair.bg)).toBeGreaterThanOrEqual(4.5);
     expect(Math.max(contrast('#000000', pair.bg), contrast('#ffffff', pair.bg))).toBeGreaterThanOrEqual(4.5);
   }
   expect(contrast('#000000', '#ffffff')).toBe(21);

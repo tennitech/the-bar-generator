@@ -4,6 +4,28 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 
+## November 10 compact theme picker correction
+
+The owner rejected the enlarged bold theme rows. Color Theme again uses its
+previous compact RPIGeistMono typography, uppercase text, padding, row height,
+group headings and existing sidebar checkmark. The full-row pairing colors,
+two-tone hover/focus cues and unobscured scrolling remain; the added circular
+checkmark and oversized type are removed. No new picker design or choices are added.
+
+The supplied accessibility table now governs the existing composition choices:
+Blue, Gray and Silver use black foregrounds on their exact brand backgrounds.
+Gray on Red is retired because it is absent from the normal-text-approved table;
+old query/snapshot values recover to White on Red while keeping other settings.
+Red on White remains removed with its existing Black on White recovery. The
+remaining pairs all meet 4.5:1 normal-text contrast without enlarging the labels.
+The header, popup/help, native interaction logic and export geometry are preserved.
+
+Both new Library PNGs were materialized and their actual pixels inspected.
+All 926 tests in 81 suites, JavaScript/inline syntax, 26 entrypoint cache and
+source-preservation checks pass. Validation and release evidence are recorded in the correction PR and
+[focused QA record](theme_picker_correction_qa.md). Browser rendering and native
+device/screen-reader behavior remain unverified under the existing restrictions.
+
 ## November 10 full-color theme rows
 
 Color Theme now presents each retained foreground/background pair as a full-width
