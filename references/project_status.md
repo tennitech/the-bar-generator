@@ -3,6 +3,29 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 exact brand text in interactive theme rows
+
+By explicit owner direction, hovered, selected and keyboard-active Color Theme
+row text now uses the same exact official foreground as the logo/ink mark against
+its composition background. Idle rows retain the default neutral surface/text.
+The six approved secondary pairs, primary/mission palettes, compact typography,
+selected checkmark, native keyboard/touch handlers, old-save recovery and exports
+are unchanged. A separate contrasting 2px focus outline and the checkmark remain
+as non-color cues; no text foreground is silently substituted or enlarged.
+
+Four literal secondary pairs are below 4.5:1 ordinary small-text contrast:
+Gray on Red and Red on Gray are approximately 3.274:1; Silver on Blue and Blue on
+Silver are approximately 3.505:1. This is the owner's requested exact-color
+exception and is documented, not a claim of small-text WCAG AA compliance.
+
+CSS/theme-module versions and route shell/bootstrap/Home prefetch cache references
+advance together, preserving the recent routed-cache repair. All 950 tests in
+85 suites, JavaScript/80 inline-script syntax, cache and source-preservation checks
+pass. See
+[exact-text QA and contrast limits](theme_text_ink_qa.md) for checks and owner QA.
+Application rendering and served-file verification remain limited by existing
+restrictions; no blocked route is retried.
+
 ## November 10 scope transition and X-scale correction
 
 Owner live testing confirmed the actual-audio scope works, then identified a

@@ -183,7 +183,7 @@ test('brand compositions apply the supplied foreground/background pair without a
   expect(properties['--preview-foreground']).toBe('#000000');
 });
 
-test('official logo pair marks and compact UI labels retain their distinct contrast requirements', () => {
+test('exact brand row text and independent focus cues retain documented contrast limits', () => {
   const { COLOR_SCHEMES } = require('../js/utils/themeMode');
   const luminance = hex => hex.slice(1).match(/../g).map(value => parseInt(value, 16) / 255)
     .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
@@ -191,6 +191,7 @@ test('official logo pair marks and compact UI labels retain their distinct contr
   const contrast = (a, b) => (Math.max(luminance(a), luminance(b)) + 0.05)
     / (Math.min(luminance(a), luminance(b)) + 0.05);
   const properties = {}, option = { dataset: {}, style: { setProperty: (key, value) => { properties[key] = value; } } };
+  const belowSmallTextThreshold = [];
   for (const [mode, scheme] of Object.entries(COLOR_SCHEMES)) {
     const pair = getColorThemePair(mode);
     styleColorThemeOption(option, mode);
@@ -200,9 +201,11 @@ test('official logo pair marks and compact UI labels retain their distinct contr
     expect(properties['--theme-option-background']).toBe(pair.bg);
     expect(properties['--theme-option-foreground']).toBe(pair.fg);
     expect(contrast(pair.fg, pair.bg)).toBeGreaterThanOrEqual(3);
-    expect(contrast(properties['--theme-option-label-foreground'], pair.bg)).toBeGreaterThanOrEqual(4.5);
+    if (contrast(pair.fg, pair.bg) < 4.5) belowSmallTextThreshold.push(mode);
+    expect(contrast(properties['--theme-option-focus-foreground'], pair.bg)).toBeGreaterThanOrEqual(4.5);
     expect(Math.max(contrast('#000000', pair.bg), contrast('#ffffff', pair.bg))).toBeGreaterThanOrEqual(4.5);
   }
+  expect(belowSmallTextThreshold).toEqual(['gray-on-red', 'blue', 'gray', 'silver']);
   expect(contrast('#000000', '#ffffff')).toBe(21);
   expect(getColorThemePair('red')).toEqual(getColorThemePair('black'));
 });

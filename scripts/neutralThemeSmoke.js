@@ -24,7 +24,7 @@ async function themeRowCheck(page, mode, scheme) {
   const row = wrapper.locator('.custom-option[data-value="' + mode + '"]');
   const read = element => {
     const css = getComputedStyle(element), mark = element.querySelector('.color_theme-ink');
-    return { bg: css.backgroundColor, ink: css.color, labelInk: css.getPropertyValue('--theme-option-label-foreground').trim(),
+    return { bg: css.backgroundColor, ink: css.color, focusInk: css.getPropertyValue('--theme-option-focus-foreground').trim(),
       markInk: mark ? getComputedStyle(mark).backgroundColor : null, markVisibility: mark ? getComputedStyle(mark).visibility : null, font: parseFloat(css.fontSize),
       family: css.fontFamily, height: element.getBoundingClientRect().height,
       shadow: css.boxShadow, outline: css.outlineStyle, outlineColor: css.outlineColor,
@@ -33,7 +33,7 @@ async function themeRowCheck(page, mode, scheme) {
   const expectedBackground = mode === 'lunar' ? '#03060d' : scheme.bg;
   const selected = await row.evaluate(read);
   assert.equal(selected.bg, rgb(expectedBackground));
-  assert.equal(selected.ink, rgb(selected.labelInk));
+  assert.equal(selected.ink, rgb(scheme.fg));
   assert.equal(selected.markInk, rgb(scheme.fg));
   assert.equal(selected.markVisibility, 'visible');
   assert.equal(await row.locator('.color_theme-ink').getAttribute('aria-hidden'), 'true');
@@ -58,7 +58,7 @@ async function themeRowCheck(page, mode, scheme) {
   await idle.hover();
   const hover = await idle.evaluate(read);
   assert.equal(hover.bg, rgb(idleValue === 'lunar' ? '#03060d' : idleScheme.bg));
-  assert.equal(hover.ink, rgb(hover.labelInk));
+  assert.equal(hover.ink, rgb(idleScheme.fg));
   assert.equal(hover.markInk, rgb(idleScheme.fg)); assert.equal(hover.markVisibility, 'visible');
   assert.equal(hover.shadow, 'none'); assert.equal(hover.outline, 'none');
   await trigger.hover();
@@ -72,7 +72,7 @@ async function themeRowCheck(page, mode, scheme) {
   assert.equal(keyboard.bg, hover.bg); assert.equal(keyboard.ink, hover.ink);
   assert.equal(keyboard.markInk, hover.markInk); assert.equal(keyboard.markVisibility, 'visible');
   assert.equal(keyboard.shadow, 'none'); assert.equal(keyboard.outline, 'solid');
-  assert.equal(keyboard.outlineWidth, '2px'); assert.equal(keyboard.outlineColor, hover.ink);
+  assert.equal(keyboard.outlineWidth, '2px'); assert.equal(keyboard.outlineColor, rgb(keyboard.focusInk));
   // Moving active focus away restores the nonselected row to its neutral state.
   await trigger.press(idleValue === values[0] ? 'End' : 'Home');
   assert.deepEqual(await idle.evaluate(read), neutral);
