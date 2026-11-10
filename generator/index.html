@@ -12,6 +12,8 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link href="css/style.css?v=20261110-input-limit-feedback" rel="stylesheet" type="text/css" />
+  <link href="css/editor-accessibility.css?v=20261110-larger-controls-release" rel="stylesheet" type="text/css">
+  <script src="js/utils/editorAccessibility.js?v=20261110-larger-controls-release"></script>
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/pageEntrance.js?v=20261110-combined-brand-refinement"></script>
@@ -992,6 +994,14 @@
               <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
             </summary>
             <div class="sidebar_more-panel">
+              <button id="editor-size-toggle" class="sidebar_more-option editor_size-toggle" type="button"
+                role="switch" aria-checked="false" aria-labelledby="editor-size-label" aria-describedby="editor-size-description">
+                <span class="editor_size-copy">
+                  <span id="editor-size-label" class="editor_size-label">Larger controls and text</span>
+                  <span id="editor-size-description" class="editor_size-description">Roomier controls and easier-to-read labels.</span>
+                </span>
+                <span class="editor_size-indicator" aria-hidden="true"><span class="editor_size-track"></span><span id="editor-size-state">Off</span></span>
+              </button>
               <button id="ascii-intro-trigger" class="sidebar_more-option" type="button"
                 aria-haspopup="dialog" aria-expanded="false" aria-controls="logo-animation-overlay">Why not...</button>
             </div>
