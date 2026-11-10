@@ -3,6 +3,24 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 routed shell cache follow-up
+
+Live verification of merged #144 found a warm browser could keep the old fetched
+generator shell and its ordered-alpha GIF helper after a normal route reload.
+The helper URL was updated, but every style route and the bootstrap fallback
+still requested the unchanged `20261110-waveform-scope` shell URL. Route shell
+and bootstrap URLs plus Home prefetch now advance together. Actual-audio scope,
+50 fps timing, encoder source/guards, controls and all geometry are unchanged.
+The concurrent #155 official secondary-color release is preserved. Its route
+shell advance is retained in a coordinated new version alongside fallback,
+bootstrap URLs and Home prefetch. A warm-cache regression executes the actual
+loader and confirms it
+requests a fresh shell and loads the corrected helper; all route/fallback/Home
+cache references are checked together. All 941 tests in 84 suites pass; route
+inline scripts, bootstrap syntax and whitespace checks pass. Deployed browser
+GIF/PNG verification
+follows the protected follow-up merge. No cache disabling or hard-refresh
+workaround is required from the user.
 ## November 10 official secondary composition audit
 
 The current official Brand Hub Secondary Colors page was opened in the permitted
