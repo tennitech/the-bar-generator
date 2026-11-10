@@ -78,7 +78,8 @@ test.each([1,2])('Gradient %s GIF renderer paints the shared geometry at every c
     const plan=getLoopingGifFramePlan('gradient',values);
     const geometry={width:250,barY:132.4885,barHeight:18,exportPadding:20,paths:{r:'',p:'',i:''}};
     const renderer=context.createCapturedGifRenderer({currentShader:17,family:'gradient',values,
-      foreground:'#000000',dimensions:{width:1160,height:762,scale:4},geometry},plan);
+      foreground:'#000000',dimensions:{width:1160,height:762,scale:4},geometry,
+      composition:'logo',viewport:{x:-20,y:-20,width:290,height:190.4885}},plan);
     for(const phase of [0,.125,.25,.5,.75,1]) {
       const actual=renderer.renderFrame(0,phase);
       const expected=createGradientPatternGeometry({variant,barY:geometry.barY,gradientPhase:phase*(gradientReverse?-1:1)}).rects;

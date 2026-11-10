@@ -25,7 +25,7 @@
       const label = `Copy ${format.toUpperCase()}`;
       const blocker = root.NucleotidePattern?.exportBlocker(document) || '';
       const dimensions = root.RPI_LOGO_GEOMETRY && root.logoExportOptions
-        ? root.logoExportOptions.dimensions(root.logoExportUI.size(), root.RPI_LOGO_GEOMETRY) : null;
+        ? root.logoExportOptions.dimensions(root.logoExportUI.size(), root.RPI_LOGO_GEOMETRY, root.logoExportUI.composition?.()) : null;
       const description = root.embedSupport?.clipboardBlocked() ? 'Blocked by this site’s embed permissions'
         : unavailable ? `Not supported here. Save the ${format.toUpperCase()} file instead.`
           : format === 'svg' ? 'Scalable vector'
@@ -33,7 +33,7 @@
       button.querySelector('.option-label').textContent = format.toUpperCase();
       button.querySelector('.option-desc').textContent = unavailable ? (root.embedSupport?.clipboardBlocked() ? 'Blocked by site' : 'Use download') : (format === 'svg' ? 'Scalable vector' : 'Transparent image');
       button.title = unavailable ? description : '';
-      button.setAttribute('aria-label', `${label}: ${description}`);
+      button.setAttribute('aria-label', `${label}: ${root.logoExportOptions?.compositionLabel(root.logoExportUI.composition?.()) || 'Bar + RPI'}, ${description}`);
       button.setAttribute('aria-disabled', String(unavailable || Boolean(blocker)));
       button.disabled = unavailable || Boolean(blocker) || Boolean(root.logoExportUI?.isBusy());
     }

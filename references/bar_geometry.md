@@ -22,3 +22,19 @@ Ruler has exactly REPEATS major intervals across the domain, each split into DIV
 Static preview snapshots, header SVG and exports use the same current-control collector. Quantum keeps its native phase renderer and fixed scientific domain; Artemis retains its visible SVG layer and nested source viewport. Tiny moving headers preserve the accepted persistent letter layer and 4× bar sampling without freezing rows to a mean fill.
 
 `scripts/geometrySmoke.js` checks actual paint, spacing, live placement and downloads, including the SVG overlay's visible state and real CSS transform. `scripts/geometryEdgesSmoke.js` exercises additional edge/control cases. Pattern tests exclude unpainted definitions when counting geometry. Raster comparisons render SVG into the same whole-pixel viewport at the same uniform reference scale, preserving exact pixel-equality checks.
+
+
+## Export composition — November 10, 2026
+
+The export-only **Bar + RPI** / **Bar only** choice defaults to the complete
+mark. Bar-only SVG omits the official letter paths and uses the fixed
+`-20 112.4885 290 58` viewBox around the same 250 × 18 bar coordinates. It does
+not crop to painted bounds, force edge contact, rescale a frame, or modify the
+preview/header. The complete mark retains `-20 -20 290 190.4885`.
+
+Raster output uses the captured viewport at a uniform 4× or 8× scale. Bar-only
+PNG/GIF is 1160 × 232 or 2320 × 464, with 80 or 160 px clear space per side.
+Complete-mark dimensions and the existing Large default remain unchanged.
+Clipboard formats use the same captured composition. Both compositions retain
+transparent backgrounds. Print clear space and final-size legibility still
+require placement review.

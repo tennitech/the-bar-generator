@@ -3,6 +3,31 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 export composition choice
+
+The export menu adds two illustrated native radio cards, **Bar + RPI** and
+**Bar only**, using existing official vector paths and theme tokens. The complete
+mark and Large raster size remain the defaults. Selection has visible radio,
+border and keyboard-focus states; labels and descriptions remain accessible.
+It persists across menu/style synchronization and locks during export/copy jobs.
+
+One frozen snapshot carries composition and viewport through SVG, PNG, eligible
+Ticker/Waveform/Gradient GIFs and native SVG/PNG clipboard payloads. Bar-only omits letter
+paths and crops to the canonical bar plus proportional clear space, producing
+1160 × 232 / 2320 × 464 rasters. Pattern coordinates, current data/seed/settings,
+transparent backgrounds, resting still phase and existing loop plans remain
+unchanged. No runtime dependency, new asset or replacement logo is added.
+
+Validation and integration guidance are recorded in
+[export composition QA](export_composition_qa.md). Source/unit and offline native
+raster/codec checks are separate from rendered browser QA. Browser launch/socket
+escalation was already rejected in this environment; it was not retried or
+bypassed. Rendered menu layout, real keyboard/touch behavior, screen readers and
+native clipboard/paste remain unverified. The incremental release preserves the published brand composition and PR 133
+motion changes. The reconciled tree passes 854 unit tests, 264 PNG cases,
+12 GIFs / 816 decoded frames and 12 clipboard-adapter requests.
+Engineering validation does not establish owner acceptance or formal brand approval.
+
 ## November 10 six-feature and brand release reconciliation
 
 PR #133 is reconciled with published PR #134 at `04194d6a4f96aeb67d0d679a24ffad758ba6610e`.
@@ -77,6 +102,9 @@ button is added. Both stylesheet and runtime cache keys agree on both URLs.
 The original main `04194d6` candidate passes all 797 tests in 73 suites.
 The final reconciliation builds on merged PR #133 / main `05655f6` and passes
 all 841 tests in 77 suites. Its exact tested tree is recorded in PR #135.
+After export-composition PR #136 advanced main to `fed8e88`, a second clean
+reconciliation preserves its complete export tree and Home prefetch key. The
+combined candidate passes all 862 tests in 78 suites.
 The new adjacent-bar lifecycle regression verifies immediate clearing in a gap,
 selection on the next bar and protection from a stale leave event. Existing
 static-artwork, keyboard, reduced-motion, drag and export regressions pass.

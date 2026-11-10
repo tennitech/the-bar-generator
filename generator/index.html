@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261110-combined-brand-refinement" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261110-export-composition-r2" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/pageEntrance.js?v=20261110-combined-brand-refinement"></script>
@@ -101,6 +101,28 @@
         <p id="export-blocked-note" class="export_blocked-note" role="tooltip" hidden></p>
         <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Export asset">
           <div id="export-settings" class="export_settings">
+            <fieldset class="export_composition" aria-describedby="export-composition-note">
+              <legend class="export_size-label">Export composition</legend>
+              <div class="export_composition-options">
+                <label class="export_composition-option">
+                  <input id="export-composition-logo" type="radio" name="export-composition" value="logo" checked>
+                  <span class="export_composition-art" aria-hidden="true">
+                    <svg id="export-composition-preview-logo" xmlns="http://www.w3.org/2000/svg" focusable="false"></svg>
+                  </span>
+                  <span class="export_composition-title">Bar + RPI</span>
+                  <span class="export_composition-caption">Complete mark</span>
+                </label>
+                <label class="export_composition-option">
+                  <input id="export-composition-bar" type="radio" name="export-composition" value="bar">
+                  <span class="export_composition-art" aria-hidden="true">
+                    <svg id="export-composition-preview-bar" xmlns="http://www.w3.org/2000/svg" focusable="false"></svg>
+                  </span>
+                  <span class="export_composition-title">Bar only</span>
+                  <span class="export_composition-caption">Pattern strip</span>
+                </label>
+              </div>
+              <p id="export-composition-note" class="export_note">Your current pattern, with or without the lettering.</p>
+            </fieldset>
             <span id="export-size-label" class="export_size-label">Image size</span>
             <select id="export-size-select" hidden aria-hidden="true" tabindex="-1">
               <option value="large" selected>Large · Recommended</option>
@@ -1078,17 +1100,17 @@
   <script src="js/ui.js?v=20261104-scroll-cue-minimum"></script>
   <script src="js/utils/logoGeometry.js?v=20261103-save-removal"></script>
   <script src="js/utils/urlState.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportOptions.js?v=20261103-resting-motion-ruler"></script>
+  <script src="js/utils/exportOptions.js?v=20261110-export-composition-r2"></script>
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportUi.js?v=20261104-parametric-lfo-recovery"></script>
+  <script src="js/utils/exportUi.js?v=20261110-export-composition-r2"></script>
   <script src="js/utils/barInformation.js?v=20261110-combined-brand-refinement"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
   <script src="js/main.js?v=20261110-combined-brand-refinement"></script>
-  <script src="js/utils/logoClipboard.js?v=20261104-parametric-lfo-recovery"></script>
-  <script src="js/drawing.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/logoClipboard.js?v=20261110-export-composition-r2"></script>
+  <script src="js/drawing.js?v=20261110-export-composition-r2"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =
