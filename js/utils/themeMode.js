@@ -61,9 +61,8 @@
     return { mode, bg: mode === 'lunar' ? '#03060d' : scheme.bg, fg: scheme.fg };
   }
 
-  // UI labels are text, not logo ink. Keep compact names/checks legible while
-  // the separate ink mark shows the exact approved composition foreground.
-  function getThemeLabelForeground(background) {
+  // Keep the non-color focus cue visible independently of the exact brand text ink.
+  function getThemeFocusForeground(background) {
     const channels = background.slice(1).match(/../g).map(value => parseInt(value, 16) / 255);
     const luminance = channels.map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
       .reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
@@ -75,7 +74,7 @@
     option.dataset.colorTheme = pair.mode;
     option.style.setProperty('--theme-option-background', pair.bg);
     option.style.setProperty('--theme-option-foreground', pair.fg);
-    option.style.setProperty('--theme-option-label-foreground', getThemeLabelForeground(pair.bg));
+    option.style.setProperty('--theme-option-focus-foreground', getThemeFocusForeground(pair.bg));
   }
 
   function applyColorScheme(target, colorMode) {
