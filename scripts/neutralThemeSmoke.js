@@ -1,43 +1,140 @@
-/* Focused neutral surfaces, text contrast, export invariants and mobile checks. */
-const assert=require('node:assert/strict');const fs=require('node:fs/promises');const {chromium,webkit}=require('playwright');
-const base=process.env.RPI_SITE_URL||'http://127.0.0.1:8140';const engine=process.env.RPI_BROWSER||'chromium';const evidence='/tmp/bar-neutral-theme-evidence';
-const inks={black:'#000000',white:'#ffffff',red:'#d6001c',blue:'#0081ce',gold:'#cdac38',silver:'#e1edf5',gray:'#b9ccd8',lunar:'#f4f7fb'};
-const light=['black','red','blue','gold'];
-function luminance(rgb){return rgb.map(v=>{v/=255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4}).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0)}
-function contrast(a,b){const [hi,lo]=[luminance(a),luminance(b)].sort((a,b)=>b-a);return(hi+.05)/(lo+.05)}
-(async()=>{const browser=await{chromium,webkit}[engine].launch({headless:true});const results=[];await fs.mkdir(evidence,{recursive:true});
-try{
- for(const theme of Object.keys(inks)){
-  const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(`${base}/generator/${theme==='lunar'?'lunar':'ruler'}/?colorMode=${theme}`);await page.locator('#p5-container canvas[data-preview-ready="true"]').waitFor();await page.evaluate(()=>{noLoop();return document.fonts.ready;});
-  const data=await page.evaluate(()=>{
-   const css=getComputedStyle(document.body),surface=document.querySelector('.logo-container');
-   const rgb=v=>(v.match(/[\d.]+/g)||[]).slice(0,3).map(Number);
-   const header=getComputedStyle(document.querySelector('.app-header')),side=getComputedStyle(document.querySelector('.app-sidebar')),control=getComputedStyle(document.querySelector('#color-mode-select').parentElement.querySelector('.custom-select-trigger'));
-   const snapshot=captureLogoExportSnapshot();
-   return{stage:getComputedStyle(surface).backgroundColor,backdrop:getComputedStyle(surface,'::after').backgroundImage,header:rgb(header.backgroundColor),sidebar:rgb(side.backgroundColor),headerText:rgb(header.color),text:rgb(css.getPropertyValue('--text-primary')),secondary:css.getPropertyValue('--text-secondary').trim(),controlBg:rgb(control.backgroundColor),controlText:rgb(control.color),controlBorder:rgb(control.borderTopColor),fg:snapshot.foreground.toLowerCase(),svg:snapshot.svgSource,label:document.getElementById('color-mode-select-label').textContent,overflow:document.documentElement.scrollWidth>innerWidth};
+/* Brand compositions, neutral control contrast, transparent mark exports, and
+   contextual native guidance. Run when a supported browser environment is available. */
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const { chromium, webkit } = require('playwright');
+const { COLOR_SCHEMES } = require('../js/utils/themeMode');
+const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8140';
+const engine = process.env.RPI_BROWSER || 'chromium';
+const evidence = process.env.RPI_EVIDENCE_DIR || '/tmp/bar-brand-color-evidence';
+const rgb = hex => 'rgb(' + hex.slice(1).match(/../g).map(v => parseInt(v, 16)).join(', ') + ')';
+function luminance(values) {
+  return values.map(v => v / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4)
+    .reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0);
+}
+function contrast(a, b) {
+  const [hi, lo] = [a, b].map(luminance).sort((x, y) => y - x);
+  return (hi + .05) / (lo + .05);
+}
+async function guidanceCheck(page) {
+  const help = page.locator('#secondary-color-help');
+  const dialog = page.locator('#secondary-color-dialog');
+  await help.click();
+  assert.equal(await dialog.evaluate(el => el.matches(':modal')), true);
+  await page.locator('#secondary-color-title').waitFor({ state: 'visible' });
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'secondary-color-title');
+  assert.equal(await dialog.locator('li').count(), 4);
+  assert.equal(await dialog.locator('a').getAttribute('href'),
+    'https://brand.rpi.edu/d/pfJS6BKVKBeq/brand-guidelines#/-/color/secondary-colors');
+  // Native Tab containment, including wrap in both directions.
+  for (let i = 0; i < 5; i++) {
+    await page.keyboard.press('Tab');
+    assert.equal(await dialog.evaluate(el => el.contains(document.activeElement)), true);
+  }
+  await page.keyboard.press('Shift+Tab');
+  assert.equal(await dialog.evaluate(el => el.contains(document.activeElement)), true);
+  await page.keyboard.press('Escape');
+  assert.equal(await dialog.isVisible(), false);
+  assert.equal(await help.evaluate(el => el === document.activeElement), true);
+  await help.click();
+  await page.locator('#secondary-color-close').click();
+  assert.equal(await dialog.isVisible(), false);
+  await help.click();
+  await page.mouse.click(2, 2);
+  assert.equal(await dialog.isVisible(), false);
+  await help.click();
+  const fits = await dialog.evaluate(el => {
+    const bounds = el.getBoundingClientRect(), panel = el.querySelector('.report_dialog-panel');
+    panel.scrollTop = panel.scrollHeight;
+    return bounds.left >= 0 && bounds.right <= innerWidth && bounds.top >= 0
+      && bounds.bottom <= innerHeight && panel.scrollTop > 0 === (panel.scrollHeight > panel.clientHeight);
   });
-  assert.equal(data.fg,inks[theme]);assert.equal(data.overflow,false);assert.ok(data.svg.includes(`fill="${data.fg}"`)||data.svg.toLowerCase().includes(`fill="${data.fg}"`));
-  if(theme!=='lunar'){
-   assert.equal(data.stage,light.includes(theme)?'rgb(255, 255, 255)':'rgb(0, 0, 0)');assert.equal(data.backdrop,'none');assert.equal(data.label,'LOGO COLOR');
-   for(const color of [data.header,data.sidebar,data.controlBg])assert.equal(new Set(color).size,1,JSON.stringify(data));
-   assert.ok(contrast(data.headerText,data.header)>=4.5);assert.ok(contrast(data.controlText,data.controlBg)>=4.5);assert.ok(contrast(data.controlBorder,data.controlBg)>=3);
-  }else {assert.equal(data.stage,'rgb(3, 6, 13)');assert.match(data.backdrop,/lunar-canvas-backdrop/);assert.equal(data.label,'DISPLAY MODE');}
-  if(['gold','silver','gray'].includes(theme)){
-   const png=await page.evaluate(async()=>{const snapshot=captureLogoExportSnapshot();const blob=await createRasterExportBlob(snapshot,new AbortController().signal);const image=new Image();image.src=URL.createObjectURL(blob);await image.decode();const c=document.createElement('canvas');c.width=image.width;c.height=image.height;const ctx=c.getContext('2d');ctx.drawImage(image,0,0);const alpha=ctx.getImageData(0,0,1,1).data[3];URL.revokeObjectURL(image.src);return{alpha,width:c.width,height:c.height};});assert.equal(png.alpha,0);data.png=png;
-  }
-  await page.screenshot({path:`${evidence}/${engine}-${theme}-desktop.png`,scale:'css'});
-  if(['white','gold','lunar'].includes(theme)) {
-   const mobile=await browser.newPage({viewport:{width:375,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
-   await mobile.goto(`${base}/generator/${theme==='lunar'?'lunar':'ruler'}/?colorMode=${theme}`);
-   await mobile.locator('#p5-container canvas[data-preview-ready="true"]').waitFor();
-   await mobile.locator('#mobile-menu-toggle').click();
-   await mobile.locator('#mobile-controls-close').waitFor({state:'visible'});
-   assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-   await mobile.screenshot({path:`${evidence}/${engine}-${theme}-phone-controls.png`,scale:'css'});
-   await mobile.locator('#mobile-controls-close').click();await mobile.close();
-  }
-  assert.deepEqual(errors,[]);results.push({theme,...data,svg:undefined});await page.close();
- }
- await fs.writeFile(`${evidence}/${engine}-results.json`,JSON.stringify(results,null,2));console.log(`${engine}: 8 palettes, neutral surfaces/contrast, transparent exports and 375 px controls passed.`);
-}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
+  assert.equal(fits, true);
+  await page.screenshot({ path: path.join(evidence, engine + '-guidance-' + (await page.viewportSize()).width + '.png'), scale: 'css' });
+  await page.keyboard.press('Escape');
+}
+(async () => {
+  const browser = await { chromium, webkit }[engine].launch({ headless: true });
+  const results = [], errors = [];
+  await fs.mkdir(evidence, { recursive: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+    page.on('pageerror', error => errors.push(error.message));
+    for (const [mode, scheme] of Object.entries(COLOR_SCHEMES)) {
+      await page.goto(base + '/generator/' + (mode === 'lunar' ? 'lunar' : 'ruler') + '/?colorMode=' + mode);
+      await page.locator('#p5-container canvas[data-preview-ready="true"]').waitFor();
+      await page.evaluate(() => { noLoop(); return document.fonts.ready; });
+      const data = await page.evaluate(() => {
+        const read = selector => getComputedStyle(document.querySelector(selector));
+        const control = read('#color-mode-select + .custom-select-trigger');
+        const header = read('.app-header');
+        const parse = value => (value.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+        const snapshot = captureLogoExportSnapshot();
+        return {
+          stage: read('.logo-container').backgroundColor,
+          header: header.backgroundColor,
+          headerInk: read('#header-logo-preview').color,
+          headerText: parse(header.color), headerRGB: parse(header.backgroundColor),
+          controlBg: parse(control.backgroundColor), controlText: parse(control.color),
+          fg: snapshot.foreground.toLowerCase(), svg: snapshot.svgSource,
+          label: document.getElementById('color-mode-select-label').textContent,
+          selectedLabel: document.querySelector('#color-mode-select + .custom-select-trigger').textContent,
+          overflow: document.documentElement.scrollWidth > innerWidth
+        };
+      });
+      assert.equal(data.fg, scheme.fg);
+      assert.equal(data.overflow, false);
+      assert.ok(data.svg.toLowerCase().includes('fill="' + scheme.fg + '"'));
+      assert.equal(await page.locator('#secondary-color-help').isVisible(), scheme.secondary);
+      if (mode !== 'lunar') {
+        assert.equal(data.stage, rgb(scheme.bg));
+        assert.equal(data.header, rgb(scheme.bg));
+        assert.equal(data.headerInk, rgb(scheme.fg));
+        assert.equal(data.label, 'COLOR THEME');
+        assert.equal(data.selectedLabel, scheme.label);
+        assert.ok(contrast(data.headerText, data.headerRGB) >= 4.5);
+        assert.ok(contrast(data.controlText, data.controlBg) >= 4.5);
+      }
+      // Mark-only downloads retain alpha; colors change the shared ink, not export geometry.
+      if (['gold', 'silver', 'gray'].includes(mode)) {
+        const png = await page.evaluate(async () => {
+          const blob = await createRasterExportBlob(captureLogoExportSnapshot(), new AbortController().signal);
+          const url = URL.createObjectURL(blob), image = new Image();
+          try {
+            image.src = url; await image.decode();
+            const canvas = document.createElement('canvas');
+            canvas.width = image.width; canvas.height = image.height;
+            const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0);
+            return { alpha: ctx.getImageData(0, 0, 1, 1).data[3], width: image.width, height: image.height };
+          } finally { URL.revokeObjectURL(url); }
+        });
+        assert.equal(png.alpha, 0);
+        data.png = png;
+      }
+      await page.screenshot({ path: path.join(evidence, engine + '-' + mode + '-desktop.png'), scale: 'css' });
+      if (mode === 'blue') await guidanceCheck(page);
+      results.push({ mode, ...data, svg: undefined });
+    }
+    // Changing themes in place exercises change events and both directions of contextual visibility.
+    await page.selectOption('#color-mode-select', 'blue', { force: true });
+    assert.equal(await page.locator('#secondary-color-help').isVisible(), true);
+    await page.selectOption('#color-mode-select', 'black', { force: true });
+    assert.equal(await page.locator('#secondary-color-help').isVisible(), false);
+    await page.selectOption('#color-mode-select', 'gold', { force: true });
+    await guidanceCheck(page);
+    const mobile = await browser.newPage({
+      viewport: { width: 375, height: 667 }, hasTouch: true, isMobile: true, reducedMotion: 'reduce'
+    });
+    mobile.on('pageerror', error => errors.push(error.message));
+    await mobile.goto(base + '/generator/ruler/?colorMode=blue');
+    await mobile.locator('#p5-container canvas[data-preview-ready="true"]').waitFor();
+    await mobile.locator('#mobile-menu-toggle').click();
+    await guidanceCheck(mobile);
+    assert.equal(await mobile.locator('#app-sidebar').evaluate(el => el.classList.contains('active')), true);
+    assert.equal(await mobile.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    assert.deepEqual(errors, []);
+    await fs.writeFile(path.join(evidence, engine + '-results.json'), JSON.stringify(results, null, 2));
+    console.log(engine + ': all brand compositions, guidance, keyboard focus, mobile overflow and mark alpha passed.');
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

@@ -36,7 +36,7 @@ function createClassList(initialClasses = []) {
 }
 
 describe('theme mode utils', () => {
-  test('normalizes legacy aliases onto the exported-mark-first theme names', () => {
+  test('normalizes legacy aliases while retaining explicit composition names', () => {
     expect(normalizeColorModeValue('LUNAR')).toBe('lunar');
     expect(normalizeColorModeValue('LIGHT')).toBe(LEGACY_COLOR_MODE_ALIASES.light);
     expect(normalizeColorModeValue('dark')).toBe(LEGACY_COLOR_MODE_ALIASES.dark);
@@ -109,4 +109,57 @@ describe('theme mode utils', () => {
     expect(lunarOption['aria-hidden']).toBe('false');
     expect(lunarOption['aria-disabled']).toBe('false');
   });
+});
+
+test('brand compositions apply the supplied foreground/background pair without altering palette values', () => {
+  const { COLOR_SCHEMES, applyColorScheme, AVAILABLE_COLOR_MODES } = require('../js/utils/themeMode');
+  const pairs = [
+    ['black', '#000000', '#ffffff'], ['white', '#ffffff', '#000000'],
+    ['white-on-red', '#ffffff', '#d6001c'], ['red', '#d6001c', '#ffffff'],
+    ['gray-on-red', '#b9ccd8', '#d6001c'], ['blue', '#e1edf5', '#0081ce'],
+    ['gold', '#000000', '#cdac38'], ['gray', '#d6001c', '#b9ccd8'],
+    ['silver', '#0081ce', '#e1edf5'], ['gray-on-black', '#b9ccd8', '#000000']
+  ];
+  const fs = require('node:fs'), vm = require('node:vm');
+  const geometry = require('../js/utils/logoGeometry').RPI_LOGO_GEOMETRY;
+  const renderer = { RPI_LOGO_GEOMETRY: geometry, colors: COLOR_SCHEMES,
+    currentShader: 0, REFERENCE_WIDTH: geometry.width, document: {},
+    getCurrentBarPatternValues: () => ({}), getLoopRuntimeValues: () => ({}),
+    normalizeStyleValue: value => value, styleSelect: { value: 'solid' },
+    buildCurrentBarPatternSVGFragment: ({ fgColor }) => '<rect fill="' + fgColor + '"/>',
+    logoExportOptions: require('../js/utils/exportOptions'), logoExportUI: { size: () => 'standard' } };
+  renderer.window = renderer;
+  vm.createContext(renderer);
+  vm.runInContext(fs.readFileSync(require.resolve('../js/drawing.js'), 'utf8'), renderer);
+  const inkNames = { '#000000': 'black', '#ffffff': 'white', '#d6001c': 'red',
+    '#b9ccd8': 'gray', '#e1edf5': 'silver', '#0081ce': 'blue' };
+  const properties = {};
+  const target = { style: {
+    setProperty: (key, value) => { properties[key] = value; },
+    removeProperty: key => { delete properties[key]; }
+  } };
+  for (const [mode, foreground, background] of pairs) {
+    expect(AVAILABLE_COLOR_MODES).toContain(mode);
+    expect(normalizeColorModeValue(mode)).toBe(mode);
+    applyColorScheme(target, mode);
+    renderer.currentColorMode = mode;
+    const exported = renderer.captureLogoExportSnapshot();
+    expect(exported.foreground).toBe(foreground);
+    expect(exported.svgSource).toContain('fill="' + foreground + '"');
+    expect(exported.inkName).toBe(inkNames[foreground]);
+    expect(exported.dimensions.width).toBe(1160);
+    expect(exported.svgSource).not.toContain('<rect width="100%"');
+    expect(COLOR_SCHEMES[mode].fg).toBe(foreground);
+    expect(properties['--preview-foreground']).toBe(foreground);
+    expect(properties['--header-artwork-ink']).toBe(foreground);
+    for (const key of ['--bg-canvas', '--bg-app', '--bg-header']) expect(properties[key]).toBe(background);
+    expect(properties['--text-on-header']).toBe(['#000000', '#d6001c'].includes(background) ? '#ffffff' : '#000000');
+  }
+  applyColorScheme(target, 'lunar');
+  expect(properties['--preview-foreground']).toBe('#f4f7fb');
+  expect(properties['--bg-canvas']).toBeUndefined();
+  expect(properties['--bg-header']).toBeUndefined();
+  applyColorScheme(target, 'unknown');
+  expect(properties['--bg-canvas']).toBe('#ffffff');
+  expect(properties['--preview-foreground']).toBe('#000000');
 });

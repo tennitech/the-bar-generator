@@ -1039,7 +1039,8 @@ function captureLogoExportSnapshot() {
   const title = Array.from(String(safeName).normalize('NFC').replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, '').trim()).slice(0, 80).join('');
   const geometry = RPI_LOGO_GEOMETRY;
   const dimensions = window.logoExportOptions.dimensions(window.logoExportUI.size(), geometry);
-  const inkName = ({ '#ffffff': 'white', '#000000': 'black', '#d6001c': 'red' })[foreground.toLowerCase()] || currentColorMode;
+  const inkName = ({ '#ffffff': 'white', '#000000': 'black', '#d6001c': 'red',
+    '#0081ce': 'blue', '#cdac38': 'gold', '#e1edf5': 'silver', '#b9ccd8': 'gray' })[foreground.toLowerCase()] || currentColorMode;
   const rgb = [0, 2, 4].map(offset => parseInt(foreground.replace('#', '').slice(offset, offset + 2), 16));
   const svgSource = `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="${geometry.width + geometry.exportPadding * 2}" height="${geometry.totalHeight + geometry.exportPadding * 2}" viewBox="-${geometry.exportPadding} -${geometry.exportPadding} ${geometry.width + geometry.exportPadding * 2} ${geometry.totalHeight + geometry.exportPadding * 2}" xmlns="http://www.w3.org/2000/svg"><title>${escapeExportXML(title || `RPI ${family} logo`)}</title>${Object.values(geometry.paths).map(path => `<path d="${path}" fill="${foreground}"/>`).join('')}${barMarkup}</svg>`;
   return Object.freeze({ family, currentShader, colorMode: currentColorMode, foreground, rgb, inkName, title,

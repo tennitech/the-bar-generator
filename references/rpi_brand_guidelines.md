@@ -23,6 +23,24 @@ Verified on October 27, 2026, through the RPI brand site in the Codex in-app bro
 
 Brand-site access is not a copyright license or project approval. Confirm asset rights and approvals with the RPI sponsor. AGENTS.md remains the repository's canonical agent policy; record and resolve any policy conflict rather than silently widening app behavior.
 
+## November 10, 2026 owner-supplied color examples
+
+Five readable Brand Hub screenshots were inspected for the requested contextual
+color update. They document the three primary compositions and six secondary
+compositions listed in [the source and QA record](brand_color_context_qa.md),
+with exact primary and secondary hex values. The owner explicitly requested
+those logo/background pairings and the supplied Secondary Color Usage guidance.
+Secondary selections are now available with a contextual modal; the former
+coming-soon restriction is superseded for these documented examples only.
+
+Use the literal foreground/background names shown in the editor. Preserve the
+exact palette values; Link Blue is not an additional logo pairing. The example
+logo colors do not authorize low-contrast small interface text. Red on White
+retains its limited-use label. Existing asset permissions and formal RPI approval
+questions remain open; these screenshots and passing tests do not grant general
+asset redistribution rights. The live secondary-colors page could not be
+retrieved in this pass.
+
 ---
 
 # About Our Brand
