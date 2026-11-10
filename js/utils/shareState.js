@@ -38,6 +38,11 @@
       && manifest['color-mode-select']?.options?.includes('black')) {
       sourceControls['color-mode-select'] = 'black';
     }
+    // Recover the retired low-contrast composition without losing other controls.
+    if (sourceControls['color-mode-select'] === 'gray-on-red'
+      && manifest['color-mode-select']?.options?.includes('white-on-red')) {
+      sourceControls['color-mode-select'] = 'white-on-red';
+    }
     if (manifest['triangle-grid-rows']) {
       const variant = Number(sourceControls['triangle-grid-variant-slider'] || 2);
       const defaults = { rows: variant + 1, density: 100, stroke: 100, stagger: 50 };

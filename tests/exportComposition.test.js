@@ -29,13 +29,13 @@ test('both compositions retain identical current bar content for every selectabl
 test('a request freezes composition, viewport, size, data and ink before asynchronous preparation', () => {
   const r = createRuntime(); r.select('triangles'); r.state.composition = 'bar'; r.state.size = 'standard';
   const snapshot = r.captureLogoExportSnapshot();
-  r.state.composition = 'logo'; r.state.size = 'large'; r.currentColorMode = 'gray';
+  r.state.composition = 'logo'; r.state.size = 'large'; r.currentColorMode = 'white-on-red';
   r.state.values.trianglesCount = 7; r.state.title = 'Changed';
   expect(snapshot).toMatchObject({ composition: 'bar', foreground: '#000000',
     title: 'Test <bar> & RPI', values: { trianglesCount: 23 }, dimensions: { width: 1160, height: 232 } });
   expect(snapshot.svgSource).toContain('<title>Test &lt;bar&gt; &amp; RPI</title>');
   for (const value of [snapshot, snapshot.values, snapshot.viewport, snapshot.dimensions]) expect(Object.isFrozen(value)).toBe(true);
-  expect(r.captureLogoExportSnapshot()).toMatchObject({ composition: 'logo', foreground: '#d6001c' });
+  expect(r.captureLogoExportSnapshot()).toMatchObject({ composition: 'logo', foreground: '#ffffff' });
 });
 
 test.each(['logo', 'bar'])('empty/blocked encoded content still rejects %s exports', composition => {

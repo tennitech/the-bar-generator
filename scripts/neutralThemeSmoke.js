@@ -25,20 +25,20 @@ async function themeRowCheck(page, mode, scheme) {
   const read = element => {
     const css = getComputedStyle(element);
     return { bg: css.backgroundColor, ink: css.color, font: parseFloat(css.fontSize),
-      weight: Number(css.fontWeight), shadow: css.boxShadow, transform: css.textTransform };
+      weight: Number(css.fontWeight), family: css.fontFamily, height: element.getBoundingClientRect().height, shadow: css.boxShadow, transform: css.textTransform };
   };
   const expectedBackground = mode === 'lunar' ? '#03060d' : scheme.bg;
   const normal = await row.evaluate(read);
   assert.equal(normal.bg, rgb(expectedBackground));
   assert.equal(normal.ink, rgb(scheme.fg));
-  assert.ok(normal.font >= 19 && normal.weight >= 700);
-  assert.equal(normal.transform, 'none');
+  assert.equal(normal.font, 12);
+  assert.ok(normal.family.includes('RPIGeistMono'));
+  assert.ok(normal.height >= 44);
+  assert.equal(normal.transform, 'uppercase');
   assert.equal(await wrapper.locator('[data-color-theme-swatch]').count(), 0);
   assert.equal(await row.getAttribute('aria-selected'), 'true');
-  assert.equal(await row.locator('.color_theme-indicator').getAttribute('aria-hidden'), 'true');
-  assert.equal(await row.locator('.color_theme-indicator').evaluate(el => getComputedStyle(el).visibility), 'visible');
-  assert.equal(await row.evaluate(el => getComputedStyle(el, '::after').content), 'none');
-  assert.equal(await row.evaluate(el => getComputedStyle(el).paddingRight), '12px');
+  assert.notEqual(await row.evaluate(el => getComputedStyle(el, '::after').content), 'none');
+  assert.equal(await row.locator('.color_theme-indicator').count(), 0);
 
   await trigger.press(mode === 'black' ? 'End' : 'Home');
   await row.hover();
@@ -216,7 +216,7 @@ async function guidanceCheck(page) {
     await trigger.tap();
     const rows = mobile.locator('#color-mode-select').locator('..').locator('.custom-option:not(.is-hidden)');
     assert.equal(await rows.locator('.color_theme-label').count(), await rows.count());
-    assert.equal(await rows.locator('.color_theme-indicator').count(), await rows.count());
+    assert.equal(await rows.locator('.color_theme-indicator').count(), 0);
     assert.equal(await rows.locator('[data-color-theme-swatch]').count(), 0);
     await mobile.locator('.custom-option[data-value="gold"]').tap();
     assert.equal(await mobile.locator('#color-mode-select').inputValue(), 'gold');

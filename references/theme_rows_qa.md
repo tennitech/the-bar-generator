@@ -1,5 +1,9 @@
 # Full-color theme rows — source and QA
 
+Superseded by the owner’s compact typography/pairing correction; see
+[the current correction record](theme_picker_correction_qa.md). The account below
+records PR #149’s historical implementation and validation.
+
 Date: November 10, 2026. Initial base: main e19238a (PR #145).
 Branch: `codex/feat-color-theme-rows`. Final reconciliation also preserves
 main 5f7ad20 (PR #146, responsive marquee focus).

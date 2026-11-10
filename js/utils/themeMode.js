@@ -8,17 +8,16 @@
   root.themeModeUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const DEFAULT_COLOR_MODE = 'black';
-  // Foreground/background pairs transcribed from the owner's November 10 Brand Hub references.
+  // Normal-text foreground/background pairs from the owner's accessibility reference.
   // These keys remain shareable; existing one-color keys now describe full compositions.
   const COLOR_SCHEMES = Object.freeze({
     black: Object.freeze({ label: 'Black on White', bg: '#ffffff', fg: '#000000', secondary: false }),
     white: Object.freeze({ label: 'White on Black', bg: '#000000', fg: '#ffffff', secondary: false }),
     'white-on-red': Object.freeze({ label: 'White on Red', bg: '#d6001c', fg: '#ffffff', secondary: false }),
-    'gray-on-red': Object.freeze({ label: 'Gray on Red', bg: '#d6001c', fg: '#b9ccd8', secondary: true }),
-    blue: Object.freeze({ label: 'Silver on Blue', bg: '#0081ce', fg: '#e1edf5', secondary: true }),
+    blue: Object.freeze({ label: 'Black on Blue', bg: '#0081ce', fg: '#000000', secondary: true }),
     gold: Object.freeze({ label: 'Black on Gold', bg: '#cdac38', fg: '#000000', secondary: true }),
-    gray: Object.freeze({ label: 'Red on Gray', bg: '#b9ccd8', fg: '#d6001c', secondary: true }),
-    silver: Object.freeze({ label: 'Blue on Silver', bg: '#e1edf5', fg: '#0081ce', secondary: true }),
+    gray: Object.freeze({ label: 'Black on Gray', bg: '#b9ccd8', fg: '#000000', secondary: true }),
+    silver: Object.freeze({ label: 'Black on Silver', bg: '#e1edf5', fg: '#000000', secondary: true }),
     'gray-on-black': Object.freeze({ label: 'Gray on Black', bg: '#000000', fg: '#b9ccd8', secondary: true }),
     lunar: Object.freeze({ label: 'Mission Control', bg: '#05070a', fg: '#f4f7fb', secondary: false })
   });
@@ -29,6 +28,7 @@
     'white-on-black': 'white',
     red: 'black',
     'red-on-white': 'black',
+    'gray-on-red': 'white-on-red',
     light: 'black',
     dark: 'white'
   };
