@@ -3,6 +3,28 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 straight GIF edge repair
+
+The supplied animation screenshot was materialized with its Library identity,
+verified as a readable 223,213-byte PNG and inspected before diagnosis. Its
+repeating teeth on straight Waveform edges reproduce in GIF alpha conversion:
+the source raster has straight edges, while the former ordered 4 × 4 coverage
+mask varies them across rows. GIF now defaults to uniform half-coverage alpha
+quantization. Palette colors, transparency, disposal, dimensions, geometry,
+SVG/PNG output, audio, LFO and frame timing remain intact. The separate 30 fps
+and sample-wise visual LFO tasks retain their own scope.
+
+Validation after preserving PR #141 and #142: 888 tests in 79 suites pass (initial
+baseline: 875 tests in 78 suites). Native raster/actual vendored
+codec comparisons decode 20 files / 160 sampled frames across Waveform square
+and square/pulse shapes at both sizes and compositions, plus Ticker and Gradient.
+Straight source edges have zero row variation; old encoded edges add 21,440
+row differences in the measured interior bands; corrected encoded edges add
+zero. Focused regressions also check translating subpixel edges in three exact
+ink colors through the actual codec, including transparency and disposal.
+Browser/physical-viewer playback and native audio remain unverified under the
+existing browser restrictions; no denied browser call was retried. This is not
+formal RPI approval. See [GIF edge QA](gif_edge_qa.md) and its generated review image.
 
 ## November 10 LFO, speed landmarks and sidebar disclosures
 
