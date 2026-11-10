@@ -1,4 +1,4 @@
-/* Brand compositions, neutral control contrast, transparent mark exports, and
+/* Full-color theme rows, neutral control contrast, transparent mark exports, and
    contextual native guidance. Run when a supported browser environment is available. */
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
@@ -17,6 +17,48 @@ function contrast(a, b) {
   const [hi, lo] = [a, b].map(luminance).sort((x, y) => y - x);
   return (hi + .05) / (lo + .05);
 }
+async function themeRowCheck(page, mode, scheme) {
+  const wrapper = page.locator('#color-mode-select').locator('..');
+  const trigger = wrapper.locator('.custom-select-trigger');
+  await trigger.click();
+  const row = wrapper.locator('.custom-option[data-value="' + mode + '"]');
+  const read = element => {
+    const css = getComputedStyle(element);
+    return { bg: css.backgroundColor, ink: css.color, font: parseFloat(css.fontSize),
+      weight: Number(css.fontWeight), shadow: css.boxShadow, transform: css.textTransform };
+  };
+  const expectedBackground = mode === 'lunar' ? '#03060d' : scheme.bg;
+  const normal = await row.evaluate(read);
+  assert.equal(normal.bg, rgb(expectedBackground));
+  assert.equal(normal.ink, rgb(scheme.fg));
+  assert.ok(normal.font >= 19 && normal.weight >= 700);
+  assert.equal(normal.transform, 'none');
+  assert.equal(await wrapper.locator('[data-color-theme-swatch]').count(), 0);
+  assert.equal(await row.getAttribute('aria-selected'), 'true');
+  assert.equal(await row.locator('.color_theme-indicator').getAttribute('aria-hidden'), 'true');
+  assert.equal(await row.locator('.color_theme-indicator').evaluate(el => getComputedStyle(el).visibility), 'visible');
+  assert.equal(await row.evaluate(el => getComputedStyle(el, '::after').content), 'none');
+  assert.equal(await row.evaluate(el => getComputedStyle(el).paddingRight), '12px');
+
+  await trigger.press(mode === 'black' ? 'End' : 'Home');
+  await row.hover();
+  const hover = await row.evaluate(read);
+  assert.equal(hover.bg, normal.bg); assert.equal(hover.ink, normal.ink);
+  assert.ok(hover.shadow.includes('rgb(255, 255, 255)') && hover.shadow.includes('rgb(0, 0, 0)'));
+
+  const values = await wrapper.locator('.custom-option:not(.is-hidden):not(.is-disabled)').evaluateAll(rows => rows.map(el => el.dataset.value));
+  await trigger.press('Home');
+  for (let i = 0; i < values.indexOf(mode); i++) await trigger.press('ArrowDown');
+  assert.equal(await trigger.getAttribute('aria-activedescendant'), await row.getAttribute('id'));
+  const keyboard = await row.evaluate(read);
+  assert.equal(keyboard.bg, normal.bg); assert.equal(keyboard.ink, normal.ink);
+  assert.notEqual(keyboard.shadow, hover.shadow);
+  assert.ok(keyboard.shadow.includes('rgb(255, 255, 255)') && keyboard.shadow.includes('rgb(0, 0, 0)'));
+  if (mode === 'blue') await page.screenshot({ path: path.join(evidence, engine + '-theme-rows.png'), scale: 'css' });
+  await trigger.press('Escape');
+  assert.equal(await page.locator('#color-mode-select').inputValue(), mode);
+}
+
 async function guidanceCheck(page) {
   const help = page.locator('#secondary-color-help');
   const dialog = page.locator('#secondary-color-dialog');
@@ -119,10 +161,7 @@ async function guidanceCheck(page) {
       assert.equal(data.overflow, false);
       assert.ok(data.svg.toLowerCase().includes('fill="' + scheme.fg + '"'));
       assert.equal(await page.locator('#secondary-color-help').isVisible(), scheme.secondary);
-      const expectedBackground = mode === 'lunar' ? '#03060d' : scheme.bg;
-      const tile = page.locator('#color-mode-select').locator('..').locator('.custom-select-trigger [data-color-theme-swatch]');
-      assert.equal(await tile.evaluate(el => getComputedStyle(el).backgroundColor), rgb(expectedBackground));
-      assert.equal(await tile.evaluate(el => getComputedStyle(el, '::after').backgroundColor), rgb(scheme.fg));
+      await themeRowCheck(page, mode, scheme);
       if (mode !== 'lunar') {
         assert.equal(data.stage, rgb(scheme.bg));
         assert.equal(data.header, data.sidebar);
@@ -174,9 +213,14 @@ async function guidanceCheck(page) {
       await mobile.locator('.app-sidebar').evaluate(el => getComputedStyle(el).backgroundColor));
     assert.equal(await mobile.locator('#header-logo-preview').evaluate(el => getComputedStyle(el).color), 'rgb(0, 0, 0)');
     const trigger = mobile.locator('#color-mode-select').locator('..').locator('.custom-select-trigger');
-    await trigger.click();
+    await trigger.tap();
     const rows = mobile.locator('#color-mode-select').locator('..').locator('.custom-option:not(.is-hidden)');
-    assert.equal(await rows.locator('[data-color-theme-swatch]').count(), await rows.count());
+    assert.equal(await rows.locator('.color_theme-label').count(), await rows.count());
+    assert.equal(await rows.locator('.color_theme-indicator').count(), await rows.count());
+    assert.equal(await rows.locator('[data-color-theme-swatch]').count(), 0);
+    await mobile.locator('.custom-option[data-value="gold"]').tap();
+    assert.equal(await mobile.locator('#color-mode-select').inputValue(), 'gold');
+    await trigger.tap();
     await mobile.keyboard.press('End');
     await mobile.keyboard.press('Enter');
     await trigger.click();

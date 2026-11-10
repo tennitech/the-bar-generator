@@ -55,24 +55,17 @@
     return Object.hasOwn(legacyAliases, normalized) ? legacyAliases[normalized] : defaultColorMode;
   }
 
-  function syncColorSwatch(swatch, colorMode) {
-    if (!swatch) return;
+  function getColorThemePair(colorMode) {
     const mode = normalizeColorModeValue(colorMode);
     const scheme = COLOR_SCHEMES[mode];
-    // Mission Control's existing illustrated canvas uses this dark base.
-    const background = mode === 'lunar' ? '#03060d' : scheme.bg;
-    swatch.dataset.colorTheme = mode;
-    swatch.style.setProperty('--theme-swatch-background', background);
-    swatch.style.setProperty('--theme-swatch-foreground', scheme.fg);
+    return { mode, bg: mode === 'lunar' ? '#03060d' : scheme.bg, fg: scheme.fg };
   }
 
-  function createColorSwatch(documentRef, colorMode) {
-    const swatch = documentRef.createElement('span');
-    swatch.className = 'color_theme-swatch';
-    swatch.dataset.colorThemeSwatch = '';
-    swatch.setAttribute('aria-hidden', 'true');
-    syncColorSwatch(swatch, colorMode);
-    return swatch;
+  function styleColorThemeOption(option, colorMode) {
+    const pair = getColorThemePair(colorMode);
+    option.dataset.colorTheme = pair.mode;
+    option.style.setProperty('--theme-option-background', pair.bg);
+    option.style.setProperty('--theme-option-foreground', pair.fg);
   }
 
   function applyColorScheme(target, colorMode) {
@@ -120,7 +113,6 @@
     if (triggerLabel) {
       const label = triggerLabel.querySelector?.('[data-select-label]');
       (label || triggerLabel).textContent = resolvedLabel;
-      syncColorSwatch(triggerLabel.querySelector?.('[data-color-theme-swatch]'), selectElement.value);
       if (triggerLabel.dataset && triggerLabel.dataset.label && typeof triggerLabel.setAttribute === 'function') {
         triggerLabel.setAttribute('aria-label', `${triggerLabel.dataset.label}: ${resolvedLabel}`);
       }
@@ -171,8 +163,8 @@
   }
 
   return {
-    createColorSwatch,
-    syncColorSwatch,
+    getColorThemePair,
+    styleColorThemeOption,
     COLOR_SCHEMES,
     applyColorScheme,
     DEFAULT_COLOR_MODE,
