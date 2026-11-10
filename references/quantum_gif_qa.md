@@ -1,4 +1,4 @@
-# Particle on a Ring: GIF QA
+# Ring Wavefunction: GIF QA
 
 November 10, 2026. Current candidate retains published main through `24b4951`
 (PR #164), including the neutral contextual theme previews/reference pairs, disclosures,
@@ -8,7 +8,8 @@ change is made; legacy wave-quantum identifiers, URLs and saved links survive.
 
 ## Scientific name and picture
 
-**Particle on a Ring** names the actual ideal free-particle model. Its picture is
+**Ring Wavefunction** is the visible style name; its ideal model is a free particle
+on a ring. Its picture is
 three wavefunction phase projections, `Re(exp(iα)ψ)` at 0°, 60° and 120°, of the
 normalized equal-weight periodic mode sum −4, 3, 7 with n² time evolution. The
 ribbons show convention-dependent amplitude projections, not particle tracks,
