@@ -68,11 +68,11 @@ describe('Home motion preference', () => {
   });
 });
 
-test.each(['index.html', 'marquee-ui.html'])('%s has a native generator entrance and an accessible icon-only motion control', file => {
+test.each(['index.html', 'marquee-ui.html'])('%s retains keyboard generator access and an accessible icon-only motion control', file => {
   const html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
   expect(html).toMatch(/class="marquee_skip-link" href="generator\/solid\/"/);
-  expect(html).toMatch(/class="hero_generator-link" href="generator\/solid\/"/);
-  expect(html).toContain('<span>Enter generator</span>');
+  expect(html).not.toContain('hero_generator-link');
+  expect(html).not.toContain('Enter generator');
   const button = html.match(/<button[^>]+id="marquee-motion-toggle"[\s\S]*?<\/button>/)[0];
   expect(button).toContain('aria-label="Pause motion"');
   expect(button).toContain('aria-controls="marquee-stage"');

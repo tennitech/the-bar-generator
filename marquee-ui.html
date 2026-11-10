@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Experimental next-gen marquee interface for the RPI Bar Generator.">
   <title>RPI Bar Generator Marquee Experiment</title>
-  <link href="css/marquee-ui.css?v=20261104-home-playful-integrated" rel="stylesheet" type="text/css">
+  <link href="css/marquee-ui.css?v=20261110-marquee-static-focus" rel="stylesheet" type="text/css">
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261104-letter-resolve"></script>
   <script src="js/utils/pageEntrance.js?v=20261104-letter-resolve" data-entry-kind="selector"></script>
@@ -58,17 +58,13 @@
               </div>
             </div>
             <div class="hero_controls" data-marquee-controls data-page-entrance>
-              <a class="hero_generator-link" href="generator/solid/">
-                <span>Enter generator</span>
-                <svg data-feather="chevron-down" class="hero_entrance-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-              </a>
               <button class="hero_motion-control" id="marquee-motion-toggle" type="button"
                 aria-label="Pause motion" aria-controls="marquee-stage" aria-describedby="marquee-motion-description"
                 data-motion-paused="false" hidden>
                 <svg data-feather="pause" class="hero_motion-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                 <svg data-feather="play" class="hero_motion-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               </button>
-              <span class="marquee_visually-hidden" id="marquee-motion-description">Controls the moving rows and animated bar previews. Dragging still works while paused.</span>
+              <span class="marquee_visually-hidden" id="marquee-motion-description">Controls the scrolling rows. Dragging still works while paused.</span>
             </div>
           </div>
         </div>
@@ -77,8 +73,7 @@
   </div>
 
   <script src="js/utils/marqueeCatalog.js?v=20261104-nucleotide-minimum"></script>
-  <script src="js/utils/marqueeAnimation.js?v=20261104-preview-hover-hold"></script>
-  <script src="js/marqueeUi.js?v=20261104-neighbors-final"></script>
+  <script src="js/marqueeUi.js?v=20261110-marquee-static-focus"></script>
   <script src="js/utils/mobileBrowser.js?v=20261105-safari-top-theme"></script>
 </body>
 

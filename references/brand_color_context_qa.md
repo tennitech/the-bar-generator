@@ -67,7 +67,9 @@ export feature. It does not change bar geometry, pattern math, or animation.
 
 ## Executed checks
 
-- All 784 unit tests pass in 72 suites, using cloud Node 24.22.1.
+- The original candidate passes 784 unit tests in 72 suites in cloud Node
+  24.22.1. After preserving the PR #132 Home release, all 789 combined tests
+  pass in 73 suites.
 - Focused palette verification drives the real export snapshot function and
   checks SVG ink, dimensions, and filename ink against the composition.
 - Modal controller regression coverage checks all contextual choices, one-time
@@ -109,8 +111,11 @@ additive project-status section. There are no new brand assets or screenshots.
 
 The owner subsequently authorized this change as its own reviewed PR to main,
 without waiting for the initial six-feature batch. The parent reports an
-independent review with 30 focused tests passing. A fresh fetch still places
-main at the candidate's original base, so no code reconciliation is needed.
+independent review with 30 focused tests passing. The first release fetch still placed main at the
+candidate's original base. Main then advanced to `69488d7` (PR #132) during
+publication. That static Home release was merged into this candidate; the only
+conflict was additive project-status documentation, resolved by preserving both
+complete sections. Its Home code, styles, tests and cache URLs remain intact.
 
 Integration may overlap
 `js/main.js`, `js/drawing.js`, `css/style.css`, `generator/index.html`, route

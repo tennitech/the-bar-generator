@@ -200,3 +200,10 @@ describe('measured desktop hero clearance', () => {
     expect(fitRowsAboveHero({ ...geometry, heroRects: [] })).toBeNull();
   });
 });
+
+
+test('the style prompt appears within half a second instead of five seconds', () => {
+  const { STARTUP_STYLE_PROMPT_DELAY } = require('../js/marqueeUi');
+  expect(STARTUP_STYLE_PROMPT_DELAY).toBeGreaterThan(0);
+  expect(STARTUP_STYLE_PROMPT_DELAY).toBeLessThanOrEqual(500);
+});

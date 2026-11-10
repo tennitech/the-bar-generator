@@ -22,7 +22,10 @@ and reopening. Modal interactions preserve the mobile sidebar behind the dialog,
 and generator shortcuts stay inactive within it. Native dialog behavior supplies focus containment and an inert
 background.
 
-Validation: all 784 unit tests in 72 suites pass in cloud Node 24.22.1.
+Validation: the original candidate passes all 784 unit tests in 72 suites in
+cloud Node 24.22.1. The main reconciliation also preserves PR #132's static
+Home release. The combined suite passes all 789 tests in 73 suites before
+publication.
 The two focused new checks exercise exact palette propagation into preview and
 export snapshots, filenames, and the modal controller's lifecycle. JavaScript
 syntax, inline generator scripts, entrypoint consistency, exact guidance copy,
@@ -39,6 +42,43 @@ Publication is recorded by that PR; rendered browser QA and formal RPI approval
 remain separate from source and unit-test verification.
 See [brand color sources and QA](brand_color_context_qa.md) for the evidence,
 compatibility notes, rerun command, and integration concerns.
+
+## November 10 static Home marquee and stable selection
+
+The Home instruction prompt starts after 450 ms instead of five seconds. The
+separate Enter generator button is removed on both Home URLs. Each bar remains
+a native link to its exact SVG sample configuration; the first keyboard skip
+link still opens the generator and its accessible style picker.
+
+All Home previews now use the catalog's canonical SVG stills. The Home pages
+no longer load or start the optional live-preview renderer, allocate its canvases,
+or randomize additional motion parameters. Scrolling, direct drag, pause/resume,
+reduced motion and the existing entrance remain separate. Generator playback,
+scientific geometry and exports are unchanged.
+
+Hover dims every other complete bar to 50% opacity, with no row blur or artwork
+lift. Visible keyboard focus has the same emphasis and takes priority over a
+parked pointer; its lane stays still until blur. Touch clears stale pointer
+selection and retains native vertical pan and pinch. Duplicate decorative links
+retain their existing Tab policy, with keyboard entry through the skip link.
+
+Validation: all 787 unit tests in 72 suites pass in cloud Node 24.22.1. JavaScript
+syntax, both Home inline scripts and whitespace checks pass. There are no lint,
+typecheck or build commands in this static application. The new
+`scripts/marqueeStaticSmoke.js` covers actual prompt timing, static sample links,
+scrolling, repeated hovers, unchanged image bounds, keyboard focus, reduced
+motion, native navigation/history and three phone viewports. Historical hover
+and preview-animation smoke entry points now run this current behavior check.
+
+Rendered browser validation is **blocked**, not passed: Playwright's Chromium
+archive download was truncated; installed system Chromium exits with
+`socket() failed: Operation not permitted (1)`. WebKit downloaded, but its required
+Linux libraries are absent and the dependency installer exits with
+`su: System error`. The separate cloud browser's localhost returned
+`Missing or invalid bearer token.` and cannot reach this checkout. No screenshots
+or physical-device validation were produced. Details and rerun commands are in
+[the QA record](marquee_static_focus_qa.md). This remains draft work; no merge,
+deployment, owner acceptance or formal brand approval is claimed.
 
 ## November 6 outstanding-report verification
 
