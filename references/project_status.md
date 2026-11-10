@@ -11,13 +11,42 @@ The helper URL was updated, but every style route and the bootstrap fallback
 still requested the unchanged `20261110-waveform-scope` shell URL. Route shell
 and bootstrap URLs plus Home prefetch now advance together. Actual-audio scope,
 50 fps timing, encoder source/guards, controls and all geometry are unchanged.
-A warm-cache bootstrap regression executes the actual loader and confirms it
+The concurrent #155 official secondary-color release is preserved. Its route
+shell advance is retained in a coordinated new version alongside fallback,
+bootstrap URLs and Home prefetch. A warm-cache regression executes the actual
+loader and confirms it
 requests a fresh shell and loads the corrected helper; all route/fallback/Home
 cache references are checked together. All 941 tests in 84 suites pass; route
 inline scripts, bootstrap syntax and whitespace checks pass. Deployed browser
 GIF/PNG verification
 follows the protected follow-up merge. No cache disabling or hard-refresh
 workaround is required from the user.
+## November 10 official secondary composition audit
+
+The current official Brand Hub Secondary Colors page was opened in the permitted
+cloud browser, visually inspected and compared with both original owner screenshots.
+Its six logo examples explicitly show Gray on Red, Silver on Blue, Black on Gold,
+Red on Gray, Blue on Silver and Gray on Black. These govern permitted secondary
+compositions; the Color Accessibility table is not a brand-combination allowlist.
+
+This corrects PR #150: Black on Blue becomes Silver on Blue, Black on Gray becomes
+Red on Gray, Black on Silver becomes Blue on Silver, and Gray on Red is restored.
+Exact official hex values, primary options, Mission Control and default Black on
+White remain. Existing blue/gray/silver saves retain their keys and load the
+correct official composition. Gray on Red query/snapshot values retain that pair;
+the mistaken White on Red migration is removed. Red on White stays removed with
+its existing neutral recovery under the owner's separate instruction.
+
+Idle menu rows remain neutral. Hover/selected/keyboard rows show the composition
+background and a small border-free mark in its actual logo ink. Compact names,
+checkmarks and the single focus outline use accessible black/white UI text,
+following the official typography guidance; no low-contrast label is enlarged or
+mistaken for an alternative permitted logo ink. The native control, modal, layout,
+export transparency and all intervening audio/GIF features remain intact.
+
+All 939 tests in 83 suites pass, including 76 focused preview/export/save checks.
+Source evidence, exact pairs, audit coverage and verification limits are recorded
+in [the official pairing audit](secondary_pair_audit.md) and its standalone PR.
 
 ## November 10 straight GIF edge repair
 

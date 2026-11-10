@@ -106,3 +106,9 @@ timing and guards untouched. A regression runs the real loader with the stale
 shell cached and checks that the fresh shell’s corrected helper is loaded.
 Normal reload and browser-produced corrected GIF/PNG verification are recorded
 in the follow-up PR release evidence.
+
+The follow-up was reconciled with #155 (`64080f2`) before merge. It preserves
+the official secondary compositions, theme utilities/CSS and all actual-audio
+and GIF runtime files byte for byte. The route shell key, bootstrap URL/fallback
+and Home prefetch advance consistently; #155 had advanced only the route shell
+key. The complete reconciled suite passes 941 tests in 84 suites.
