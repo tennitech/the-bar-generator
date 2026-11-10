@@ -104,6 +104,16 @@ candidate, so its complete raster/codec evidence applies unchanged. Current
 main's markup/CSS/runtime/test improvements and additive status section survive.
 The complete combined suite passes: 912 tests in 81 suites. The initial source-only run was 903 tests in 80 suites; the extra nine tests are main’s published marquee coverage. All 84 inline scripts still compile and whitespace checks pass.
 
+## Reconciliation with published control disclosures
+
+Published main `df359fd` (PR #147) is also retained. Its native collapsible
+controls, outlined Randomize die, styling and icon licensing survive. Routed
+shell/cache references are rebuilt from main and carry the ring GIF runtime and
+scientific name. Both additive status/licensing sections remain. GIF drawing,
+model and pattern sources still byte-match the fully decoded candidate; main's
+unrelated UI work is preserved in the shared runtime. The full combined suite
+passes: 933 tests in 82 suites, with all 84 inline scripts compiling and no whitespace errors.
+
 ## Browser and release state
 
 No browser launch, desktop escalation, denied launch retry or close/reopen CI

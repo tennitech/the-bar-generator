@@ -23,9 +23,38 @@ delays retain approximately 30 fps without a duplicated terminal frame. Existing
 SPEED below 1.2× reports a recovery message before rendering. Extending that
 budget is a pending scope decision, not silently assumed.
 
-Validation after retaining published marquee follow-up #146: 912 tests in 81 suites pass, all 84 inline scripts compile, 80 native raster recurrence cases pass and four real GIFs decode through all 3600 frames with exact source-pixel parity, timing, transparency and seam checks. A decoded-frame review image was inspected. Release state and limits are recorded in [GIF QA](quantum_gif_qa.md).
+Validation after retaining published marquee/control follow-ups #146 and #147: 933 tests in 82 suites pass, all 84 inline scripts compile, 80 native raster recurrence cases pass and four real GIFs decode through all 3600 frames with exact source-pixel parity, timing, transparency and seam checks. A decoded-frame review image was inspected. Release state and limits are recorded in [GIF QA](quantum_gif_qa.md).
 Browser/desktop launch restrictions remain respected; native Node raster/codec
 checks do not establish browser download behavior or perceived smoothness.
+
+
+## November 10 screenshot-directed control presentation correction
+
+The owner's 702 × 542 PNG was materialized from the specified Library ID into
+this executor, verified as 32,271 readable bytes with SHA-256
+`c810985df5b3298300da4ae1d7c5e8ce77da1da8c5022857190b55a2ffd2e8a7`, and
+visually inspected before edits. Its visible text is “0.2–4× default speed”;
+that helper line is now screen-reader-only for Ticker, Waveform, Gradient and
+Quantum, preserving the range/snap description without its visible spacing.
+
+All sidebar section chevrons use a thin SVG stroke, centered in a fixed flex
+box beside the heading. Collapsed points right; expanded points down, a 90°
+rotation. Native button semantics, aria-expanded/controls, focus safety, mounted
+values, independent sections, scroll-cue notifications and the About footer stay
+intact. No transition or new animation is added.
+
+Randomize uses one original outlined five-pip die in the existing icon language,
+replacing shuffle across every parameter group. Existing visible and accessible
+Randomize labels, hit targets, currentColor hover/focus treatment and bounded
+reduced-motion-aware action feedback remain. The Feather registry is unchanged.
+
+Source/controller tests cover every section heading and both disclosure states,
+focus retention, speed descriptions and all generated Randomize buttons. Actual
+SVGs were rasterized and inspected at 12, 16, 18 and 24 px, including both
+chevron orientations; this is isolated icon QA, not rendered application QA. Full
+suite and exact-head CI results are recorded in the PR. Rendered desktop/mobile
+layout, native keyboard/touch, screen-reader output and visual acceptance remain
+unverified under the existing browser restriction; no denied route is retried.
 
 ## November 10 secondary-color popup corners and compact help focus
 

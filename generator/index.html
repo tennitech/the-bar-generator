@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261110-secondary-dialog-radius" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261110-control-presentation" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/pageEntrance.js?v=20261110-combined-brand-refinement"></script>
@@ -20,7 +20,7 @@
   <script src="js/utils/selectorPreviews.js?v=20261103-nucleotide"></script>
   <script src="js/utils/secondaryColorGuidance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/customDropdowns.js?v=20261110-theme-pairing-swatches"></script>
-  <script src="js/utils/parameterControls.js?v=20261110-themes-lfo-sections"></script>
+  <script src="js/utils/parameterControls.js?v=20261110-control-presentation"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/loopingGif.js?v=20261110-ring-gif"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
@@ -33,7 +33,7 @@
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/motionSpeed.js?v=20261110-themes-lfo-sections"></script>
-  <script src="js/utils/sidebarSections.js?v=20261110-themes-lfo-sections"></script>
+  <script src="js/utils/sidebarSections.js?v=20261110-control-presentation"></script>
   <script src="js/utils/quantumModel.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/waveformLfo.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/generatorParameters.js?v=20261110-combined-brand-refinement"></script>
@@ -419,7 +419,7 @@
               <label for="ticker-speed-slider" class="control-label">SPEED <span id="ticker-speed-display" data-slider-value>1×</span></label>
               <input type="range" id="ticker-speed-slider" data-url-parameter="tickerSpeed" min="0.08" max="1.6" step="0.001" value="0.4" class="control-slider"
                 aria-label="Ticker Motion Speed" aria-describedby="ticker-speed-unit">
-              <p id="ticker-speed-unit" class="control-hint">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
+              <p id="ticker-speed-unit" class="u-sr-only">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
             </div>
           </div>
 
@@ -445,7 +445,7 @@
             <div class="control slider-control runtime_speed-control">
               <label for="quantum-speed-slider" class="control-label">SPEED <span id="quantum-speed-display" data-slider-value>1×</span></label>
               <input id="quantum-speed-slider" type="range" min="0.2" max="4" step="0.001" value="1" class="control-slider" aria-label="Particle-on-a-ring playback speed" aria-describedby="quantum-speed-unit">
-              <p id="quantum-speed-unit" class="control-hint">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
+              <p id="quantum-speed-unit" class="u-sr-only">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
             </div>
             <div class="control slider-control">
               <label for="quantum-phase" class="control-label">PHASE <span id="quantum-phase-display" data-slider-value>0.0%</span></label>
@@ -522,7 +522,7 @@
                   id="waveform-speed-display" data-slider-value>1×</span></label>
               <input type="range" id="waveform-speed-slider" data-url-parameter="waveformSpeed" min="0.06" max="1.2" step="0.001" value="0.3" class="control-slider"
                 aria-label="Waveform Motion Speed" aria-describedby="waveform-speed-unit">
-              <p id="waveform-speed-unit" class="control-hint">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
+              <p id="waveform-speed-unit" class="u-sr-only">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
             </div>
           </div>
           <div class="runtime_section audio_section">
@@ -840,7 +840,7 @@
             <div class="control slider-control runtime_speed-control">
               <label for="gradient-speed-slider" class="control-label">SPEED <span id="gradient-speed-display" data-slider-value>1×</span></label>
               <input type="range" id="gradient-speed-slider" data-url-parameter="gradientSpeed" min="0.02" max="0.4" step="0.001" value="0.1" class="control-slider" aria-label="Gradient motion speed" aria-describedby="gradient-speed-unit">
-              <p id="gradient-speed-unit" class="control-hint">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
+              <p id="gradient-speed-unit" class="u-sr-only">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
             </div>
           </div>
         </div>
