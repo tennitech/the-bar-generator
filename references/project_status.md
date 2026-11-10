@@ -20,15 +20,30 @@ sidebar fade, theme palettes/states, rendering and export code. Artwork/share
 parameters and font assets are unchanged; preview fit can respond to editor width.
 
 The original candidate `07beffe` remains saved. The release is reconciled with
-`0bb131d` on `codex/feat-larger-editor-controls-release`, with a separate sibling
+`862fa89` (including the released schematic export cards) on
+`codex/feat-larger-editor-controls-release`, with a separate sibling
 menu item reserved for the ongoing keyboard-shortcuts release. Focused tests,
 JavaScript/80 inline-script syntax and whitespace checks pass. All **1,062 tests
 in 92 suites pass** across four sequential shards after correcting the shared
 shell cache references. Test interruptions and rendering limitations are recorded in [the QA record](editor_accessibility_qa.md).
 Earlier denied browser routes are not retried; no screenshot, physical-device,
 screen-reader, owner-acceptance or formal brand-approval result is claimed.
-The release coordinator must confirm the merge slot and exact-head required
-Unit tests result before normal merge, then verify production files.
+The release coordinator granted the exclusive merge slot after #168. Required
+Unit tests must pass on the integrated PR head before normal merge, followed by
+Pages deployment and production file verification.
+
+## November 10 schematic export composition cards
+
+The Bar only and Bar + RPI choice cards now show the bar area as a thin,
+unfilled dashed outline in the existing neutral control ink. The official
+letter paths, card layout, typography, native radio behavior and selection
+accessibility are unchanged. This is a composition illustration for every bar
+style and background pairing; it does not preview or alter exported artwork.
+The shared shell and route cache references are advanced together.
+
+Validation and rendered-review limits are recorded in
+[the QA record](export_schematic_qa.md). No new external assets, export geometry,
+rendering logic or formal brand approval are introduced.
 
 ## November 10 scope contours and useful LFO motion
 

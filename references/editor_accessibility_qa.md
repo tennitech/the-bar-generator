@@ -1,6 +1,7 @@
 # Larger editor controls: release validation
 
-Date: November 10, 2026. Integration base: `0bb131dee9c383d769d0bf5ff3fe396ce3d79bca`.
+Date: November 10, 2026. Integration base: `862fa8932d10cf4ca570f8a37a263a68d5c3c328`
+(after schematic export cards #168).
 Branch: `codex/feat-larger-editor-controls-release`.
 Original candidate: `07beffecbeeae10a773e8e55bd088e2a1816592c`, retained on
 `codex/feat-larger-editor-controls`.
@@ -27,8 +28,12 @@ Home changes only its existing generator-shell prefetch cache reference.
 
 The optional keyboard-shortcuts release is separate and may add a sibling in
 this menu. Preserve both items, retain the existing disclosure and reconcile
-shell cache references during final integration. The parent release coordinator
-owns the merge slot so concurrent checks are not invalidated. Branches are retained.
+shell cache references during final integration. The parent release coordinator granted the exclusive merge slot after #168.
+Its schematic card implementation, review evidence and existing script cache
+reference are preserved byte-for-byte. All 90 focused sizing, disclosure,
+shell-cache and export integration tests pass in six suites after integration;
+JavaScript, all 80 generator inline scripts and whitespace checks pass. Shared shell/bootstrap/Home references keep the sizing
+release version. Both additive status entries survive. Branches are retained.
 
 ## Automated validation
 
