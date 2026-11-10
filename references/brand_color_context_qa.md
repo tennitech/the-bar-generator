@@ -3,6 +3,63 @@
 Date: November 10, 2026. Base: `0654f5d` (`origin/main` when this isolated
 worktree was created). Branch: `codex/feat-brand-color-context`.
 
+## November 10 owner correction: preview-only color and text helper
+
+This correction supersedes the earlier description of brand-colored headers.
+It starts from main `05655f6`, preserving the released six-feature batch and
+PR #134's exact brand palette, secondary-only visibility and native modal.
+
+The supplied reference `libfile_da87fca16404819181f7ed4ee89bbf16` resolved to
+`Screenshot 2026-11-10 at 11.25.03 AM.png` (U+202F before AM in the actual
+filename). Current Library materialization was used; the local file's Library
+identity was applied and verified. The PNG decoded as 2048 × 1592 RGBA, and its
+actual pixels were visually inspected before image-dependent changes. Both the
+header pixel at (1000, 50) and preview pixel at (1000, 170) were
+RGBA (214, 0, 28, 255), showing the red composition filling both regions.
+SHA-256: `7a4091bdc73c8d2fac39af95ab8525950ffe987fec52221ebd62d2d403d4583a`.
+The screenshot remains local reference evidence and is not redistributed.
+
+The owner explicitly requests matching header/sidebar surfaces and restricting
+the composition background to the preview. The theme helper clears former
+inline app/header overrides; CSS uses the sidebar surface for every header
+layout, with neutral header ink on touch as well as desktop. Palette definitions,
+preview ink/background, geometry, export behavior and other features are retained.
+
+The helper is now underlined red sentence-case “How to use”, without an icon,
+background or border. It retains native button semantics because it opens a
+modal rather than navigating. Its touch area is transparent. Secondary-only
+visibility and all modal content/behavior are unchanged.
+
+After preserving PR #136, all 854 tests in 78 suites pass. Source comparison confirms the palette and
+complete modal markup are unchanged; 26 entrypoints and 80 inline scripts pass
+cache/syntax verification. Focused checks exercise theme restoration clearing stale header colors, exact
+palette and export preservation, and the existing modal lifecycle. The existing
+browser harness now checks header/sidebar equality at desktop/touch widths and
+the helper's label, underline, color, transparent background and lack of icons.
+It is syntax-checked; rendered browser QA remains blocked by the previously
+recorded Chromium socket restrictions and missing WebKit libraries. No denied
+browser command, dependency installation or sandbox bypass is attempted.
+
+Owner test items after publication:
+
+- At desktop and phone widths, switch among primary and secondary choices:
+  the preview keeps each documented pairing while header and sidebar match.
+- Open and close the phone controls sheet; verify neutral header ink and surface.
+- Verify “How to use” appears only for secondary choices as underlined red text,
+  with no icon or visible background, and opens the existing modal.
+- Check Tab focus, Escape/Close/backdrop dismissal, narrow-screen scrolling and
+  reopening, then confirm normal theme switching and exports still behave.
+
+[PR #137](https://github.com/tennitech/the-bar-generator/pull/137), its required
+checks and Pages deployment carry the release state. A fresh Git fetch confirms
+main 05655f6 was the functional candidate's direct parent. Main subsequently
+advanced to fed8e88 with PR #136's export-composition feature. Cache-URL and
+additive status-section overlaps were resolved while retaining the complete
+export release. The combined candidate is reviewed and the full suite is rerun
+before the PR synchronization update.
+Live-file hash verification establishes deployed source, not rendered appearance
+or native device behavior. Existing branches remain preserved.
+
 ## Supplied references
 
 All five user-provided PNGs were materialized into this executor through the
