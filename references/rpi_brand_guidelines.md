@@ -1,5 +1,22 @@
 # Source record and contributor checks
 
+## November 10, 2026 secondary-composition correction
+
+The current [official Secondary Colors section](https://brand.rpi.edu/d/pfJS6BKVKBeq/brand-guidelines#/-/color/secondary-colors)
+was visually inspected in the permitted cloud browser, including the six-panel
+logo graphic and color-value table. The page reports last modified October 29,
+2026 at 10:29 AM. Its demonstrated secondary logo/background pairs are exactly:
+Gray on Red, Silver on Blue, Black on Gold, Red on Gray, Blue on Silver and Gray
+on Black. The asset's alt text explicitly enumerates the same six pairings.
+
+Use those six examples for the secondary logo picker. The separate accessibility
+table measures contrast; it does not authorize additional logo compositions or
+remove a demonstrated logo pair. In particular, Black on Blue/Gray/Silver were
+mistakenly substituted in PR #150 and are corrected. Small UI labels must remain
+legible independently of a decorative/logo ink preview. See
+[the evidence and implementation audit](secondary_pair_audit.md).
+
+
 Verified on October 27, 2026, through the RPI brand site in the Codex in-app browser. The review covered Home, Logo System, The Bar, Color, Typography, Pattern, Naming Conventions, Design Principles, Voice and Tone, and the font library. The existing reference text below is retained; use the clarifications here when reading it.
 
 ## Official sources
