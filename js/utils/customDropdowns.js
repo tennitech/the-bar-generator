@@ -108,6 +108,10 @@ function setupCustomDropdowns() {
         customOption.classList.add('color_theme-option');
         addColorLabel(customOption);
         window.themeModeUtils.styleColorThemeOption(customOption, option.value);
+        const inkMark = document.createElement('span');
+        inkMark.className = 'color_theme-ink';
+        inkMark.setAttribute('aria-hidden', 'true');
+        customOption.appendChild(inkMark);
       }
       if (option.hasAttribute('data-coming-soon')) {
         // Native touch pickers cannot expose hover hints: include availability

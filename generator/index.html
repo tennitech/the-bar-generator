@@ -11,31 +11,33 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261110-neutral-theme-row-states" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261110-about-chevron" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/pageEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/generatorRoutes.js?v=20261110-combined-brand-refinement"></script>
-  <script src="js/utils/themeMode.js?v=20261110-compact-reference-themes"></script>
+  <script src="js/utils/themeMode.js?v=20261110-exact-theme-text"></script>
   <script src="js/utils/selectorPreviews.js?v=20261103-nucleotide"></script>
   <script src="js/utils/secondaryColorGuidance.js?v=20261110-combined-brand-refinement"></script>
-  <script src="js/utils/customDropdowns.js?v=20261110-compact-reference-themes"></script>
+  <script src="js/utils/customDropdowns.js?v=20261110-official-secondary-pairs"></script>
   <script src="js/utils/parameterControls.js?v=20261110-compact-themes-dice"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
-  <script src="js/utils/loopingGif.js?v=20261110-ring-default-r2"></script>
+  <script src="js/utils/loopingGif.js?v=20261110-ring-release"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261110-compact-reference-themes"></script>
+  <script src="js/utils/shareState.js?v=20261110-official-secondary-pairs"></script>
   <script src="js/utils/randomizeHistory.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/musicStyle.js"></script>
   <script src="js/utils/nucleotidePattern.js?v=20261104-parametric-lfo-recovery"></script>
-  <script src="js/utils/barPattern.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/barPattern.js?v=20261110-scope-history"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/motionSpeed.js?v=20261110-themes-lfo-sections"></script>
   <script src="js/utils/sidebarSections.js?v=20261110-control-presentation"></script>
   <script src="js/utils/quantumModel.js?v=20261110-combined-brand-refinement"></script>
-  <script src="js/utils/waveformLfo.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/waveformLfo.js?v=20261110-waveform-scope"></script>
+  <script src="js/utils/waveformAudio.js?v=20261110-waveform-scope"></script>
+  <script src="js/utils/waveformScope.js?v=20261110-scope-motion"></script>
   <script src="js/utils/generatorParameters.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/generatorInitialState.js?v=20261110-combined-brand-refinement"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
@@ -251,10 +253,11 @@
                   <option value="white-on-red">White on Red</option>
                 </optgroup>
                 <optgroup label="Secondary">
-                  <option value="blue">Black on Blue</option>
+                  <option value="gray-on-red">Gray on Red</option>
+                  <option value="blue">Silver on Blue</option>
                   <option value="gold">Black on Gold</option>
-                  <option value="gray">Black on Gray</option>
-                  <option value="silver">Black on Silver</option>
+                  <option value="gray">Red on Gray</option>
+                  <option value="silver">Blue on Silver</option>
                   <option value="gray-on-black">Gray on Black</option>
                 </optgroup>
                 <option value="lunar">Mission Control</option>
@@ -481,7 +484,8 @@
                 <span class="slider round"></span>
               </label>
             </div>
-            <p id="waveform-lfo-hint" class="control_help-tooltip" role="tooltip" hidden>Modulates bar height and audio volume. Loop animates the bar; Audio lets you listen. Fast rates settle to an average bar height.</p>
+            <p id="waveform-lfo-hint" class="control_help-tooltip" role="tooltip" hidden>Shows the actual audio signal after LFO amplitude modulation. The time window fits two envelope cycles, or at least four carrier cycles. Offline rendering is silent; Audio switches to a live recording. Loop freezes or replays the scope. GIF starts on the frozen frame and replays captured history, which may reset when it wraps.</p>
+            <p id="waveform-scope-status" class="control-hint">Rendering audio signal…</p>
             <div id="waveform-lfo-settings" hidden>
               <div class="control slider-control">
                 <label for="waveform-lfo-type" class="control-label">LFO WAVEFORM <span id="waveform-lfo-type-display" data-slider-value>SINE</span></label>
@@ -961,7 +965,7 @@
           <details id="bar-information" class="bar_information">
             <summary id="bar-information-toggle" class="bar_information-toggle">
               <span>About <span id="bar-information-title">Solid</span></span>
-              <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              <span class="sidebar_section-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><polyline points="9 6 15 12 9 18"/></svg></span>
             </summary>
             <div id="bar-information-content" class="bar_information-content" tabindex="0" role="region" aria-labelledby="bar-information-toggle">
             <p id="bar-information-description"></p>
@@ -1096,27 +1100,27 @@
   <div id="toast-container"></div>
   <script>GeneratorInitialState.apply(document.body); setupCustomDropdowns(); ParameterControls.prepare(document);</script>
   <script src="third_party/gif.js/gif.js"></script>
-  <script src="js/utils/quantumControls.js?v=20261110-ring-default-r2"></script>
+  <script src="js/utils/quantumControls.js?v=20261110-ring-release"></script>
   <script src="js/utils/previewControls.js?v=20261103-save-removal"></script>
   <script src="js/utils/viewportZoom.js?v=20261103-save-removal"></script>
   <script src="js/utils/viewerTouch.js"></script>
   <script src="js/utils/headerMotionSurface.js"></script>
   <script src="js/utils/themeMotion.js"></script>
   <script src="js/utils/sidebarScrollCue.js?v=20261110-compact-sidebar-footer"></script>
-  <script src="js/ui.js?v=20261104-scroll-cue-minimum"></script>
+  <script src="js/ui.js?v=20261110-quiet-undo-r3"></script>
   <script src="js/utils/logoGeometry.js?v=20261103-save-removal"></script>
   <script src="js/utils/urlState.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportOptions.js?v=20261110-export-composition-r2"></script>
-  <script src="js/utils/transparentGif.js?v=20261110-ring-default-r2"></script>
+  <script src="js/utils/transparentGif.js?v=20261110-ring-release"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportUi.js?v=20261110-ring-default-r2"></script>
-  <script src="js/utils/barInformation.js?v=20261110-ring-default-r2"></script>
+  <script src="js/utils/exportUi.js?v=20261110-ring-release"></script>
+  <script src="js/utils/barInformation.js?v=20261110-ring-release"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
-  <script src="js/main.js?v=20261110-ring-default-r2"></script>
+  <script src="js/main.js?v=20261110-ring-release"></script>
   <script src="js/utils/logoClipboard.js?v=20261110-export-composition-r2"></script>
-  <script src="js/drawing.js?v=20261110-ring-default-r2"></script>
+  <script src="js/drawing.js?v=20261110-ring-release"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

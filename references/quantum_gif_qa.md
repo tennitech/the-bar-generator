@@ -1,7 +1,7 @@
 # Particle on a Ring: GIF QA
 
-November 10, 2026. Current candidate retains published main through `492fec2`
-(PR #153), including the neutral contextual theme previews/reference pairs, disclosures,
+November 10, 2026. Current candidate retains published main through `24b4951`
+(PR #164), including the neutral contextual theme previews/reference pairs, disclosures,
 outlined Randomize die and responsive marquee behavior. Original feature `8c1e2d1`
 and creative-name candidate `7a12cdf` remain preserved. No model or pattern geometry
 change is made; legacy wave-quantum identifiers, URLs and saved links survive.
@@ -49,7 +49,7 @@ SVG/PNG/clipboard keep main's phase-zero policy and selected size.
 
 ## Regression and actual-byte evidence
 
-Final full suite: **943 tests in 82 suites pass**, with no cache. All **84 inline scripts** and changed JavaScript compile, and whitespace checks pass. Focused tests cover default download requests, actual default dimensions,
+Final full suite: **1029 tests in 89 suites pass**, with no cache. All **84 inline scripts** and changed JavaScript compile, and whitespace checks pass. Focused tests cover default download requests, actual default dimensions,
 resolution disclosure before activation, size/composition/speed updates, in-flight
 snapshot edits, fractional speeds, encoder budget scoping, unchanged memory/file
 limits, phase/direction, model polygons, timing and seam step. Full final-suite
@@ -129,8 +129,57 @@ and 20 ms cadence for translating families. Ring export explicitly retains its
 measured 30 fps default and maximum; its 120-second allowance therefore stays
 3600 frames. This prevents the later shared 50 fps default from breaking default
 ring export or increasing its measured budget. Ring frame plans and phase samples
-exactly match measured commit `33c936e` across 48 speed/phase/direction plans and five phase samples each; renderer/model/encoder sources are byte-identical. The full combined suite passes: 943 tests in 82 suites. No cadence result
+exactly match measured commit `33c936e` across 48 speed/phase/direction plans and five phase samples each; renderer/model/encoder sources are byte-identical. The full combined suite passes: 962 tests in 84 suites. No cadence result
 for other families is rolled back.
+
+## Export-result context regression from live browser testing
+
+The parent reproduced old Gradient status/statistics surviving a switch to the
+previously unsupported Quantum style. Completed results now reset on style,
+theme, selected size/composition, explicit parameter edits and credits-context
+changes. No old request/statistics are displayed as belonging to the new style.
+In-flight work keeps its captured source, progress and working Cancel control;
+after a context change its source style labels progress/detail/notifications.
+Its late completion cannot repopulate the new context with old statistics.
+Cancellation and frozen file/phase/dimensions remain unchanged. Regression tests
+cover completed Gradient→ring, each relevant option/context and in-flight
+completion/cancellation. The renderer/encoder are unchanged by this UI repair;
+`drawing.js` only adds the captured source label to toasts.
+
+## Current post-gain waveform scope retained
+
+Published #154 (`ffbd569`) is retained. Its captured PCM scope/recording, sample-wise
+LFO settings, readiness guard, replay planner and honest recorded-boundary policy
+remain intact. All 962 tests in 84 suites pass after reconciliation, and 120 full native ring frames exactly match the measured default candidate. The snapshot combines those conditional Waveform fields with the
+ring's exact phase and disclosed dimensions; the renderer keeps separate branches.
+The parent-requested stale-result fix applies to every export context. Ring model,
+polygons, cadence, phase plan, encoder budget and measured dimensions are unchanged.
+
+## Released alpha and later interface fixes retained
+
+The release also retains current main through `9f5fde7`, including #156's
+half-coverage alpha correction, restored official secondary compositions,
+quiet Undo feedback, touch-marker containment, exact interactive theme text
+and scrollbar suppression. The warm-shell regression derives current runtime
+URLs instead of freezing the earlier quiet-Undo cache token; it still rejects
+the actual stale shell/runtime URLs observed by the parent browser.
+
+A new complete default export uses the current alpha policy and default black
+ink: **32,041,719 bytes**, 1160 × 762 px, 120000 ms, 3600 distinct independently
+decoded frames, 30/40 ms holds, infinite repeat, transparent index 0 and disposal
+2. All 64 evenly spaced full-pixel source references match, including first and
+last; full recurrence and the seam step pass. Its selected Large size is visibly
+disclosed as Standard for the long full-logo loop. Input streaming peaks at two
+frames / 7,071,360 bytes. Observed serial Node encode time was 131.25 seconds;
+this is not browser-worker performance proof. [Current-alpha structured result](review-images/ring-gif/current-alpha-results.json).
+
+The first additional current-alpha QA process was killed before encoding any
+frames. The successful rerun skipped the already-covered raster matrix and used
+explicit Node garbage collection to bound transient QA allocations. This does
+not change the production encoder, worker/input limits, resolution or file guard.
+Earlier 33.80 MB full-logo and 11.30/27.41 MB bar-only figures describe the prior
+ordered-alpha measurements and conservatively motivated the resolution policy.
+The model, phase plan and actual dimensions remain unchanged with current alpha.
 
 ## Browser and release state
 
@@ -139,8 +188,12 @@ workaround is attempted. Native Node raster/codec measurements do not establish
 browser-worker performance, actual download behavior, physical-device timing or
 perceived smoothness. Existing progress and cancellation remain available.
 
-PR #148 is updated on its existing branch. Serial publisher task
-`01a1c648-8679-70b2-8cc1-6d9514a7c0f4` coordinates normal protected release and
-Pages verification with #144. The default-product decision is resolved by the
-parent: no additional user choice is pending. Preserve #144's alpha fix, this
-ring budget and disclosure, and current main's unrelated UI/theme changes.
+The candidate uses the existing PR #148 branch. Protected checks, merge and
+Pages deployment status must be verified separately from this offline QA record.
+The default export policy is resolved: no additional product choice is pending.
+Current alpha correction and unrelated production changes are retained.
+
+Final production reconciliation retains #163 post-gain scope motion and #164
+About chevrons. All **1029 tests in 89 suites** pass without cache; all 84 inline
+scripts compile. Ring model, renderer geometry and measured phase plan remain
+unchanged. Browser performance and download verification remain separate.

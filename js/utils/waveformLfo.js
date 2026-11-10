@@ -18,15 +18,6 @@
     const square = p > 0.5 ? 1 : 0, pulse = p > 0.8 ? 1 : 0;
     return type < 1 ? sine + (p - sine) * type : type < 2 ? p + (square - p) * (type - 1) : square + (pulse - square) * (type - 2);
   }
-  function mean(type) { return type <= 2 ? 0.5 : 0.5 - 0.3 * (type - 2); }
-  // Above 6 Hz fade towards the cycle mean, reaching it at 10 Hz. At low
-  // cadence use an even lower limit (six samples/cycle). Never sample a fast
-  // oscillator into a slower flashing beat. Audio always keeps the full rate.
-  function visualAmplitude(state, type = 0, frameSeconds = 1 / 60) {
-    const limit = Math.min(10, 1 / Math.max(1 / 60, frameSeconds) / 6);
-    const mix = Math.min(1, Math.max(0, (state.rate - limit * 0.6) / (limit * 0.4)));
-    return state.amplitude * (1 - mix) + (1 - state.amount + state.amount * mean(type)) * mix;
-  }
   function amplitude(time, values) {
     const state = normalize(values);
     const depth = state.enabled ? state.depth / 100 : 0;
@@ -122,7 +113,7 @@
       bias.stop(when);
     } };
   }
-  const api = { normalize, amplitude, wave, mean, visualAmplitude, waveNames, ratePosition, positionRate, createTransport, create };
+  const api = { normalize, amplitude, wave, waveNames, ratePosition, positionRate, createTransport, create };
   scope.WaveformLfo = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

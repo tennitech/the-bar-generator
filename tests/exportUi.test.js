@@ -2,11 +2,11 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 function fixture(clipboard, nucleotide, withOptions = false) {
-  const document = { readyState: 'complete', addEventListener() {}, activeElement: null };
+  const document = { readyState: 'complete', listeners: {}, addEventListener(type, callback) { (this.listeners[type] ||= []).push(callback); }, activeElement: null };
   const ids = ['save-menu', 'save-button', 'save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'export-size-large', 'export-size-standard',
     'export-progress', 'export-message', 'export-meter', 'export-cancel', 'copy-png', 'copy-svg',
     'export-composition-logo', 'export-composition-bar', 'export-composition-preview-logo', 'export-composition-preview-bar', 'export-dimensions', 'export-settings',
-    'export-track', 'export-fill', 'export-percent', 'export-detail', 'export-blocked-note', 'export-input-note', 'style-select', 'quantum-speed-slider'];
+    'export-track', 'export-fill', 'export-percent', 'export-detail', 'export-blocked-note', 'export-input-note', 'style-select', 'color-mode-select', 'quantum-speed-slider'];
   const elements = Object.fromEntries(ids.map(id => [id, {
     id, textContent: '', value: 0, listeners: {}, style: {}, attributes: {},
     children: {}, querySelector(selector) { return this.children[selector] || (this.children[selector] = {}); },
@@ -146,7 +146,6 @@ test('a completed copy keeps its frozen dimensions and byte size visible', () =>
   const job = ui.begin('png');
   ui.describe(job, { dimensions: { width: 2320, height: 1524 } });
   ui.ready(job, { size: 123456 });
-  elements['export-size-select'].value = 'standard';
   ui.finish(job, 'copied', 'PNG copied.');
   expect(elements['export-detail'].textContent).toBe('2320 × 1524 px · 123 KB · Ready to paste.');
   expect(elements['export-meter'].value).toBe(1);
@@ -269,4 +268,54 @@ test('ring GIF discloses actual default resolution and updates with speed/compos
   elements['quantum-speed-slider'].value = '.5'; elements['quantum-speed-slider'].listeners.input();
   expect(action.querySelector('.option-desc').textContent).toBe('Set SPEED to 1× or higher for GIF');
   expect(elements['quantum-speed-slider'].value).toBe('.5');
+});
+
+
+function completedGradient(f = fixture(undefined, undefined, true)) {
+  f.elements['style-select'].value = 'gradient'; f.ui.sync();
+  const job = f.ui.begin('gif');
+  f.ui.describe(job, { family: 'gradient', composition: 'logo', dimensions: { width: 2320, height: 1524 } });
+  f.ui.ready(job, { size: 5032238 });
+  f.ui.finish(job, 'requested', 'GIF download requested.');
+  expect(f.elements['export-detail'].textContent).toContain('5.0 MB');
+  return f;
+}
+
+test('switching from exported Gradient to ring clears stale status/statistics without reopening or stealing focus', () => {
+  const f = completedGradient();
+  f.elements['style-select'].focus(); f.elements['style-select'].value = 'wave-quantum'; f.ui.sync();
+  expect(f.elements['export-progress'].hidden).toBe(true);
+  for (const id of ['export-message', 'export-detail', 'export-percent']) expect(f.elements[id].textContent).toBe('');
+  expect(f.elements['export-meter'].value).toBe(0);
+  expect(f.document.activeElement.id).toBe('style-select');
+  expect(f.ui.isBusy()).toBe(false); expect(f.hideSaveMenu).not.toHaveBeenCalled();
+});
+
+test.each(['size', 'composition', 'theme', 'parameters', 'credits'])('changing %s clears a completed export result', change => {
+  const f = completedGradient();
+  if (change === 'size') f.elements['export-size-standard'].listeners.change({ target: { checked: true } });
+  if (change === 'composition') f.elements['export-composition-bar'].listeners.change({ target: { checked: true } });
+  if (change === 'theme') { f.elements['color-mode-select'].value = 'white'; f.ui.sync(); }
+  if (change === 'credits') f.ui.sync(true);
+  if (change === 'parameters') for (const callback of f.document.listeners.input) callback({ target: { closest: () => ({}) } });
+  expect(f.elements['export-progress'].hidden).toBe(true);
+  expect(f.elements['export-message'].textContent).toBe(''); expect(f.elements['export-detail'].textContent).toBe('');
+});
+
+test.each(['requested', 'cancelled'])('style changes preserve captured in-flight source and cancellation, then discard its late %s status', outcome => {
+  const f = fixture(undefined, undefined, true); f.elements['style-select'].value = 'gradient'; f.ui.sync();
+  const job = f.ui.begin('gif');
+  f.ui.describe(job, { family: 'gradient', composition: 'logo', dimensions: { width: 2320, height: 1524 } });
+  f.elements['style-select'].value = 'wave-quantum'; f.ui.sync();
+  expect(f.ui.isBusy()).toBe(true); expect(f.elements['export-cancel'].hidden).toBe(false);
+  expect(f.elements['export-message'].textContent).toContain('gradient GIF');
+  f.ui.report(job, { prepared: 8, encoded: 8, total: 8 });
+  expect(f.elements['export-detail'].textContent).toContain('gradient GIF');
+  expect(job.dimensions).toBe('2320 × 1524 px');
+  if (outcome === 'cancelled') { f.elements['export-cancel'].listeners.click(); expect(job.controller.signal.aborted).toBe(true); }
+  else { expect(job.controller.signal.aborted).toBe(false); f.ui.ready(job, { size: 5032238 }); }
+  f.ui.finish(job, outcome, 'Old operation finished.');
+  expect(f.ui.isBusy()).toBe(false); expect(f.elements['export-progress'].hidden).toBe(true);
+  expect(f.elements['export-detail'].textContent).toBe(''); expect(f.elements['export-message'].textContent).toBe('');
+  expect(f.elements['save-loop-gif'].disabled).toBe(false);
 });

@@ -50,13 +50,13 @@ test('retained Waveform LFO settings cannot alter Gradient or Ticker GIFs', () =
   }
 });
 
-test('fine speeds close the joint LFO loop or explicitly average within the bounded capture budget', () => {
-  for (const waveformSpeed of [.06, .075, .105, .3, 1.2]) for (const waveformLfoRate of [.07, .33, 2, 4.99, 1300]) {
-    const plan = getLoopingGifFramePlan('waveform', { waveformSpeed, waveformLfoRate, waveformLfo: true, waveformLfoDepth: 100 });
-    expect(plan.periodSeconds).toBeLessThanOrEqual(100);
+test('fine speeds bound captured-signal playback without changing or averaging the recorded LFO', () => {
+  for (const waveformSpeed of [.06,.075,.105,.3,1.2]) for (const waveformLfoRate of [.07,.33,2,4.99,1300]) {
+    const plan=getLoopingGifFramePlan('waveform',{waveformSpeed,waveformLfoRate,
+      waveformScope:{source:'offline'},waveformScopeReplaySeconds:2});
+    expect(plan.periodSeconds).toBeCloseTo(2/(waveformSpeed/.3),8);
     expect(plan.frameCount).toBeLessThanOrEqual(3000);
-    expect(plan.periodSeconds * waveformSpeed).toBeCloseTo(Math.round(plan.periodSeconds * waveformSpeed), 8);
-    if (!plan.lfoAveraged) expect(plan.periodSeconds * waveformLfoRate).toBeCloseTo(Math.round(plan.periodSeconds * waveformLfoRate), 8);
+    expect(plan.scopeReplay).toBe(true);
   }
 });
 

@@ -231,8 +231,10 @@ window.animationTime = 0;
 let audioContext;
 let gainNode;
 let waveformLfoVoice = null;
+let waveformCarrier = null;
 let waveformVisualLfo = null;
 let waveformLfoTime = 0;
+let waveformScopeTime = 0;
 let lastWaveformLfoTimestamp = 0;
 let waveformLfoFrame = { phase: 0, rate: 2, amount: 0, amplitude: 1 };
 let isAudioPlaying = false;
@@ -1142,7 +1144,7 @@ function setMotionEnabledForStyle(style, enabled, options = {}) {
   }
 
   MOTION_ENABLED_BY_STYLE[normalizedStyle] = !!enabled;
-  if (normalizedStyle === 'gradient' && options.resetPhase !== true) {
+  if (['gradient', 'waveform'].includes(normalizedStyle) && options.resetPhase !== true) {
     // Hold the current coverage on pause; resume has no elapsed-time catch-up.
     lastAnimationFrameTimestamp = 0;
   } else if (!enabled || options.resetPhase === true) {
@@ -1158,15 +1160,26 @@ function generateRandomStaffPattern() {
   return basePattern.map(note => ({ ...note }));
 }
 
-function getLiveWaveformGeometry(barStartX, barY, exactBarWidth, barHeight, timeSeconds) {
-  return createWaveformPatternGeometry({
-    barStartX, barY, exactBarWidth, barHeight, timeSeconds,
-    waveformAmplitude: waveformLfoFrame.amplitude,
-    waveformType: Number(waveformTypeSlider.value),
-    waveformFrequency: Number(waveformFrequencySlider.value),
-    waveformSpeed: Number(waveformSpeedSlider.value),
-    waveformPoints: getWaveformRenderPointCount(exactBarWidth, waveformFrequencySlider.value),
+function updateWaveformScopeControls() {
+  if (!window.WaveformScope || getCurrentMotionStyle() !== 'waveform') return;
+  const syncStatus = () => {
+    const status = document.getElementById('waveform-scope-status');
+    if (status) status.textContent = window.waveformScopeController.status();
+  };
+  if (!window.waveformScopeController) window.waveformScopeController = window.WaveformScope.createController({
+    onChange: () => { syncStatus(); requestUpdate(); }
   });
+  window.waveformScopeController.configure({
+    frequency: waveformFrequencySlider?.value || 24, type: waveformTypeSlider?.value || 0,
+    lfo: getWaveformLfoSettings()
+  });
+  syncStatus();
+}
+
+function getLiveWaveformGeometry(barStartX, barY, exactBarWidth, barHeight, timeSeconds) {
+  updateWaveformScopeControls();
+  return createWaveformPatternGeometry({ barStartX, barY, exactBarWidth, barHeight,
+    waveformScopeRequired: true, waveformScope: window.waveformScopeController?.frame() });
 }
 
 function getWaveformLfoSettings() {
@@ -1187,11 +1200,15 @@ function tickWaveformVisualLfo(timestamp, suspended = false) {
   if (!waveformVisualLfo) updateWaveformLfoControls();
   const elapsed = lastWaveformLfoTimestamp ? clampLiveAnimationDeltaMs(timestamp - lastWaveformLfoTimestamp) / 1000 : 0;
   lastWaveformLfoTimestamp = timestamp;
+  const scope = window.waveformScopeController;
+  scope?.tick(waveformScopeTime, isMotionEnabledForStyle('waveform'), waveformReverseToggle?.checked === true);
+  const scopeStatus = document.getElementById('waveform-scope-status');
+  if (scopeStatus && scope) scopeStatus.textContent = scope.status();
   if (!isMotionEnabledForStyle('waveform')) return;
+  waveformScopeTime += elapsed * Number(waveformSpeedSlider?.value || .3) / .3 * (waveformReverseToggle?.checked ? -1 : 1);
   waveformLfoTime += elapsed;
   waveformLfoFrame = waveformLfoVoice ? waveformLfoVoice.sample() : waveformVisualLfo.sample(waveformLfoTime);
   if (waveformLfoVoice) waveformVisualLfo.restore(waveformLfoFrame, waveformLfoTime);
-  waveformLfoFrame.amplitude = window.WaveformLfo.visualAmplitude(waveformLfoFrame, getWaveformLfoSettings().type, elapsed);
 }
 
 function updateWaveformLfoControls() {
@@ -1213,12 +1230,13 @@ function updateWaveformLfoControls() {
   else waveformVisualLfo.update(state, waveformLfoTime, !isMotionEnabledForStyle('waveform'));
   waveformLfoVoice?.update(state);
   waveformLfoFrame = waveformVisualLfo.sample(waveformLfoTime);
-  waveformLfoFrame.amplitude = window.WaveformLfo.visualAmplitude(waveformLfoFrame, state.type);
+  updateWaveformScopeControls();
 }
 
 function resetWaveformLfo() {
   waveformVisualLfo = null;
   waveformLfoTime = 0;
+  waveformScopeTime = 0;
   lastWaveformLfoTimestamp = 0;
   document.getElementById('waveform-lfo-type').value = 0;
   document.getElementById('waveform-lfo-toggle').checked = false;
@@ -2617,12 +2635,14 @@ function setup() {
   // Setup waveform sliders with display updates and audio parameter updates
   waveformTypeSlider.addEventListener('input', function () {
     updateWaveformTypeDisplay();
+    updateWaveformScopeControls();
     updateAudioParameters();
     updateUrlParameters();
     requestUpdate();
   });
   waveformFrequencySlider.addEventListener('input', function () {
     updateWaveformFrequencyDisplay();
+    updateWaveformScopeControls();
     updateAudioParameters();
     updateUrlParameters();
     requestUpdate();
@@ -3383,7 +3403,7 @@ function setup() {
   window.randomizeHistory = window.RandomizeHistory?.initialize({
     snapshots: window.barShareController,
     afterRestore: () => { updateUrlParameters(); window.URLState?.flush(); },
-    announce: (message, type) => Toast.show(message, type)
+    announce: (message, type) => type === 'error' ? Toast.show(message, type) : Toast.announce(message)
   });
   window.ParameterControls.bindActions({
     randomize: style => window.randomizeHistory
@@ -4348,7 +4368,11 @@ function getCurrentBarPatternValues(exactBarWidth) {
     waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
     waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
     waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
-    waveformAmplitude: waveformLfoFrame.amplitude,
+    waveformScopeRequired: currentShader === 4,
+    waveformScope: currentShader === 4 ? window.waveformScopeController?.frame() : null,
+    waveformLfoPhase: waveformLfoFrame.phase,
+    waveformLfoSampleRate: waveformLfoFrame.rate,
+    waveformLfoAmount: waveformLfoFrame.amount,
     waveformLfo: lfo.enabled,
     waveformLfoRate: lfo.rate,
     waveformLfoDepth: lfo.depth,
@@ -5473,67 +5497,13 @@ async function startWaveformAudio() {
   const normalizedFreq = (frequency - 10) / 90; // Normalize 10-100 to 0-1
   const mappedFrequency = minFreq + (normalizedFreq * (maxFreq - minFreq));
 
-  waveformLfoVoice = window.WaveformLfo.create(audioContext, gainNode, getWaveformLfoSettings(), waveformLfoFrame);
-
-  // Create basic oscillators for smooth morphing
-  const waveTypes = ['sine', 'sawtooth', 'square'];
-
-  waveTypes.forEach(type => {
-    // Create oscillator
-    oscillators[type] = audioContext.createOscillator();
-    oscillators[type].type = type;
-    oscillators[type].frequency.setValueAtTime(mappedFrequency, audioContext.currentTime);
-
-    // Create individual gain node for each oscillator
-    oscillatorGains[type] = audioContext.createGain();
-    oscillatorGains[type].gain.setValueAtTime(0, audioContext.currentTime);
-
-    // Connect oscillator -> gain -> master gain -> destination
-    oscillators[type].connect(oscillatorGains[type]);
-    oscillatorGains[type].connect(waveformLfoVoice.input);
-
-    // Start oscillator
-    oscillators[type].start();
-  });
-
-  // Create custom pulse wave using AudioWorklet
-  try {
-    pulseWorkletNode = new AudioWorkletNode(audioContext, 'pulse-processor');
-
-    // Set initial frequency
-    pulseWorkletNode.port.postMessage({
-      type: 'frequency',
-      value: mappedFrequency
-    });
-
-    // Set initial pulse width (20% to match visual)
-    pulseWorkletNode.port.postMessage({
-      type: 'pulseWidth',
-      value: 0.2
-    });
-
-    oscillators.pulse = pulseWorkletNode;
-    oscillatorGains.pulse = audioContext.createGain();
-    oscillatorGains.pulse.gain.setValueAtTime(0, audioContext.currentTime);
-
-    oscillators.pulse.connect(oscillatorGains.pulse);
-    oscillatorGains.pulse.connect(waveformLfoVoice.input);
-
-  } catch (error) {
-    console.error('Failed to create pulse worklet:', error);
-    // Fallback: create a square wave oscillator
-    oscillators.pulse = audioContext.createOscillator();
-    oscillators.pulse.type = 'square';
-    oscillators.pulse.frequency.setValueAtTime(mappedFrequency, audioContext.currentTime);
-
-    oscillatorGains.pulse = audioContext.createGain();
-    oscillatorGains.pulse.gain.setValueAtTime(0, audioContext.currentTime);
-
-    oscillators.pulse.connect(oscillatorGains.pulse);
-    oscillatorGains.pulse.connect(waveformLfoVoice.input);
-    oscillators.pulse.start();
-  }
-
+  waveformCarrier = window.WaveformAudio.create(audioContext, gainNode, {
+    frequency, type: Number(waveformTypeSlider.value), lfo: getWaveformLfoSettings()
+  }, waveformLfoFrame);
+  waveformLfoVoice = waveformCarrier.lfo;
+  oscillators = waveformCarrier.oscillators;
+  oscillatorGains = waveformCarrier.oscillatorGains;
+  pulseWorkletNode = waveformCarrier.pulseWorkletNode;
   // Clear any previously scheduled values to fix play/pause bug
   gainNode.gain.cancelScheduledValues(audioContext.currentTime);
 
@@ -5545,6 +5515,9 @@ async function startWaveformAudio() {
 
   // Set initial waveform mix
   updateAudioParameters();
+  window.waveformScopeController?.attach(audioContext, gainNode).catch(error => {
+    console.warn('Live scope unavailable:', error);
+  });
 
   console.log('Audio started - Frequency:', mappedFrequency, 'Type: morphing oscillators with pulse wave');
 }
@@ -5593,6 +5566,8 @@ function stopArtemisMissionAudio() {
 }
 
 function stopWaveformAudio() {
+  window.waveformScopeController?.detach();
+  waveformCarrier = null;
   try {
     if (waveformLfoVoice && waveformVisualLfo) {
       if (isMotionEnabledForStyle('waveform')) waveformLfoFrame = waveformLfoVoice.sample();
@@ -6453,92 +6428,7 @@ function updateAudioParameters() {
   if (!isAudioPlaying || currentShader !== 4) return;
 
   try {
-    const frequency = parseInt(waveformFrequencySlider.value);
-    const waveType = parseFloat(waveformTypeSlider.value);
-
-    // Map frequency from 10-100 to C1-C5 (32.70Hz to 523.25Hz)
-    const minFreq = 32.70; // C1
-    const maxFreq = 523.25; // C5
-    const normalizedFreq = (frequency - 10) / 90; // Normalize 10-100 to 0-1
-    const mappedFrequency = minFreq + (normalizedFreq * (maxFreq - minFreq));
-
-    // Update frequency on all active oscillators
-    Object.values(oscillators).forEach((osc, index) => {
-      if (osc) {
-        const oscType = Object.keys(oscillators)[index];
-        if (oscType === 'pulse' && pulseWorkletNode) {
-          // Send frequency update to pulse worklet
-          pulseWorkletNode.port.postMessage({
-            type: 'frequency',
-            value: mappedFrequency
-          });
-        } else if (osc.frequency) {
-          osc.frequency.exponentialRampToValueAtTime(mappedFrequency, audioContext.currentTime + 0.1);
-        }
-      }
-    });
-
-    // Calculate mix ratios for smooth morphing with proper pulse wave integration
-    let sineGain = 0;
-    let sawGain = 0;
-    let squareGain = 0;
-    let pulseGain = 0;
-
-    // Use smooth crossfading between waveforms
-    if (waveType <= 1.0) {
-      // Sine to sawtooth (0.0 to 1.0)
-      sineGain = Math.max(0, 1.0 - waveType);
-      sawGain = Math.min(1.0, waveType);
-    } else if (waveType <= 2.0) {
-      // Sawtooth to square (1.0 to 2.0)
-      const t = waveType - 1.0;
-      sawGain = Math.max(0, 1.0 - t);
-      squareGain = Math.min(1.0, t);
-    } else {
-      // Square to pulse (2.0 to 3.0)
-      const t = waveType - 2.0;
-      squareGain = Math.max(0, 1.0 - t);
-      pulseGain = Math.min(1.0, t);
-
-      // Update pulse width based on slider position
-      // Map from 20% to 80% duty cycle as slider moves from 2.0 to 3.0
-      const pulseWidth = 0.2 + t * 0.6;
-
-      // Send pulse width update to worklet
-      if (pulseWorkletNode) {
-        pulseWorkletNode.port.postMessage({
-          type: 'pulseWidth',
-          value: pulseWidth
-        });
-      }
-    }
-
-    // Normalize gains to prevent volume changes
-    const totalGain = sineGain + sawGain + squareGain + pulseGain;
-    if (totalGain > 0) {
-      sineGain /= totalGain;
-      sawGain /= totalGain;
-      squareGain /= totalGain;
-      pulseGain /= totalGain;
-    }
-
-    // Apply master volume scaling
-    const masterVolume = 0.1;
-    sineGain *= masterVolume;
-    sawGain *= masterVolume;
-    squareGain *= masterVolume;
-    pulseGain *= masterVolume;
-
-    // Use smooth ramp time for gentle transitions
-    const rampTime = 0.05;
-    const time = audioContext.currentTime;
-
-    // Use setTargetAtTime which cleanly and safely transitions from the current computed value
-    if (oscillatorGains.sine) oscillatorGains.sine.gain.setTargetAtTime(sineGain, time, rampTime / 3);
-    if (oscillatorGains.sawtooth) oscillatorGains.sawtooth.gain.setTargetAtTime(sawGain, time, rampTime / 3);
-    if (oscillatorGains.square) oscillatorGains.square.gain.setTargetAtTime(squareGain, time, rampTime / 3);
-    if (oscillatorGains.pulse) oscillatorGains.pulse.gain.setTargetAtTime(pulseGain, time, rampTime / 3);
-
+    waveformCarrier?.update({ frequency: waveformFrequencySlider.value, type: waveformTypeSlider.value });
   } catch (error) {
     console.error('Failed to update audio parameters:', error);
   }

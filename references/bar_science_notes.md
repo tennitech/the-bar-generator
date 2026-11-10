@@ -80,7 +80,7 @@ Button zoom keeps the bar as the inspection focus. Pointer zoom uses the pointer
 - **Gradient:** Apparent tone uses area coverage in one foreground color. Variant 1 linearly tapers full-height stripe widths; variant 2 uses three rows with a symmetric triangular coverage envelope. There is no opacity or color interpolation. The existing Gradient name/treatment still needs owner review against the dated Pattern restriction.
 - **Circles Gradient:** Variant 1 preserves all 86 circles from `assets/bar references/Style=Circles Gradient 1.svg`: 29 large, 28 staggered medium and 29 small dots, with source radii 8, 6 and 4.5 and the original small coordinate offsets. Its 509 × 36 source frame is uniformly scaled and centered within the caller viewport, retaining complete circles and natural whitespace. Variant 2 increases circle area linearly left to right in two rows; variant 3 has symmetric triangular area coverage strongest at the center in three rows. Radii are bounded by row/cell dimensions. Variants 2 and 3 share the same column centers, so their vertical columns remain upright; the largest endpoint circles are tangent to the exact left/right edges. Smaller endpoint dots retain their radius and sit inside those edges rather than shifting sideways. These are geometric patterns, not external datasets.
 
-The configurable static families retain their natural composition within the canonical viewport. The combined renderer uses the complete official vector basis and one selected-control collector for header/preview/SVG/PNG across all static families, superseding the isolated four-family export bypass. Exports capture controls, color, phase, title and Standard/Large size before asynchronous work begins. PNG rasterizes that captured vector; GIF streams captured frames with true palette transparency and disposal2. GIF uses binary alpha with coverage dithering, so PNG/SVG remain the smooth-alpha alternatives. See [transparent exports](transparent_gif_exports.md) for timing, streaming memory budgets, measured benchmarks and limits.
+The configurable static families retain their natural composition within the canonical viewport. The combined renderer uses the complete official vector basis and one selected-control collector for header/preview/SVG/PNG across all static families, superseding the isolated four-family export bypass. Exports capture controls, color, phase, title and Standard/Large size before asynchronous work begins. PNG rasterizes that captured vector; GIF streams captured frames with true palette transparency and disposal2. GIF uses binary alpha with a uniform half-coverage threshold, so PNG/SVG remain the smooth-alpha alternatives. See [transparent exports](transparent_gif_exports.md) for timing, streaming memory budgets, measured benchmarks and limits.
 
 The combined development checkout includes the revised single Quantum projection model from `ac06247`, `b4288ba`, and `c25cfa5`. It graphs three phase-convention-dependent projections of one normalized free-particle wavefunction on an ideal periodic ring, using modes −4,3,7 with equal coefficient magnitude1/√3. The fixed amplitude bound√3 maps to height; it never uses sampled-peak fitting. A recurrence takes120display seconds at1×, SPEED0.2–4 uniformly scales time. Current main advances model phase by default; REVERSE decreases it. The GIF matches that exact current-model direction. Display seconds have no physical calibration because mass/circumference are unspecified. The curves are not particles, literal trajectories, probabilities or measured data. See [model, equations, sources and limits](quantum_model.md).
 
@@ -348,6 +348,74 @@ QA: this cloud sandbox blocks Chromium's Unix sockets, WebKit lacks libraries,
 and the managed browser cannot reach its isolated localhost server. The browser
 harness is present; no browser or physical-device pass is claimed.
 
+## Actual audio Waveform scope — November 10, 2026
+
+The owner clarified the goal with a VCO → VCA / LFO → VCA reference and a
+hand-drawn envelope/carrier example, then explicitly requested a direct scope
+of actual audio with sensible horizontal scaling. This supersedes the uniform
+bar pulse, fast-rate average, resting-phase export policy and idealized visual
+carrier described above. The runtime never substitutes a mathematical drawing
+for missing recorded audio.
+
+The inspected audio graph sums the normalized carrier oscillator crossfades
+into a GainNode. The bipolar LFO and bias sum into its gain AudioParam, and that
+GainNode multiplies the actual carrier samples: AM/tremolo. No LFO connects to
+carrier frequency or phase. Additive carrier/LFO mixing would be a different
+signal; FM integrates varying frequency into phase, and PM varies phase itself.
+The new `waveformAudio.js` extracts the existing audible builder and parameter
+update code without changing oscillator types, starts, C1–C5 pitch mapping,
+Pulse worklet/fallback, pulse duty, normalized crossfades, coefficients, 15ms LFO
+ramps, 50ms master fade or carrier ramps. A frozen independent pre-refactor
+reference verifies event scheduling and native offline PCM equivalence.
+
+When Audio is on, a separate silent AudioWorklet branch taps the existing master
+gain output after LFO, carrier gains and fade. It emits **zero** audio and posts
+minimum/maximum values for every eight actual PCM samples. A bounded ring holds
+the requested view plus two seconds of history; it is not limited by an
+AnalyserNode's 32768-frame window. The physical window is
+`T = max(4/f, 2/r)` for enabled nonzero-depth LFO, and `4/f` otherwise. Here
+`f = 32.70 + (frequency-10)/90*(523.25-32.70)` Hz and `r` is the LFO rate.
+Thus 2Hz spans one second with about 109 carrier cycles at the default pitch;
+.07Hz spans 28.571 seconds with two real envelopes. High-rate modulation keeps
+at least four carrier cycles and its actual texture. Live history starts with
+available samples and is labeled “filling history” until the full window exists.
+
+With Audio off, the same shared graph runs in OfflineAudioContext, including
+the real Pulse worklet when supported, without rendering to audio hardware or
+resuming the audible context. It discards .25 seconds of startup settling and
+stores the actual rendered PCM extrema. A Square fallback is labeled when the
+browser cannot run the Pulse worklet and that carrier is in use. This is a
+separately generated audio signal, explicitly labeled “Offline audio render”;
+it is not called a live recording. Unsupported APIs/render failures display an
+error and empty scope, with no ideal-wave fallback. Rendering is debounced,
+serialized and generation-checked so stale settings cannot replace newer data.
+
+The 1024 horizontal bins retain actual signed extrema, not an amplitude average
+or sampled LFO equation. Fixed gain scale .1 matches the existing carrier volume;
+zero is the bar center, and lobes fill to zero without a painted baseline.
+Main/header/SVG/PNG/GIF use this same PCM geometry. The time axis is physical
+seconds; silent replay/GIF speed follows the existing 0.2–4× SPEED control.
+Live capture follows actual audio timing. Loop pause and reduced motion retain
+the exact displayed frame/recording even while explicitly started audio
+continues; hidden/style transitions retain the existing audio-stop policy.
+
+SVG, PNG and clipboard freeze the displayed frame at request time, including
+live PCM, rather than switching to an unrelated resting phase. GIF freezes the
+same recording and starts on the displayed frozen frame and replays up to two seconds of its
+captured history in the selected direction. It repeats that finite recording,
+with a possible reset when the history wraps; there is no claim that arbitrary audio pitches and LFO rates
+share a seamless short period. A still-filling live buffer without .1 seconds of
+replay history gives an actionable GIF error while SVG/PNG remain available.
+No settings changed during asynchronous encoding can change the captured data.
+
+Primary source: [W3C Web Audio specification](https://www.w3.org/TR/webaudio/),
+AudioParam, GainNode, OscillatorNode, OfflineAudioContext, AnalyserNode and
+AudioWorkletProcessor. OfflineAudioContext renders to an AudioBuffer rather
+than audio hardware; AnalyserNode time-domain history is capped at 32768 frames.
+This architecture follows those APIs and the app's inspected connections.
+See [scope QA](waveform_signal_qa.md) for actual evidence, performance bounds,
+source distinction and browser/audio limitations.
+
 ## GIF time sampling — November 10, 2026
 
 Ticker, Waveform and Gradient exports target approximately 30 frames per second
@@ -370,3 +438,77 @@ closure are preserved, without a duplicated endpoint. The unchanged 3000-frame
 budget can limit longer loops below this target. No scientific coordinates,
 preview clock, SVG/PNG, alpha-conversion source or recorded-audio history contract
 is altered. See [timing measurements, format and resource limits](gif_cadence_benchmark.md).
+
+
+## Scope history and fixed physical X coverage — November 10, 2026
+
+Owner live QA exposed a presentation error in the actual PCM scope: configure()
+cleared its ring on each edit, and tick() passed the available duration instead
+of the requested duration to geometry. Stretching that progressively longer
+recording over the full width made the displayed frequency appear to grow.
+
+The X window now always spans the requested physical duration, quantized once
+to an integer extrema-pair count. For N available pairs in a target window of M
+pairs, live coverage is `[1-N/M, 1]`. Bins and the closing polygon stay inside
+that known region. The unknown prefix receives no paint or extrapolated samples;
+its duration is reported as unrecorded. Each added packet advances the visible
+history on the same X scale instead of rescaling a shorter signal to full width.
+The min/max bin count is proportional to coverage, keeping the display’s time
+resolution consistent during filling instead of initially allocating the whole
+1024-bin budget to a short recording.
+
+The live ring retains the longest supported window plus two replay seconds,
+including while shorter or disabled-LFO views are selected. Parameter edits
+retain the actual continuous post-gain samples and their real audible ramps.
+A view containing the latest edit boundary is labeled as including parameter
+changes. The caption does not claim all retained samples match current controls
+or place a sample-exact marker on an asynchronously requested edit. Once older
+history has left the visible window, the mixed-history label clears.
+
+Offline work retains the prior actual frame while the replacement is pending,
+with an explicit previous-settings label. Successful latest renders replace it
+once as complete data; stale or failed jobs do not erase it. No interpolation of
+old/new waveform values is used. Freeze pins the exact frame, timebase and
+export recording through parameter changes and background completion. Resume
+selects current live history or the latest complete silent render. Source labels
+remain live, recorded or offline as appropriate. The existing actual-audio graph,
+LFO/carrier ramps and output route are unchanged.
+
+Native/silent contexts may have different sample rates; their physical durations
+round by at most one extrema pair, rather than changing while history fills.
+SVG/PNG freeze these same coverage bounds. Insufficient replay history still
+gives the existing actionable GIF error; recorded GIFs retain their fixed
+coverage and current 50fps planning/guard behavior. See
+[transition regression and native raster QA](waveform_scope_transitions_qa.md).
+
+## GIF edge quantization — November 10, 2026
+
+Straight waveform discontinuities already use exact one-sided vertices in the
+shared geometry. The reported repeating teeth arise after rasterization: the
+former 4 × 4 ordered transparency mask varies coverage along a straight edge.
+GIF now thresholds coverage uniformly at one half. This rounds raster boundaries
+without changing scientific coordinates, duty cycles, official viewport or SVG/PNG
+geometry. Curves and diagonals retain GIF’s binary-alpha pixel steps. Carrier,
+LFO and audio math are untouched. See [encoded evidence](gif_edge_qa.md).
+
+
+## Actual-sample sweep playback — November 10, 2026
+
+A physical X timebase is independent from playback speed. Advancing a .037s
+window at one recorded second per display second makes the roughly 109Hz
+carrier race and alias visually. The corrected display scans at most
+`1 / max(carrierHz, activeLfoHz)` recorded seconds during one visual cycle,
+which takes `1 / SPEED` display seconds. Disabled/zero-depth LFOs do not set the
+scan rate. X still spans four carrier periods or two active LFO periods,
+whichever is longer; it is never rescaled to this slower playback duration.
+
+Actual extrema pairs determine rising-zero-crossing triggers. No oscillator is
+reconstructed and no sample values are interpolated. Live capture continues
+independently; immutable triggered snapshots refresh between visual sweeps,
+after parameter edits, while filling, and once mixed history has left the
+selected window. The explicitly labeled slowed replay keeps SPEED/reverse
+consistent across live capture, silent renders and GIF. Static formats and
+freeze retain the exact shown frame. An arbitrary carrier/LFO ratio need not
+close at a short sweep boundary, and refreshed live snapshots may show a
+different envelope; this is an actual recorded scope, not a claim of periodic
+physical playback. Existing gain modulation, audio ramps and output are intact.

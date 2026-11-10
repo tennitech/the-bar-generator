@@ -1,0 +1,261 @@
+/* Actual PCM scope: bounded min/max recording, offline rendering and live tap. */
+(function(root) {
+  const GROUP = 8, BINS = 1024, REPLAY = 2, SETTLE = .25;
+  const SWEEP_HZ = .3;
+  const MAX_HISTORY_SECONDS = 2 / .07 + REPLAY;
+  function settings(values = {}) {
+    return { frequency: Math.max(10, Math.min(100, Number(values.frequency) || 24)),
+      type: Math.max(0, Math.min(3, Number(values.type) || 0)), lfo: root.WaveformLfo.normalize(values.lfo) };
+  }
+  function duration(values) {
+    const v = settings(values), hz = root.WaveformAudio.frequency(v.frequency);
+    return Math.max(4 / hz, v.lfo.enabled && v.lfo.depth > 0 ? 2 / v.lfo.rate : 0);
+  }
+  function pcmExtrema(pcm) {
+    const result = new Float32Array(Math.floor(pcm.length / GROUP) * 2);
+    for (let i = 0, out = 0; i + GROUP <= pcm.length; i += GROUP) {
+      let min = Infinity, max = -Infinity;
+      for (let j = 0; j < GROUP; j++) { min = Math.min(min, pcm[i+j]); max = Math.max(max, pcm[i+j]); }
+      result[out++] = min; result[out++] = max;
+    }
+    return result;
+  }
+  function frame(data, rate, start, seconds, source, extra = {}) {
+    const first = Math.max(0, Math.floor(start * rate + 1e-9));
+    const target = Math.max(1, Math.floor(seconds * rate + 1e-9));
+    const count = Math.min(data.length / 2 - first, target);
+    if (count < 1) return null;
+    // Keep approximately the same time represented by each display bin as
+    // coverage fills, rather than spending all 1024 bins on a short prefix.
+    const bins = Math.min(count, Math.max(1, Math.ceil(Math.min(BINS, target) * count / target)));
+    const extrema = [];
+    for (let x = 0; x < bins; x++) {
+      const a = first + Math.floor(x * count / bins), b = first + Math.floor((x+1) * count / bins);
+      let min = Infinity, max = -Infinity;
+      for (let i = a; i < b; i++) { min = Math.min(min, data[i*2]); max = Math.max(max, data[i*2+1]); }
+      extrema.push(min, max);
+    }
+    const coverage = count / target;
+    return Object.freeze({ extrema: Object.freeze(extrema), seconds: target / rate,
+      availableSeconds: count / rate,
+      startFraction: extra.alignEnd ? 1 - coverage : 0,
+      endFraction: extra.alignEnd ? 1 : coverage,
+      source, gainScale: .1, ...extra });
+  }
+  function recording(data, rate, seconds, source, extra = {}) {
+    // data is private and never modified after construction. Snapshots retain
+    // the recording even when controls replace the controller's current one.
+    const windowPairs = Math.max(1, Math.floor(seconds * rate + 1e-9));
+    seconds = windowPairs / rate;
+    const replayPairs = Math.max(0, Math.min(Math.floor(REPLAY * rate + 1e-9), data.length / 2 - windowPairs));
+    const replaySeconds = replayPairs / rate;
+    return Object.freeze({ source, seconds, replaySeconds,
+      triggerBefore(limit, searchSeconds) {
+        // Select an actual rising crossing; never alter or synthesize samples.
+        const end = Math.min(replayPairs, Math.floor(limit * rate));
+        const begin = Math.max(1, end - Math.ceil(searchSeconds * rate));
+        for (let i = end; i >= begin; i--) {
+          const before = data[(i-1)*2] + data[(i-1)*2+1];
+          const after = data[i*2] + data[i*2+1];
+          if (before <= 0 && after > 0) return i / rate;
+        }
+        return Math.max(0, end) / rate;
+      },
+      frame: offset => frame(data, rate, Math.max(0, Math.min(replaySeconds, Number(offset) || 0)), seconds, source, extra) });
+  }
+  function replayFrom(captured, origin, first, reverse = false) {
+    const span = captured.replaySeconds;
+    return Object.freeze({ source: captured.source, seconds: captured.seconds, replaySeconds: span,
+      frame(time) {
+        if (!span || !time || Math.abs(time - span) < 1e-10) return first;
+        const position = ((origin + (reverse ? -1 : 1) * time) % span + span) % span;
+        return captured.frame(position);
+      } });
+  }
+  function sweepSpan(values) {
+    const v = settings(values);
+    // Limit motion to one cycle of the fastest detail per visual sweep.
+    // X remains physical audio time; only playback is slowed.
+    return 1 / Math.max(root.WaveformAudio.frequency(v.frequency),
+      v.lfo.enabled && v.lfo.depth > 0 ? v.lfo.rate : 0);
+  }
+  function sweep(captured, values) {
+    const requestedSpan = sweepSpan(values);
+    const span = captured.replaySeconds >= requestedSpan ? requestedSpan : 0;
+    const latest = Math.max(0, captured.replaySeconds - span);
+    const origin = captured.triggerBefore(latest, 1 / root.WaveformAudio.frequency(values.frequency));
+    return { captured, origin, span };
+  }
+  function sweepReplay(view, offset, first, reverse) {
+    const { captured, origin, span } = view;
+    return Object.freeze({ source: captured.source, seconds: captured.seconds,
+      replaySeconds: span, playbackSeconds: span > 0 ? 1 / SWEEP_HZ : 0,
+      frame(time) {
+        if (!span || !time || Math.abs(time - span) < 1e-10) return first;
+        const position = ((offset + (reverse ? -1 : 1) * time) % span + span) % span;
+        return captured.frame(origin + position);
+      } });
+  }
+  async function render(values, environment = root) {
+    const v = settings(values), seconds = duration(v), sampleRate = 48000;
+    const Context = environment.OfflineAudioContext || environment.webkitOfflineAudioContext;
+    if (!Context) throw new Error('This browser cannot render a silent audio scope. Start Audio for a live scope.');
+    const context = new Context(1, Math.ceil((seconds + REPLAY + SETTLE) * sampleRate), sampleRate);
+    try { await context.audioWorklet?.addModule('js/pulse-worklet.js'); } catch (_) { /* Same Square fallback as the audible graph. */ }
+    const master = context.createGain(); master.connect(context.destination);
+    master.gain.setValueAtTime(0, 0); master.gain.linearRampToValueAtTime(1, .05);
+    const graph = root.WaveformAudio.create(context, master, v, {}, environment.AudioWorkletNode);
+    graph.update(v);
+    const buffer = await context.startRendering();
+    const data = pcmExtrema(buffer.getChannelData(0).subarray(Math.round(SETTLE * sampleRate)));
+    return recording(data, sampleRate / GROUP, seconds, 'offline', { pulse: graph.pulseWorkletNode || v.type <= 2 ? 'worklet' : 'square-fallback' });
+  }
+  function createController({ onChange = () => {}, environment = root } = {}) {
+    let key = '', currentKey = '', currentSettings, offlineKey = '', offline = null, current = null;
+    let error = '', rendering = false, generation = 0;
+    let pending = null, cancelPending = () => {}, queue = Promise.resolve(), timer;
+    let tap = null, input = null, ring = null, written = 0, pairRate = 0, attachGeneration = 0;
+    let currentRecording = null, exportRecording = null, lastWritten = -1, lastEditAt = null, liveError = '';
+    let offset = 0, currentOrigin = 0, currentReverse = false, running = true;
+    let currentSweep = null, liveCycle = null;
+    function showSweep(view, time, capturedKey) {
+      currentSweep = view;
+      const phase = (((Number(time) || 0) * SWEEP_HZ) % 1 + 1) % 1;
+      offset = phase * view.span;
+      currentOrigin = view.origin + offset;
+      currentRecording = view.captured;
+      current = currentRecording.frame(currentOrigin); currentKey = capturedKey;
+      exportRecording = sweepReplay(view, offset, current, currentReverse);
+    }
+    function liveData(seconds) {
+      const count = Math.min(written, ring.length / 2, Math.floor(seconds * pairRate + 1e-9));
+      const data = new Float32Array(count * 2), first = written - count;
+      for (let i = 0; i < count; i++) {
+        const index = ((first+i) % (ring.length/2)) * 2;
+        data[i*2] = ring[index]; data[i*2+1] = ring[index+1];
+      }
+      return { data, first };
+    }
+    function showOffline(captured, time, capturedKey) {
+      showSweep(sweep(captured, currentSettings), time, capturedKey);
+    }
+
+    function configure(values, immediate = false) {
+      const next = settings(values), nextKey = JSON.stringify(next);
+      if (key === nextKey) return pending;
+      key = nextKey; currentSettings = next; error = ''; rendering = true;
+      // The tap records a continuous signal, including the real parameter
+      // ramps. Keep that history and label views that include earlier settings.
+      if (tap) lastEditAt = written;
+      lastWritten = -1; liveCycle = null;
+      const token = ++generation;
+      clearTimeout(timer); cancelPending();
+      pending = new Promise(resolve => {
+        cancelPending = () => resolve(null);
+        timer = setTimeout(() => {
+          queue = queue.then(async () => {
+            if (token !== generation) return resolve(null);
+            try {
+              const captured = await render(next, environment);
+              if (token === generation) {
+                offline = captured; offlineKey = nextKey; rendering = false;
+                // Frozen data remains frozen across edits. A first still can
+                // appear on initial load; subsequent swaps wait for playback.
+                if (!current || (running && !tap)) showOffline(captured, 0, nextKey);
+                onChange();
+              }
+              resolve(captured);
+            } catch (failure) {
+              if (token === generation) { error = failure.message; rendering = false; onChange(); }
+              resolve(null);
+            }
+          });
+        }, immediate ? 0 : 100);
+      });
+      return pending;
+    }
+    function detach() {
+      attachGeneration++;
+      if (tap) { if (input) input.disconnect(tap); tap.port.onmessage = null; tap.disconnect(); }
+      tap = input = ring = null; written = 0; lastWritten = -1; liveCycle = null; lastEditAt = null; liveError = '';
+    }
+    async function attach(context, destination) {
+      detach(); const token = attachGeneration;
+      try { await context.audioWorklet.addModule('js/waveform-scope-worklet.js'); }
+      catch (failure) { liveError = ' · live capture unavailable'; onChange(); throw failure; }
+      if (token !== attachGeneration) return;
+      try { tap = new environment.AudioWorkletNode(context, 'waveform-scope'); }
+      catch (failure) { liveError = ' · live capture unavailable'; onChange(); throw failure; }
+      input = destination;
+      pairRate = context.sampleRate / GROUP;
+      // Keep the longest supported view plus replay history even while a
+      // short timebase is selected. Edits never resize or clear the live ring.
+      ring = new Float32Array(Math.ceil(MAX_HISTORY_SECONDS * pairRate) * 2);
+      tap.port.onmessage = event => {
+        const data = event.data;
+        if (!ring || !(data instanceof Float32Array)) return;
+        for (let i = 0; i < data.length; i += 2) {
+          const index = (written++ % (ring.length / 2)) * 2;
+          ring[index] = data[i]; ring[index+1] = data[i+1];
+        }
+      };
+      input.connect(tap); tap.connect(context.destination);
+    }
+    function tick(seconds, isRunning = true, reverse = false) {
+      running = isRunning;
+      if (reverse !== currentReverse && currentRecording) exportRecording = sweepReplay(currentSweep, offset, current, reverse);
+      currentReverse = reverse;
+      if (!running) return current;
+      if (tap) {
+        // Capture continuously, but present immutable, triggered sweeps at
+        // the selected visual speed rather than racing through native PCM.
+        if (!written) return current;
+        const requested = duration(currentSettings), target = Math.floor(requested * pairRate + 1e-9);
+        const cycle = Math.floor((Number(seconds) || 0) * SWEEP_HZ);
+        const historySettled = current?.parameterChanges && lastEditAt !== null && written - target - Math.ceil(2 / root.WaveformAudio.frequency(currentSettings.frequency) * pairRate) > lastEditAt;
+        const refresh = !currentSweep || current.source !== 'live' || liveCycle !== cycle
+          || lastWritten < 0 || current.filling || historySettled;
+        if (refresh && lastWritten !== written) {
+          lastWritten = written; liveCycle = cycle;
+          const { data, first } = liveData(requested + REPLAY);
+          const visibleFirst = Math.max(first, written - target - Math.ceil(2 / root.WaveformAudio.frequency(currentSettings.frequency) * pairRate));
+          const captured = recording(data, pairRate, requested, 'live', {
+            alignEnd: true, filling: data.length / 2 < target, requestedSeconds: requested,
+            parameterChanges: lastEditAt !== null && visibleFirst <= lastEditAt
+          });
+          currentSweep = sweep(captured, currentSettings);
+        }
+        if (currentSweep?.captured.source === 'live') showSweep(currentSweep, seconds, key);
+      } else if (offline && offlineKey === key) {
+        showOffline(offline, seconds, offlineKey);
+      }
+      return current;
+    }
+    function capture(reverse = currentReverse) {
+      if (current && reverse !== currentReverse) {
+        currentReverse = reverse; exportRecording = sweepReplay(currentSweep, offset, current, reverse);
+      }
+      if (!current) throw new Error(error || 'The audio signal is rendering. Try exporting again in a moment.');
+      return Object.freeze({ frame: current, recording: exportRecording });
+    }
+    function status() {
+      if (!current) return error || 'Rendering audio signal…';
+      const label = current.source === 'live' ? (tap && running ? 'Live audio capture' : 'Recorded audio') : 'Offline audio render';
+      const previous = currentKey !== key;
+      return `${label} · ${current.seconds.toFixed(3)} s window · slowed sample sweep${!running ? ' · frozen' : ''}`
+        + (previous ? ` · previous settings${rendering ? ' (rendering update)' : error ? ' (update unavailable)' : ''}` : '')
+        + (current.filling ? ` · filling history: ${current.availableSeconds.toFixed(3)} s recorded; blank area is unrecorded` : '')
+        + (current.parameterChanges ? ' · includes parameter changes' : '')
+        + (tap && current.source !== 'live' && running ? ' · waiting for live audio' : '')
+        + (current.pulse === 'square-fallback' ? ' · Square fallback' : '') + liveError;
+    }
+    return { configure, attach, detach, tick, frame: () => current, capture, status,
+      ready: () => pending,
+      dispose() { generation++; clearTimeout(timer); cancelPending(); detach(); offline = current = currentRecording = exportRecording = null; }
+    };
+  }
+
+  const api = { settings, duration, sweepSpan, sweep, sweepReplay, pcmExtrema, frame, recording, replayFrom, render, createController };
+  root.WaveformScope = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);

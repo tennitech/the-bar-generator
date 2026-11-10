@@ -237,16 +237,18 @@
 
     const speed = getLoopSpeed(normalizedStyle, values);
     const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
-    const hasLfo = normalizedStyle === 'waveform' && !options.carrierOnly
-      && (values.waveformLfo === true || values.waveformLfo === 'true') && Number(values.waveformLfoDepth) > 0;
-    const rate = Math.round(clamp(toPositiveNumber(values.waveformLfoRate, 2), 0.07, 1300) * 1000);
-    const gcd = (a, b) => b ? gcd(b, a % b) : a;
-    const jointPeriod = 1000 / gcd(Math.round(speed * 1000), rate);
-    // Fine stored rates can need a very long joint cycle. Bound capture cost;
-    // use the LFO mean when the exact cycle exceeds 100 seconds or 5 Hz.
-    const lfoEnabled = hasLfo && rate < 5000 && jointPeriod <= 100;
-    const lfoAveraged = hasLfo && !lfoEnabled;
-    const periodSeconds = lfoEnabled ? jointPeriod : 1 / speed;
+    if (normalizedStyle === 'waveform' && values.waveformScope && !options.carrierOnly) {
+      const replaySeconds = Number(values.waveformScopeReplaySeconds) || 0;
+      const playbackSeconds = Number(values.waveformScopePlaybackSeconds) || replaySeconds;
+      if (!(replaySeconds > 0) || playbackSeconds < .1) throw new RangeError('Record a little more audio history before exporting a GIF, or export SVG/PNG.');
+      const periodSeconds = playbackSeconds / (speed / .3);
+      const frameCount = getFrameCountForPeriod(periodSeconds, fps);
+      return { style: normalizedStyle, periodSeconds, frameCount,
+        frameDelayMs: Math.round(periodSeconds * 1000 / frameCount),
+        getLoopOffsetX: () => 0, getTimeSeconds: progress => replaySeconds * progress,
+        scopeReplay: true };
+    }
+    const periodSeconds = 1 / speed;
     const frameCount = getFrameCountForPeriod(periodSeconds, fps);
 
     return {
@@ -254,7 +256,6 @@
       frameCount,
       frameDelayMs: Math.round((periodSeconds * 1000) / frameCount),
       periodSeconds,
-      lfoAveraged,
       repeatWidth: 0,
       getLoopOffsetX() {
         return 0;

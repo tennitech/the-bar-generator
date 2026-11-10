@@ -73,8 +73,16 @@ async function main() {
       await editor.fill('12');
       await page.keyboard.press('Enter');
       assert.equal(await page.locator('#ruler-repeats-slider').inputValue(), '12');
+      const changedMarker = page.locator('label[for="ruler-repeats-slider"] .parameter_marker');
+      assert.equal(await changedMarker.evaluate(e => getComputedStyle(e).visibility), 'visible');
       await page.locator('#mobile-controls-close').tap();
       assert.equal(await page.locator('#mobile-menu-toggle').getAttribute('aria-expanded'), 'false');
+      assert.equal(await changedMarker.evaluate(e => getComputedStyle(e).visibility), 'hidden',
+        'changed markers must inherit the closed sheet visibility, rather than paint over the preview');
+      await page.locator('#mobile-menu-toggle').tap();
+      assert.equal(await changedMarker.evaluate(e => getComputedStyle(e).visibility), 'visible',
+        'reopening keeps the changed-setting feedback');
+      await page.locator('#mobile-controls-close').tap();
       await page.locator('#zoom-level').tap();
       assert.equal(await page.locator('#zoom-level').evaluate(e => getComputedStyle(e).boxShadow), 'none');
       await page.keyboard.press('ArrowRight');

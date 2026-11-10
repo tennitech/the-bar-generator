@@ -1,5 +1,6 @@
 (function (root) {
   let active = null, nextId = 0, lastProgressAt = 0, selectedComposition = 'logo';
+  let lastContext = null, designRevision = 0, creditsContext = false;
   const byId = id => document.getElementById(id);
   const controls = () => ['save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'export-size-large', 'export-size-standard', 'copy-svg', 'copy-png', 'export-composition-logo', 'export-composition-bar'].map(byId).filter(Boolean);
   const text = (id, value) => { const element = byId(id); if (element) element.textContent = value; };
@@ -10,7 +11,36 @@
     if (bytes < 1000) return `${bytes} B`;
     return bytes < 1000000 ? `${Math.round(bytes / 1000)} KB` : `${(bytes / 1000000).toFixed(1)} MB`;
   }
+  function contextKey() {
+    const style = byId('style-select')?.value || '';
+    return JSON.stringify([creditsContext, style, byId('color-mode-select')?.value || '', size(), composition(),
+      style === 'wave-quantum' ? byId('quantum-speed-slider')?.value : '', designRevision]);
+  }
+  function resetResult() {
+    const progress = byId('export-progress');
+    const restoreFocus = progress?.contains(document.activeElement);
+    if (progress) { progress.hidden = true; progress.removeAttribute('data-outcome'); }
+    for (const id of ['export-message', 'export-detail', 'export-percent']) text(id, '');
+    const meter = byId('export-meter');
+    if (meter) { meter.value = 0; meter.removeAttribute('value'); meter.removeAttribute('aria-valuetext'); }
+    if (byId('export-fill')) byId('export-fill').style.width = '';
+    if (byId('export-cancel')) byId('export-cancel').hidden = true;
+    if (restoreFocus) byId('save-button')?.focus({ preventScroll: true });
+  }
+  function sourcePrefix(job) {
+    return job.context !== contextKey() && job.sourceLabel ? `${job.sourceLabel} · ` : '';
+  }
   function sync(credits = false) {
+    creditsContext = Boolean(credits);
+    const context = contextKey();
+    if (lastContext !== null && lastContext !== context) {
+      if (!active) resetResult();
+      else if (active.sourceLabel && !active.controller.signal.aborted) {
+        text('export-message', `Creating ${active.sourceLabel}…`);
+        text('export-detail', `${active.dimensions || ''} · captured before this design change`);
+      }
+    }
+    lastContext = context;
     for (const value of ['logo', 'bar']) {
       const option = byId(`export-composition-${value}`);
       if (option) option.checked = composition() === value;
@@ -83,7 +113,8 @@
   }
   function begin(format) {
     if (active || root.NucleotidePattern?.exportBlocker(document)) return null;
-    active = { id: ++nextId, format, controller: new AbortController() };
+    active = { id: ++nextId, format, context: contextKey(), controller: new AbortController() };
+    lastContext = active.context;
     const menu = byId('save-menu'), cancel = byId('export-cancel');
     const focusWasInMenu = menu?.contains(document.activeElement);
     controls().forEach(control => { control.disabled = true; });
@@ -104,6 +135,8 @@
   }
   function describe(job, snapshot) {
     if (active !== job) return;
+    const family = root.BarInformation?.descriptions?.[snapshot.family]?.title || snapshot.family;
+    job.sourceLabel = `${family ? `${family} ` : ''}${job.format.toUpperCase()}`;
     job.dimensions = job.format === 'svg' ? 'Scalable vector' : pixelSize(snapshot.dimensions);
     job.compositionLabel = snapshot.composition && root.logoExportOptions?.compositionLabel(snapshot.composition);
     text('export-detail', `${job.compositionLabel ? `${job.compositionLabel} · ` : ''}${job.dimensions} · transparent background${snapshot.gifPolicy?.note ? ` · ${snapshot.gifPolicy.note}` : ''}`);
@@ -116,25 +149,35 @@
     const prepared = Math.max(0, Math.min(progress.total, progress.prepared));
     const encoded = Math.max(0, Math.min(progress.total, progress.encoded));
     meter((prepared + encoded) / (2 * progress.total));
-    text('export-message', encoded === progress.total ? 'Finishing GIF…' : 'Creating GIF…');
-    text('export-detail', `${prepared}/${progress.total} frames rendered · ${encoded}/${progress.total} encoded`);
+    text('export-message', `${encoded === progress.total ? 'Finishing' : 'Creating'} ${sourcePrefix(job) ? job.sourceLabel : 'GIF'}…`);
+    text('export-detail', `${sourcePrefix(job)}${prepared}/${progress.total} frames rendered · ${encoded}/${progress.total} encoded`);
     byId('export-meter').setAttribute('aria-valuetext', `${prepared} of ${progress.total} frames rendered, ${encoded} encoded`);
   }
   function message(job, value) {
-    if (active === job && !job.controller.signal.aborted) text('export-message', value);
+    if (active === job && !job.controller.signal.aborted) text('export-message', `${sourcePrefix(job)}${value}`);
   }
   function ready(job, blob) {
     if (active !== job) return;
     job.fileDetail = `${job.compositionLabel ? `${job.compositionLabel} · ` : ''}${job.dimensions || job.format.toUpperCase()} · ${fileSize(blob.size)}`;
-    text('export-detail', job.fileDetail);
+    text('export-detail', `${sourcePrefix(job)}${job.fileDetail}`);
   }
   function finish(job, outcome, value) {
     if (active !== job) return;
     const focusWasInMenu = byId('save-menu')?.contains(document.activeElement);
+    const contextChanged = job.context !== contextKey();
     active = null;
     controls().forEach(control => { control.disabled = false; });
     sync(Boolean(byId('clipboard-actions')?.hidden));
     byId('save-button')?.removeAttribute('aria-busy');
+    if (contextChanged) {
+      resetResult();
+      if (focusWasInMenu) byId('save-button')?.focus({ preventScroll: true });
+      if (outcome === 'cancelled') {
+        if (typeof hideSaveMenu === 'function') hideSaveMenu();
+        else byId('save-menu')?.classList.add('hidden');
+      }
+      return;
+    }
     byId('export-progress').setAttribute('data-outcome', outcome);
     text('export-message', value);
     byId('export-cancel').hidden = true;
@@ -168,7 +211,14 @@
     }
   }
   function init() {
-    byId('quantum-speed-slider')?.addEventListener('input', () => { if (!active) sync(); });
+    byId('quantum-speed-slider')?.addEventListener('input', () => sync());
+    const designChanged = event => {
+      if (!event.target?.closest?.('[data-parameter-actions]')) return;
+      designRevision++;
+      sync(false);
+    };
+    document.addEventListener('input', designChanged);
+    document.addEventListener('change', designChanged);
     byId('save-button')?.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') explainBlocked(); });
     byId('save-button')?.addEventListener('pointerleave', event => { if (event.pointerType !== 'touch') hideBlockedNote(); });
     byId('save-button')?.addEventListener('focus', explainBlocked);

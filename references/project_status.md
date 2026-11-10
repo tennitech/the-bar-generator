@@ -3,6 +3,272 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 About disclosure chevron consistency
+
+Every About [style] footer now uses the exact same thin SVG as Parameters and
+the other section disclosures, inside the shared 1rem centered icon box. It sits
+beside the label with the same 0.5rem gap. The shared expanded orientation points
+down at 90°; native closed details and collapsed sections point right at 0°.
+The former footer-only heavy down-chevron and 180° override are removed.
+
+Native details/summary behavior, collapsed default, keyboard activation and
+accessible state, existing focus/touch target, style-specific content, preserved
+open/closed state across selection and scroll-cue behavior remain. No footer
+controller, parameter values, sidebar geometry, motion/audio or exports change.
+The icon adds no animation, including under reduced motion.
+
+Focused regressions cover exact SVG/style parity, all style descriptions in both
+native states and every routed generator's shared shell. Actual icon raster bytes
+match Parameters in 16/24px, open/closed and light/dark cases; both 16px states
+were inspected in an offline label reconstruction. This is native SVG/font QA,
+not rendered browser/application evidence. Full suite and exact-head CI results
+are recorded in the PR. Actual browser keyboard/touch/screen-reader behavior and
+responsive appearance remain unverified under the existing restrictions; no
+denied browser route is retried. No active footer PR was found during inspection.
+
+## November 10 scope playback speed repair
+
+Live owner QA exposed a second scope presentation defect: a roughly .037s
+unmodulated view was advanced at one recorded second per wall second, racing
+through about 109 carrier cycles/s. Live capture also ignored the selected
+SPEED, reverse and visual phase and always selected the newest packet.
+
+The scope now presents immutable actual-sample sweeps. One visual cycle scans
+at most one cycle of the fastest carrier/active LFO detail, over 1/SPEED display
+seconds (3.333s at default). Physical X duration, min/max values, fixed gain,
+continuous capture and the correct audible graph are unchanged. Actual rising
+crossings trigger the window where available. Live snapshots refresh between
+visual sweeps, immediately after edits or while filling/clearing mixed history;
+packet delivery cannot independently race the trace. The caption explicitly
+labels live capture versus offline rendering and slowed sample playback. This
+is a recorded scope presentation, not a real-time scrolling oscilloscope.
+
+Freeze holds the exact frame/recording. Reverse and SPEED apply to actual sample
+playback in both sources, with the same default 3.333s GIF duration. SVG/PNG
+still freeze the displayed samples. GIF uses the existing 50fps target and
+2–3000 frame, 100s and encoder guards; a complete fastest-detail cycle is
+required beyond the window. Replay can reset at the boundary for arbitrary
+noncommensurate signals, and a new live capture can change its envelope at the
+next sweep. Neither interpolation nor fabricated history is used.
+
+All 956 unit tests in 87 suites pass. Native checks cover 90 exact original/shared
+audio comparisons (maximum error 0), 42 post-gain AM comparisons (3.7253e-9),
+2816 exact silent-tap extrema pairs, 24 real PNG exports and six slowed GIFs /
+996 decoded frames with exact expected pixels. The permitted cloud browser
+confirmed the production default .037s offline/live window and audio start/stop;
+it did not verify this candidate after deployment. No previously denied browser
+escalation was retried. See [scope motion QA](waveform_scope_motion_qa.md).
+
+
+## November 10 Color Theme visual scrollbar correction
+
+The Color Theme picker’s thin right-edge scrollbar is hidden using scoped
+standard/WebKit scrollbar rules. Its automatic vertical overflow and native
+wheel, trackpad, touch and keyboard/scroll-into-view paths remain. Existing
+pointer-transparent top/bottom overflow fades are restored as the default menu’s
+scroll affordance, without adding another right-edge line. Other dropdowns and
+the sidebar scrollbar are unchanged.
+
+The separate horizontal ink mark, selected checkmark, independent focus outline,
+exact hover/selected/active text pairings and neutral idle rows are preserved.
+No controller or palette changes. CSS, route shell/bootstrap/fallback and Home
+prefetch versions advance together. All 20 focused tests in five suites,
+JavaScript/80 inline-script syntax and 26 cache/source checks pass after preserving
+#160. All 953 tests in 86 suites also pass after preserving #159. See
+[scrollbar correction QA](theme_scrollbar_qa.md).
+Browser/served-file checks remain restricted; no blocked route is retried.
+
+## November 10 quiet Undo
+
+Successful Undo restores the previous variation without a visible notification.
+The existing persistent, visually hidden status region still announces the
+restoration; native disabled state, accessible labels, keyboard activation and
+focus return to Randomize are retained. Repeated successful cycles can announce
+the same outcome again. Exhausted history remains disabled and produces no
+notification. Restoration errors retain their visible error toast and alert
+region, with the previous variation available for retry. Randomize history,
+edit invalidation, artwork and exports are unchanged.
+
+The shell/bootstrap and changed script cache references advance together for
+warm routed pages. Focused regression tests cover quiet live announcements and
+the real Undo callback's success/error routing; the existing browser Undo and
+control-feedback checks now assert that successful restoration creates no toast.
+All 953 unit tests in 86 suites pass, along with changed-script syntax, all 81
+inline scripts and whitespace checks. The cloud browser confirmed the previous
+visible toast on production; it cannot reach the isolated localhost server
+(`ERR_CONNECTION_REFUSED`). Post-release browser evidence is recorded with the
+pull request; no local rendered pass is claimed.
+
+## November 10 exact brand text in interactive theme rows
+
+By explicit owner direction, hovered, selected and keyboard-active Color Theme
+row text now uses the same exact official foreground as the logo/ink mark against
+its composition background. Idle rows retain the default neutral surface/text.
+The six approved secondary pairs, primary/mission palettes, compact typography,
+selected checkmark, native keyboard/touch handlers, old-save recovery and exports
+are unchanged. A separate contrasting 2px focus outline and the checkmark remain
+as non-color cues; no text foreground is silently substituted or enlarged.
+
+Four literal secondary pairs are below 4.5:1 ordinary small-text contrast:
+Gray on Red and Red on Gray are approximately 3.274:1; Silver on Blue and Blue on
+Silver are approximately 3.505:1. This is the owner's requested exact-color
+exception and is documented, not a claim of small-text WCAG AA compliance.
+
+CSS/theme-module versions and route shell/bootstrap/Home prefetch cache references
+advance together, preserving the recent routed-cache repair. All 950 tests in
+85 suites, JavaScript/80 inline-script syntax, cache and source-preservation checks
+pass. See
+[exact-text QA and contrast limits](theme_text_ink_qa.md) for checks and owner QA.
+Application rendering and served-file verification remain limited by existing
+restrictions; no blocked route is retried.
+
+## November 10 hidden controls marker repair
+
+The owner's iPhone screenshot shows a small isolated square below the complete
+Waveform mark. Changed-setting indicators are 0.25rem squares; their explicit
+`visibility: visible` overrode the closed touch sheet's inherited
+`visibility: hidden`. Changed indicators now inherit label/sheet visibility.
+They remain visible when the controls reopen, while default indicators retain
+their hidden state. This is a CSS-only runtime repair; audio, waveform geometry,
+zoom transforms and the scope-history transition remain unchanged.
+
+All routed stylesheet/shell/bootstrap references and Home prefetch advance
+together. The concurrent #158 exact theme-text release is retained. The mobile
+smoke script now asserts changed-marker visibility through close/reopen at each
+existing phone/tablet viewport. All 950 unit tests pass on the reconciled tree;
+changed scripts compile and whitespace checks pass. The mobile browser script
+was added/syntax-checked, not executed: local browser restrictions remain in
+force, the cloud browser cannot reach the localhost candidate and responsive
+DevTools are blocked. Production cloud desktop checks and deployment evidence
+are reported separately; no physical iPhone Safari pass is claimed. The
+owner screenshot remains private and is not added to the public repository.
+
+## November 10 scope transition and X-scale correction
+
+Owner live testing confirmed the actual-audio scope works, then identified a
+frequency/density ramp after parameter edits. The controller cleared the live
+ring on every edit and stretched the growing partial buffer across the full
+bar. It now retains a bounded continuous recording through shape/depth/rate
+and enabled/disabled edits. Changing a timebase reframes actual retained history
+once; later packets keep that fixed physical X scale. Missing history stays
+blank on the left, with recorded seconds and unrecorded space explicitly labeled.
+
+Views spanning an edit say they include parameter changes. Silent rendering
+holds its previous actual frame with a previous-settings label while the latest
+replacement renders; stale completions cannot replace it. Frozen frames and
+recordings remain exact through edits, mute, incoming data and background render
+completion until playback resumes. Audio graph/ramp behavior, fixed gain scale,
+current 50fps GIF cadence and encoder guards are unchanged. Partial-history
+preview, header, SVG and PNG share the same bounded coverage geometry.
+
+See [transition QA and owner checklist](waveform_scope_transitions_qa.md).
+Source, numerical/controller and native raster checks are distinct from browser
+verification. Existing browser restrictions remain respected; owner live
+feedback is the supplied rendered evidence, and no new browser pass is claimed.
+
+
+
+## November 10 routed shell cache follow-up
+
+Live verification of merged #144 found a warm browser could keep the old fetched
+generator shell and its ordered-alpha GIF helper after a normal route reload.
+The helper URL was updated, but every style route and the bootstrap fallback
+still requested the unchanged `20261110-waveform-scope` shell URL. Route shell
+and bootstrap URLs plus Home prefetch now advance together. Actual-audio scope,
+50 fps timing, encoder source/guards, controls and all geometry are unchanged.
+The concurrent #155 official secondary-color release is preserved. Its route
+shell advance is retained in a coordinated new version alongside fallback,
+bootstrap URLs and Home prefetch. A warm-cache regression executes the actual
+loader and confirms it
+requests a fresh shell and loads the corrected helper; all route/fallback/Home
+cache references are checked together. All 941 tests in 84 suites pass; route
+inline scripts, bootstrap syntax and whitespace checks pass. Deployed browser
+GIF/PNG verification
+follows the protected follow-up merge. No cache disabling or hard-refresh
+workaround is required from the user.
+
+## November 10 official secondary composition audit
+
+The current official Brand Hub Secondary Colors page was opened in the permitted
+cloud browser, visually inspected and compared with both original owner screenshots.
+Its six logo examples explicitly show Gray on Red, Silver on Blue, Black on Gold,
+Red on Gray, Blue on Silver and Gray on Black. These govern permitted secondary
+compositions; the Color Accessibility table is not a brand-combination allowlist.
+
+This corrects PR #150: Black on Blue becomes Silver on Blue, Black on Gray becomes
+Red on Gray, Black on Silver becomes Blue on Silver, and Gray on Red is restored.
+Exact official hex values, primary options, Mission Control and default Black on
+White remain. Existing blue/gray/silver saves retain their keys and load the
+correct official composition. Gray on Red query/snapshot values retain that pair;
+the mistaken White on Red migration is removed. Red on White stays removed with
+its existing neutral recovery under the owner's separate instruction.
+
+Idle menu rows remain neutral. Hover/selected/keyboard rows show the composition
+background and a small border-free mark in its actual logo ink. Compact names,
+checkmarks and the single focus outline use accessible black/white UI text,
+following the official typography guidance; no low-contrast label is enlarged or
+mistaken for an alternative permitted logo ink. The native control, modal, layout,
+export transparency and all intervening audio/GIF features remain intact.
+
+All 939 tests in 83 suites pass, including 76 focused preview/export/save checks.
+Source evidence, exact pairs, audit coverage and verification limits are recorded
+in [the official pairing audit](secondary_pair_audit.md) and its standalone PR.
+
+## November 10 straight GIF edge repair
+
+The supplied animation screenshot was materialized with its Library identity,
+verified as a readable 223,213-byte PNG and inspected before diagnosis. Its
+repeating teeth on straight Waveform edges reproduce in GIF alpha conversion:
+the source raster has straight edges, while the former ordered 4 × 4 coverage
+mask varies them across rows. GIF now defaults to uniform half-coverage alpha
+quantization. Palette colors, transparency, disposal, dimensions, geometry,
+SVG/PNG output, audio, LFO and frame timing remain intact. The current 50 fps cadence
+and actual-audio scope behavior remain intact.
+
+Final reconciliation at main `ffbd569` retains #143–#154, including 50 fps /
+20 ms timing, encoder guards and actual post-gain PCM scope: 939 tests in
+83 suites pass. Initial baseline
+was 875 tests in 78 suites. Native raster/actual vendored
+codec comparisons decode 20 historical-geometry fixture files / 160 sampled
+frames across Waveform square
+and square/pulse shapes at both sizes and compositions, plus Ticker and Gradient.
+Straight source edges have zero row variation; old encoded edges add 21,440
+row differences in the measured interior bands; corrected encoded edges add
+zero. The preserved actual-audio pipeline also passes 90 exact PCM parity
+cases, the exact silent tap, 24 PNGs and six GIFs / 600 decoded frames with
+the new alpha mode. Focused regressions also check translating subpixel edges in three exact
+ink colors through the actual codec, including transparency and disposal.
+The supported cloud browser now reaches production and produced a real baseline
+GIF: 166 frames / 3330 ms / 455,925 bytes, with 43,140 edge-row differences in
+measured straight bands. Post-deployment GIF verification follows the protected
+merge. Prior denied local-browser calls were not retried. Native audio, physical
+viewer perception and formal RPI approval are separate from these checks. See [GIF edge QA](gif_edge_qa.md) and its generated review image.
+
+## November 10 actual audio Waveform scope
+
+Following the owner's VCO/VCA examples and explicit request for a direct scope,
+Waveform now displays extrema from the actual post-gain audio signal. A silent
+side-tap worklet records live audio; with Audio off, OfflineAudioContext runs
+the same shared graph without sound. The view fits two LFO periods or at least
+four carrier periods, including 28.571 seconds at .07Hz. Source, time window,
+filling history and fallback/error state are visible. No mathematical waveform
+or high-rate average substitutes for actual data.
+
+The audible oscillator graph and ramps are extracted intact into a shared
+module and checked against an independent pre-refactor reference. The scope's
+silent output cannot duplicate the audible signal. Ring history is bounded,
+render jobs are debounced/serialized, stale results are discarded, and frozen
+frames remain fixed while explicit audio may continue. Main/header/SVG/PNG/GIF
+share PCM geometry. Still files capture the displayed frame; GIF replays frozen
+recorded history from that frame and can reset when history wraps. The combined
+candidate preserves #153’s 50fps/20ms GIF cadence and encoder guards. It passes
+938 unit tests in 83 suites; native QA includes 90 exact PCM parity cases,
+42 AM-product cases, 24 PNGs and six GIFs through all 600 decoded frames.
+
+See [model and source distinction](bar_science_notes.md#actual-audio-waveform-scope--november-10-2026)
+and [scope QA](waveform_signal_qa.md). No browser escalation was retried.
+Native offline graph/data/codec checks do not establish rendered browser UI,
+physical listening, native downloads, screen-reader output or formal RPI approval.
 
 ## November 10 Particle on a Ring GIF export
 
@@ -26,7 +292,7 @@ PNG/SVG/clipboard and their selected size remain unchanged. There is no frame-ra
 reduction, truncation, matte or artificial speed change.
 
 Current main's compact theme picker/reference pairs, disclosures, Randomize die
-and responsive marquee follow-ups are preserved. The later 50 fps defaults for translating families are also retained; this bar explicitly keeps its measured 30 fps budget. All 943 tests in 82 suites pass; all 84 inline scripts compile. Three default-speed GIFs decode through all 10,800 frames with verified motion/timing/seam and 192 exact source-pixel references. Default full-logo GIF is 33.80 MB; bar-only is 11.30/27.41 MB at Standard/Large. [GIF QA](quantum_gif_qa.md) records evidence and limits. Browser restrictions remain
+and responsive marquee follow-ups are preserved. The later 50 fps defaults for translating families are also retained; this bar explicitly keeps its measured 30 fps budget. All 1029 tests in 89 suites pass; all 84 inline scripts compile. Three default-speed GIFs decode through all 10,800 frames with verified motion/timing/seam and 192 exact source-pixel references. With the released alpha correction, default full-logo GIF is 32.04 MB; prior ordered-alpha bar-only measurements are 11.30/27.41 MB at Standard/Large. [GIF QA](quantum_gif_qa.md) records evidence and limits. Completed export status/statistics reset on style, theme, size/composition, parameter edits and credits-context changes. Captured in-flight exports remain cancellable and name their source style; late results do not appear under a new context. Browser restrictions remain
 respected; native codec evidence does not establish browser download/playback.
 
 

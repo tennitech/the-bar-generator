@@ -562,7 +562,7 @@ body {
 .bar_information-toggle {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.5rem;
   min-height: 2.75rem;
   padding-block: 0.625rem;
@@ -573,8 +573,6 @@ body {
   overflow-wrap: anywhere;
 }
 .bar_information-toggle::-webkit-details-marker { display: none; }
-.bar_information-toggle svg { flex: 0 0 1rem; }
-.bar_information[open] > .bar_information-toggle svg { transform: rotate(180deg); }
 .bar_information-toggle:hover { color: var(--text-secondary); }
 .bar_information-toggle:focus-visible,
 .bar_information-content:focus-visible {
@@ -4246,7 +4244,8 @@ body.theme-lunar .export_menu { min-width: 0; }
   background: currentColor;
   visibility: hidden;
 }
-.has-parameter-change .parameter_marker { visibility: visible; }
+/* Changed markers must stay hidden with the closed touch controls sheet. */
+.has-parameter-change .parameter_marker { visibility: inherit; }
 #app-sidebar .slider_label-row { column-gap: 0.75rem; }
 #app-sidebar .slider_value-group { gap: 0.25rem; }
 #app-sidebar .slider_value-display { min-height: 1.5rem; padding: 0.125rem 0.25rem; }
@@ -4542,13 +4541,11 @@ body:is(.theme-white, .theme-silver, .theme-gray, .theme-lunar) { --color-ready:
 }
 .color_theme-option { min-height: 2.75rem; }
 .color_theme-label { min-width: 0; line-height: 1.35; white-space: normal; }
-.color_theme-select .custom-select-scroll-fade { display: none; }
+.color_theme-select .custom-select-scroll-fade { display: block; }
 .color_theme-select .custom-select-options-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: var(--control-border) var(--menu-surface);
-  scrollbar-gutter: stable;
+  scrollbar-width: none;
 }
-.color_theme-select .custom-select-options-scroll::-webkit-scrollbar { width: 0.5rem; height: 0.5rem; }
+.color_theme-select .custom-select-options-scroll::-webkit-scrollbar { width: 0; height: 0; }
 body .color_theme-select .color_theme-option {
   background: var(--menu-surface);
   color: var(--text-primary);
@@ -4563,9 +4560,17 @@ body .color_theme-select .color_theme-option:is(:hover, .selected, .is-active) {
   box-shadow: none;
 }
 body .color_theme-select .color_theme-option.is-active {
-  outline: 2px solid var(--theme-option-foreground);
+  outline: 2px solid var(--theme-option-focus-foreground);
   outline-offset: -2px;
 }
+.color_theme-option .color_theme-label { flex: 1; }
+.color_theme-ink {
+  flex: 0 0 1.5rem;
+  height: 0.25rem;
+  background: var(--theme-option-foreground);
+  visibility: hidden;
+}
+.color_theme-option:is(:hover, .selected, .is-active) .color_theme-ink { visibility: visible; }
 @media (forced-colors: active) {
   body .color_theme-select .color_theme-option.is-active {
     outline: 2px solid Highlight;
@@ -4600,7 +4605,8 @@ body .color_theme-select .color_theme-option.is-active {
   transform: rotate(90deg);
 }
 .sidebar_section-icon svg { display: block; width: 100%; height: 100%; }
-.sidebar_section-toggle[aria-expanded="false"] .sidebar_section-icon { transform: rotate(0deg); }
+.sidebar_section-toggle[aria-expanded="false"] .sidebar_section-icon,
+.bar_information:not([open]) > .bar_information-toggle .sidebar_section-icon { transform: rotate(0deg); }
 .sidebar_section-toggle:focus-visible,
 .control_help-button:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 3px; }
 .sidebar_section-body[hidden], .control_help-tooltip[hidden] { display: none; }
