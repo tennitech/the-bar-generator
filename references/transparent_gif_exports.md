@@ -115,3 +115,13 @@ ten-second Gradient. Large full-logo examples at 30 fps are 1,987,271, 3,635,329
 and 7,438,304 bytes respectively. See [complete measurements, actual decoded
 checks, timings and caveats](gif_frame_rate_benchmark.md). Viewer timing and
 dense/fast temporal aliasing still limit perceived smoothness.
+
+## 20 ms temporal cadence — November 10, 2026
+
+The default target is now approximately 50 fps. Even-centisecond periodic loops
+use 20 ms holds; odd totals add one 30 ms hold while retaining the encoded full
+duration within 5 ms of the request. The existing 3000-frame and independent
+encoder limits remain, so long loops may sample below 50 fps. Transparency,
+SVG/PNG and composition/size choices are unchanged. PR #144 remains responsible
+for the separate edge-quantization repair. See [actual matched 30-vs-50 exports,
+encoding cost and viewer limits](gif_cadence_benchmark.md).

@@ -1,5 +1,7 @@
 # GIF frame-rate benchmark — November 10, 2026
 
+Historical 24-vs-30 fps measurements. The later [20 ms cadence follow-up](gif_cadence_benchmark.md) records the current target; this reproduction script explicitly requests 30 fps.
+
 The previous non-LFO exporter requested 24 fps but clamped every loop to 24–72
 frames. A five-second loop therefore exported at 14.4 fps, and a ten-second
 Gradient at 7.2 fps. Merely changing the target to 30 would leave those slow

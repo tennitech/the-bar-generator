@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261110-compact-themes-dice';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261110-gif-20ms-cadence';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
