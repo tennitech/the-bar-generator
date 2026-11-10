@@ -4,6 +4,28 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 
+## November 10 secondary-color popup corners and compact help focus
+
+The Secondary Color Usage popup now uses the same `--control-radius` token
+as Export and the other editor controls (currently 2px), overriding only its
+inherited 8px report-dialog radius. The existing outer `overflow: hidden`
+already clips its contents; the inner panel retains its border-free structure,
+so no additional border or clipping layer is added.
+
+How to use retains its transparent 44px minimum touch target, while a label span
+receives a tight red keyboard-focus outline around the underlined sentence-case
+text. The full button no longer paints the oversized black focus rectangle.
+Secondary-only visibility, modal content, dismissal, scroll limits and
+responsive sizing are unchanged. The existing optional browser smoke script now compares the popup
+and Export radii and checks outer clipping and the absence of an inner border.
+Validation: 8 focused tests in 3 suites pass, along with JavaScript syntax,
+26 entrypoint/80 inline-script cache checks, unchanged modal source and whitespace.
+The optional browser check also verifies the compact label focus and retained
+touch target. Rendered corner/focus appearance remains unverified under the known browser
+restrictions; no denied browser action is retried.
+
+The release also preserves PR #143's GIF frame-rate implementation and cache URLs.
+
 ## November 10 GIF sampling and resource limits
 
 Eligible GIF loops now target approximately 30 fps over their complete duration,

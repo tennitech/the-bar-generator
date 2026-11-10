@@ -22,14 +22,37 @@ async function guidanceCheck(page) {
   const dialog = page.locator('#secondary-color-dialog');
   assert.equal(await help.textContent(), 'How to use');
   const helpStyle = await help.evaluate(el => {
-    const css = getComputedStyle(el);
+    const css = getComputedStyle(el), label = getComputedStyle(el.querySelector('.color_guidance-label'));
     return { color: css.color, background: css.backgroundColor,
-      underline: css.textDecorationLine, transform: css.textTransform, icons: el.querySelectorAll('svg,img').length };
+      underline: label.textDecorationLine, transform: css.textTransform, icons: el.querySelectorAll('svg,img').length };
   });
   assert.deepEqual(helpStyle, { color: 'rgb(214, 0, 28)', background: 'rgba(0, 0, 0, 0)',
     underline: 'underline', transform: 'none', icons: 0 });
+  await help.focus();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+  const focus = await help.evaluate(el => {
+    const label = el.querySelector('.color_guidance-label');
+    return { focused: el === document.activeElement, targetHeight: el.getBoundingClientRect().height,
+      labelHeight: label.getBoundingClientRect().height, buttonOutline: getComputedStyle(el).outlineStyle,
+      labelOutline: getComputedStyle(label).outlineColor, labelOutlineWidth: getComputedStyle(label).outlineWidth };
+  });
+  assert.equal(focus.focused, true);
+  assert.ok(focus.targetHeight >= 44 && focus.labelHeight < focus.targetHeight);
+  assert.equal(focus.buttonOutline, 'none');
+  assert.equal(focus.labelOutline, 'rgb(214, 0, 28)');
+  assert.equal(focus.labelOutlineWidth, '2px');
   await help.click();
   assert.equal(await dialog.evaluate(el => el.matches(':modal')), true);
+  const corners = await dialog.evaluate(el => ({
+    popup: getComputedStyle(el).borderRadius,
+    export: getComputedStyle(document.getElementById('save-menu')).borderRadius,
+    clipping: getComputedStyle(el).overflow,
+    innerBorder: getComputedStyle(el.querySelector('.report_dialog-panel')).borderTopWidth
+  }));
+  assert.equal(corners.popup, corners.export);
+  assert.equal(corners.clipping, 'hidden');
+  assert.equal(corners.innerBorder, '0px');
   await page.locator('#secondary-color-title').waitFor({ state: 'visible' });
   assert.equal(await page.evaluate(() => document.activeElement.id), 'secondary-color-title');
   assert.equal(await dialog.locator('li').count(), 4);
