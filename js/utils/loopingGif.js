@@ -211,8 +211,9 @@
     const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
     if (normalizedStyle === 'waveform' && values.waveformScope && !options.carrierOnly) {
       const replaySeconds = Number(values.waveformScopeReplaySeconds) || 0;
-      if (replaySeconds < .1) throw new RangeError('Record a little more audio history before exporting a GIF, or export SVG/PNG.');
-      const periodSeconds = replaySeconds / (speed / .3);
+      const playbackSeconds = Number(values.waveformScopePlaybackSeconds) || replaySeconds;
+      if (!(replaySeconds > 0) || playbackSeconds < .1) throw new RangeError('Record a little more audio history before exporting a GIF, or export SVG/PNG.');
+      const periodSeconds = playbackSeconds / (speed / .3);
       const frameCount = getFrameCountForPeriod(periodSeconds, fps);
       return { style: normalizedStyle, periodSeconds, frameCount,
         frameDelayMs: Math.round(periodSeconds * 1000 / frameCount),

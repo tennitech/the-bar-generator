@@ -25,6 +25,14 @@ class Toast {
         }
     }
 
+    // Quiet outcomes use the existing persistent status region without a toast.
+    static announce(message) {
+        if (!this.container) this.init();
+        const live = document.getElementById('toast-status');
+        live.textContent = '';
+        requestAnimationFrame(() => { live.textContent = String(message); });
+    }
+
     static show(message, type = 'info', duration = type === 'error' ? 6000 : 4000) {
         if (!this.container) this.init();
         // Repeat outcomes replace themselves rather than piling up identical notices.

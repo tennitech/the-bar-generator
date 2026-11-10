@@ -4246,7 +4246,8 @@ body.theme-lunar .export_menu { min-width: 0; }
   background: currentColor;
   visibility: hidden;
 }
-.has-parameter-change .parameter_marker { visibility: visible; }
+/* Changed markers must stay hidden with the closed touch controls sheet. */
+.has-parameter-change .parameter_marker { visibility: inherit; }
 #app-sidebar .slider_label-row { column-gap: 0.75rem; }
 #app-sidebar .slider_value-group { gap: 0.25rem; }
 #app-sidebar .slider_value-display { min-height: 1.5rem; padding: 0.125rem 0.25rem; }
@@ -4542,13 +4543,11 @@ body:is(.theme-white, .theme-silver, .theme-gray, .theme-lunar) { --color-ready:
 }
 .color_theme-option { min-height: 2.75rem; }
 .color_theme-label { min-width: 0; line-height: 1.35; white-space: normal; }
-.color_theme-select .custom-select-scroll-fade { display: none; }
+.color_theme-select .custom-select-scroll-fade { display: block; }
 .color_theme-select .custom-select-options-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: var(--control-border) var(--menu-surface);
-  scrollbar-gutter: stable;
+  scrollbar-width: none;
 }
-.color_theme-select .custom-select-options-scroll::-webkit-scrollbar { width: 0.5rem; height: 0.5rem; }
+.color_theme-select .custom-select-options-scroll::-webkit-scrollbar { width: 0; height: 0; }
 body .color_theme-select .color_theme-option {
   background: var(--menu-surface);
   color: var(--text-primary);
@@ -4559,11 +4558,11 @@ body .color_theme-select .color_theme-option {
 }
 body .color_theme-select .color_theme-option:is(:hover, .selected, .is-active) {
   background: var(--theme-option-background);
-  color: var(--theme-option-label-foreground);
+  color: var(--theme-option-foreground);
   box-shadow: none;
 }
 body .color_theme-select .color_theme-option.is-active {
-  outline: 2px solid var(--theme-option-label-foreground);
+  outline: 2px solid var(--theme-option-focus-foreground);
   outline-offset: -2px;
 }
 .color_theme-option .color_theme-label { flex: 1; }

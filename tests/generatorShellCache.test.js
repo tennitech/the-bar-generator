@@ -22,13 +22,15 @@ test('every routed entry and Home prefetch use the bootstrap shell version', () 
   expect(shellURL(read('index.html'))).toBe(expected);
 });
 
-test('a warm routed page fetches the new shell and loads its corrected GIF helper', async () => {
+test('a warm routed page fetches the new shell and loads its current runtime helpers', async () => {
   const html = read('generator/waveform/index.html');
   const bootstrap = read('js/generatorBootstrap.js');
   const currentShell = read('generator/index.html');
   // Real stale URL/response observed in the deployed browser after PR #144.
   const oldURL = 'generator/index.html?v=20261110-waveform-scope';
-  const oldShell = currentShell.replace(/transparentGif\.js\?v=[\w-]+/, 'transparentGif.js?v=20261110-gif-30fps');
+  const oldShell = currentShell.replace(/transparentGif\.js\?v=[\w-]+/, 'transparentGif.js?v=20261110-gif-30fps')
+    .replace(/js\/ui\.js\?v=[\w-]+/, 'js/ui.js?v=20261104-scroll-cue-minimum')
+    .replace(/js\/main\.js\?v=[\w-]+/, 'js/main.js?v=20261110-waveform-scope');
   const loaded = [], requested = [];
   const window = { GeneratorRoutes: { getLegacyGeneratorRedirectUrl: () => null },
     location: { pathname: '/the-bar-generator/generator/waveform/', search: '', hash: '' },
@@ -50,4 +52,9 @@ test('a warm routed page fetches the new shell and loads its corrected GIF helpe
   expect(requested[0]).not.toBe(oldURL);
   expect(loaded).toContain(currentShell.match(/js\/utils\/transparentGif\.js\?v=[\w-]+/)[0]);
   expect(loaded).not.toContain('js/utils/transparentGif.js?v=20261110-gif-30fps');
+  for (const file of ['ui', 'main']) {
+    expect(loaded).toContain(`js/${file}.js?v=20261110-quiet-undo-r3`);
+  }
+  expect(loaded).not.toContain('js/ui.js?v=20261104-scroll-cue-minimum');
+  expect(loaded).not.toContain('js/main.js?v=20261110-waveform-scope');
 });

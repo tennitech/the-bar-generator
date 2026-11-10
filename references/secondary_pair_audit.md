@@ -1,5 +1,10 @@
 # Official secondary composition audit
 
+The official six-pair authority below remains current. A later explicit owner
+request applies exact logo foregrounds to interactive row text too; the earlier
+black/white-label treatment below is superseded. See
+[the exact-text correction and contrast limitation](theme_text_ink_qa.md).
+
 Audited November 10, 2026. Initial base: main
 `096410ff932a0c97163551aa6072c56e52398f6a` (transparent GIF edges, following audio scope and GIF cadence releases).
 Branch: `codex/fix-official-secondary-pairs`. Earlier branches remain preserved.

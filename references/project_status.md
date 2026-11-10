@@ -3,6 +3,123 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 scope playback speed repair
+
+Live owner QA exposed a second scope presentation defect: a roughly .037s
+unmodulated view was advanced at one recorded second per wall second, racing
+through about 109 carrier cycles/s. Live capture also ignored the selected
+SPEED, reverse and visual phase and always selected the newest packet.
+
+The scope now presents immutable actual-sample sweeps. One visual cycle scans
+at most one cycle of the fastest carrier/active LFO detail, over 1/SPEED display
+seconds (3.333s at default). Physical X duration, min/max values, fixed gain,
+continuous capture and the correct audible graph are unchanged. Actual rising
+crossings trigger the window where available. Live snapshots refresh between
+visual sweeps, immediately after edits or while filling/clearing mixed history;
+packet delivery cannot independently race the trace. The caption explicitly
+labels live capture versus offline rendering and slowed sample playback. This
+is a recorded scope presentation, not a real-time scrolling oscilloscope.
+
+Freeze holds the exact frame/recording. Reverse and SPEED apply to actual sample
+playback in both sources, with the same default 3.333s GIF duration. SVG/PNG
+still freeze the displayed samples. GIF uses the existing 50fps target and
+2–3000 frame, 100s and encoder guards; a complete fastest-detail cycle is
+required beyond the window. Replay can reset at the boundary for arbitrary
+noncommensurate signals, and a new live capture can change its envelope at the
+next sweep. Neither interpolation nor fabricated history is used.
+
+All 956 unit tests in 87 suites pass. Native checks cover 90 exact original/shared
+audio comparisons (maximum error 0), 42 post-gain AM comparisons (3.7253e-9),
+2816 exact silent-tap extrema pairs, 24 real PNG exports and six slowed GIFs /
+996 decoded frames with exact expected pixels. The permitted cloud browser
+confirmed the production default .037s offline/live window and audio start/stop;
+it did not verify this candidate after deployment. No previously denied browser
+escalation was retried. See [scope motion QA](waveform_scope_motion_qa.md).
+
+
+## November 10 Color Theme visual scrollbar correction
+
+The Color Theme picker’s thin right-edge scrollbar is hidden using scoped
+standard/WebKit scrollbar rules. Its automatic vertical overflow and native
+wheel, trackpad, touch and keyboard/scroll-into-view paths remain. Existing
+pointer-transparent top/bottom overflow fades are restored as the default menu’s
+scroll affordance, without adding another right-edge line. Other dropdowns and
+the sidebar scrollbar are unchanged.
+
+The separate horizontal ink mark, selected checkmark, independent focus outline,
+exact hover/selected/active text pairings and neutral idle rows are preserved.
+No controller or palette changes. CSS, route shell/bootstrap/fallback and Home
+prefetch versions advance together. All 20 focused tests in five suites,
+JavaScript/80 inline-script syntax and 26 cache/source checks pass after preserving
+#160. All 953 tests in 86 suites also pass after preserving #159. See
+[scrollbar correction QA](theme_scrollbar_qa.md).
+Browser/served-file checks remain restricted; no blocked route is retried.
+
+## November 10 quiet Undo
+
+Successful Undo restores the previous variation without a visible notification.
+The existing persistent, visually hidden status region still announces the
+restoration; native disabled state, accessible labels, keyboard activation and
+focus return to Randomize are retained. Repeated successful cycles can announce
+the same outcome again. Exhausted history remains disabled and produces no
+notification. Restoration errors retain their visible error toast and alert
+region, with the previous variation available for retry. Randomize history,
+edit invalidation, artwork and exports are unchanged.
+
+The shell/bootstrap and changed script cache references advance together for
+warm routed pages. Focused regression tests cover quiet live announcements and
+the real Undo callback's success/error routing; the existing browser Undo and
+control-feedback checks now assert that successful restoration creates no toast.
+All 953 unit tests in 86 suites pass, along with changed-script syntax, all 81
+inline scripts and whitespace checks. The cloud browser confirmed the previous
+visible toast on production; it cannot reach the isolated localhost server
+(`ERR_CONNECTION_REFUSED`). Post-release browser evidence is recorded with the
+pull request; no local rendered pass is claimed.
+
+## November 10 exact brand text in interactive theme rows
+
+By explicit owner direction, hovered, selected and keyboard-active Color Theme
+row text now uses the same exact official foreground as the logo/ink mark against
+its composition background. Idle rows retain the default neutral surface/text.
+The six approved secondary pairs, primary/mission palettes, compact typography,
+selected checkmark, native keyboard/touch handlers, old-save recovery and exports
+are unchanged. A separate contrasting 2px focus outline and the checkmark remain
+as non-color cues; no text foreground is silently substituted or enlarged.
+
+Four literal secondary pairs are below 4.5:1 ordinary small-text contrast:
+Gray on Red and Red on Gray are approximately 3.274:1; Silver on Blue and Blue on
+Silver are approximately 3.505:1. This is the owner's requested exact-color
+exception and is documented, not a claim of small-text WCAG AA compliance.
+
+CSS/theme-module versions and route shell/bootstrap/Home prefetch cache references
+advance together, preserving the recent routed-cache repair. All 950 tests in
+85 suites, JavaScript/80 inline-script syntax, cache and source-preservation checks
+pass. See
+[exact-text QA and contrast limits](theme_text_ink_qa.md) for checks and owner QA.
+Application rendering and served-file verification remain limited by existing
+restrictions; no blocked route is retried.
+
+## November 10 hidden controls marker repair
+
+The owner's iPhone screenshot shows a small isolated square below the complete
+Waveform mark. Changed-setting indicators are 0.25rem squares; their explicit
+`visibility: visible` overrode the closed touch sheet's inherited
+`visibility: hidden`. Changed indicators now inherit label/sheet visibility.
+They remain visible when the controls reopen, while default indicators retain
+their hidden state. This is a CSS-only runtime repair; audio, waveform geometry,
+zoom transforms and the scope-history transition remain unchanged.
+
+All routed stylesheet/shell/bootstrap references and Home prefetch advance
+together. The concurrent #158 exact theme-text release is retained. The mobile
+smoke script now asserts changed-marker visibility through close/reopen at each
+existing phone/tablet viewport. All 950 unit tests pass on the reconciled tree;
+changed scripts compile and whitespace checks pass. The mobile browser script
+was added/syntax-checked, not executed: local browser restrictions remain in
+force, the cloud browser cannot reach the localhost candidate and responsive
+DevTools are blocked. Production cloud desktop checks and deployment evidence
+are reported separately; no physical iPhone Safari pass is claimed. The
+owner screenshot remains private and is not added to the public repository.
+
 ## November 10 scope transition and X-scale correction
 
 Owner live testing confirmed the actual-audio scope works, then identified a

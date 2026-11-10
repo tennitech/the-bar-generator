@@ -24,7 +24,7 @@ async function themeRowCheck(page, mode, scheme) {
   const row = wrapper.locator('.custom-option[data-value="' + mode + '"]');
   const read = element => {
     const css = getComputedStyle(element), mark = element.querySelector('.color_theme-ink');
-    return { bg: css.backgroundColor, ink: css.color, labelInk: css.getPropertyValue('--theme-option-label-foreground').trim(),
+    return { bg: css.backgroundColor, ink: css.color, focusInk: css.getPropertyValue('--theme-option-focus-foreground').trim(),
       markInk: mark ? getComputedStyle(mark).backgroundColor : null, markVisibility: mark ? getComputedStyle(mark).visibility : null, font: parseFloat(css.fontSize),
       family: css.fontFamily, height: element.getBoundingClientRect().height,
       shadow: css.boxShadow, outline: css.outlineStyle, outlineColor: css.outlineColor,
@@ -33,7 +33,7 @@ async function themeRowCheck(page, mode, scheme) {
   const expectedBackground = mode === 'lunar' ? '#03060d' : scheme.bg;
   const selected = await row.evaluate(read);
   assert.equal(selected.bg, rgb(expectedBackground));
-  assert.equal(selected.ink, rgb(selected.labelInk));
+  assert.equal(selected.ink, rgb(scheme.fg));
   assert.equal(selected.markInk, rgb(scheme.fg));
   assert.equal(selected.markVisibility, 'visible');
   assert.equal(await row.locator('.color_theme-ink').getAttribute('aria-hidden'), 'true');
@@ -58,7 +58,7 @@ async function themeRowCheck(page, mode, scheme) {
   await idle.hover();
   const hover = await idle.evaluate(read);
   assert.equal(hover.bg, rgb(idleValue === 'lunar' ? '#03060d' : idleScheme.bg));
-  assert.equal(hover.ink, rgb(hover.labelInk));
+  assert.equal(hover.ink, rgb(idleScheme.fg));
   assert.equal(hover.markInk, rgb(idleScheme.fg)); assert.equal(hover.markVisibility, 'visible');
   assert.equal(hover.shadow, 'none'); assert.equal(hover.outline, 'none');
   await trigger.hover();
@@ -72,7 +72,7 @@ async function themeRowCheck(page, mode, scheme) {
   assert.equal(keyboard.bg, hover.bg); assert.equal(keyboard.ink, hover.ink);
   assert.equal(keyboard.markInk, hover.markInk); assert.equal(keyboard.markVisibility, 'visible');
   assert.equal(keyboard.shadow, 'none'); assert.equal(keyboard.outline, 'solid');
-  assert.equal(keyboard.outlineWidth, '2px'); assert.equal(keyboard.outlineColor, hover.ink);
+  assert.equal(keyboard.outlineWidth, '2px'); assert.equal(keyboard.outlineColor, rgb(keyboard.focusInk));
   // Moving active focus away restores the nonselected row to its neutral state.
   await trigger.press(idleValue === values[0] ? 'End' : 'Home');
   assert.deepEqual(await idle.evaluate(read), neutral);
@@ -80,6 +80,41 @@ async function themeRowCheck(page, mode, scheme) {
   if (mode === 'blue') await page.screenshot({ path: path.join(evidence, engine + '-theme-rows.png'), scale: 'css' });
   await trigger.press('Escape');
   assert.equal(await page.locator('#color-mode-select').inputValue(), mode);
+}
+
+async function themeScrollCheck(page) {
+  const wrapper = page.locator('#color-mode-select').locator('..');
+  const trigger = wrapper.locator('.custom-select-trigger');
+  const viewport = wrapper.locator('.custom-select-options-scroll');
+  await trigger.click();
+  const scrollStyle = await viewport.evaluate(el => {
+    const css = getComputedStyle(el), webkit = getComputedStyle(el, '::-webkit-scrollbar');
+    return { overflow: css.overflowY, scrollbar: css.scrollbarWidth,
+      webkitWidth: webkit.width, webkitHeight: webkit.height,
+      canScroll: el.scrollHeight > el.clientHeight };
+  });
+  assert.equal(scrollStyle.overflow, 'auto');
+  assert.equal(scrollStyle.scrollbar, 'none');
+  assert.equal(scrollStyle.webkitWidth, '0px'); assert.equal(scrollStyle.webkitHeight, '0px');
+  assert.equal(scrollStyle.canScroll, true);
+  await trigger.press('End');
+  const lower = await viewport.evaluate(el => el.scrollTop);
+  assert.ok(lower > 0);
+  await page.waitForFunction(() => document.querySelector('#color-mode-select-options').classList.contains('has-scroll-top'));
+  assert.equal(await wrapper.locator('.custom-select-scroll-fade-top').evaluate(el => getComputedStyle(el).display), 'block');
+  assert.equal(await wrapper.locator('.custom-select-scroll-fade-top').evaluate(el => getComputedStyle(el).pointerEvents), 'none');
+  const bounds = await viewport.boundingBox();
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  await page.mouse.wheel(0, -bounds.height);
+  await page.waitForFunction(previous => document.querySelector('#color-mode-select-options .custom-select-options-scroll').scrollTop < previous, lower);
+  await trigger.press('Home');
+  await page.waitForFunction(() => document.querySelector('#color-mode-select-options').classList.contains('has-scroll-bottom'));
+  assert.equal(await wrapper.locator('.custom-select-scroll-fade-bottom').evaluate(el => getComputedStyle(el).display), 'block');
+  const activeId = await trigger.getAttribute('aria-activedescendant');
+  assert.equal(await page.locator('#' + activeId).getAttribute('aria-selected'), 'true');
+  assert.notEqual(await page.locator('#' + activeId).evaluate(el => getComputedStyle(el, '::after').content), 'none');
+  assert.equal(await page.locator('#' + activeId).evaluate(el => getComputedStyle(el).outlineWidth), '2px');
+  await trigger.press('Escape');
 }
 
 async function guidanceCheck(page) {
@@ -225,6 +260,8 @@ async function guidanceCheck(page) {
     assert.equal(await page.locator('#secondary-color-help').isVisible(), false);
     await page.selectOption('#color-mode-select', 'gold', { force: true });
     await guidanceCheck(page);
+    await page.selectOption('#color-mode-select', 'black', { force: true });
+    await themeScrollCheck(page);
     const mobile = await browser.newPage({
       viewport: { width: 375, height: 667 }, hasTouch: true, isMobile: true, reducedMotion: 'reduce'
     });

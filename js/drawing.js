@@ -1034,6 +1034,7 @@ function captureLogoExportSnapshot() {
   const values = JSON.parse(JSON.stringify({ ...getCurrentBarPatternValues(REFERENCE_WIDTH), ...getLoopRuntimeValues(),
     loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: 0,
     ...(scopeCapture ? { waveformScope: scopeCapture.frame,
+      waveformScopePlaybackSeconds: scopeCapture.recording?.playbackSeconds,
       waveformScopeReplaySeconds: scopeCapture.recording?.replaySeconds } : {}),
     waveformLfoPhase: 0,
     waveformLfoSampleRate: lfoSettings ? lfoSettings.rate : 2,
