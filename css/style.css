@@ -161,7 +161,7 @@ body {
 /* Header */
 .app-header {
   height: var(--header-height);
-  background-color: var(--bg-header);
+  background-color: var(--bg-sidebar);
   color: var(--text-on-header);
   border-bottom: 1px solid #D4D4D4;
   padding: 0 20px;
@@ -1552,7 +1552,7 @@ body {
 }
 
 .app-header {
-  background-color: var(--bg-header);
+  background-color: var(--bg-sidebar);
   color: var(--text-on-header);
   border-bottom: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
 }
@@ -2584,7 +2584,7 @@ body.has-logo-animation {
 }
 
 /* Neutral control chrome stays readable beside each brand composition.
-   Shared scheme properties supply the exact preview and header colors. */
+   Shared scheme properties supply the exact preview colors. */
 :root,
 :is(html, body):is(.theme-black, .theme-red, .theme-blue, .theme-gold, .theme-gray, .theme-silver, .theme-white-on-red, .theme-gray-on-red) {
   --bg-app: #ffffff;
@@ -2822,7 +2822,7 @@ body.theme-lunar .app-header {
   column-gap: 16px;
   align-items: center;
   position: relative;
-  background-color: var(--bg-header);
+  background-color: var(--bg-sidebar);
   border-bottom-color: var(--lunar-divider-muted);
 }
 
@@ -3645,7 +3645,7 @@ body { min-height: 0; }
 
 @media (pointer: coarse) {
   :root { --header-control-size: 2.75rem; }
-  .app-header { background-color: var(--bg-app); }
+  .app-header { background-color: var(--bg-sidebar); }
   :is(button, a, input, textarea, select, [role="button"], [role="combobox"]) {
     -webkit-tap-highlight-color: transparent;
   }
@@ -3676,7 +3676,7 @@ body { min-height: 0; }
     --header-height: 3.5rem;
   }
   body { background-color: var(--bg-canvas); }
-  body .app-header { background: var(--bg-canvas); color: var(--text-on-header); }
+  body .app-header { background: var(--bg-sidebar); color: var(--text-on-header); }
   .header-actions { gap: var(--header-action-gap); }
   .save-button { padding-inline: 0.75rem; }
   .brand-divider { display: none; }
@@ -3839,7 +3839,7 @@ body { min-height: 0; }
 
 @media (pointer: coarse) and (max-width: 1100px) {
   body { background-color: var(--browser-surface, var(--bg-canvas)); }
-  #header-logo-preview { color: var(--preview-foreground, currentColor); }
+  #header-logo-preview { color: var(--header-artwork-ink, currentColor); }
   .control-select { text-transform: none; }
   /* Reserve and redraw the preview in the same frame as the sheet state.
      Moving a focused sheet while its canvas changes size causes scroll jumps. */
@@ -4007,19 +4007,25 @@ body { min-height: 0; }
 }
 /* A native top-layer dialog keeps guidance separate from the color menu. */
 .color_guidance-button {
+  appearance: none;
   display: block;
+  width: fit-content;
   margin-top: var(--control-label-gap);
   min-height: 2.75rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--rpi-red);
-  border-radius: var(--control-radius);
-  background: var(--rpi-red);
-  color: var(--rpi-white);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--rpi-red);
   font: 400 0.75rem/1.5 'RPIGeistMono', monospace;
+  text-align: left;
+  text-transform: none;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
   cursor: pointer;
 }
 .color_guidance-button[hidden] { display: none; }
-.color_guidance-button:hover { text-decoration: underline; text-underline-offset: 0.2em; }
 .color_guidance-button:focus-visible,
 .color_guidance-link:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 3px; }
 .color_guidance-dialog { width: min(44rem, calc(100vw - 2rem)); }
