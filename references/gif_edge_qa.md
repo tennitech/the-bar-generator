@@ -92,3 +92,17 @@ The earlier 20-file edge comparison uses the retained historical geometry
 fixture to isolate straight discontinuities; it does not substitute that
 geometry for the current actual-audio scope. The original screenshot baseline
 was downloaded before #154 deployed; it records the original edge defect.
+
+## Warm routed-shell cache correction
+
+After #144 merged and Pages succeeded, all 13 checked public runtime files
+matched merge `096410f`. A normal reload of an already-open style route still
+loaded the old helper query because the fetched shell URL had not advanced.
+A frozen actual-PCM GIF exported from that warm page matched its browser PNG’s
+ordered mask exactly (zero mismatches), and differed from half-coverage in 3069
+pixels. The follow-up advances every route’s shell URL, bootstrap query/fallback
+and Home prefetch together. It leaves audio, PCM, geometry, alpha source, 50 fps
+timing and guards untouched. A regression runs the real loader with the stale
+shell cached and checks that the fresh shell’s corrected helper is loaded.
+Normal reload and browser-produced corrected GIF/PNG verification are recorded
+in the follow-up PR release evidence.
