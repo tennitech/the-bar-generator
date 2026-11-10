@@ -3,6 +3,19 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 schematic export composition cards
+
+The Bar only and Bar + RPI choice cards now show the bar area as a thin,
+unfilled dashed outline in the existing neutral control ink. The official
+letter paths, card layout, typography, native radio behavior and selection
+accessibility are unchanged. This is a composition illustration for every bar
+style and background pairing; it does not preview or alter exported artwork.
+The shared shell and route cache references are advanced together.
+
+Validation and rendered-review limits are recorded in
+[the QA record](export_schematic_qa.md). No new external assets, export geometry,
+rendering logic or formal brand approval are introduced.
+
 ## November 10 scope contours and useful LFO motion
 
 The owner's screenshot is frozen at 400% zoom with LFO off, frequency10 and a
