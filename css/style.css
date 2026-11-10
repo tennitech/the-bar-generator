@@ -4549,18 +4549,22 @@ body:is(.theme-white, .theme-silver, .theme-gray, .theme-lunar) { --color-ready:
   scrollbar-gutter: stable;
 }
 .color_theme-select .custom-select-options-scroll::-webkit-scrollbar { width: 0.5rem; height: 0.5rem; }
-body .color_theme-select .color_theme-option,
+body .color_theme-select .color_theme-option {
+  background: var(--menu-surface);
+  color: var(--text-primary);
+  box-shadow: none;
+  outline: none;
+  /* Switch both colors together; intermediate blends can lose contrast. */
+  transition-duration: 0s;
+}
 body .color_theme-select .color_theme-option:is(:hover, .selected, .is-active) {
   background: var(--theme-option-background);
   color: var(--theme-option-foreground);
   box-shadow: none;
-  outline: none;
-}
-body .color_theme-select .color_theme-option:hover {
-  box-shadow: inset 0 -2px 0 #ffffff, inset 0 -4px 0 #000000;
 }
 body .color_theme-select .color_theme-option.is-active {
-  box-shadow: inset 0 0 0 2px #ffffff, inset 0 0 0 4px #000000;
+  outline: 2px solid var(--theme-option-foreground);
+  outline-offset: -2px;
 }
 @media (forced-colors: active) {
   body .color_theme-select .color_theme-option.is-active {
