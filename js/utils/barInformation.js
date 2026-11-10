@@ -27,7 +27,7 @@
   },
   "waveform": {
     "title": "Waveform",
-    "text": "A synthetic signal traces a repeating shape across the bar, using the waveform and frequency you choose. Explore its motion, or enable LFO to pulse the audio volume; this is a generated signal rather than an audio recording or measured observation."
+    "text": "A synthetic signal traces a repeating shape across the bar, using the waveform and frequency you choose. Explore its motion, or fold between LFO waveforms to modulate bar height and audio volume; this is a generated signal rather than an audio recording or measured observation."
   },
   "circles": {
     "title": "Circles",
@@ -47,7 +47,7 @@
   },
   "gradient": {
     "title": "Gradient",
-    "text": "Stripe widths vary across the bar to create an apparent shift in tone using a single foreground color. Compare the tapered and centered variants to explore how area coverage changes the result; the design uses geometric spacing rather than interpolated colors."
+    "text": "Stripe widths vary across the bar to create an apparent shift in tone using a single foreground color. Compare the tapered and centered variants, then loop a slow sweep of their coverage. Pause, reverse or change its speed. The design uses geometric spacing rather than interpolated colors or measured data."
   },
   "lines": {
     "title": "Lines",

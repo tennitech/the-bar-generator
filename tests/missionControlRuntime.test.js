@@ -15,7 +15,7 @@ function drawRuntime() {
     quantumControls: { tick: jest.fn() }, PageEntrance: { isHoldingArtwork: () => false },
     _renderer: { canvas: { width: 2000, height: 1400 } },
     createLunarBarVectorFragment: () => '',
-    getAnimationNowMs: () => 1234, getCurrentMotionStyle: () => null,
+    tickWaveformVisualLfo: jest.fn(), getAnimationNowMs: () => 1234, getCurrentMotionStyle: () => null,
     isMotionEnabledForStyle: () => false, getRenderedResponsiveLogoScale: () => context.fitScale,
     getPreviewFitLayout: () => ({ controlSpace: context.previewControlSpace }),
     isLunarBarVectorPreviewReady: () => context.ready,
@@ -258,4 +258,21 @@ describe('Complete first preview frame', () => {
     expect(r._renderer.canvas.dataset.previewReady).toBe('true');
     expect(r.PageEntrance.revealGenerator).toHaveBeenCalledTimes(1);
   });
+});
+
+
+test('entrance source freezes the exact rendered transform and rejects later layout changes', () => {
+  const { context: r } = drawRuntime();
+  r._renderer.canvas.dataset = {};
+  r.buildHeaderPreviewSVG = () => '<svg><path d="official"/></svg>';
+  r.PageEntrance.revealGenerator = jest.fn();
+  r.draw();
+  const [source, current] = r.PageEntrance.revealGenerator.mock.calls[0];
+  expect(current()).toBe(true);
+  expect(source()).toContain('translate(500 310) scale(2) translate(0 0) scale(1) translate(-125 -75.24425)');
+  expect(source()).toContain('data-ascii-mark');
+  r.width = 900; r.previewControlSpace = 120; r.panOffset.x = 3; r.fitScale = 1.5;
+  expect(current()).toBe(false);
+  expect(source()).toContain('width="1000" height="700"');
+  expect(source()).toContain('translate(500 310) scale(2) translate(0 0)');
 });

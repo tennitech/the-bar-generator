@@ -1,7 +1,34 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-11-06
+**Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
+
+## November 10 combined generator refinement
+
+The isolated combined candidate includes the 450ms Home prompt, removed separate
+Enter button, static individual marquee bars with 50% neighboring opacity and no
+lift/splitting; canonical aligned generator ASCII entry; a bounded taller sidebar
+overflow fade; dynamic Gradient controls/GIF with static Home previews; normalized
+0.2–4× SPEED controls; a clearer existing shuffle icon; and Waveform audio/visual
+LFO with continuous waveform folding and a separate logarithmic 0.07–1300Hz rate.
+
+Original default motion rates, prior valid query/share values, official geometry,
+profanity filtering and reduced-motion handling remain. Gradient and LFO changes
+share the existing preview/header phase and export geometry. Joint LFO GIF loops
+are limited to 100 seconds/3000 frames, with mean amplitude for longer cycles or
+fast LFO. Retained Waveform settings cannot change other styles' GIF plans.
+
+Validation: **831 tests in 76 suites pass**. Browser/native-audio/download visual
+QA is blocked by the previously established Chromium socket restriction, missing
+WebKit libraries and unreachable managed-browser localhost. The explicitly denied
+browser escalation was not retried. No rendered/device/owner or formal brand
+approval claim is made. The user has authorized publication and plans to test the
+live batch. Export-composition choice and Easter egg repairs remain separate.
+
+Exact source provenance, integration decisions, checks, limits and the owner test
+list are in [combined generator validation](combined_generator_validation.md).
+All original worktrees and branches are preserved. The combined worktree is
+`the-bar-generator-integration`, branch `codex/feat-combined-generator-candidate`.
 
 ## November 6 outstanding-report verification
 

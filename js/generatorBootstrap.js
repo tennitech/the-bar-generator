@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261104-letter-resolve';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261110-combined-generator-candidate';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
@@ -20,7 +20,7 @@
       return window.GeneratorRoutes;
     }
 
-    await loadScript('js/utils/generatorRoutes.js?v=20261104-parametric-lfo-recovery');
+    await loadScript('js/utils/generatorRoutes.js?v=20261110-combined-generator-candidate');
     return window.GeneratorRoutes || null;
   }
 
@@ -55,7 +55,7 @@
     // Download dependencies together; async=false preserves their execution order.
     const shellSources = Array.from(doc.querySelectorAll('script[src]'), script => script.getAttribute('src'));
     const earlyScripts = new Set();
-    const earlySources = ['numericControls', 'selectorPreviews', 'rulerScale', 'loopingGif', 'featherIcons', 'shareState', 'randomizeHistory', 'musicStyle', 'nucleotidePattern', 'barPattern', 'tickerDisplay', 'profanityFilter', 'quantumModel', 'waveformLfo', 'generatorParameters', 'barInformation']
+    const earlySources = ['numericControls', 'selectorPreviews', 'rulerScale', 'loopingGif', 'featherIcons', 'shareState', 'randomizeHistory', 'musicStyle', 'nucleotidePattern', 'barPattern', 'tickerDisplay', 'profanityFilter', 'quantumModel', 'motionSpeed', 'waveformLfo', 'generatorParameters', 'barInformation']
       .map(name => shellSources.find(src => src.startsWith(`js/utils/${name}.js`))).filter(Boolean);
     await Promise.all(earlySources.map(source => { earlyScripts.add(source); return loadScript(source); }));
     // Reconcile fetched shell CSS before inserting its chrome (also protects old route stubs).

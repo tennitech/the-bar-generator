@@ -64,6 +64,10 @@ let circlesGradientVariantSlider;
 let gradientGroup;
 let gradientVariantSlider;
 let gradientVariantDisplay;
+let gradientMotionToggle;
+let gradientSpeedSlider;
+let gradientSpeedDisplay;
+let gradientReverseToggle;
 let gridGroup;
 let gridVariantSlider;
 let gridVariantDisplay;
@@ -227,6 +231,10 @@ window.animationTime = 0;
 let audioContext;
 let gainNode;
 let waveformLfoVoice = null;
+let waveformVisualLfo = null;
+let waveformLfoTime = 0;
+let lastWaveformLfoTimestamp = 0;
+let waveformLfoFrame = { phase: 0, rate: 2, amount: 0, amplitude: 1 };
 let isAudioPlaying = false;
 let activeAudioPreviewType = null;
 let hasShownAudioHintToast = false;
@@ -557,6 +565,7 @@ const DEFAULT_MOTION_ENABLED = !(typeof window !== 'undefined'
   && window.matchMedia
   && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 const MOTION_ENABLED_BY_STYLE = {
+  gradient: DEFAULT_MOTION_ENABLED,
   ticker: DEFAULT_MOTION_ENABLED,
   waveform: DEFAULT_MOTION_ENABLED
 };
@@ -1007,7 +1016,7 @@ function getStyleDisplayName(style) {
 
 function styleSupportsMotion(style) {
   const normalizedStyle = normalizeStyleValue(style);
-  return normalizedStyle === 'ticker' || normalizedStyle === 'waveform';
+  return Object.hasOwn(MOTION_ENABLED_BY_STYLE, normalizedStyle);
 }
 
 function getCurrentMotionStyle() {
@@ -1016,6 +1025,8 @@ function getCurrentMotionStyle() {
       return 'ticker';
     case 4:
       return 'waveform';
+    case 17:
+      return 'gradient';
     default:
       return null;
   }
@@ -1023,6 +1034,9 @@ function getCurrentMotionStyle() {
 
 function getMotionControlConfig(style) {
   const normalizedStyle = normalizeStyleValue(style);
+  if (normalizedStyle === 'gradient') {
+    return { toggle: gradientMotionToggle, speedSlider: gradientSpeedSlider, speedDisplay: gradientSpeedDisplay };
+  }
   if (normalizedStyle === 'ticker') {
     return {
       toggle: tickerMotionToggle,
@@ -1048,6 +1062,8 @@ function getMotionControlConfig(style) {
 
 function getLoopRuntimeValues() {
   return {
+    gradientSpeed: normalizeLoopSpeed('gradient', gradientSpeedSlider ? gradientSpeedSlider.value : undefined),
+    gradientReverse: gradientReverseToggle ? gradientReverseToggle.checked : false,
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
     rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
     rulerThickness: rulerThicknessSlider ? rulerThicknessSlider.value : 1,
@@ -1116,7 +1132,7 @@ function getCurrentLoopAnimationState(barWidth = REFERENCE_WIDTH) {
 }
 
 function syncMotionToggleState() {
-  ['ticker', 'waveform'].forEach((style) => {
+  Object.keys(MOTION_ENABLED_BY_STYLE).forEach((style) => {
     const { toggle } = getMotionControlConfig(style);
     if (toggle) {
       toggle.checked = isMotionEnabledForStyle(style);
@@ -1131,7 +1147,10 @@ function setMotionEnabledForStyle(style, enabled, options = {}) {
   }
 
   MOTION_ENABLED_BY_STYLE[normalizedStyle] = !!enabled;
-  if (!enabled || options.resetPhase === true) {
+  if (normalizedStyle === 'gradient' && options.resetPhase !== true) {
+    // Hold the current coverage on pause; resume has no elapsed-time catch-up.
+    lastAnimationFrameTimestamp = 0;
+  } else if (!enabled || options.resetPhase === true) {
     resetAnimationClock();
   }
 
@@ -1147,6 +1166,7 @@ function generateRandomStaffPattern() {
 function getLiveWaveformGeometry(barStartX, barY, exactBarWidth, barHeight, timeSeconds) {
   return createWaveformPatternGeometry({
     barStartX, barY, exactBarWidth, barHeight, timeSeconds,
+    waveformAmplitude: waveformLfoFrame.amplitude,
     waveformType: Number(waveformTypeSlider.value),
     waveformFrequency: Number(waveformFrequencySlider.value),
     waveformSpeed: Number(waveformSpeedSlider.value),
@@ -1158,24 +1178,54 @@ function getWaveformLfoSettings() {
   return window.WaveformLfo.normalize({
     enabled: document.getElementById('waveform-lfo-toggle')?.checked,
     rate: document.getElementById('waveform-lfo-rate')?.value,
-    depth: document.getElementById('waveform-lfo-depth')?.value
+    depth: document.getElementById('waveform-lfo-depth')?.value,
+    type: document.getElementById('waveform-lfo-type')?.value
   });
+}
+
+// The existing p5 scheduler owns the visual clock; no marquee timer is added.
+function tickWaveformVisualLfo(timestamp, suspended = false) {
+  if (suspended || getCurrentMotionStyle() !== 'waveform') {
+    lastWaveformLfoTimestamp = 0;
+    return;
+  }
+  if (!waveformVisualLfo) updateWaveformLfoControls();
+  const elapsed = lastWaveformLfoTimestamp ? clampLiveAnimationDeltaMs(timestamp - lastWaveformLfoTimestamp) / 1000 : 0;
+  lastWaveformLfoTimestamp = timestamp;
+  if (!isMotionEnabledForStyle('waveform')) return;
+  waveformLfoTime += elapsed;
+  waveformLfoFrame = waveformLfoVoice ? waveformLfoVoice.sample() : waveformVisualLfo.sample(waveformLfoTime);
+  if (waveformLfoVoice) waveformVisualLfo.restore(waveformLfoFrame, waveformLfoTime);
+  waveformLfoFrame.amplitude = window.WaveformLfo.visualAmplitude(waveformLfoFrame, getWaveformLfoSettings().type, elapsed);
 }
 
 function updateWaveformLfoControls() {
   const state = getWaveformLfoSettings();
   const settings = document.getElementById('waveform-lfo-settings');
   if (settings) settings.hidden = !state.enabled;
-  for (const [id, value, label] of [['rate', state.rate, `${state.rate.toFixed(1).replace(/\.0$/, '')} Hz`], ['depth', state.depth, `${state.depth}%`]]) {
+  for (const [id, value, label] of [['rate', state.rate, `${state.rate} Hz`], ['depth', state.depth, `${state.depth}%`], ['type', state.type, window.WaveformLfo.waveNames[Math.round(state.type)]]]) {
     const field = document.getElementById(`waveform-lfo-${id}`);
     const display = document.getElementById(`waveform-lfo-${id}-display`);
     if (field) { field.value = value; field.setAttribute('aria-valuetext', label); }
     if (display) display.textContent = label;
   }
+  const ratePosition = document.querySelector('[data-lfo-rate-position]');
+  if (ratePosition) {
+    ratePosition.value = window.WaveformLfo.ratePosition(state.rate);
+    ratePosition.setAttribute('aria-valuetext', `${state.rate} Hz`);
+  }
+  if (!waveformVisualLfo) waveformVisualLfo = window.WaveformLfo.createTransport(state, waveformLfoTime);
+  else waveformVisualLfo.update(state, waveformLfoTime, !isMotionEnabledForStyle('waveform'));
   waveformLfoVoice?.update(state);
+  waveformLfoFrame = waveformVisualLfo.sample(waveformLfoTime);
+  waveformLfoFrame.amplitude = window.WaveformLfo.visualAmplitude(waveformLfoFrame, state.type);
 }
 
 function resetWaveformLfo() {
+  waveformVisualLfo = null;
+  waveformLfoTime = 0;
+  lastWaveformLfoTimestamp = 0;
+  document.getElementById('waveform-lfo-type').value = 0;
   document.getElementById('waveform-lfo-toggle').checked = false;
   document.getElementById('waveform-lfo-rate').value = 2;
   document.getElementById('waveform-lfo-depth').value = 60;
@@ -1361,6 +1411,10 @@ function resetStyleParameters(style) {
       setCirclesGradientControls({ variant: 1 });
       break;
     case 'gradient':
+      liveMotionPhase = 0;
+      gradientSpeedSlider.value = getDefaultLoopSpeed('gradient');
+      gradientReverseToggle.checked = false;
+      updateGradientSpeedDisplay();
       if (gradientVariantSlider) gradientVariantSlider.value = 1;
       updateGradientVariantDisplay();
       break;
@@ -1491,7 +1545,7 @@ function randomizeStyleParameters(style) {
         applyTickerWidthRatioBounds(tickerRatioSlider, tickerWidthRatioSlider);
         tickerWidthRatioSlider.value = randomStepValue(1, parseInt(tickerWidthRatioSlider.max, 10), 1);
       }
-      if (tickerSpeedSlider) tickerSpeedSlider.value = randomStepValue(Number(tickerSpeedSlider.min), Number(tickerSpeedSlider.max), 0.1);
+      if (tickerSpeedSlider) tickerSpeedSlider.value = window.MotionSpeed.rate('ticker', randomStepValue(0.2, 4, 0.05));
       if (tickerReverseToggle) tickerReverseToggle.checked = randomChance(0.5);
       updateTickerDisplay();
       updateTickerRatioDisplay();
@@ -1499,13 +1553,14 @@ function randomizeStyleParameters(style) {
       updateTickerSpeedDisplay();
       break;
     case 'waveform':
+      document.getElementById('waveform-lfo-type').value = randomStepValue(0, 3, 0.01);
       document.getElementById('waveform-lfo-toggle').checked = randomChance(0.5);
       document.getElementById('waveform-lfo-rate').value = randomStepValue(0.5, 5, 0.1);
       document.getElementById('waveform-lfo-depth').value = randomStepValue(25, 100, 5);
       updateWaveformLfoControls();
       if (waveformTypeSlider) waveformTypeSlider.value = pickRandom(['0', '1', '2', '3']);
       if (waveformFrequencySlider) waveformFrequencySlider.value = randomDifferentStep(waveformFrequencySlider, 12, 88);
-      if (waveformSpeedSlider) waveformSpeedSlider.value = randomStepValue(Number(waveformSpeedSlider.min), Number(waveformSpeedSlider.max), 0.1);
+      if (waveformSpeedSlider) waveformSpeedSlider.value = window.MotionSpeed.rate('waveform', randomStepValue(0.2, 4, 0.05));
       if (waveformReverseToggle) waveformReverseToggle.checked = randomChance(0.5);
       updateWaveformTypeDisplay();
       updateWaveformFrequencyDisplay();
@@ -1544,6 +1599,9 @@ function randomizeStyleParameters(style) {
         stagger: randomStepValue(0, 100, 1), reverse: Math.random() < .5 });
       break;
     case 'gradient':
+      gradientSpeedSlider.value = window.MotionSpeed.rate('gradient', randomStepValue(0.2, 4, 0.05));
+      gradientReverseToggle.checked = Math.random() < 0.5;
+      updateGradientSpeedDisplay();
       if (gradientVariantSlider) gradientVariantSlider.value = randomDifferentStep(gradientVariantSlider, 1, 2);
       updateGradientVariantDisplay();
       break;
@@ -2392,6 +2450,10 @@ function setup() {
   gradientGroup = document.getElementById('gradient-group');
   gradientVariantSlider = document.getElementById('gradient-variant-slider');
   gradientVariantDisplay = document.getElementById('gradient-variant-display');
+  gradientMotionToggle = document.getElementById('gradient-motion-toggle');
+  gradientSpeedSlider = document.getElementById('gradient-speed-slider');
+  gradientSpeedDisplay = document.getElementById('gradient-speed-display');
+  gradientReverseToggle = document.getElementById('gradient-reverse-toggle');
   gridGroup = document.getElementById('grid-group');
   gridVariantSlider = document.getElementById('grid-variant-slider');
   gridVariantDisplay = document.getElementById('grid-variant-display');
@@ -2586,12 +2648,17 @@ function setup() {
     });
   }
 
-  for (const id of ['waveform-lfo-toggle', 'waveform-lfo-rate', 'waveform-lfo-depth']) {
+  for (const id of ['waveform-lfo-toggle', 'waveform-lfo-rate', 'waveform-lfo-depth', 'waveform-lfo-type']) {
     document.getElementById(id).addEventListener('input', () => {
       updateWaveformLfoControls(); updateUrlParameters(); requestUpdate();
     });
   }
 
+  document.querySelector('[data-lfo-rate-position]').addEventListener('input', function () {
+    const rate = document.getElementById('waveform-lfo-rate');
+    rate.value = window.WaveformLfo.positionRate(this.value);
+    rate.dispatchEvent(new Event('input', { bubbles: true }));
+  });
   if (waveformAudioBtn) {
     waveformAudioBtn.addEventListener('click', function (e) {
       e.preventDefault();
@@ -2896,6 +2963,12 @@ function setup() {
     updateCirclesGradientVariantDisplay();
   }
 
+  gradientMotionToggle.addEventListener('change', () => setMotionEnabledForStyle('gradient', gradientMotionToggle.checked));
+  gradientSpeedSlider.addEventListener('input', () => {
+    updateGradientSpeedDisplay(); updateUrlParameters(); requestUpdate();
+  });
+  gradientReverseToggle.addEventListener('change', () => { updateUrlParameters(); requestUpdate(); });
+  updateGradientSpeedDisplay();
   if (gradientVariantSlider) {
     gradientVariantSlider.addEventListener('input', function () {
       updateGradientVariantDisplay();
@@ -3166,6 +3239,7 @@ function setup() {
       getEditorValue: () => tickerWidthRatioDisplay ? tickerWidthRatioDisplay.textContent.trim() : ''
     },
     {
+      ...window.MotionSpeed.editor('ticker', tickerSpeedSlider),
       slider: tickerSpeedSlider,
       display: tickerSpeedDisplay,
       refreshDisplay: updateTickerSpeedDisplay,
@@ -3180,13 +3254,14 @@ function setup() {
       ariaLabel: 'Set waveform frequency'
     },
     {
+      ...window.MotionSpeed.editor('waveform', waveformSpeedSlider),
       slider: waveformSpeedSlider,
       display: waveformSpeedDisplay,
       refreshDisplay: updateWaveformSpeedDisplay,
       commit: () => { updateWaveformSpeedDisplay(); updateUrlParameters(); requestUpdate(); },
       ariaLabel: 'Set waveform motion speed'
     },
-    ...['rate', 'depth'].map(id => ({
+    ...['rate', 'depth', 'type'].map(id => ({
       slider: document.getElementById(`waveform-lfo-${id}`),
       display: document.getElementById(`waveform-lfo-${id}-display`),
       refreshDisplay: updateWaveformLfoControls,
@@ -3242,6 +3317,14 @@ function setup() {
       commit: () => { updateCirclesGradientVariantDisplay(); updateUrlParameters(); requestUpdate(); },
       ariaLabel: `Set circles gradient ${key}`
     })),
+    {
+      ...window.MotionSpeed.editor('gradient', gradientSpeedSlider),
+      slider: gradientSpeedSlider,
+      display: gradientSpeedDisplay,
+      refreshDisplay: updateGradientSpeedDisplay,
+      commit: () => { updateGradientSpeedDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set gradient motion speed'
+    },
     {
       slider: gradientVariantSlider,
       display: gradientVariantDisplay,
@@ -3422,6 +3505,7 @@ function setup() {
 
   document.addEventListener('visibilitychange', function () {
     invalidateLunarPreviewFrame();
+    lastWaveformLfoTimestamp = 0;
     lastAnimationFrameTimestamp = 0;
     if (document.hidden) {
       handleDocumentAudioDeactivation();
@@ -3432,6 +3516,11 @@ function setup() {
   window.addEventListener('pagehide', handleDocumentAudioDeactivation);
   window.addEventListener('beforeunload', handleDocumentAudioDeactivation);
   document.addEventListener('freeze', handleDocumentAudioDeactivation);
+
+  // Commit the final controls reservation before p5's first draw rather than
+  // letting its queued measurement change the fitted mark during the entrance.
+  cancelAnimationFrame(responsiveWorkspaceSyncFrame);
+  syncResponsiveWorkspaceSizing();
 }
 
 function handleBinaryInput() {
@@ -3522,8 +3611,7 @@ function updateTickerWidthRatioDisplay() {
 function updateTickerSpeedDisplay() {
   if (!tickerSpeedSlider || !tickerSpeedDisplay) return;
   tickerSpeedSlider.value = String(normalizeLoopSpeed('ticker', tickerSpeedSlider.value));
-  tickerSpeedDisplay.textContent = parseFloat(tickerSpeedSlider.value).toFixed(1);
-  tickerSpeedSlider.setAttribute('aria-valuetext', `${tickerSpeedDisplay.textContent} top-row repeats per second`);
+  window.MotionSpeed.sync('ticker', tickerSpeedSlider, tickerSpeedDisplay);
 }
 
 function getCirclesGradientControlValues() {
@@ -3551,6 +3639,12 @@ function updateCirclesGradientVariantDisplay() {
     const display = document.getElementById(`circles-gradient-${key}-display`);
     if (field && display) display.textContent = field.value;
   }
+}
+
+function updateGradientSpeedDisplay() {
+  if (!gradientSpeedSlider || !gradientSpeedDisplay) return;
+  gradientSpeedSlider.value = String(normalizeLoopSpeed('gradient', gradientSpeedSlider.value));
+  window.MotionSpeed.sync('gradient', gradientSpeedSlider, gradientSpeedDisplay);
 }
 
 function updateGradientVariantDisplay() {
@@ -3689,9 +3783,7 @@ function updateWaveformFrequencyDisplay() {
 function updateWaveformSpeedDisplay() {
   if (!waveformSpeedSlider || !waveformSpeedDisplay) return;
   waveformSpeedSlider.value = String(normalizeLoopSpeed('waveform', waveformSpeedSlider.value));
-  const sliderValue = parseFloat(waveformSpeedSlider.value);
-  waveformSpeedDisplay.textContent = sliderValue.toFixed(1);
-  waveformSpeedSlider.setAttribute('aria-valuetext', `${sliderValue.toFixed(1)} cycles per second`);
+  window.MotionSpeed.sync('waveform', waveformSpeedSlider, waveformSpeedDisplay);
 }
 
 function updateCirclesDensityDisplay() {
@@ -4135,6 +4227,7 @@ function handleStyleChange() {
         break;
       case 'gradient':
         if (gradientGroup) gradientGroup.style.display = 'block';
+        isAnimated = true;
         break;
       case 'grid':
         if (gridGroup) gridGroup.style.display = 'block';
@@ -4234,6 +4327,7 @@ function applyColorMode(colorMode) {
 
 function getCurrentBarPatternValues(exactBarWidth) {
   const loopAnimationState = getCurrentLoopAnimationState(exactBarWidth);
+  const lfo = getWaveformLfoSettings();
   const timeSeconds = loopAnimationState
     ? loopAnimationState.timeSeconds
     : (typeof window.animationTime !== 'undefined'
@@ -4256,6 +4350,11 @@ function getCurrentBarPatternValues(exactBarWidth) {
     waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
     waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
     waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
+    waveformAmplitude: waveformLfoFrame.amplitude,
+    waveformLfo: lfo.enabled,
+    waveformLfoRate: lfo.rate,
+    waveformLfoDepth: lfo.depth,
+    waveformLfoType: lfo.type,
     timeSeconds,
     circlesFill: circlesFillSelect ? circlesFillSelect.value : 'stroke',
     circlesDensity: circlesDensitySlider ? circlesDensitySlider.value : 50,
@@ -4266,6 +4365,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     numericMode: numericModeSelect ? numericModeSelect.value : 'dotmatrix',
     ...getCirclesGradientControlValues(),
     gradientVariant: gradientVariantSlider ? gradientVariantSlider.value : 1,
+    gradientPhase: currentShader === 17 ? liveMotionPhase : 0,
     gridVariant: gridVariantSlider ? gridVariantSlider.value : 1,
     linesVariant: linesVariantSlider ? linesVariantSlider.value : 2,
     pointConnectVariant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1,
@@ -4434,6 +4534,12 @@ function renderHeaderMotionPreview() {
     const geometry = createBoundedTickGeometry({ shader: 2,
       ...values, barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH,
       barHeight: REFERENCE_BAR_HEIGHT, loopOffsetX: state.loopOffsetX
+    });
+    geometry.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
+  } else if (style === 'gradient') {
+    const geometry = createGradientPatternGeometry({
+      exactBarWidth: REFERENCE_WIDTH, barHeight: REFERENCE_BAR_HEIGHT,
+      variant: gradientVariantSlider ? gradientVariantSlider.value : 1, gradientPhase: liveMotionPhase
     });
     geometry.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
   } else if (style === 'waveform') {
@@ -5362,7 +5468,7 @@ async function startWaveformAudio() {
   const normalizedFreq = (frequency - 10) / 90; // Normalize 10-100 to 0-1
   const mappedFrequency = minFreq + (normalizedFreq * (maxFreq - minFreq));
 
-  waveformLfoVoice = window.WaveformLfo.create(audioContext, gainNode, getWaveformLfoSettings());
+  waveformLfoVoice = window.WaveformLfo.create(audioContext, gainNode, getWaveformLfoSettings(), waveformLfoFrame);
 
   // Create basic oscillators for smooth morphing
   const waveTypes = ['sine', 'sawtooth', 'square'];
@@ -5483,6 +5589,10 @@ function stopArtemisMissionAudio() {
 
 function stopWaveformAudio() {
   try {
+    if (waveformLfoVoice && waveformVisualLfo) {
+      if (isMotionEnabledForStyle('waveform')) waveformLfoFrame = waveformLfoVoice.sample();
+      waveformVisualLfo.restore(waveformLfoFrame, waveformLfoTime);
+    }
     waveformLfoVoice?.stop(audioContext.currentTime + 0.05);
     waveformLfoVoice = null;
     // Clear any previously scheduled values to fix play/pause bug
@@ -5896,6 +6006,8 @@ function updateUrlParameters() {
   }
 
   if (styleSelect && styleSelect.value === 'gradient') {
+    if (Number(gradientSpeedSlider.value) !== getDefaultLoopSpeed('gradient')) params.set('gradientSpeed', gradientSpeedSlider.value);
+    if (gradientReverseToggle.checked) params.set('gradientReverse', 'true');
     if (gradientVariantSlider && parseInt(gradientVariantSlider.value, 10) !== 1) {
       params.set('gradientVariant', gradientVariantSlider.value);
     }
@@ -6045,6 +6157,7 @@ function updateUrlParameters() {
     if (lfo.enabled) params.set('waveformLfo', 'true');
     if (lfo.rate !== 2) params.set('waveformLfoRate', lfo.rate);
     if (lfo.depth !== 60) params.set('waveformLfoDepth', lfo.depth);
+    if (lfo.type !== 0) params.set('waveformLfoType', lfo.type);
     if (waveformReverseToggle && waveformReverseToggle.checked) {
       params.set('waveformReverse', 'true');
     }
@@ -6126,6 +6239,9 @@ function applyUrlParameters() {
   }
   if (gradientVariantSlider) {
     gradientVariantSlider.value = params.gradientVariant;
+    gradientSpeedSlider.value = params.gradientSpeed;
+    gradientReverseToggle.checked = params.gradientReverse;
+    updateGradientSpeedDisplay();
     updateGradientVariantDisplay();
   }
   if (gridVariantSlider) {
@@ -6274,6 +6390,7 @@ function applyUrlParameters() {
   if (waveformReverseToggle) {
     waveformReverseToggle.checked = params.waveformReverse;
   }
+  document.getElementById('waveform-lfo-type').value = params.waveformLfoType;
   document.getElementById('waveform-lfo-toggle').checked = params.waveformLfo;
   document.getElementById('waveform-lfo-rate').value = params.waveformLfoRate;
   document.getElementById('waveform-lfo-depth').value = params.waveformLfoDepth;
@@ -6316,6 +6433,7 @@ function updateAllDisplays() {
   updateCirclesSizeVariationDisplay();
   updateCirclesGradientVariantDisplay();
   updateGradientVariantDisplay();
+  updateGradientSpeedDisplay();
   updateGridVariantDisplay();
   updatePointConnectVariantDisplay();
   updateNeuralNetworkHiddenLayersDisplay();
@@ -6522,6 +6640,7 @@ function draw() {
   const currentTime = getAnimationNowMs();
   const drawingSuspended = document.hidden || document.body.classList.contains('has-logo-animation') || window.PageEntrance?.isHoldingArtwork?.();
   window.quantumControls.tick(currentTime, drawingSuspended);
+  tickWaveformVisualLfo(currentTime, drawingSuspended);
   const currentMotionStyle = getCurrentMotionStyle();
   if (drawingSuspended) {
     invalidateLunarPreviewFrame();
@@ -6563,7 +6682,7 @@ function draw() {
   // Commit a complete mark, never a letters-only frame while an SVG decodes.
   // Firefox can finish the image asynchronously after the initial p5 draw. Keep
   // the previous complete canvas during parameter/size changes until ready.
-  const usesCanonicalImage = ![1, 2, 4, 22, 24].includes(currentShader);
+  const usesCanonicalImage = ![1, 2, 4, 17, 22, 24].includes(currentShader);
   const readyBarImage = usesCanonicalImage ? getReadyCanonicalBarImage(window) : null;
   if (usesCanonicalImage && !readyBarImage) return;
   if (currentShader === 24 && typeof window.createLunarBarVectorFragment !== 'function') return;
@@ -6616,11 +6735,17 @@ function draw() {
   const previewCanvas = window._renderer?.canvas;
   if (previewCanvas?.dataset && previewCanvas.dataset.previewReady !== 'true') {
     previewCanvas.dataset.previewReady = 'true';
+    // Freeze the exact first-draw transform and source together. Preparation must
+    // not combine this scale with later dimensions/control-space measurements.
+    const entranceWidth = width, entranceHeight = height;
+    const entranceControlSpace = getPreviewFitLayout().controlSpace;
+    const entrancePan = { ...panOffset }, entranceZoom = zoomLevel;
     window.PageEntrance?.revealGenerator?.(() => {
-      // Sample the same vector geometry, not the GPU canvas (readback can stall).
       const mark = buildHeaderPreviewSVG().replace(/<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
-      return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="color:${colorScheme?.fg || '#000000'}"><g transform="translate(${width / 2} ${(height - getPreviewFitLayout().controlSpace) / 2}) scale(${responsiveLogoScale}) translate(${panOffset.x} ${panOffset.y}) scale(${zoomLevel}) translate(${-currentWidth / 2} ${LOGO_VERTICAL_OFFSET})">${mark}</g></svg>`;
-    });
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${entranceWidth}" height="${entranceHeight}" viewBox="0 0 ${entranceWidth} ${entranceHeight}" style="color:${colorScheme?.fg || '#000000'}"><g data-ascii-mark="" transform="translate(${entranceWidth / 2} ${(entranceHeight - entranceControlSpace) / 2}) scale(${responsiveLogoScale}) translate(${entrancePan.x} ${entrancePan.y}) scale(${entranceZoom}) translate(${-currentWidth / 2} ${LOGO_VERTICAL_OFFSET})">${mark}</g></svg>`;
+    }, () => width === entranceWidth && height === entranceHeight
+      && getPreviewFitLayout().controlSpace === entranceControlSpace && getRenderedResponsiveLogoScale() === responsiveLogoScale
+      && panOffset.x === entrancePan.x && panOffset.y === entrancePan.y && zoomLevel === entranceZoom);
   }
 
   if (lunarFrameKey && isLunarBarVectorPreviewReady()) {
@@ -6637,7 +6762,7 @@ function draw() {
 function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsiveLogoScale(), readyBarImage = null) {
   // Static preview and raster exports consume the same clipped SVG as the header.
   // Motion keeps its immediate shared geometry, avoiding asynchronous frame lag.
-  if (![1, 2, 4, 22].includes(currentShader)) {
+  if (![1, 2, 4, 17, 22].includes(currentShader)) {
     push();
     if (!liveCanvasUsesWebGL) translate(width / 2, height / 2);
     translate(0, -getPreviewFitLayout().controlSpace / 2);
@@ -7097,7 +7222,8 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       barY: 0,
       exactBarWidth,
       barHeight: rectHeight,
-      variant: gradientVariantSlider ? gradientVariantSlider.value : 1
+      variant: gradientVariantSlider ? gradientVariantSlider.value : 1,
+      gradientPhase: liveMotionPhase
     });
 
     for (let i = 0; i < geometry.rects.length; i++) {
@@ -7570,6 +7696,7 @@ function setupShareLinks() {
   window.BarShareState.initialize({
     sanitize: sanitizeBarText,
     capture: () => ({ seed: sharePatternSeed, phase: liveMotionPhase, time: window.animationTime,
+      lfoPhase: waveformLfoFrame.phase,
       notes: currentStaffNotes, duration: currentNoteDuration }),
     restore: (state, options = {}) => {
       stopAudio();
@@ -7583,8 +7710,12 @@ function setupShareLinks() {
         const toggle = document.getElementById(`${style}-motion-toggle`);
         MOTION_ENABLED_BY_STYLE[style] = !!(toggle && toggle.checked && !reduce);
         if (toggle) toggle.checked = MOTION_ENABLED_BY_STYLE[style];
-        if (styleSelect.value === style && !MOTION_ENABLED_BY_STYLE[style]) resetAnimationClock();
+        if (styleSelect.value === style && !MOTION_ENABLED_BY_STYLE[style] && style !== 'gradient') resetAnimationClock();
       }
+      waveformLfoTime = 0;
+      lastWaveformLfoTimestamp = 0;
+      waveformVisualLfo = window.WaveformLfo.createTransport(getWaveformLfoSettings(), 0, { phase: state.lfoPhase || 0 });
+      updateWaveformLfoControls();
       document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
         button.classList.toggle('active', Number(button.dataset.duration) === state.duration);
       });
@@ -7619,6 +7750,9 @@ function setupShareLinks() {
         button.classList.toggle('active', Number(button.dataset.duration) === 1);
       });
       resetAnimationClock();
+      waveformVisualLfo = null;
+      waveformLfoTime = 0;
+      lastWaveformLfoTimestamp = 0;
       for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       applyUrlParameters();
       const quantumQuery = new URLSearchParams(location.search);

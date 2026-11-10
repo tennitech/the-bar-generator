@@ -37,7 +37,7 @@
   <meta name="robots" content="noindex">
   <meta name="description" content="404 rerouting page for the RPI Bar Generator.">
   <title>404 | RPI Bar Generator</title>
-  <link href="css/marquee-ui.css?v=20261103-display-motion-embed" rel="stylesheet" type="text/css">
+  <link href="css/marquee-ui.css?v=20261110-combined-generator-candidate" rel="stylesheet" type="text/css">
   <style>
     :root {
       --hero-scale: 1;
@@ -228,7 +228,7 @@
         return;
       }
 
-      script.src = `${basePath}js/utils/pagesFallback.js?v=20261104-parametric-lfo-recovery`;
+      script.src = `${basePath}js/utils/pagesFallback.js?v=20261110-combined-generator-candidate`;
       script.onload = function onFallbackScriptLoad() {
         const redirectUrl = window.PagesFallback && typeof window.PagesFallback.getPagesFallbackRedirectUrl === 'function'
           ? window.PagesFallback.getPagesFallbackRedirectUrl(window.location.pathname, window.location.search, {

@@ -84,7 +84,8 @@ test('speed and reverse change only phase rate, with bounded stalls and determin
   expect(model.normalizePhase(NaN)).toBe(0);
   expect(model.normalizePhase(-0.25)).toBe(0.75);
   expect(model.normalizeSpeed(Infinity)).toBe(1);
-  expect(model.normalizeSpeed(5)).toBe(1);
+  expect(model.normalizeSpeed(5)).toBe(4);
+  expect(model.advancePhase(.25, 50, { speed: 2 })).toBeCloseTo(.25 + 2 * .05 / 120, 12);
   expect(model.normalizeSpeed(0)).toBe(.2);
   expect(model.advancePhase(.25, 50, { speed: .5 })).toBeCloseTo(.25 + .5 * .05 / 120, 12);
   expect(model.advancePhase(.25, 50, { speed: .5, reverse: true })).toBeCloseTo(.25 - .5 * .05 / 120, 12);

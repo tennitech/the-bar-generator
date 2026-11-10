@@ -1030,7 +1030,12 @@ function captureLogoExportSnapshot() {
   // Still files and clipboard images always use the default resting phase.
   // GIF adds its full cycle to this same captured origin without changing live playback.
   const values = JSON.parse(JSON.stringify({ ...getCurrentBarPatternValues(REFERENCE_WIDTH), ...getLoopRuntimeValues(),
-    loopOffsetX: 0, timeSeconds: 0, quantumPhase: 0 }));
+    loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: 0,
+    waveformAmplitude: window.WaveformLfo.visualAmplitude({
+      amplitude: window.WaveformLfo.amplitude(0, getWaveformLfoSettings()),
+      rate: getWaveformLfoSettings().rate,
+      amount: getWaveformLfoSettings().enabled ? getWaveformLfoSettings().depth / 100 : 0
+    }, getWaveformLfoSettings().type) }));
   const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values, preview: false });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
@@ -1097,6 +1102,13 @@ function createCapturedGifRenderer(snapshot, framePlan) {
     const values = { ...snapshot.values,
       loopOffsetX: Number(snapshot.values.loopOffsetX || 0) + framePlan.getLoopOffsetX(progress),
       timeSeconds: Number(snapshot.values.timeSeconds || 0) + (snapshot.family === 'waveform' ? framePlan.getTimeSeconds(progress) : 0) };
+    if (snapshot.family === 'waveform') values.waveformAmplitude = window.WaveformLfo.amplitude(
+      framePlan.periodSeconds * progress, { enabled: values.waveformLfo, rate: values.waveformLfoRate, depth: values.waveformLfoDepth, type: values.waveformLfoType });
+    if (snapshot.family === 'waveform') values.waveformAmplitude = window.WaveformLfo.visualAmplitude({
+      amplitude: values.waveformAmplitude, rate: values.waveformLfoRate, amount: values.waveformLfo ? values.waveformLfoDepth / 100 : 0
+    }, values.waveformLfoType, framePlan.periodSeconds / framePlan.frameCount);
+    if (framePlan.lfoAveraged) values.waveformAmplitude = 1 - values.waveformLfoDepth / 100
+      + values.waveformLfoDepth / 100 * window.WaveformLfo.mean(values.waveformLfoType);
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save(); ctx.scale(dimensions.scale, dimensions.scale); ctx.translate(geometry.exportPadding, geometry.exportPadding);
     ctx.fillStyle = foreground; letters.forEach(path => ctx.fill(path));
@@ -1104,6 +1116,13 @@ function createCapturedGifRenderer(snapshot, framePlan) {
     if (snapshot.currentShader === 2) {
       const pattern = createBoundedTickGeometry({ ...values, shader: snapshot.currentShader,
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight });
+      pattern.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
+    } else if (snapshot.currentShader === 17) {
+      const pattern = createGradientPatternGeometry({
+        barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,
+        variant: values.gradientVariant,
+        gradientPhase: framePlan.getTimeSeconds(progress) * values.gradientSpeed
+      });
       pattern.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
     } else {
       const markup = createBarPatternSVG({ currentShader: 4, currentColorMode: snapshot.colorMode,

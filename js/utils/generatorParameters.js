@@ -45,6 +45,8 @@ function read() {
     ...window.NumericControls.readQuery(params),
     numericMode: params.get('numericMode') || 'dotmatrix',
     ...Object.fromEntries(Object.entries(circlesGradient).map(([key, value]) => [`circlesGradient${key[0].toUpperCase()}${key.slice(1)}`, value])),
+    gradientSpeed: window.loopingGifUtils.normalizeLoopSpeed('gradient', params.get('gradientSpeed')),
+    gradientReverse: params.get('gradientReverse') === 'true',
     gradientVariant: Math.max(1, Math.min(2, parseInt(params.get('gradientVariant')) || 1)),
     gridVariant: Math.max(1, Math.min(3, parseInt(params.get('gridVariant')) || 1)),
 
@@ -78,6 +80,7 @@ function read() {
     waveformFrequency: parseInt(params.get('waveformFrequency')) || 24,
     waveformSpeed: window.loopingGifUtils.normalizeLoopSpeed('waveform', params.get('waveformSpeed')),
     waveformReverse: params.get('waveformReverse') === 'true',
+    waveformLfoType: window.WaveformLfo.normalize({ type: params.get('waveformLfoType') }).type,
     waveformLfo: params.get('waveformLfo') === 'true',
     waveformLfoRate: window.WaveformLfo.normalize({ rate: params.get('waveformLfoRate') }).rate,
     waveformLfoDepth: window.WaveformLfo.normalize({ depth: params.get('waveformLfoDepth') }).depth,

@@ -97,6 +97,7 @@
   --header-height: 56px;
   --sidebar-width: 22rem;
   --sidebar-padding: 1.25rem;
+  --sidebar-scroll-fade-height: 4.5rem;
   --export-panel-width: calc(var(--sidebar-width) - 2 * var(--sidebar-padding) - 1px);
   --header-control-size: 2.375rem;
   --header-action-gap: 0.625rem;
@@ -609,7 +610,6 @@ body.theme-lunar .bar_information-credit { display: block; }
 .bar_information-people a { display: block; padding-block: 0.25rem; font-size: 0.75rem; line-height: 1.4; }
 .bar_information-people span { display: block; color: var(--text-secondary); font-size: 0.75rem; line-height: 1.4; }
 .sidebar-footer:has(.bar_information-details[open]) { position: static; }
-.sidebar-footer:has(.bar_information-details[open])::before { display: none; }
 
 
 /* ─── Selects & Inputs ─── */
@@ -2129,27 +2129,10 @@ body.has-logo-animation {
   border-top: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
 }
 
-.sidebar-footer::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -24px;
-  height: 24px;
-  pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    color-mix(in srgb, var(--bg-sidebar) 76%, transparent) 52%,
-    color-mix(in srgb, var(--bg-sidebar) 100%, transparent) 100%
-  );
-}
-
 /* A pinned information card can cover the entire control area in short windows.
    Let both sections flow through the same sidebar scroller at these heights. */
 @media (max-height: 40rem) {
   .sidebar-footer { position: static; }
-  .sidebar-footer::before { display: none; }
 }
 
 .sidebar-feedback-btn {
@@ -3795,7 +3778,6 @@ body { min-height: 0; }
 
 @media (pointer: coarse) and (max-width: 1100px) {
   .sidebar-footer { position: static; }
-  .sidebar-footer::before { display: none; }
   .sidebar-scroll { overscroll-behavior: contain; touch-action: pan-y pinch-zoom; }
   .save-option, .report_dialog-secondary, .report_dialog-primary { min-height: 2.75rem; }
   .slider_value-display:hover { box-shadow: none; }
@@ -4436,24 +4418,39 @@ body:is(.theme-white, .theme-silver, .theme-gray, .theme-lunar) { --color-ready:
   .nucleotide_sequence.is-limit-error .control-input { animation: none !important; }
 }
 
-/* A quiet cue in the existing fade signals more controls, never taking input. */
+/* The overflow cue owns its fade so both clear at the end of the controls. */
 .sidebar_scroll-cue {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   z-index: 4;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.25rem;
   padding: 0.125rem 0.375rem;
   height: 1.25rem;
   font: 0.625rem/1.2 'RPIGeistMono', monospace;
   white-space: nowrap;
   color: var(--text-secondary);
-  background: var(--bg-sidebar);
-  border-radius: var(--control-radius);
   pointer-events: none;
   user-select: none;
+}
+.sidebar_scroll-cue::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.25rem;
+  height: min(var(--sidebar-scroll-fade-height), var(--sidebar-scroll-fade-space, var(--sidebar-scroll-fade-height)));
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--bg-sidebar) 65%, transparent) 45%,
+    color-mix(in srgb, var(--bg-sidebar) 95%, transparent) 80%,
+    var(--bg-sidebar) 100%
+  );
 }
 .sidebar_scroll-cue[hidden] { display: none; }
 .sidebar_scroll-cue-icon { width: 1rem; height: 1rem; }
@@ -4483,6 +4480,6 @@ body:is(.theme-white, .theme-silver, .theme-gray, .theme-lunar) { --color-ready:
   justify-content: center;
   gap: 0.25rem;
 }
-.parameter_action-glyph { display: inline-flex; width: 0.875rem; height: 0.875rem; }
+.parameter_action-glyph { display: inline-flex; width: 1.125rem; height: 1.125rem; }
 .parameter_action-icon { width: 100%; height: 100%; transform-origin: center; }
 .parameter_action-label { display: inline-block; }

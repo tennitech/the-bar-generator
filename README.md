@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/tennitech/the-bar-generator/actions/workflows/checks.yml/badge.svg)](https://github.com/tennitech/the-bar-generator/actions/workflows/checks.yml)
 
-A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a pattern, adjust its controls, and export an SVG or PNG. The asset menu also copies SVG and PNG images where supported. Ruler, Ticker, and Waveform also support looping GIF exports.
+A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a pattern, adjust its controls, and export an SVG or PNG. The asset menu also copies SVG and PNG images where supported. Ticker, Waveform, and Gradient also support looping GIF exports.
 
 PNG and GIF exports share Standard (1000 px logo) and Large (2000 px logo) choices. Their complete canvases are 1160 × 762 and 2320 × 1524 px, including padding. SVG remains vector. GIF uses binary transparency; PNG preserves smooth partial alpha. See [export sizes, timing, and measured cost](references/transparent_gif_exports.md).
 
@@ -176,3 +176,17 @@ RPI_SITE_URL=http://127.0.0.1:8000 RPI_MARQUEE_CHECK=1 node scripts/generateMarq
 share restore, rendered header/raster bounds, and same-document packing seeds.
 `RPI_BROWSER=webkit` selects WebKit for the integration and geometry scripts.
 These remain optional local checks; the fast unit suite is the only CI merge check.
+
+
+For Waveform audio/visual LFO checks, including waveform folding, logarithmic
+rate controls, lifecycle, exports and responsive layouts:
+
+```sh
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/waveformVisualLfoSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 node scripts/waveformLfoSmoke.js
+RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit node scripts/waveformVisualLfoSmoke.js
+```
+
+`RPI_CHROMIUM_PATH` optionally selects a system Chromium executable and
+`RPI_EVIDENCE_DIR` selects the visual LFO screenshot/result directory. The
+server and browser must share a reachable network namespace.
