@@ -143,6 +143,29 @@ describe('native-link and gesture lifecycle', () => {
     expect(second.state.element.classList.contains('is-focus-row')).toBe(false);
   });
 
+  test('the gap between adjacent bars immediately clears dimming before the next hover', () => {
+    const first = fixture(), next = fixture().asset, stage = fixture().asset;
+    first.state.items.push({ asset: next });
+    bindAssetInteractions(next, first.state);
+    bindStageFocus(stage, [first.state]);
+    first.send('pointerenter');
+    expect(stage.classList.contains('has-bar-focus')).toBe(true);
+
+    first.send('pointerleave');
+    expect(first.state.hoveredAsset).toBe(null);
+    expect(first.asset.classList.contains('is-hovered')).toBe(false);
+    expect(stage.classList.contains('has-bar-focus')).toBe(false);
+    expect(first.state.element.classList.contains('is-focus-row')).toBe(false);
+
+    next.listeners.get('pointerenter')({ pointerType: 'mouse' });
+    first.send('pointerleave'); // A stale leave must not clear the new selection.
+    expect(first.state.hoveredAsset).toBe(next);
+    expect(next.classList.contains('is-hovered')).toBe(true);
+    expect(stage.classList.contains('has-bar-focus')).toBe(true);
+    next.listeners.get('pointerleave')();
+    expect(stage.classList.contains('has-bar-focus')).toBe(false);
+  });
+
   test('keyboard focus holds its lane until blur, including pointer leave', () => {
     const { state, asset, send } = fixture();
     send('focus');
