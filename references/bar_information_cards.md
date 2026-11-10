@@ -13,6 +13,17 @@ The copy follows the curious, humble, specific and approachable institutional vo
 
 Asset permissions, proposed organizational lockups, gradients and formal RPI approval retain the existing unresolved status recorded in the brand and asset licensing references. This copy change does not establish new permission or approval.
 
+## November 10 compact disclosure
+
+The original card presentation below is superseded by a native, initially closed
+**About [current style]** disclosure. The existing copy inventory and source
+records remain authoritative. It lives in a pinned footer outside the controls
+scroller, above the report and three-dot actions, with one full-width separator.
+Its bounded reading region supports keyboard scrolling and preserves open state
+on style changes. See [sidebar footer QA](sidebar_footer_qa.md) for current checks
+and browser validation limits; historical rendering results below are not
+validation of this new layout.
+
 ## Implementation
 
 `js/utils/barInformation.js` contains the complete inventory and updates text safely with `textContent`. Its sync function runs after initial state preparation and in the existing style-change synchronization path, covering user selections and restored style state. Integration also loads the utility before routed chrome is inserted and prepares its detached shell, so selected-style copy is present before the renderer initializes. `main.js` retains its existing p5 global-state structure; the new copy remains in a separate utility following the project's browser/CommonJS compatibility convention.

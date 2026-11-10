@@ -98,6 +98,11 @@
     const description = descriptions[style.value] || descriptions.solid;
     root.querySelector('#bar-information-title').textContent = description.title;
     root.querySelector('#bar-information-description').textContent = description.text;
+    const content = root.querySelector('#bar-information-content');
+    if (content && content.dataset.style !== style.value) {
+      content.scrollTop = 0;
+      content.dataset.style = style.value;
+    }
     const artemis = root.querySelector('#artemis-information');
     if (artemis) {
       artemis.hidden = style.value !== 'lunar';

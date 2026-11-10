@@ -68,6 +68,28 @@ motion changes. The reconciled tree passes 854 unit tests, 264 PNG cases,
 12 GIFs / 816 decoded frames and 12 clipboard-adapter requests.
 Engineering validation does not establish owner acceptance or formal brand approval.
 
+## November 10 compact pinned sidebar footer
+
+The boxed About card is replaced by a native disclosure labeled **About [current
+style]**, collapsed on initial load. Existing explanations and Artemis credits
+remain available. Style changes update its label and copy without changing the
+chosen open/closed state; a different style starts its explanation at the top.
+
+Controls now scroll separately above the pinned footer, with one subtle,
+full-width divider. Report a Problem and the three-dot menu remain below About.
+Expanded information has a bounded keyboard-scrollable reading region so the
+footer actions and controls remain reachable in short windows and touch sheets.
+The passive gradient/More below cue still appears only for offscreen controls;
+its resize and toggle observers follow disclosure height changes.
+
+The branch starts at `05655f6` and incorporates export-composition release #136
+at `fed8e88`, brand header repair #137 at `d55bdc1`, and Why not retry
+repair #138 at `dfcc987`; their source and tests are retained. Other active
+release worktrees and branches remain untouched. Validation and remaining
+rendered/browser limitations are recorded in [sidebar footer QA](sidebar_footer_qa.md).
+The reconciled candidate passes **863 unit tests in 78 suites**. Browser
+restrictions remain respected; no rendered validation or new screenshots are claimed.
+
 ## November 10 six-feature and brand release reconciliation
 
 PR #133 is reconciled with published PR #134 at `04194d6a4f96aeb67d0d679a24ffad758ba6610e`.
@@ -151,6 +173,8 @@ and export files byte for byte.
 The clean combined tree with Why not repair PR #138 / main `dfcc987` passes
 all 867 tests in 78 suites. Its generator repair and updated Home prefetch are
 retained, and required CI is rerun after synchronizing this release branch.
+After sidebar-footer PR #139 / main `ecec2e1`, the clean synchronized candidate
+passes all 871 tests in 78 suites and retains its footer and cache references.
 The new adjacent-bar lifecycle regression verifies immediate clearing in a gap,
 selection on the next bar and protection from a stale leave event. Existing
 static-artwork, keyboard, reduced-motion, drag and export regressions pass.
