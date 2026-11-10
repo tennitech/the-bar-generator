@@ -9,7 +9,7 @@ sizes remain unchanged. Bar-only retains a 1000/2000 px nominal bar width on a
 1160 × 232 / 2320 × 464 canvas, including 80/160 px transparent padding per
 side. Its SVG viewBox is `-20 112.4885 290 58`; artwork coordinates are unchanged.
 
-Current GIF availability is Ticker, Waveform and Gradient; Ruler is static.
+Current GIF availability is Ticker, Waveform, Gradient and Particle on a Ring; Ruler is static. The ring model uses the exact live phase and natural 120/SPEED-second loop. Its existing 100-second/3000-frame budget requires SPEED ≥1.2×; lower speeds fail with a clear recovery message. See [ring export QA](quantum_gif_qa.md).
 Each supported loop uses the captured crop consistently on every frame. The
 same binary-alpha palette, full-frame disposal, streaming, cancellation and
 loop plan remain in use. Bar-only filenames add `bar-only`; complete-mark names

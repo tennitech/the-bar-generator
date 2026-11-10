@@ -1023,21 +1023,23 @@ function escapeExportXML(value) {
   return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[char]);
 }
 
-function captureLogoExportSnapshot() {
+function captureLogoExportSnapshot(options = {}) {
   const nucleotideBlocker = window.NucleotidePattern?.exportBlocker(document);
   if (nucleotideBlocker) throw new Error(nucleotideBlocker);
   const foreground = colors[currentColorMode] ? colors[currentColorMode].fg : '#000000';
-  // Still files and clipboard images always use the default resting phase.
-  // GIF adds its full cycle to this same captured origin without changing live playback.
+  // Still files and clipboard images retain their resting phase. Ring GIFs
+  // capture the exact live phase without changing playback or saved settings.
+  const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
+  const currentValues = getCurrentBarPatternValues(REFERENCE_WIDTH);
   const lfoSettings = currentShader === 4 ? getWaveformLfoSettings() : null;
-  const values = JSON.parse(JSON.stringify({ ...getCurrentBarPatternValues(REFERENCE_WIDTH), ...getLoopRuntimeValues(),
-    loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: 0,
+  const values = JSON.parse(JSON.stringify({ ...currentValues, ...getLoopRuntimeValues(),
+    loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: options.format === 'gif' && family === 'wave-quantum'
+      ? window.quantumModel.normalizePhase(currentValues.quantumPhase) : 0,
     waveformAmplitude: lfoSettings ? window.WaveformLfo.visualAmplitude({
       amplitude: window.WaveformLfo.amplitude(0, lfoSettings),
       rate: lfoSettings.rate,
       amount: lfoSettings.enabled ? lfoSettings.depth / 100 : 0
     }, lfoSettings.type) : 1 }));
-  const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values, preview: false });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
   const rawTitle = window.barShareController?.getName?.() || '';
@@ -1124,6 +1126,16 @@ function createCapturedGifRenderer(snapshot, framePlan) {
       const pattern = createBoundedTickGeometry({ ...values, shader: snapshot.currentShader,
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight });
       pattern.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
+    } else if (snapshot.currentShader === 22) {
+      const pattern = createWaveQuantumPatternGeometry({
+        barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,
+        quantumPhase: framePlan.getQuantumPhase(progress)
+      });
+      for (const polygon of pattern.polygons) {
+        ctx.beginPath(); ctx.moveTo(polygon[0].x, polygon[0].y);
+        for (let i = 1; i < polygon.length; i++) ctx.lineTo(polygon[i].x, polygon[i].y);
+        ctx.closePath(); ctx.fill();
+      }
     } else if (snapshot.currentShader === 17) {
       const pattern = createGradientPatternGeometry({
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,
@@ -1162,7 +1174,7 @@ async function runLogoExport(format) {
   let renderer;
   try {
     // Everything used by asynchronous work is captured before yielding to input.
-    const snapshot = captureLogoExportSnapshot();
+    const snapshot = captureLogoExportSnapshot({ format });
     window.logoExportUI.describe(job, snapshot);
     const filename = window.logoExportOptions.filename(snapshot, format);
     await new Promise(resolve => setTimeout(resolve, 0));
@@ -1174,6 +1186,10 @@ async function runLogoExport(format) {
     else {
       if (!window.loopingGifUtils.isLoopingGifEligibleStyle(snapshot.family)) throw new Error('This pattern does not have a looping GIF.');
       const plan = window.loopingGifUtils.getLoopingGifFramePlan(snapshot.family, snapshot.values, { barWidth: snapshot.geometry.width });
+      if (snapshot.family === 'wave-quantum' && (plan.periodSeconds > window.transparentGifUtils.MAX_DURATION_SECONDS
+        || plan.frameCount > window.transparentGifUtils.MAX_CAPTURE_FRAMES)) {
+        throw new Error('This exact ring loop exceeds the 100-second GIF limit. Set SPEED to 1.2× or higher and try again.');
+      }
       renderer = createCapturedGifRenderer(snapshot, plan);
       const result = await window.transparentGifUtils.encode({ ...snapshot.dimensions, frameCount: plan.frameCount,
         periodSeconds: plan.periodSeconds, foreground: snapshot.rgb, workerScript: LOOP_GIF_WORKER_PATH,

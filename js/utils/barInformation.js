@@ -78,8 +78,8 @@
     "text": "Five repeated modules pair a horizontal band with a lower shape formed by arches. Look at how repetition connects the separate pieces across the bar; the name describes this visual motif, without assigning it an organizational affiliation or a measured meaning."
   },
   "wave-quantum": {
-    "title": "Quantum",
-    "text": "Three projections show one normalized free-particle wavefunction on an ideal ring, combining modes −4, 3, and 7. Explore phase and motion to compare the changing amplitude; the curves depend on a chosen phase convention and are not particle paths or probabilities."
+    "title": "Particle on a Ring",
+    "text": "Three phase projections show one normalized free-particle wavefunction on an ideal periodic ring, combining modes −4, 3, and 7 with equal weights. The projection angles are 0°, 60°, and 120°. The horizontal axis unwraps one ring circumference; these convention-dependent amplitude curves are not particle paths, probability density, or measured data. Ribbon thickness and display time are drawing choices."
   },
   "runway": {
     "title": "Runway",

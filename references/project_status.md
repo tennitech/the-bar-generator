@@ -4,6 +4,29 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 
+## November 10 Particle on a Ring GIF candidate
+
+The former Quantum label becomes **Particle on a Ring**, the established
+scientific model name. Its information card identifies the three wavefunction
+phase projections, equal-weight modes −4, 3, 7 and chosen projection angles.
+It distinguishes amplitude from probability density, trajectories and measured
+data. The creative Phase Weave name is not used. Model, artwork, legacy style,
+URLs, IDs, queries and saved share envelopes remain compatible. Scientific basis
+and primary sources are in [the model record](quantum_model.md).
+
+GIF captures the exact live phase, speed, direction, ink, composition, size and
+title before asynchronous work. Both bar-only and complete-logo frames draw the
+same fixed model polygons as the live view. Existing still/clipboard phase-zero
+behavior stays intact. Natural loops last 120/SPEED seconds; balanced 30/40 ms
+delays retain approximately 30 fps without a duplicated terminal frame. Existing
+100-second/3000-frame, 32 MiB input and 64 MiB encoded limits remain intact, so
+SPEED below 1.2× reports a recovery message before rendering. Extending that
+budget is a pending scope decision, not silently assumed.
+
+Validation: 903 tests in 80 suites pass, all 84 inline scripts compile, 80 native raster recurrence cases pass and four real GIFs decode through all 3600 frames with exact source-pixel parity, timing, transparency and seam checks. A decoded-frame review image was inspected. Release state and limits are recorded in [GIF QA](quantum_gif_qa.md).
+Browser/desktop launch restrictions remain respected; native Node raster/codec
+checks do not establish browser download behavior or perceived smoothness.
+
 ## November 10 secondary-color popup corners and compact help focus
 
 The Secondary Color Usage popup now uses the same `--control-radius` token

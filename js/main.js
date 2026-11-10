@@ -1055,6 +1055,8 @@ function getMotionControlConfig(style) {
 
 function getLoopRuntimeValues() {
   return {
+    quantumSpeed: window.quantumModel.normalizeSpeed(document.getElementById('quantum-speed-slider')?.value ?? 1),
+    quantumReverse: document.getElementById('quantum-reverse-toggle')?.checked === true,
     gradientSpeed: normalizeLoopSpeed('gradient', gradientSpeedSlider ? gradientSpeedSlider.value : undefined),
     gradientReverse: gradientReverseToggle ? gradientReverseToggle.checked : false,
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,

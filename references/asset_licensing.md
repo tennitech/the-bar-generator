@@ -105,3 +105,13 @@ The seven PNG files in `references/review-images/nucleotide-completion/` were
 captured from this application in Chromium and WebKit. They use the existing
 identity, fonts and licensed Feather icons. No external image was added.
 The existing asset permission and formal approval limits still apply.
+
+
+## Particle on a Ring GIF QA — November 10, 2026
+
+`references/review-images/ring-gif/decoded-frames.png` is an original QA contact
+sheet created by `scripts/quantumGifEvidence.js` from this project's own model,
+primitive bar geometry and unchanged official lettering. It contains decoded
+GIF frames and generic QA labels, without the user's reference uploads or any
+new external artwork/font asset. The dark review backdrop is not encoded in the
+transparent GIF. Existing RPI asset permission and approval questions stay open.
