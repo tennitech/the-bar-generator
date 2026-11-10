@@ -189,6 +189,7 @@ function createWaveformPatternGeometry(options = {}) {
   const speed = finite(options.waveformSpeed, 0.3);
   const time = finite(options.timeSeconds, 0);
   const shift = ((time * speed) % 1 + 1) % 1;
+  const amplitude = clampWaveformValue(finite(options.waveformAmplitude, 1), 0, 1);
   const count = Math.max(12, Math.min(10000, Math.ceil(finite(options.waveformPoints,
     Math.max(500, frequency * 12)))));
   const jumps = type > 0 ? [0] : [];
@@ -227,7 +228,7 @@ function createWaveformPatternGeometry(options = {}) {
       xPortion: sample.x
     });
     return { x: startX + sample.x * width,
-      y: startY + height * mapWaveformToBarYFraction(wave, options.waveformEnvelopeCenter) };
+      y: startY + height * (1 - amplitude * (1 - mapWaveformToBarYFraction(wave, options.waveformEnvelopeCenter))) };
   });
   return { curve, polygon: [
     { x: startX, y: startY + height }, ...curve,
@@ -673,6 +674,10 @@ function createGradientPatternGeometry(options = {}) {
   const widthAt = t => cellWidth * (variant === 1
     ? 0.88 - 0.7 * t
     : 0.2 + 0.68 * (1 - Math.abs(2 * t - 1)));
+  // A bounded sinusoidal coordinate warp moves coverage, not the stripe grid.
+  // Phase zero is the original artwork; absent phase keeps static consumers still.
+  const phase = Number.isFinite(Number(options.gradientPhase)) ? Number(options.gradientPhase) % 1 : 0;
+  const sweep = 0.28 * Math.sin(2 * Math.PI * phase);
   const firstWidth = widthAt(0);
   const lastWidth = widthAt(1);
   // Equally spaced centers span from the first painted left edge to the last
@@ -680,7 +685,8 @@ function createGradientPatternGeometry(options = {}) {
   const centerSpan = exactBarWidth - (firstWidth + lastWidth) / 2;
   for (let i = 0; i < count; i++) {
     const t = i / (count - 1);
-    const width = widthAt(t);
+    const sample = t + sweep * Math.sin(Math.PI * t);
+    const width = widthAt(sample);
     const x = barStartX + firstWidth / 2 + t * centerSpan - width / 2;
     if (variant === 1) {
       rects.push({ x, y: barY, width, height: barHeight, radius: 0 });
@@ -1996,7 +2002,8 @@ function createBarPatternSVG(config) {
       barY,
       exactBarWidth,
       barHeight,
-      variant: values.gradientVariant
+      variant: values.gradientVariant,
+      gradientPhase: values.gradientPhase
     });
 
     for (let i = 0; i < geometry.rects.length; i++) {

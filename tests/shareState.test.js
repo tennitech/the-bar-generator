@@ -55,8 +55,8 @@ test('legacy motion rates migrate narrowly before strict share validation', () =
   global.loopingGifUtils = motion;
   try {
     const manifest = {
-        'ticker-speed-slider': { type: 'range', min: 0.2, max: 0.8, step: 0.1 },
-      'waveform-speed-slider': { type: 'range', min: 0.2, max: 1, step: 0.1 },
+        'ticker-speed-slider': { type: 'range', min: 0.08, max: 1.6, step: 0.001 },
+      'waveform-speed-slider': { type: 'range', min: 0.06, max: 1.2, step: 0.001 },
       'triangles-count-slider': { type: 'range', min: 6, max: 28, step: 1 }
     };
     const controls = { 'ruler-speed-slider': '5', 'ticker-speed-slider': '999',
@@ -65,7 +65,7 @@ test('legacy motion rates migrate narrowly before strict share validation', () =
     const decoded = decodeState(raw, manifest);
     const { 'ruler-speed-slider': obsoleteRulerSpeed, ...currentControls } = controls;
     expect(decoded.controls).toEqual({ ...currentControls,
-      'ticker-speed-slider': '0.8', 'waveform-speed-slider': '0.4' });
+      'ticker-speed-slider': '1.6', 'waveform-speed-slider': '0.35' });
     const invalid = '#bar=' + Buffer.from(JSON.stringify({ v: 1,
       controls: { ...controls, 'triangles-count-slider': '999' } })).toString('base64url');
     expect(() => decodeState(invalid, manifest)).toThrow();
@@ -109,4 +109,11 @@ test('nucleotide ignores retired target controls and preserves actual bases up t
     expect(state.controls['nucleotide-input']).toBe('A'.repeat(Math.min(50,count)));
     expect(state.controls).not.toHaveProperty('nucleotide-length');
   }
+});
+
+
+test('new LFO snapshots preserve a bounded optional modulation phase without changing old snapshots', () => {
+  expect(normalizeRuntime({lfoPhase:.37})).toMatchObject({lfoPhase:.37});
+  expect(normalizeRuntime({lfoPhase:2})).toMatchObject({lfoPhase:0});
+  expect(normalizeRuntime({})).not.toHaveProperty('lfoPhase');
 });

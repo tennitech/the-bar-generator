@@ -309,6 +309,148 @@
       } catch (_) { clean(); resolve(null); }
     });
   }
-  scope.AsciiEntrance = { prepare, preloadMask, cells, resolveAt, artworkRegions, noise };
+  // Generator-only path: the four source groups come from the supplied vectors,
+  // never from low-resolution whitespace or guessed letter proportions.
+  function prepareGenerator(sources, texts, isCancelled, vectorSource) {
+    const element = sources.find(source => source.tagName === 'CANVAS');
+    if (!element || typeof vectorSource !== 'function') return Promise.resolve(null);
+    const began = performance.now(), layers = [];
+    const previousOpacity = element.style.opacity;
+    let stopped = false, raf = 0, deadline = 0;
+    let done = () => {};
+    const clean = () => {
+      if (stopped) return;
+      stopped = true;
+      cancelAnimationFrame(raf); clearTimeout(deadline);
+      layers.forEach(layer => layer.remove());
+      element.style.opacity = previousOpacity;
+      element.classList.remove('is-ascii-original');
+    };
+    const bounds = element.getBoundingClientRect();
+    const parent = element.parentElement;
+    const parentBounds = parent.getBoundingClientRect();
+    const { width, height } = bounds;
+    const current = () => {
+      const rect = element.getBoundingClientRect();
+      return !isCancelled() && rect.width === width && rect.height === height
+        && rect.left === bounds.left && rect.top === bounds.top;
+    };
+    const record = outcome => {
+      scope.AsciiEntrance.lastPreparation = { outcome, sourceCount: 1,
+        wallMs: performance.now() - began, sampleMs: performance.now() - began, captureMs: 0 };
+    };
+    return new Promise(resolve => {
+      deadline = setTimeout(() => { record('deadline'); clean(); resolve(null); }, 350);
+      try {
+        const svg = new DOMParser().parseFromString(vectorSource(), 'image/svg+xml');
+        const mark = svg.querySelector('[data-ascii-mark]');
+        if (!mark || width <= 0 || height <= 0) throw new Error('No complete generator source');
+        // buildHeaderPreviewSVG supplies its three official paths first. Retain
+        // every remaining definition/clip/pattern together as the fourth group.
+        const children = [...mark.children];
+        if (children.length < 4 || children.slice(0, 3).some(node => node.tagName !== 'path')) throw new Error('Incomplete mark');
+        const decode = markup => {
+          const image = new Image(); image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markup);
+          return image.decode().then(() => image);
+        };
+        const serialize = node => new XMLSerializer().serializeToString(node);
+        const complete = decode(serialize(svg));
+        // The provided path order is P, I, R. Resolve the visible R, P, I, bar.
+        const parts = [2, 0, 1, 3].map(index => {
+          const copy = svg.cloneNode(true), group = copy.querySelector('[data-ascii-mark]');
+          [...group.children].forEach((node, i) => {
+            if (index === 3 ? i < 3 : i !== index) node.setAttribute('visibility', 'hidden');
+          });
+          return decode(serialize(copy));
+        });
+        const fontReady = document.fonts?.load('500 12px RPIGeistMono') || Promise.resolve();
+        Promise.all([fontReady, complete, ...parts]).then(([, mask, ...parts]) => {
+          if (stopped) return;
+          if (!current()) { record('cancelled-or-slow'); clean(); resolve(null); return; }
+          const { columns, rows } = cells(width, height);
+          const sample = document.createElement('canvas'); sample.width = columns; sample.height = rows;
+          const sampler = sample.getContext('2d', { willReadFrequently: true });
+          const densities = parts.map(image => {
+            sampler.clearRect(0, 0, columns, rows); sampler.drawImage(image, 0, 0, columns, rows);
+            return sampler.getImageData(0, 0, columns, rows).data;
+          });
+          const layerStyle = { left: `${bounds.left - parentBounds.left - parent.clientLeft + parent.scrollLeft}px`,
+            top: `${bounds.top - parentBounds.top - parent.clientTop + parent.scrollTop}px`, width: `${width}px`, height: `${height}px` };
+          const makeLayer = tag => {
+            const layer = document.createElement(tag); layer.className = 'entrance_ascii-artwork';
+            layer.setAttribute('aria-hidden', 'true'); Object.assign(layer.style, layerStyle);
+            layers.push(layer); return layer;
+          };
+          const copies = parts.map(image => {
+            const copy = makeLayer('img'); copy.src = image.src; copy.alt = ''; copy.dataset.asciiLetter = '';
+            copy.style.opacity = '0'; return copy;
+          });
+          const texture = makeLayer('canvas');
+          const ratio = Math.min(2, devicePixelRatio || 1, 1600 / width, 1200 / height);
+          texture.width = Math.ceil(width * ratio); texture.height = Math.ceil(height * ratio);
+          const ctx = texture.getContext('2d'); ctx.scale(texture.width / width, texture.height / height);
+          const marker = document.createElement('canvas'); marker.className = 'entrance_ascii';
+          marker.width = marker.height = 1; marker.setAttribute('aria-hidden', 'true'); layers.push(marker);
+          // Fixed glyph sprites: no per-frame font shaping, no shifting lattice.
+          const cw = width / columns, ch = height / rows, alphabet = '01/:+*=#';
+          const sw = Math.ceil(cw * ratio), sh = Math.ceil(ch * ratio);
+          const atlas = document.createElement('canvas'); atlas.width = sw * alphabet.length; atlas.height = sh;
+          const font = atlas.getContext('2d');
+          font.fillStyle = svg.documentElement.style.color || '#000000';
+          font.font = `500 ${Math.min(cw / 0.7, ch * 0.9) * ratio}px RPIGeistMono, monospace`;
+          font.textAlign = 'center'; font.textBaseline = 'middle';
+          [...alphabet].forEach((glyph, i) => font.fillText(glyph, (i + 0.5) * sw, sh / 2));
+          clearTimeout(deadline); record('ready');
+          resolve({ cleanup: clean, start(duration, onStart, onFinish) {
+            if (stopped) return;
+            done = onFinish || (() => {});
+            if (!current()) { clean(); done(); return; }
+            const metrics = scope.AsciiEntrance.lastAnimation = { frames: 0, maxPaintMs: 0 };
+            let started;
+            const paint = now => {
+              if (stopped) return;
+              if (!current()) { clean(); done(); return; }
+              const before = performance.now();
+              const progress = started === undefined ? 0 : clamp((now - started) / duration);
+              const amounts = parts.map((_, i) => resolveAt(progress, i, parts.length));
+              copies.forEach((copy, i) => { copy.style.opacity = String(amounts[i]); });
+              ctx.clearRect(0, 0, width, height);
+              const beat = Math.floor(progress * duration / 70);
+              for (let y = 0; y < rows; y++) for (let x = 0; x < columns; x++) {
+                const k = y * columns + x;
+                const group = densities.findIndex(pixels => pixels[k * 4 + 3] > 12);
+                if (group < 0 || amounts[group] >= 1) continue;
+                const alpha = densities[group][k * 4 + 3] / 255;
+                const settle = amounts[group];
+                // Deterministic held code tightens across each complete letter.
+                const symbol = Math.floor(noise(k, beat) * alphabet.length);
+                ctx.globalAlpha = (1 - settle) * (0.65 + alpha * 0.35);
+                ctx.drawImage(atlas, symbol * sw, 0, sw, sh, x * cw, y * ch, cw, ch);
+              }
+              ctx.globalAlpha = 1;
+              // Exact vector silhouette contains every glyph, including counters
+              // and chamfers; coarse samples can never extend the official mark.
+              ctx.globalCompositeOperation = 'destination-in';
+              ctx.drawImage(mask, 0, 0, width, height);
+              ctx.globalCompositeOperation = 'source-over';
+              metrics.frames++; metrics.maxPaintMs = Math.max(metrics.maxPaintMs, performance.now() - before);
+              if (progress >= 1) { clean(); done(); return; }
+              raf = requestAnimationFrame(time => {
+                if (started === undefined) { started = time; onStart?.(); }
+                paint(time);
+              });
+            };
+            // Paint before concealing the original, in this same task. Decoding
+            // leaves the real first frame visible, with no blank loading interval.
+            paint(0);
+            layers.forEach(layer => parent.appendChild(layer));
+            element.classList.add('is-ascii-original'); element.style.opacity = '0.12';
+            deadline = setTimeout(() => { clean(); done(); }, duration + 200);
+          } });
+        }).catch(() => { record('failed'); clean(); resolve(null); });
+      } catch (_) { record('failed'); clean(); resolve(null); }
+    });
+  }
+  scope.AsciiEntrance = { prepare, prepareGenerator, preloadMask, cells, resolveAt, artworkRegions, noise };
   if (typeof module !== 'undefined' && module.exports) module.exports = { cells, resolveAt, artworkRegions, noise };
 })(typeof window !== 'undefined' ? window : globalThis);

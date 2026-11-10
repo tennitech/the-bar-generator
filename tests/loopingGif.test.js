@@ -26,7 +26,7 @@ describe('loopingGif utils', () => {
   test('legacy share speed migration is bounded and leaves unrelated fields untouched', () => {
     const source = { 'ruler-speed-slider': '5', 'ticker-speed-slider': '-999', 'waveform-speed-slider': '0.35', 'other-slider': '999', text: 'RPI' };
     expect(normalizeMotionSpeedControls(source)).toEqual({ ...source,
-      'ruler-speed-slider': '5', 'ticker-speed-slider': '0.2', 'waveform-speed-slider': '0.4' });
+      'ruler-speed-slider': '5', 'ticker-speed-slider': '0.08', 'waveform-speed-slider': '0.35' });
     expect(source['ruler-speed-slider']).toBe('5');
   });
 
@@ -56,7 +56,7 @@ describe('loopingGif utils', () => {
   test('speed changes preserve current phase instead of rescaling elapsed time', () => {
     let phase = advanceLiveLoopPhase(0.3, 'waveform', { waveformSpeed: 1 }, 10);
     phase = advanceLiveLoopPhase(phase, 'waveform', { waveformSpeed: 5 }, 10);
-    expect(phase).toBeCloseTo(0.32);
+    expect(phase).toBeCloseTo(0.322);
     const state = getLoopingAnimationState('waveform', { waveformSpeed: 5 }, { phase });
     expect(((state.timeSeconds * normalizeLoopSpeed('waveform', 5)) % 1 + 1) % 1).toBeCloseTo(phase);
   });
@@ -128,9 +128,9 @@ describe('loopingGif utils', () => {
     });
 
     expect(plan.style).toBe('waveform');
-    expect(plan.periodSeconds).toBeCloseTo(1);
+    expect(plan.periodSeconds).toBeCloseTo(1 / (plan.style === 'ticker' ? 1.6 : 1.2));
     expect(plan.frameCount).toBe(24);
-    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(0.5);
+    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(0.5 / 1.2);
   });
 
   test('reverses waveform time progression when reverse is enabled', () => {
@@ -139,7 +139,7 @@ describe('loopingGif utils', () => {
       waveformReverse: true
     });
 
-    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(-0.5);
+    expect(plan.getTimeSeconds(0.5)).toBeCloseTo(-0.5 / 1.2);
   });
 
   test('caps very fast loop exports to viewer-safe frame delays', () => {
@@ -150,8 +150,8 @@ describe('loopingGif utils', () => {
       barWidth: 200
     });
 
-    expect(plan.periodSeconds).toBeCloseTo(1.25);
-    expect(plan.frameCount).toBe(30);
+    expect(plan.periodSeconds).toBeCloseTo(1 / (plan.style === 'ticker' ? 1.6 : 1.2));
+    expect(plan.frameCount).toBe(24);
     expect(plan.frameDelayMs).toBeGreaterThanOrEqual(20);
   });
 
@@ -164,8 +164,48 @@ describe('loopingGif utils', () => {
       elapsedSeconds: 0.125
     });
 
-    expect(state.periodSeconds).toBeCloseTo(1.25);
-    expect(state.progress).toBeCloseTo(0.1);
-    expect(state.loopOffsetX).toBeCloseTo(-1);
+    expect(state.periodSeconds).toBeCloseTo(0.625);
+    expect(state.progress).toBeCloseTo(0.2);
+    expect(state.loopOffsetX).toBeCloseTo(-2);
   });
+});
+
+
+test.each(['ticker', 'waveform'])('%s retains historical rates and offers a four-times-default maximum', style => {
+  for (const speed of [0.2, 0.3, 0.4, 0.8, ...(style === 'waveform' ? [1] : [])]) {
+    expect(normalizeLoopSpeed(style, String(speed))).toBe(speed);
+    const control = `${style}-speed-slider`;
+    expect(normalizeMotionSpeedControls({ [control]: String(speed) })[control]).toBe(String(speed));
+  }
+  expect(getLoopSpeedLimits(style).max).toBeCloseTo(getLoopSpeedLimits(style).default * 4);
+  for (const hz of [60, 120, 144, 240]) {
+    let phase = 0;
+    for (let i = 0; i < hz / 4; i++) {
+      phase = advanceLiveLoopPhase(phase, style, { [`${style}Speed`]: getLoopSpeedLimits(style).max, tickerRatio: 5 }, 1000 / hz);
+    }
+    expect(phase).toBeCloseTo(style === 'ticker' ? 1 - getLoopSpeedLimits(style).max / 4 : getLoopSpeedLimits(style).max / 4, 9);
+  }
+});
+
+
+test.each(['ticker', 'waveform'])('%s fastest loop retains encoded timing within GIF quantization', style => {
+  const { frameTiming } = require('../js/utils/transparentGif');
+  const plan = getLoopingGifFramePlan(style, { [`${style}Speed`]: 2 });
+  const timing = frameTiming(plan.periodSeconds, plan.frameCount);
+  expect(Math.abs(timing.durationMs - plan.periodSeconds * 1000)).toBeLessThanOrEqual(5);
+  expect(timing.delays.reduce((sum, delay) => sum + delay, 0)).toBe(timing.durationMs);
+  expect(Math.min(...timing.delays)).toBeGreaterThanOrEqual(20);
+});
+
+test('native controls and runtime speed policy agree without changing saved defaults', () => {
+  const html = require('node:fs').readFileSync(require.resolve('../generator/index.html'), 'utf8');
+  for (const style of ['ticker', 'waveform']) {
+    const input = html.match(new RegExp(`<input[^>]*id="${style}-speed-slider"[^>]*>`))[0];
+    const limits = getLoopSpeedLimits(style);
+    for (const [attribute, expected] of Object.entries({ min: limits.min, max: limits.max, step: limits.step, value: limits.default })) {
+      expect(Number(input.match(new RegExp(` ${attribute}="([^" ]+)"`))[1])).toBe(expected);
+    }
+  }
+  expect(getLoopSpeedLimits('ticker').default).toBe(0.4);
+  expect(getLoopSpeedLimits('waveform').default).toBe(0.3);
 });

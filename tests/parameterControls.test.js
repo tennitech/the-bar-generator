@@ -21,7 +21,7 @@ function fixture(random = 0) {
       options, defaultValue: value, defaultChecked: /\bchecked\b/.test(attributes),
       checked: /\bchecked\b/.test(attributes), min: a.min, max: a.max, step: a.step || 1,
       dataset: { ...(a['data-url-parameter'] ? { urlParameter: a['data-url-parameter'] } : {}) },
-      style: {}, dispatchEvent: jest.fn() };
+      style: {}, setAttribute: jest.fn(), addEventListener: jest.fn(), dispatchEvent: jest.fn() };
     let current = value;
     Object.defineProperty(field, 'value', { get: () => current, set: next => { current = field.tagName === 'SELECT' && !options.some(option => option.value === String(next)) ? '' : String(next); } });
     fields[a.id] = field;
@@ -49,14 +49,15 @@ function fixture(random = 0) {
         : selector === '[data-parameter-actions]' ? Object.values(groups) : [];
     }
   };
-  const context = { document, URLSearchParams, Event: class { constructor(type) { this.type = type; } },
+  const context = { MotionSpeed: require('../js/utils/motionSpeed'), document, URLSearchParams, Event: class { constructor(type) { this.type = type; } },
     Math: Object.assign(Object.create(Math), { random: () => random }),
     sharePatternSeed: 1, SURPRISE_TEXT_OPTIONS: ['RPI', 'BUILD', 'NEW'],
     pickRandom: choices => choices[Math.floor(random * choices.length)],
     getStepPrecision: step => String(step).split('.')[1]?.length || 0,
     randomStepValue: (min, max, step = 1) => min + Math.floor(random * (Math.round((max - min) / step) + 1)) * step,
     randomChance: probability => random < probability,
-    getDefaultLoopSpeed: style => ({ ruler: .3, ticker: .4, waveform: .3 })[style],
+    getDefaultLoopSpeed: require('../js/utils/loopingGif').getDefaultLoopSpeed,
+    normalizeLoopSpeed: require('../js/utils/loopingGif').normalizeLoopSpeed,
     NucleotidePattern: require('../js/utils/nucleotidePattern'), syncNucleotideControls: jest.fn(),
     NumericControls: { ...numeric, sync: jest.fn() },
     normalizeTriangleGridSettings: require('../js/utils/barPattern').normalizeTriangleGridSettings,
@@ -68,6 +69,7 @@ function fixture(random = 0) {
   for (const field of Object.values(fields)) context[field.id.replace(/-([a-z])/g, (_, char) => char.toUpperCase())] = field;
   context.envelopeSettingsGroup = { style: {} };
   context.neuralNetworkHiddenLayersDisplay = { textContent: '' };
+  context.gradientSpeedDisplay = { textContent: '' };
   context.updateUrlParameters = () => context.ParameterControls.refresh();
   for (const name of source.slice(source.indexOf('function resetStyleParameters'), source.indexOf('function getBugReportContextLabel'))
     .matchAll(/\b(update\w+|syncMotionToggleState|syncAllCustomSelects|resetCirclePatternCache|resetSequencePreviewState|handleBinaryInput|requestUpdate)\(/g)) {
@@ -214,6 +216,9 @@ test('same-page shared and legacy restoration refresh action state after the com
   let bridge;
   Object.assign(h.context, {
     BarShareState: { initialize: next => { bridge = next; } },
+    WaveformLfo: require('../js/utils/waveformLfo'),
+    getWaveformLfoSettings: () => ({enabled:false,rate:2,depth:60,type:0}),
+    updateWaveformLfoControls: jest.fn(),
     sanitizeBarText: value => value, liveMotionPhase: 0, currentStaffNotes: [], currentNoteDuration: 1,
     animationTime: 0, DEFAULT_MOTION_ENABLED: false, MOTION_ENABLED_BY_STYLE: { ticker: false, waveform: false },
     styleSupportsMotion: style => ['ticker', 'waveform'].includes(style),

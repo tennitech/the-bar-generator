@@ -6,6 +6,7 @@
   let active = null;
   let observer = null;
   let generatorSource = null;
+  let generatorIsCurrent = () => true;
   const supported = typeof document.startViewTransition === 'function';
   // Read in the head, before Home's first paint. This does not rely on body markup
   // that has not been parsed yet, or on View Transition support.
@@ -126,8 +127,8 @@
       const pass = { plane, kind, frame: 0, styles: [], hold: true, timer: 0, reveal: plane };
       active = pass;
       Object.assign(plane.dataset, { entryKind: kind, entryMode: 'preparing', entryDuration: '580', entryActive: 'true' });
-      scope.AsciiEntrance.prepare(Array.from(plane.querySelectorAll('canvas')), [],
-        () => active !== pass || stopped || motion.matches || document.hidden, generatorSource).then(ascii => {
+      (scope.AsciiEntrance.prepareGenerator || scope.AsciiEntrance.prepare)(Array.from(plane.querySelectorAll('canvas')), [],
+        () => active !== pass || stopped || motion.matches || document.hidden || !generatorIsCurrent(), generatorSource).then(ascii => {
           if (active !== pass) { ascii?.cleanup(); return; }
           pass.ascii = ascii;
           plane.dataset.entryMode = ascii ? 'ascii' : 'fallback';
@@ -138,7 +139,7 @@
           ascii.start(580, () => {
             clearTimeout(pass.timer);
             pass.timer = setTimeout(() => finish(pass), 680);
-          });
+          }, () => finish(pass));
         });
       return;
     }
@@ -190,7 +191,8 @@
       pass.frame = requestAnimationFrame(print);
     });
   }
-  function prepareCanvas(source) {
+  function prepareCanvas(source, isCurrent) {
+    if (typeof isCurrent === 'function') generatorIsCurrent = isCurrent;
     if (typeof source === 'function') generatorSource = source;
     const canvas = document.querySelector('#p5-container > canvas');
     if (!canvas) return;
@@ -267,7 +269,10 @@
   document.addEventListener('pointerdown', cancel, { capture: true, passive: true });
   document.addEventListener('keydown', cancel, true);
   if (selectorPage) document.addEventListener('focusin', cancel, true);
-  document.addEventListener('change', event => { if (event.target.id === 'color-mode-select') cancel(); }, true);
+  document.addEventListener('input', () => { if (!selectorPage && active) cancel(); }, true);
+  document.addEventListener('change', event => {
+    if ((!selectorPage && active) || event.target.id === 'color-mode-select') cancel();
+  }, true);
   document.addEventListener('visibilitychange', () => { if (document.hidden) cancel(); });
   scope.PageEntrance = { revealAsset, revealGenerator: prepareCanvas, cancel, isActive: () => Boolean(selectorPending || active),
     isHoldingArtwork: () => Boolean(selectorPending || (active && (active.kind === 'selector' || active.hold))) };
