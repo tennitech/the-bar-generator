@@ -20,6 +20,14 @@ function contrast(a, b) {
 async function guidanceCheck(page) {
   const help = page.locator('#secondary-color-help');
   const dialog = page.locator('#secondary-color-dialog');
+  assert.equal(await help.textContent(), 'How to use');
+  const helpStyle = await help.evaluate(el => {
+    const css = getComputedStyle(el);
+    return { color: css.color, background: css.backgroundColor,
+      underline: css.textDecorationLine, transform: css.textTransform, icons: el.querySelectorAll('svg,img').length };
+  });
+  assert.deepEqual(helpStyle, { color: 'rgb(214, 0, 28)', background: 'rgba(0, 0, 0, 0)',
+    underline: 'underline', transform: 'none', icons: 0 });
   await help.click();
   assert.equal(await dialog.evaluate(el => el.matches(':modal')), true);
   await page.locator('#secondary-color-title').waitFor({ state: 'visible' });
@@ -74,6 +82,7 @@ async function guidanceCheck(page) {
         return {
           stage: read('.logo-container').backgroundColor,
           header: header.backgroundColor,
+          sidebar: read('.app-sidebar').backgroundColor,
           headerInk: read('#header-logo-preview').color,
           headerText: parse(header.color), headerRGB: parse(header.backgroundColor),
           controlBg: parse(control.backgroundColor), controlText: parse(control.color),
@@ -89,8 +98,8 @@ async function guidanceCheck(page) {
       assert.equal(await page.locator('#secondary-color-help').isVisible(), scheme.secondary);
       if (mode !== 'lunar') {
         assert.equal(data.stage, rgb(scheme.bg));
-        assert.equal(data.header, rgb(scheme.bg));
-        assert.equal(data.headerInk, rgb(scheme.fg));
+        assert.equal(data.header, data.sidebar);
+        assert.equal(data.headerInk, ['white', 'gray-on-black'].includes(mode) ? rgb('#ffffff') : rgb('#000000'));
         assert.equal(data.label, 'COLOR THEME');
         assert.equal(data.selectedLabel, scheme.label);
         assert.ok(contrast(data.headerText, data.headerRGB) >= 4.5);
@@ -130,6 +139,9 @@ async function guidanceCheck(page) {
     await mobile.goto(base + '/generator/ruler/?colorMode=blue');
     await mobile.locator('#p5-container canvas[data-preview-ready="true"]').waitFor();
     await mobile.locator('#mobile-menu-toggle').click();
+    assert.equal(await mobile.locator('.app-header').evaluate(el => getComputedStyle(el).backgroundColor),
+      await mobile.locator('.app-sidebar').evaluate(el => getComputedStyle(el).backgroundColor));
+    assert.equal(await mobile.locator('#header-logo-preview').evaluate(el => getComputedStyle(el).color), 'rgb(0, 0, 0)');
     await guidanceCheck(mobile);
     assert.equal(await mobile.locator('#app-sidebar').evaluate(el => el.classList.contains('active')), true);
     assert.equal(await mobile.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);

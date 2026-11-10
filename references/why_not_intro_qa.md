@@ -92,3 +92,8 @@ brand, motion and composition coverage. Log: `/tmp/why-not-release-jest.log`.
 Only loader readiness/retry behavior changes in main.js; shell/runtime cache
 references are refreshed. Existing brand/renderer/export sources are preserved.
 Browser/native verification limits above still apply.
+
+The final candidate also preserves independently published PR 137 / main
+`d55bdc1af80b9d04d38a0cf02aba76a1031bdf4f`. The full suite again passes
+859 tests in 78 suites (`/tmp/why-not-release-r2-jest.log`). Shared route
+cache conflicts are reconciled without reverting its preview/header correction.

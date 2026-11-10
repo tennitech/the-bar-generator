@@ -20,6 +20,29 @@ checks pass. Browser launching remains sandbox-blocked; no launch bypass was
 attempted. The original live incident, rendered menu hit targets and physical
 keyboard/touch behavior remain unverified. See [intro QA and integration notes](why_not_intro_qa.md).
 
+## November 10 header and secondary-help presentation correction
+
+Following the owner's screenshot review, the header uses the same surface token
+as the sidebar at desktop and touch widths. The selected brand composition's
+background is confined to the logo preview; the header mark returns to its
+neutral chrome ink. Applying or restoring a theme clears the former inline
+header/app overrides. All exact brand pairings and export ink remain unchanged.
+
+The secondary-only helper now reads “How to use” in sentence case as underlined
+RPI-red text, with no icon, border or background. It remains a native button for
+the modal action, with a transparent touch target and visible keyboard focus.
+The existing modal copy, descriptive link, focus return, Escape/backdrop/Close
+dismissal, overflow behavior and reopening controller are preserved.
+
+The new user screenshot was materialized, its identity verified and its pixels
+inspected before editing. After preserving PR #136, all 854 unit tests in 78 suites pass, including the focused theme,
+mobile-browser and modal checks. Required PR checks run before publication. The existing
+browser smoke script now checks header/sidebar equality and the text helper.
+Rendered desktop/mobile appearance and native interactions remain unverified
+under the documented browser restrictions; no denied browser action is retried.
+The standalone release is tracked by [PR #137](https://github.com/tennitech/the-bar-generator/pull/137).
+See [source and QA evidence](brand_color_context_qa.md) for user test items.
+
 ## November 10 export composition choice
 
 The export menu adds two illustrated native radio cards, **Bar + RPI** and

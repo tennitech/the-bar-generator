@@ -58,17 +58,16 @@
   function applyColorScheme(target, colorMode) {
     const mode = normalizeColorModeValue(colorMode);
     const scheme = COLOR_SCHEMES[mode];
-    // Mission Control keeps its existing illustrated environment and neutral chrome.
+    // Brand pairing belongs to the preview. Header/sidebar chrome stays neutral;
+    // clear inline chrome overrides left by earlier applications of this helper.
     const values = {
       '--preview-foreground': scheme.fg,
       '--preview-background': scheme.bg,
-      '--bg-app': mode === 'lunar' ? null : scheme.bg,
+      '--bg-app': null,
       '--bg-canvas': mode === 'lunar' ? null : scheme.bg,
-      '--bg-header': mode === 'lunar' ? null : scheme.bg,
-      '--header-artwork-ink': mode === 'lunar' ? null : scheme.fg,
-      // Small interface text uses an accessible neutral, independently of large logo ink.
-      '--text-on-header': mode === 'lunar' ? null
-        : (['#000000', '#d6001c'].includes(scheme.bg) ? '#ffffff' : '#000000')
+      '--bg-header': null,
+      '--header-artwork-ink': null,
+      '--text-on-header': null
     };
     Object.entries(values).forEach(([name, value]) => {
       if (value === null) target.style.removeProperty(name);
