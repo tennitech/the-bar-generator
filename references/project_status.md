@@ -3,6 +3,22 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 picker exit-focus follow-up
+
+Production browser QA confirmed #172's pointer selection and focus return,
+and Escape cancellation without changing the selected theme. Chromium's native
+Tab navigation exposed another exit case: a scrollable popup can remain a Tab
+stop during the 150 ms visibility fade, even with aria-hidden already true.
+
+Closed listboxes are now inert immediately, including during the visual exit.
+Opening restores normal interaction before setting the active option. The fade
+and pointer-press protection remain; Tab retains its native default navigation
+and cannot enter the fading list. Reduced motion keeps its existing zero timing.
+A regression checks synchronous inert cleanup before native Tab movement; all
+95 focused tests in nine suites pass. The 12 lifecycle cases cover every dismissal
+and pointer commit. Shell, route, bootstrap and picker keys advance together.
+Final cloud-browser focus and production deployment evidence is in the PR.
+
 ## November 10 picker pointer-selection follow-up
 
 Production cloud-browser QA after #170 found that a nonfocusable option row
