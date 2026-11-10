@@ -82,6 +82,41 @@ async function themeRowCheck(page, mode, scheme) {
   assert.equal(await page.locator('#color-mode-select').inputValue(), mode);
 }
 
+async function themeScrollCheck(page) {
+  const wrapper = page.locator('#color-mode-select').locator('..');
+  const trigger = wrapper.locator('.custom-select-trigger');
+  const viewport = wrapper.locator('.custom-select-options-scroll');
+  await trigger.click();
+  const scrollStyle = await viewport.evaluate(el => {
+    const css = getComputedStyle(el), webkit = getComputedStyle(el, '::-webkit-scrollbar');
+    return { overflow: css.overflowY, scrollbar: css.scrollbarWidth,
+      webkitWidth: webkit.width, webkitHeight: webkit.height,
+      canScroll: el.scrollHeight > el.clientHeight };
+  });
+  assert.equal(scrollStyle.overflow, 'auto');
+  assert.equal(scrollStyle.scrollbar, 'none');
+  assert.equal(scrollStyle.webkitWidth, '0px'); assert.equal(scrollStyle.webkitHeight, '0px');
+  assert.equal(scrollStyle.canScroll, true);
+  await trigger.press('End');
+  const lower = await viewport.evaluate(el => el.scrollTop);
+  assert.ok(lower > 0);
+  await page.waitForFunction(() => document.querySelector('#color-mode-select-options').classList.contains('has-scroll-top'));
+  assert.equal(await wrapper.locator('.custom-select-scroll-fade-top').evaluate(el => getComputedStyle(el).display), 'block');
+  assert.equal(await wrapper.locator('.custom-select-scroll-fade-top').evaluate(el => getComputedStyle(el).pointerEvents), 'none');
+  const bounds = await viewport.boundingBox();
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  await page.mouse.wheel(0, -bounds.height);
+  await page.waitForFunction(previous => document.querySelector('#color-mode-select-options .custom-select-options-scroll').scrollTop < previous, lower);
+  await trigger.press('Home');
+  await page.waitForFunction(() => document.querySelector('#color-mode-select-options').classList.contains('has-scroll-bottom'));
+  assert.equal(await wrapper.locator('.custom-select-scroll-fade-bottom').evaluate(el => getComputedStyle(el).display), 'block');
+  const activeId = await trigger.getAttribute('aria-activedescendant');
+  assert.equal(await page.locator('#' + activeId).getAttribute('aria-selected'), 'true');
+  assert.notEqual(await page.locator('#' + activeId).evaluate(el => getComputedStyle(el, '::after').content), 'none');
+  assert.equal(await page.locator('#' + activeId).evaluate(el => getComputedStyle(el).outlineWidth), '2px');
+  await trigger.press('Escape');
+}
+
 async function guidanceCheck(page) {
   const help = page.locator('#secondary-color-help');
   const dialog = page.locator('#secondary-color-dialog');
@@ -225,6 +260,8 @@ async function guidanceCheck(page) {
     assert.equal(await page.locator('#secondary-color-help').isVisible(), false);
     await page.selectOption('#color-mode-select', 'gold', { force: true });
     await guidanceCheck(page);
+    await page.selectOption('#color-mode-select', 'black', { force: true });
+    await themeScrollCheck(page);
     const mobile = await browser.newPage({
       viewport: { width: 375, height: 667 }, hasTouch: true, isMobile: true, reducedMotion: 'reduce'
     });
