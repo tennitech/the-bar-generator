@@ -24,17 +24,16 @@ async function ready(page) {
 }
 const snapshot = page => page.evaluate(() => ({
   rows: [...document.querySelectorAll('.marquee_track')].map(row => row.style.transform),
-  phases: [...marqueeAnimation.settings.values()].map(state => state.phase),
-  pixels: [...document.querySelectorAll('.is-animated canvas')].map(canvas => canvas.toDataURL())
+  sources: [...document.querySelectorAll('.bar_asset')].map(image => image.src),
+  canvases: document.querySelectorAll('.bar_asset_wrap canvas').length
 }));
 async function frozen(page) {
   const before = await snapshot(page); await page.waitForTimeout(220);
-  assert.deepEqual(await snapshot(page), before, 'rows, phases and painted pixels remain still');
+  assert.deepEqual(await snapshot(page), before, 'rows and static sample sources remain still');
 }
 async function running(page) {
   const before = await snapshot(page);
-  await page.waitForFunction(before => [...document.querySelectorAll('.marquee_track')].some((row, i) => row.style.transform !== before.rows[i])
-    && [...marqueeAnimation.settings.values()].every((state, i) => state.phase !== before.phases[i]), before);
+  await page.waitForFunction(before => [...document.querySelectorAll('.marquee_track')].some((row, i) => row.style.transform !== before.rows[i]), before);
 }
 async function dragWhilePaused(page, pauseDuringCoast = false) {
   const point = await page.evaluate(() => {
@@ -76,7 +75,7 @@ async function geometry(page) {
   });
 }
 (async () => {
-  const browser = await ({ chromium, webkit }[engine]).launch({ headless:true });
+  const browser = await ({ chromium, webkit }[engine]).launch({ headless:true, ...(process.env.RPI_BROWSER_EXECUTABLE ? {executablePath:process.env.RPI_BROWSER_EXECUTABLE} : {}) });
   const results = [], errors = [];
   await fs.mkdir(evidence, {recursive:true});
   try {
@@ -117,17 +116,16 @@ async function geometry(page) {
         await page.evaluate(() => { document.body.classList.remove('has-logo-animation'); window.dispatchEvent(new Event('pageshow')); });
         await frozen(page);
         await page.reload(); await ready(page); await resume(page).waitFor(); await frozen(page);
-        assert.equal(await page.locator('.is-animated').count(),0,'restored pause does not start optional previews');
+        assert.equal(await page.locator('.is-animated').count(),0,'restored pause retains static previews');
         assert.equal(await page.evaluate(() => PageEntrance.isActive()),false,'restored pause bypasses entrance');
         assert.notEqual(await page.locator('[data-entrance-plane="selector"]').getAttribute('data-entry-mode'),'native');
-        // Normal keyboard order retains skip first, then visible navigation and motion.
+        // Normal keyboard order retains skip first, then the motion control.
         await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.className),'marquee_skip-link');
-        await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.textContent.trim()),'Enter generator');
         await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.id),'marquee-motion-toggle');
         assert.notEqual(await resume(page).evaluate(e=>getComputedStyle(e).outlineStyle),'none');
         await page.keyboard.press('Space'); await pause(page).waitFor(); await running(page);
         await page.keyboard.press('Enter'); await resume(page).waitFor(); await frozen(page);
-        await page.getByRole('link',{name:'Enter generator',exact:true}).click();
+        await page.locator('.marquee_skip-link').focus(); await page.keyboard.press('Enter');
         await page.waitForURL(`${base}/generator/solid/`); await generatorReady(page);
         assert.equal(await page.locator('#style-select').inputValue(),'solid');
         await page.goBack(); await ready(page); await resume(page).waitFor(); await frozen(page);
@@ -165,7 +163,7 @@ async function geometry(page) {
     assert.equal(await reduced.locator('canvas').count(),0);
     await reduced.close();
     const noScript=await browser.newPage({javaScriptEnabled:false}); await noScript.goto(base);
-    await noScript.getByRole('link',{name:'Enter generator',exact:true}).click(); await noScript.waitForURL(`${base}/generator/solid/`);
+    await noScript.locator('.marquee_skip-link').focus(); await noScript.keyboard.press('Enter'); await noScript.waitForURL(`${base}/generator/solid/`);
     await noScript.close();
     assert.deepEqual(errors,[]);
     await fs.writeFile(path.join(evidence,`${engine}-results.json`),JSON.stringify({engine,results},null,2));

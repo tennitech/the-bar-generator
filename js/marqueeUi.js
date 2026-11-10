@@ -18,7 +18,7 @@ const INERTIA_FRICTION = 2.8;
 const INERTIA_CATCH_GRACE_MS = 180;
 const INERTIA_CATCH_DISTANCE = 18;
 const INERTIA_STOP_SPEED = 8;
-const STARTUP_STYLE_PROMPT_DELAY = 5000;
+const STARTUP_STYLE_PROMPT_DELAY = 450;
 const BASE_SPEEDS = [24, 28, 26, 30, 27, 29, 25, 28, 26, 30];
 const HERO_CLUSTER_WIDTH = 960;
 const HERO_CLUSTER_HEIGHT = 330;
@@ -110,8 +110,6 @@ function createRowPatterns(entries) {
 // Choose the small static sample set once. Resize and every animation frame reuse it.
 const selectedMarqueeEntries = marqueeCatalogApi.selectEntries();
 const rowPatterns = createRowPatterns(selectedMarqueeEntries);
-const marqueeAnimation = typeof window !== 'undefined' && window.MarqueeAnimation
-  ? window.MarqueeAnimation.create(selectedMarqueeEntries) : null;
 
 function toAssetUrl(path) { return encodeURI(path); }
 
@@ -282,7 +280,7 @@ function createAssetElement(path) {
   const style = getMarqueeBarStyle(path);
   asset.className = 'bar_asset_wrap';
   asset.style.setProperty('--asset-width', 'var(--marquee-asset-width)');
-  asset.href = getGeneratorHref(style.value, marqueeAnimation?.settings.get(path)?.query || style.query);
+  asset.href = getGeneratorHref(style.value, style.query);
   asset.dataset.barVariant = style.variant;
   asset.dataset.barStyle = style.value;
   asset.setAttribute('aria-label', `Open ${style.label} in the generator`);
@@ -307,12 +305,12 @@ function createAssetElement(path) {
 function syncRowTargetFactor(state) {
   state.targetFactor = state.isPressed
     ? PRESS_SPEED_FACTOR
-    : state.isHovered
+    : state.isHovered || state.focusedAsset
       ? HOVER_SPEED_FACTOR
       : 1;
   // Keep a hovered link exactly still. Deliberate drag momentum is separate
   // from autoplay, so a release can coast even while the pointer stays here.
-  if (state.isPressed || state.isHovered) state.currentFactor = 0;
+  if (state.isPressed || state.isHovered || state.focusedAsset) state.currentFactor = 0;
 }
 
 function advanceRowSpeed(currentFactor, targetFactor, dt) {
@@ -339,7 +337,7 @@ function setHoveredAsset(state, asset) {
 }
 
 // One focus owner keeps boundary events from an old row from clearing a newer
-// hover. Other lanes are filtered as clipped groups, not individual canvases.
+// hover. Opacity is applied to each complete link, never a clipped row.
 function bindStageFocus(stage, rowStates) {
   let focusedRow = null;
   rowStates.forEach(state => {
@@ -440,6 +438,15 @@ function bindAssetInteractions(asset, state) {
     syncRowTargetFactor(state);
   }
   asset.addEventListener('pointerenter', hoverAsset);
+  asset.addEventListener('focus', () => {
+    state.focusedAsset = asset;
+    state.inertiaVelocity = 0;
+    syncRowTargetFactor(state);
+  });
+  asset.addEventListener('blur', () => {
+    if (state.focusedAsset === asset) state.focusedAsset = null;
+    syncRowTargetFactor(state);
+  });
 
   asset.addEventListener('pointerleave', () => {
     if (state.hoveredAsset === asset && !state.isPressed) {
@@ -563,7 +570,6 @@ function createTrackItem(state, path, isMeasure = false) {
     bindAssetInteractions(asset, state);
   }
   item.append(asset);
-  if (!isMeasure) marqueeAnimation?.decorate(asset, path);
 
   return item;
 }
@@ -591,6 +597,7 @@ function createRow(index) {
     isHovered: false,
     isPressed: false,
     hoveredAsset: null,
+    focusedAsset: null,
     pressedAsset: null,
     drag: null,
     inertiaVelocity: 0,
@@ -653,6 +660,7 @@ function ensureRowItems(state) {
       state.pressedAsset = null;
       state.isPressed = false;
     }
+    if (state.focusedAsset === removed.asset) state.focusedAsset = null;
     removed.element.remove();
   }
 
@@ -748,7 +756,6 @@ function syncRowVerticalLayout(rowStates, stage) {
   rowStates.forEach((state, index) => {
     state.element.style.top = `${rowPositions[index]}px`;
   });
-  marqueeAnimation?.resize();
 }
 
 function syncMarqueeSizing(root) {
@@ -888,13 +895,10 @@ function initMarqueeScene() {
     const dt = Math.min(0.04, (now - lastTime) / 1000);
     lastTime = now;
     if (window.PageEntrance?.isHoldingArtwork?.() || document.body.classList.contains('has-logo-animation')) {
-      marqueeAnimation?.hold();
       animationFrame = window.requestAnimationFrame(animateRows);
       return;
     }
 
-    marqueeAnimation?.start();
-    marqueeAnimation?.tick(dt * 1000);
     const viewport = getViewportMetrics();
     const speedScale = getResponsiveMarqueeMetrics(viewport.width, viewport.height).scale;
     rowStates.forEach(state => {
@@ -929,7 +933,7 @@ function initMarqueeScene() {
     }
     if (motionDescription) motionDescription.textContent = motion.reduced
       ? 'Motion is paused by your device’s reduced motion setting. Dragging still works.'
-      : 'Controls the moving rows and animated bar previews. Dragging still works while paused.';
+      : 'Controls the scrolling rows. Dragging still works while paused.';
     if (motion.paused) window.PageEntrance?.cancel?.();
     handleResize();
     if (document.hidden || motion.paused) {
@@ -938,7 +942,6 @@ function initMarqueeScene() {
         state.inertiaVelocity = 0;
         state.currentFactor = 0;
       });
-      marqueeAnimation?.hold();
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
       animationFrame = 0;
       return;
@@ -972,7 +975,6 @@ function initMarqueeScene() {
     cancelInteractions();
     if (animationFrame) window.cancelAnimationFrame(animationFrame);
     animationFrame = 0;
-    marqueeAnimation?.hold();
   });
   window.addEventListener('pageshow', () => {
     // A restored back/forward page may have missed a pause saved elsewhere.
@@ -985,6 +987,7 @@ function initMarqueeScene() {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     MARQUEE_MOTION_STORAGE_KEY,
+    STARTUP_STYLE_PROMPT_DELAY,
     createMarqueeMotionPreference,
     updateRowLayout,
     advanceRowSpeed,

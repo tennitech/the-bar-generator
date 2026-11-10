@@ -143,6 +143,19 @@ describe('native-link and gesture lifecycle', () => {
     expect(second.state.element.classList.contains('is-focus-row')).toBe(false);
   });
 
+  test('keyboard focus holds its lane until blur, including pointer leave', () => {
+    const { state, asset, send } = fixture();
+    send('focus');
+    expect(state.focusedAsset).toBe(asset);
+    expect(state.currentFactor).toBe(0);
+    expect(state.targetFactor).toBe(0);
+    send('pointerenter'); send('pointerleave');
+    expect(state.targetFactor).toBe(0);
+    send('blur');
+    expect(state.focusedAsset).toBe(null);
+    expect(state.targetFactor).toBe(1);
+  });
+
   test('a tap or tiny jitter preserves a native click and starts no momentum', () => {
     const { state, send } = fixture();
     send('pointerdown');
