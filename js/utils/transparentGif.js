@@ -45,11 +45,13 @@
   }
 
   // GIF ignores RGBA alpha. Convert coverage into a unique palette key, with no
-  // white/black matte. Ordered coverage is spatially anchored, not randomized.
+  // white/black matte. A uniform half-coverage cut keeps straight edges straight
+  // across rows and moving frames. Ordered coverage is opt-in for comparisons;
+  // its spatial mask creates visible teeth on subpixel vertical/horizontal edges.
   async function preparePixels(image, palette, options = {}) {
     const { data, width, height } = image;
     if (!data || data.length !== width * height * 4) throw new Error('Invalid GIF frame pixels.');
-    const mode = options.alphaMode || 'ordered';
+    const mode = options.alphaMode || 'threshold';
     const littleEndian = new Uint8Array(new Uint32Array([0x01020304]).buffer)[0] === 4;
     const pixels = littleEndian ? new Uint32Array(data.buffer, data.byteOffset, width * height) : null;
     const pack = rgb => (255 << 24) | (rgb[2] << 16) | (rgb[1] << 8) | rgb[0];

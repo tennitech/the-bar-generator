@@ -9,11 +9,11 @@ test('reserves a distinct transparent color even when the ink matches the usual 
   }
 });
 
-test('binary alpha uses exact un-matted ink and preserves half-pixel coverage spatially', async () => {
+test('explicit ordered alpha preserves average coverage for comparison', async () => {
   const palette = createPalette([255, 255, 255]);
   const data = new Uint8ClampedArray(4 * 4 * 4);
   for (let i = 0; i < data.length; i += 4) data.set([12, 20, 30, 128], i);
-  await preparePixels({ data, width: 4, height: 4 }, palette);
+  await preparePixels({ data, width: 4, height: 4 }, palette, { alphaMode: 'ordered' });
   let ink = 0, transparent = 0;
   for (let i = 0; i < data.length; i += 4) {
     const pixel = [...data.slice(i, i + 3)];
@@ -138,6 +138,42 @@ test('streaming uses at most two transferred frames and joins out-of-order encod
       index++;
     }
     expect(index).toBe(8);
+  } finally { workers.restore(); }
+});
+
+test('moving straight subpixel edges stay straight in decoded transparent GIFs', async () => {
+  const { encode } = require('../js/utils/transparentGif');
+  const { parseGif, decodeFrames } = require('./helpers/gifDecoder');
+  const width = 16, height = 12;
+  const positions = [2.1, 2.3, 2.49, 2.51, 2.7, 2.9, 3.1, 3.7];
+  const workers = installCodecWorker();
+  try {
+    for (const foreground of [[0, 0, 0], [255, 255, 255], [214, 0, 28]]) {
+      const result = await encode({ width, height, frameCount: positions.length, periodSeconds: 0.32,
+        foreground, workerScript: 'vendored-worker', renderFrame: index => {
+          // Independent area-coverage oracle for a translating 5px-wide rectangle.
+          const left = positions[index], right = left + 5;
+          const data = new Uint8ClampedArray(width * height * 4);
+          for (let y = 2; y < 10; y++) for (let x = 0; x < width; x++) {
+            const area = Math.max(0, Math.min(x + 1, right) - Math.max(x, left));
+            data.set([17, 31, 47, Math.round(area * 255)], (y * width + x) * 4);
+          }
+          return { data, width, height };
+        } });
+      const gif = parseGif(Buffer.from(await result.blob.arrayBuffer()));
+      let index = 0;
+      for (const decoded of decodeFrames(gif)) {
+        expect(decoded.frame).toMatchObject({ transparent: true, transparentIndex: 0, disposal: 2, delayMs: 40 });
+        const start = Math.round(positions[index]);
+        for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+          const expected = y >= 2 && y < 10 && x >= start && x < start + 5;
+          expect([...decoded.rgba.subarray((y * width + x) * 4, (y * width + x + 1) * 4)])
+            .toEqual(expected ? [...foreground, 255] : [0, 0, 0, 0]);
+        }
+        index++;
+      }
+      expect(index).toBe(positions.length);
+    }
   } finally { workers.restore(); }
 });
 

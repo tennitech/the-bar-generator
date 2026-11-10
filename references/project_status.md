@@ -3,6 +3,35 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 straight GIF edge repair
+
+The supplied animation screenshot was materialized with its Library identity,
+verified as a readable 223,213-byte PNG and inspected before diagnosis. Its
+repeating teeth on straight Waveform edges reproduce in GIF alpha conversion:
+the source raster has straight edges, while the former ordered 4 × 4 coverage
+mask varies them across rows. GIF now defaults to uniform half-coverage alpha
+quantization. Palette colors, transparency, disposal, dimensions, geometry,
+SVG/PNG output, audio, LFO and frame timing remain intact. The current 50 fps cadence
+and actual-audio scope behavior remain intact.
+
+Final reconciliation at main `ffbd569` retains #143–#154, including 50 fps /
+20 ms timing, encoder guards and actual post-gain PCM scope: 939 tests in
+83 suites pass. Initial baseline
+was 875 tests in 78 suites. Native raster/actual vendored
+codec comparisons decode 20 historical-geometry fixture files / 160 sampled
+frames across Waveform square
+and square/pulse shapes at both sizes and compositions, plus Ticker and Gradient.
+Straight source edges have zero row variation; old encoded edges add 21,440
+row differences in the measured interior bands; corrected encoded edges add
+zero. The preserved actual-audio pipeline also passes 90 exact PCM parity
+cases, the exact silent tap, 24 PNGs and six GIFs / 600 decoded frames with
+the new alpha mode. Focused regressions also check translating subpixel edges in three exact
+ink colors through the actual codec, including transparency and disposal.
+The supported cloud browser now reaches production and produced a real baseline
+GIF: 166 frames / 3330 ms / 455,925 bytes, with 43,140 edge-row differences in
+measured straight bands. Post-deployment GIF verification follows the protected
+merge. Prior denied local-browser calls were not retried. Native audio, physical
+viewer perception and formal RPI approval are separate from these checks. See [GIF edge QA](gif_edge_qa.md) and its generated review image.
 ## November 10 actual audio Waveform scope
 
 Following the owner's VCO/VCA examples and explicit request for a direct scope,

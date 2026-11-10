@@ -31,7 +31,7 @@ There is no application-defined print DPI or physical print size. The person pla
 
 ## GIF transparency and timing
 
-GIF is offered for the existing Ruler, Ticker, and Waveform loops. It supports binary transparency, not PNG's smooth partial alpha. The encoder uses one exact foreground color and a different reserved transparent palette entry. A fixed 4 × 4 ordered coverage mask converts antialiased edge coverage into spatially anchored opaque or transparent pixels. No white, black, or theme-colored matte is baked into the edge. This preserves average coverage but can show fine stippling or jaggedness at high magnification. Use PNG for smooth static transparency or SVG for scalable static geometry.
+GIF is offered for the existing Ruler, Ticker, and Waveform loops. It supports binary transparency, not PNG's smooth partial alpha. The encoder uses one exact foreground color and a different reserved transparent palette entry. A uniform half-coverage threshold converts antialiased edge coverage into opaque or transparent pixels. Straight fractional-pixel edges therefore stay straight across rows instead of acquiring the former 4 × 4 ordered mask’s repeating teeth. No white, black, or theme-colored matte is baked into the edge. GIF still has binary alpha: a boundary can round by up to half a pixel and diagonal/curved edges retain pixel steps. Use PNG for smooth static transparency or SVG for scalable static geometry.
 
 Every frame uses the same global palette and transparent index. Disposal mode 2 clears the preceding full frame to its transparent background before the next one is composed. The implementation uses the existing pinned, MIT-licensed gif.js worker codec. No new runtime dependency or format is added.
 
@@ -125,3 +125,18 @@ encoder limits remain, so long loops may sample below 50 fps. Transparency,
 SVG/PNG and composition/size choices are unchanged. PR #144 remains responsible
 for the separate edge-quantization repair. See [actual matched 30-vs-50 exports,
 encoding cost and viewer limits](gif_cadence_benchmark.md).
+
+
+## Straight GIF edges — November 10, 2026
+
+The supplied magnified animation screenshot shows repeated teeth on straight
+Waveform edges. Offline native rendering reproduces straight source edges and
+serrated encoded edges with the former ordered transparency mask. The default
+now uses uniform half-coverage quantization for every GIF family. Exact palette
+ink, transparent background, disposal 2, dimensions, captured geometry, loop
+timing, cancellation and two-frame streaming remain intact. The ordered mode
+remains an internal comparison option. No audio or LFO behavior changes.
+
+See [edge evidence and limits](gif_edge_qa.md) for actual encoded comparisons.
+The current 50 fps / 20 ms cadence addresses timing; this repair addresses
+spatial edge artifacts. It does not claim smooth partial transparency from GIF.

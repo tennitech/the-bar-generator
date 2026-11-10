@@ -80,7 +80,7 @@ Button zoom keeps the bar as the inspection focus. Pointer zoom uses the pointer
 - **Gradient:** Apparent tone uses area coverage in one foreground color. Variant 1 linearly tapers full-height stripe widths; variant 2 uses three rows with a symmetric triangular coverage envelope. There is no opacity or color interpolation. The existing Gradient name/treatment still needs owner review against the dated Pattern restriction.
 - **Circles Gradient:** Variant 1 preserves all 86 circles from `assets/bar references/Style=Circles Gradient 1.svg`: 29 large, 28 staggered medium and 29 small dots, with source radii 8, 6 and 4.5 and the original small coordinate offsets. Its 509 × 36 source frame is uniformly scaled and centered within the caller viewport, retaining complete circles and natural whitespace. Variant 2 increases circle area linearly left to right in two rows; variant 3 has symmetric triangular area coverage strongest at the center in three rows. Radii are bounded by row/cell dimensions. Variants 2 and 3 share the same column centers, so their vertical columns remain upright; the largest endpoint circles are tangent to the exact left/right edges. Smaller endpoint dots retain their radius and sit inside those edges rather than shifting sideways. These are geometric patterns, not external datasets.
 
-The configurable static families retain their natural composition within the canonical viewport. The combined renderer uses the complete official vector basis and one selected-control collector for header/preview/SVG/PNG across all static families, superseding the isolated four-family export bypass. Exports capture controls, color, phase, title and Standard/Large size before asynchronous work begins. PNG rasterizes that captured vector; GIF streams captured frames with true palette transparency and disposal2. GIF uses binary alpha with coverage dithering, so PNG/SVG remain the smooth-alpha alternatives. See [transparent exports](transparent_gif_exports.md) for timing, streaming memory budgets, measured benchmarks and limits.
+The configurable static families retain their natural composition within the canonical viewport. The combined renderer uses the complete official vector basis and one selected-control collector for header/preview/SVG/PNG across all static families, superseding the isolated four-family export bypass. Exports capture controls, color, phase, title and Standard/Large size before asynchronous work begins. PNG rasterizes that captured vector; GIF streams captured frames with true palette transparency and disposal2. GIF uses binary alpha with a uniform half-coverage threshold, so PNG/SVG remain the smooth-alpha alternatives. See [transparent exports](transparent_gif_exports.md) for timing, streaming memory budgets, measured benchmarks and limits.
 
 The combined development checkout includes the revised single Quantum projection model from `ac06247`, `b4288ba`, and `c25cfa5`. It graphs three phase-convention-dependent projections of one normalized free-particle wavefunction on an ideal periodic ring, using modes −4,3,7 with equal coefficient magnitude1/√3. The fixed amplitude bound√3 maps to height; it never uses sampled-peak fitting. A recurrence takes120display seconds at1×, SPEED0.2–1 uniformly scales time, and the owner-corrected default evaluates decreasing model time; REVERSE switches to increasing model time. Display seconds have no physical calibration because mass/circumference are unspecified. The curves are not particles, literal trajectories, probabilities or measured data. See [model, equations, sources and limits](quantum_model.md).
 
@@ -438,3 +438,14 @@ closure are preserved, without a duplicated endpoint. The unchanged 3000-frame
 budget can limit longer loops below this target. No scientific coordinates,
 preview clock, SVG/PNG, alpha-conversion source or recorded-audio history contract
 is altered. See [timing measurements, format and resource limits](gif_cadence_benchmark.md).
+
+
+## GIF edge quantization — November 10, 2026
+
+Straight waveform discontinuities already use exact one-sided vertices in the
+shared geometry. The reported repeating teeth arise after rasterization: the
+former 4 × 4 ordered transparency mask varies coverage along a straight edge.
+GIF now thresholds coverage uniformly at one half. This rounds raster boundaries
+without changing scientific coordinates, duty cycles, official viewport or SVG/PNG
+geometry. Curves and diagonals retain GIF’s binary-alpha pixel steps. Carrier,
+LFO and audio math are untouched. See [encoded evidence](gif_edge_qa.md).
