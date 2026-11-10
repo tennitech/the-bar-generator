@@ -25,7 +25,12 @@ test('section disclosure keeps values, actions and nodes mounted, with state and
   expect(header.body.children).toEqual([field]);
   expect(header.button.attrs).toMatchObject({ 'aria-expanded': 'true', 'aria-controls': header.body.id });
   expect(header.button.attrs['aria-label']).toBe('Parameters section');
+  doc.activeElement = input;
+  header.body.contains = node => node === input;
+  header.button.focus = jest.fn(() => { doc.activeElement = header.button; });
   header.button.listeners.click();
+  expect(header.button.focus).toHaveBeenCalledWith({ preventScroll: true });
+  expect(doc.activeElement).toBe(header.button);
   expect(header.body.hidden).toBe(true);
   expect(header.button.attrs['aria-expanded']).toBe('false');
   expect(header.button.dispatchEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'change', bubbles: true }));

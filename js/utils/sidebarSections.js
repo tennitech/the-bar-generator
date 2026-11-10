@@ -46,6 +46,8 @@
     }
     header.after(body);
     button.addEventListener('click', () => {
+      // Some pointer-driven browsers do not focus buttons automatically.
+      if (!body.hidden && body.contains(documentRef.activeElement)) button.focus({ preventScroll: true });
       body.hidden = !body.hidden;
       button.setAttribute('aria-expanded', String(!body.hidden));
       // Re-measure overflow even without ResizeObserver.
