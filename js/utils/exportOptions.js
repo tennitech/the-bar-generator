@@ -5,11 +5,20 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const SIZES = Object.freeze({ standard: 1000, large: 2000 });
   const DEFAULT_SIZE = 'large';
-  function dimensions(size, geometry) {
+  // Cropping changes the viewport, never the scientific or official coordinates.
+  function normalizeComposition(value) { return value === 'bar' ? 'bar' : 'logo'; }
+  function compositionLabel(value) { return normalizeComposition(value) === 'bar' ? 'Bar only' : 'Bar + RPI'; }
+  function viewport(geometry, composition) {
+    const barOnly = normalizeComposition(composition) === 'bar';
+    return { x: -geometry.exportPadding, y: Number(((barOnly ? geometry.barY : 0) - geometry.exportPadding).toFixed(6)),
+      width: geometry.width + geometry.exportPadding * 2,
+      height: (barOnly ? geometry.barHeight : geometry.totalHeight) + geometry.exportPadding * 2 };
+  }
+  function dimensions(size, geometry, composition) {
     const logoWidth = SIZES[size] || SIZES[DEFAULT_SIZE];
     const scale = logoWidth / geometry.width;
-    return { logoWidth, scale, width: Math.ceil((geometry.width + geometry.exportPadding * 2) * scale),
-      height: Math.ceil((geometry.totalHeight + geometry.exportPadding * 2) * scale) };
+    const frame = viewport(geometry, composition);
+    return { logoWidth, scale, width: Math.ceil(frame.width * scale), height: Math.ceil(frame.height * scale) };
   }
   function utf8Length(value) { return new TextEncoder().encode(value).length; }
   function safeTitle(value, maxBytes = 64) {
@@ -27,6 +36,7 @@
   function filename(snapshot, format) {
     const values = snapshot.values || {};
     const tokens = ['rpi-bar', snapshot.family || 'solid'];
+    if (normalizeComposition(snapshot.composition) === 'bar') tokens.push('bar-only');
     const variants = { 'circles-gradient': 'circlesGradientVariant', gradient: 'gradientVariant', grid: 'gridVariant',
       lines: 'linesVariant', 'point-connect': 'pointConnectVariant', 'triangle-grid': 'triangleGridVariant' };
     if (variants[snapshot.family]) tokens.push(`v${values[variants[snapshot.family]] || 1}`);
@@ -48,5 +58,5 @@
     const title = safeTitle(snapshot.title, Math.max(0, Math.min(64, 175 - utf8Length(base))));
     return `${base}${title ? `--${title}` : ''}.${format}`;
   }
-  return { SIZES, DEFAULT_SIZE, dimensions, safeTitle, filename };
+  return { SIZES, DEFAULT_SIZE, normalizeComposition, compositionLabel, viewport, dimensions, safeTitle, filename };
 });

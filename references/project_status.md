@@ -3,6 +3,29 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 export composition choice
+
+The export menu adds two illustrated native radio cards, **Bar + RPI** and
+**Bar only**, using existing official vector paths and theme tokens. The complete
+mark and Large raster size remain the defaults. Selection has visible radio,
+border and keyboard-focus states; labels and descriptions remain accessible.
+It persists across menu/style synchronization and locks during export/copy jobs.
+
+One frozen snapshot carries composition and viewport through SVG, PNG, eligible
+Ticker/Waveform GIFs and native SVG/PNG clipboard payloads. Bar-only omits letter
+paths and crops to the canonical bar plus proportional clear space, producing
+1160 × 232 / 2320 × 464 rasters. Pattern coordinates, current data/seed/settings,
+transparent backgrounds, resting still phase and existing loop plans remain
+unchanged. No runtime dependency, new asset or replacement logo is added.
+
+Validation and integration guidance are recorded in
+[export composition QA](export_composition_qa.md). Source/unit and offline native
+raster/codec checks are separate from rendered browser QA. Browser launch/socket
+escalation was already rejected in this environment; it was not retried or
+bypassed. Rendered menu layout, real keyboard/touch behavior, screen readers and
+native clipboard/paste remain unverified. The incremental release preserves the published brand composition changes.
+Engineering validation does not establish owner acceptance or formal brand approval.
+
 ## November 10 contextual brand compositions and secondary color guidance
 
 The color menu now names foreground and background together. Primary choices

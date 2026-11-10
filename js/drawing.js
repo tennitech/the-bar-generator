@@ -1038,13 +1038,16 @@ function captureLogoExportSnapshot() {
   const safeName = typeof sanitizeBarText === 'function' ? sanitizeBarText(rawTitle) : rawTitle;
   const title = Array.from(String(safeName).normalize('NFC').replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, '').trim()).slice(0, 80).join('');
   const geometry = RPI_LOGO_GEOMETRY;
-  const dimensions = window.logoExportOptions.dimensions(window.logoExportUI.size(), geometry);
+  const composition = window.logoExportOptions.normalizeComposition(window.logoExportUI.composition?.());
+  const viewport = window.logoExportOptions.viewport(geometry, composition);
+  const dimensions = window.logoExportOptions.dimensions(window.logoExportUI.size(), geometry, composition);
   const inkName = ({ '#ffffff': 'white', '#000000': 'black', '#d6001c': 'red',
     '#0081ce': 'blue', '#cdac38': 'gold', '#e1edf5': 'silver', '#b9ccd8': 'gray' })[foreground.toLowerCase()] || currentColorMode;
   const rgb = [0, 2, 4].map(offset => parseInt(foreground.replace('#', '').slice(offset, offset + 2), 16));
-  const svgSource = `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="${geometry.width + geometry.exportPadding * 2}" height="${geometry.totalHeight + geometry.exportPadding * 2}" viewBox="-${geometry.exportPadding} -${geometry.exportPadding} ${geometry.width + geometry.exportPadding * 2} ${geometry.totalHeight + geometry.exportPadding * 2}" xmlns="http://www.w3.org/2000/svg"><title>${escapeExportXML(title || `RPI ${family} logo`)}</title>${Object.values(geometry.paths).map(path => `<path d="${path}" fill="${foreground}"/>`).join('')}${barMarkup}</svg>`;
+  const letters = composition === 'bar' ? '' : Object.values(geometry.paths).map(path => `<path d="${path}" fill="${foreground}"/>`).join('');
+  const svgSource = `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="${viewport.width}" height="${viewport.height}" viewBox="${viewport.x} ${viewport.y} ${viewport.width} ${viewport.height}" xmlns="http://www.w3.org/2000/svg"><title>${escapeExportXML(title || `RPI ${family} ${composition === 'bar' ? 'bar' : 'logo'}`)}</title>${letters}${barMarkup}</svg>`;
   return Object.freeze({ family, currentShader, colorMode: currentColorMode, foreground, rgb, inkName, title,
-    values: Object.freeze(values), geometry, dimensions: Object.freeze(dimensions), svgSource });
+    values: Object.freeze(values), geometry, composition, viewport: Object.freeze(viewport), dimensions: Object.freeze(dimensions), svgSource });
 }
 
 function throwIfExportCancelled(signal) {
@@ -1064,13 +1067,14 @@ async function createRasterExportBlob(snapshot, signal, onStage = () => {}) {
   throwIfExportCancelled(signal);
   onStage('Rendering PNG…');
   const { dimensions, geometry } = snapshot;
+  const viewport = snapshot.viewport || window.logoExportOptions.viewport(geometry, snapshot.composition);
   const xml = new DOMParser().parseFromString(snapshot.svgSource, 'image/svg+xml');
   if (xml.querySelector('parsererror')) throw new Error('The selected SVG could not be rendered.');
   const root = xml.documentElement;
   root.setAttribute('width', dimensions.width);
   root.setAttribute('height', dimensions.height);
   // Whole-pixel viewport plus uniform scale: do not stretch the official mark.
-  root.setAttribute('viewBox', `-${geometry.exportPadding} -${geometry.exportPadding} ${dimensions.width / dimensions.scale} ${dimensions.height / dimensions.scale}`);
+  root.setAttribute('viewBox', `${viewport.x} ${viewport.y} ${dimensions.width / dimensions.scale} ${dimensions.height / dimensions.scale}`);
   const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(xml)], { type: 'image/svg+xml' }));
   const image = new Image(), canvas = document.createElement('canvas');
   try {
@@ -1093,13 +1097,14 @@ function createCapturedGifRenderer(snapshot, framePlan) {
   const { dimensions: dimensions, geometry, foreground } = snapshot;
   canvas.width = dimensions.width; canvas.height = dimensions.height;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  const letters = Object.values(geometry.paths).map(path => new Path2D(path));
+  const viewport = snapshot.viewport || window.logoExportOptions.viewport(geometry, snapshot.composition);
+  const letters = snapshot.composition === 'bar' ? [] : Object.values(geometry.paths).map(path => new Path2D(path));
   const renderFrame = (index, progress) => {
     const values = { ...snapshot.values,
       loopOffsetX: Number(snapshot.values.loopOffsetX || 0) + framePlan.getLoopOffsetX(progress),
       timeSeconds: Number(snapshot.values.timeSeconds || 0) + (snapshot.family === 'waveform' ? framePlan.getTimeSeconds(progress) : 0) };
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.save(); ctx.scale(dimensions.scale, dimensions.scale); ctx.translate(geometry.exportPadding, geometry.exportPadding);
+    ctx.save(); ctx.scale(dimensions.scale, dimensions.scale); ctx.translate(-viewport.x, -viewport.y);
     ctx.fillStyle = foreground; letters.forEach(path => ctx.fill(path));
     ctx.beginPath(); ctx.rect(0, geometry.barY, geometry.width, geometry.barHeight); ctx.clip();
     if (snapshot.currentShader === 2) {
