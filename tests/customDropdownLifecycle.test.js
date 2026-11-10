@@ -151,3 +151,28 @@ test('committing a pointer selection still changes the native select and returns
   expectClosed(picker);
   expect(picker.trigger.focus).toHaveBeenLastCalledWith({ preventScroll: true });
 });
+
+
+test('a pointer press on a nonfocusable row survives native focus moving to its scroll container', () => {
+  const { document, pickers: [picker], click, node } = fixture();
+  click(picker);
+  const row = picker.wrapper.querySelectorAll('.custom-option')[1];
+  document.emit('pointerdown', { target: row });
+  document.emit('focusin', { target: node('div') });
+  expect(picker.wrapper.classList.contains('open')).toBe(true);
+  document.emit('pointerup', { target: row });
+  row.emit('click', { stopPropagation() {} });
+  expect(picker.select.value).toBe('two');
+  expectClosed(picker);
+  expect(picker.trigger.focus).toHaveBeenLastCalledWith({ preventScroll: true });
+});
+
+test.each(['pointerup', 'pointercancel'])('%s releases pointer protection before subsequent outside focus', type => {
+  const { document, pickers: [picker], click, node } = fixture();
+  click(picker);
+  document.emit('pointerdown', { target: picker.list });
+  document.emit(type, { target: picker.list });
+  document.emit('focusin', { target: node('button') });
+  expectClosed(picker);
+  expect(picker.select.value).toBe('one');
+});

@@ -3,6 +3,26 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 picker pointer-selection follow-up
+
+Production cloud-browser QA after #170 found that a nonfocusable option row
+can move focus to the sidebar scroll container on pointerdown. The new outside-
+focus dismissal then removed the popup before its click could commit. This
+was reproduced in a controller regression before applying the repair.
+
+An in-picker pointer press now protects that default focus transfer until
+pointerup/cancel. The option click still commits through the existing native
+select/change path and returns focus without scrolling. Outside presses still
+dismiss immediately; keyboard, synthetic-click and programmatic-focus dismissal
+remain. Window/page interruptions clear the press protection and close pickers.
+No pointer default is prevented, so native scrolling and touch gestures remain.
+Motion, colors, layout, artwork and #169's larger-controls feature are unchanged.
+The 11 lifecycle tests include pointer/focus ordering and release/cancel cleanup;
+all 94 focused picker, shell, guidance, theme, export, ring and accessibility
+checks pass before required CI. Shell, route, bootstrap and picker cache keys
+advance together; the unchanged base stylesheet retains its existing key.
+Final production browser and deployment evidence is recorded in the follow-up PR.
+
 ## November 10 picker interruption and dismissal polish
 
 Custom pickers now use the same cleanup when switching directly between
