@@ -1,7 +1,6 @@
 /* Current implemented families only. Every still is captured offline from the
    shared preview/export path by scripts/generateMarqueeAssets.js. The homepage
-   selects these URLs once; optional live previews reuse shared model utilities
-   without importing the generator runtime. */
+   selects these static URLs once; lane scrolling never changes their artwork. */
 (function (scope) {
   // Deliberately bounded, real controls, not arbitrary decorative mutations.
   // Fixed-art families retain their sole canonical sample. Circle packing keeps
