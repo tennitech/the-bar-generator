@@ -262,6 +262,7 @@
       header.after(summary);
       fieldsFor(style, root).forEach(field => prepareFieldFeedback(field, group));
     });
+    scope.SidebarSections?.prepare(root);
     prepareGroupTransition(root);
     refresh(root);
   }

@@ -273,7 +273,10 @@ repeats/display second, Waveform 0.3 temporal cycles/display second, Gradient
 0.1 coverage cycles/display second, and Quantum 1× model time. Every control
 spans 0.2–4×, starts at 1×, and supports direct multiplier entry. Arrow keys
 change 0.05×; Page keys change 0.25×; Home/End select the bounds. Dragging uses
-fine native range steps. LFO RATE remains a separate logarithmic Hz control.
+fine native range steps, with a narrow 0.025× attraction window at 0.5×, 1× and
+2×. This pointer-only assistance changes the same physical rate as the slider;
+typed values and keyboard increments bypass it. Tick positions use the linear
+0.2–4× scale. LFO RATE remains a separate logarithmic Hz control.
 
 URLs and v1 snapshots retain actual rates, never the displayed multiplier.
 The stored ranges are Ticker 0.08–1.6, Waveform 0.06–1.2, Gradient 0.02–0.4,

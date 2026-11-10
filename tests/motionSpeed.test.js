@@ -70,3 +70,33 @@ test('routed generator bootstrap loads the head-only speed helper before main se
   expect(early).toContain("'motionSpeed'");
   expect(bootstrap.indexOf('await Promise.all(earlySources')).toBeLessThan(bootstrap.indexOf('document.body.replaceChildren'));
 });
+
+test.each(Object.keys(speed.defaults))('%s snaps only pointer input near landmarks, preserving physical rates and arbitrary edits', style => {
+  const handlers = {}, documentHandlers = {};
+  const slider = { value: '', addEventListener(name, callback) { (handlers[name] ||= []).push(callback); },
+    ownerDocument: { addEventListener(name, callback) { documentHandlers[name] = callback; } } };
+  const emit = (name, event = {}) => handlers[name].forEach(callback => callback(event));
+  speed.pointerSnapping(style, slider);
+  const original = speed.defaults[style];
+  for (const landmark of speed.landmarks) {
+    const physical = original * (landmark + .02);
+    slider.value = String(physical); emit('input'); expect(Number(slider.value)).toBe(physical);
+    emit('pointerdown', { pointerId: 4, button: 0 }); emit('input');
+    expect(Number(slider.value)).toBeCloseTo(original * landmark, 9);
+    slider.value = String(original * (landmark + .04)); emit('input');
+    expect(Number(slider.value)).toBeCloseTo(original * (landmark + .04), 9);
+    documentHandlers.pointerup({ pointerId: 4 });
+  }
+  for (const finish of ['pointercancel', 'pointerup']) {
+    emit('pointerdown', { pointerId: 9, button: 0, pointerType: 'touch' });
+    documentHandlers[finish]({ pointerId: 9 });
+    slider.value = String(original * 1.02); emit('input');
+    expect(Number(slider.value)).toBeCloseTo(original * 1.02, 9);
+  }
+  for (const name of ['keydown', 'blur', 'lostpointercapture']) {
+    emit('pointerdown', { pointerId: 9, button: 0 }); emit(name, { pointerId: 9 });
+    slider.value = String(original * 2.02); emit('input');
+    expect(Number(slider.value)).toBeCloseTo(original * 2.02, 9);
+  }
+  expect(speed.editor(style, slider).parseValue('1.02')).toBe(speed.rate(style, 1.02));
+});

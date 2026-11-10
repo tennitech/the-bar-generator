@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261110-compact-sidebar-footer" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261110-footer-lfo-sections" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/pageEntrance.js?v=20261110-combined-brand-refinement"></script>
@@ -20,7 +20,7 @@
   <script src="js/utils/selectorPreviews.js?v=20261103-nucleotide"></script>
   <script src="js/utils/secondaryColorGuidance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/customDropdowns.js?v=20261110-combined-brand-refinement"></script>
-  <script src="js/utils/parameterControls.js?v=20261104-letter-resolve"></script>
+  <script src="js/utils/parameterControls.js?v=20261110-footer-lfo-sections"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/loopingGif.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
@@ -32,7 +32,8 @@
   <script src="js/utils/barPattern.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
-  <script src="js/utils/motionSpeed.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/motionSpeed.js?v=20261110-footer-lfo-sections"></script>
+  <script src="js/utils/sidebarSections.js?v=20261110-footer-lfo-sections"></script>
   <script src="js/utils/quantumModel.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/waveformLfo.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/generatorParameters.js?v=20261110-combined-brand-refinement"></script>
@@ -419,7 +420,7 @@
               <label for="ticker-speed-slider" class="control-label">SPEED <span id="ticker-speed-display" data-slider-value>1×</span></label>
               <input type="range" id="ticker-speed-slider" data-url-parameter="tickerSpeed" min="0.08" max="1.6" step="0.001" value="0.4" class="control-slider"
                 aria-label="Ticker Motion Speed" aria-describedby="ticker-speed-unit">
-              <p id="ticker-speed-unit" class="control-hint">0.2–4× default speed</p>
+              <p id="ticker-speed-unit" class="control-hint">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
             </div>
           </div>
 
@@ -445,7 +446,7 @@
             <div class="control slider-control runtime_speed-control">
               <label for="quantum-speed-slider" class="control-label">SPEED <span id="quantum-speed-display" data-slider-value>1×</span></label>
               <input id="quantum-speed-slider" type="range" min="0.2" max="4" step="0.001" value="1" class="control-slider" aria-label="Quantum motion speed" aria-describedby="quantum-speed-unit">
-              <p id="quantum-speed-unit" class="control-hint">0.2–4× default speed</p>
+              <p id="quantum-speed-unit" class="control-hint">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
             </div>
             <div class="control slider-control">
               <label for="quantum-phase" class="control-label">PHASE <span id="quantum-phase-display" data-slider-value>0.0%</span></label>
@@ -471,6 +472,36 @@
               aria-label="Waveform Frequency">
           </div>
 
+          <div class="control waveform_lfo">
+            <div class="control_row control_row-toggle">
+              <div class="control_help-label">
+                <label for="waveform-lfo-toggle" class="control-label control_row-label">LFO</label>
+                <button type="button" class="control_help-button" data-control-help="waveform-lfo-hint" aria-label="About LFO" aria-describedby="waveform-lfo-hint" aria-expanded="false" aria-controls="waveform-lfo-hint"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="waveform-lfo-toggle" data-url-parameter="waveformLfo" aria-controls="waveform-lfo-settings" aria-describedby="waveform-lfo-hint">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <p id="waveform-lfo-hint" class="control_help-tooltip" role="tooltip" hidden>Modulates bar height and audio volume. Loop animates the bar; Audio lets you listen. Fast rates settle to an average bar height.</p>
+            <div id="waveform-lfo-settings" hidden>
+              <div class="control slider-control">
+                <label for="waveform-lfo-type" class="control-label">LFO WAVEFORM <span id="waveform-lfo-type-display" data-slider-value>SINE</span></label>
+                <input type="range" id="waveform-lfo-type" data-url-parameter="waveformLfoType" min="0" max="3" step="0.01" value="0" class="control-slider" aria-label="LFO waveform: sine, sawtooth, square, pulse">
+              </div>
+              <div class="control slider-control">
+                <label for="waveform-lfo-rate-position" class="control-label">LFO RATE <span id="waveform-lfo-rate-display" data-slider-value>2 Hz</span></label>
+                <input type="range" id="waveform-lfo-rate" data-url-parameter="waveformLfoRate" min="0.07" max="1300" step="0.01" value="2" hidden class="control-slider" aria-label="LFO rate in hertz">
+                <input type="range" id="waveform-lfo-rate-position" data-lfo-rate-position min="0" max="1" step="0.005" value="0.3408" class="control-slider" aria-label="LFO rate" aria-describedby="waveform-lfo-rate-unit">
+                <p id="waveform-lfo-rate-unit" class="control-hint">0.07–1300 Hz · logarithmic</p>
+              </div>
+              <div class="control slider-control">
+                <label for="waveform-lfo-depth" class="control-label">LFO DEPTH <span id="waveform-lfo-depth-display" data-slider-value>60%</span></label>
+                <input type="range" id="waveform-lfo-depth" data-url-parameter="waveformLfoDepth" min="0" max="100" step="1" value="60" class="control-slider" aria-label="LFO depth in percent">
+              </div>
+            </div>
+          </div>
+
           <div class="runtime_section motion_section">
             <div class="control-header">MOTION</div>
             <div class="control control_row control_row-toggle">
@@ -492,7 +523,7 @@
                   id="waveform-speed-display" data-slider-value>1×</span></label>
               <input type="range" id="waveform-speed-slider" data-url-parameter="waveformSpeed" min="0.06" max="1.2" step="0.001" value="0.3" class="control-slider"
                 aria-label="Waveform Motion Speed" aria-describedby="waveform-speed-unit">
-              <p id="waveform-speed-unit" class="control-hint">0.2–4× default speed</p>
+              <p id="waveform-speed-unit" class="control-hint">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
             </div>
           </div>
           <div class="runtime_section audio_section">
@@ -504,33 +535,6 @@
                   aria-label="Play audio preview"></button>
               </div>
             </div>
-            <div class="control waveform_lfo">
-              <div class="control_row control_row-toggle">
-                <label for="waveform-lfo-toggle" class="control-label control_row-label">LFO</label>
-                <label class="switch">
-                  <input type="checkbox" id="waveform-lfo-toggle" data-url-parameter="waveformLfo" aria-controls="waveform-lfo-settings" aria-describedby="waveform-lfo-hint">
-                  <span class="slider round"></span>
-                </label>
-              </div>
-              <p id="waveform-lfo-hint" class="control-hint">Modulates bar height and audio volume. Loop animates the bar; Audio lets you listen. Fast rates settle to an average bar height.</p>
-              <div id="waveform-lfo-settings" hidden>
-                <div class="control slider-control">
-                  <label for="waveform-lfo-type" class="control-label">WAVEFORM <span id="waveform-lfo-type-display" data-slider-value>SINE</span></label>
-                  <input type="range" id="waveform-lfo-type" data-url-parameter="waveformLfoType" min="0" max="3" step="0.01" value="0" class="control-slider" aria-label="LFO waveform: sine, sawtooth, square, pulse">
-                </div>
-                <div class="control slider-control">
-                  <label for="waveform-lfo-rate-position" class="control-label">RATE <span id="waveform-lfo-rate-display" data-slider-value>2 Hz</span></label>
-                  <input type="range" id="waveform-lfo-rate" data-url-parameter="waveformLfoRate" min="0.07" max="1300" step="0.01" value="2" hidden class="control-slider" aria-label="LFO rate in hertz">
-                  <input type="range" id="waveform-lfo-rate-position" data-lfo-rate-position min="0" max="1" step="0.005" value="0.3408" class="control-slider" aria-label="LFO rate" aria-describedby="waveform-lfo-rate-unit">
-                  <p id="waveform-lfo-rate-unit" class="control-hint">0.07–1300 Hz · logarithmic</p>
-                </div>
-                <div class="control slider-control">
-                  <label for="waveform-lfo-depth" class="control-label">DEPTH <span id="waveform-lfo-depth-display" data-slider-value>60%</span></label>
-                  <input type="range" id="waveform-lfo-depth" data-url-parameter="waveformLfoDepth" min="0" max="100" step="1" value="60" class="control-slider" aria-label="LFO depth in percent">
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
 
@@ -837,7 +841,7 @@
             <div class="control slider-control runtime_speed-control">
               <label for="gradient-speed-slider" class="control-label">SPEED <span id="gradient-speed-display" data-slider-value>1×</span></label>
               <input type="range" id="gradient-speed-slider" data-url-parameter="gradientSpeed" min="0.02" max="0.4" step="0.001" value="0.1" class="control-slider" aria-label="Gradient motion speed" aria-describedby="gradient-speed-unit">
-              <p id="gradient-speed-unit" class="control-hint">0.2–4× default speed</p>
+              <p id="gradient-speed-unit" class="control-hint">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
             </div>
           </div>
         </div>
