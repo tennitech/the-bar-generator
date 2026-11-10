@@ -115,7 +115,7 @@ async function main() {
   console.log(`PNG: ${results.png.length} actual encoded images checked`);
   installCodecWorkers();
   for (const family of ['ticker', 'waveform', 'gradient']) for (const size of ['standard', 'large']) for (const composition of ['logo', 'bar']) {
-    r.select(family); r.currentColorMode = family === 'ticker' ? 'white' : (size === 'large' ? 'red' : 'black');
+    r.select(family); r.currentColorMode = family === 'ticker' ? 'white' : (size === 'large' ? 'gray' : 'black');
     Object.assign(r.state, { size, composition });
     const snapshot = r.captureLogoExportSnapshot();
     const plan = getLoopingGifFramePlan(family, snapshot.values, { barWidth: 250 });

@@ -117,3 +117,16 @@ test('new LFO snapshots preserve a bounded optional modulation phase without cha
   expect(normalizeRuntime({lfoPhase:2})).toMatchObject({lfoPhase:0});
   expect(normalizeRuntime({})).not.toHaveProperty('lfoPhase');
 });
+
+test('retired Red on White snapshots restore safely without losing their other settings', () => {
+  const schema = { ...manifest, 'color-mode-select': { options: ['black', 'white', 'white-on-red', 'blue'] } };
+  for (const legacy of ['red', 'red-on-white']) {
+    const old = { ...state, controls: { ...state.controls, 'color-mode-select': legacy } };
+    const restored = decodeState(rawFragment(old), schema);
+    expect(restored.controls).toEqual({ ...state.controls, 'color-mode-select': 'black' });
+    expect(restored.runtime).toEqual(state.runtime);
+    expect(restored.name).toBe(state.name);
+    expect(old.controls['color-mode-select']).toBe(legacy);
+  }
+  expect(() => decodeState(rawFragment({ ...state, controls: { ...state.controls, 'color-mode-select': 'unknown-theme' } }), schema)).toThrow();
+});

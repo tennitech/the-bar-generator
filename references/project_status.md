@@ -3,6 +3,27 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 paired theme swatches and retired Red on White
+
+Each color theme choice and the selected trigger now show a compact background
+tile containing a mark in the actual foreground color. Full pairing names
+remain visible and accessible; decorative swatches are hidden from assistive
+technology. The existing visual-menu enhancement is also used for touch color
+selection, with the same keyboard navigation, focus, selected state and scroll
+fades. Labels can wrap while the paired tile keeps its compact dimensions.
+
+Red on White is removed from available themes. Older red/red-on-white query
+values and saved version-1 snapshots recover as Black on White, retaining other
+saved settings. The remaining Brand Hub pairs, neutral header/sidebar, underlined
+secondary-only How to use control, modal and export-composition feature remain
+intact. Red-ink export fixtures now use the retained Red on Gray pairing.
+
+All 866 tests in 78 suites pass after preserving PR #139 and PR #138. Source/unit
+validation and the existing optional browser harness cover the change. Rendered desktop/touch layout, native interactions and owner acceptance
+remain unverified under the documented browser restrictions. No new asset,
+dependency or denied browser action is introduced.
+See [picker QA and compatibility](theme_picker_qa.md) for checks and user test items.
+
 ## November 10 optional intro retry repair
 
 The three-dot menu's Why not... action retains its selected-bar ASCII overlay,
