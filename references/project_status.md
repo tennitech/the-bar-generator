@@ -3,6 +3,31 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 scope transition and X-scale correction
+
+Owner live testing confirmed the actual-audio scope works, then identified a
+frequency/density ramp after parameter edits. The controller cleared the live
+ring on every edit and stretched the growing partial buffer across the full
+bar. It now retains a bounded continuous recording through shape/depth/rate
+and enabled/disabled edits. Changing a timebase reframes actual retained history
+once; later packets keep that fixed physical X scale. Missing history stays
+blank on the left, with recorded seconds and unrecorded space explicitly labeled.
+
+Views spanning an edit say they include parameter changes. Silent rendering
+holds its previous actual frame with a previous-settings label while the latest
+replacement renders; stale completions cannot replace it. Frozen frames and
+recordings remain exact through edits, mute, incoming data and background render
+completion until playback resumes. Audio graph/ramp behavior, fixed gain scale,
+current 50fps GIF cadence and encoder guards are unchanged. Partial-history
+preview, header, SVG and PNG share the same bounded coverage geometry.
+
+See [transition QA and owner checklist](waveform_scope_transitions_qa.md).
+Source, numerical/controller and native raster checks are distinct from browser
+verification. Existing browser restrictions remain respected; owner live
+feedback is the supplied rendered evidence, and no new browser pass is claimed.
+
+
+
 ## November 10 routed shell cache follow-up
 
 Live verification of merged #144 found a warm browser could keep the old fetched
@@ -21,6 +46,7 @@ inline scripts, bootstrap syntax and whitespace checks pass. Deployed browser
 GIF/PNG verification
 follows the protected follow-up merge. No cache disabling or hard-refresh
 workaround is required from the user.
+
 ## November 10 official secondary composition audit
 
 The current official Brand Hub Secondary Colors page was opened in the permitted
@@ -77,6 +103,7 @@ GIF: 166 frames / 3330 ms / 455,925 bytes, with 43,140 edge-row differences in
 measured straight bands. Post-deployment GIF verification follows the protected
 merge. Prior denied local-browser calls were not retried. Native audio, physical
 viewer perception and formal RPI approval are separate from these checks. See [GIF edge QA](gif_edge_qa.md) and its generated review image.
+
 ## November 10 actual audio Waveform scope
 
 Following the owner's VCO/VCA examples and explicit request for a direct scope,

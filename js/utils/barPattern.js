@@ -185,16 +185,18 @@ function createWaveformPatternGeometry(options = {}) {
     const width = Number(options.exactBarWidth) || 250, height = Number(options.barHeight) || 18;
     const startX = Number(options.barStartX) || 0, startY = Number(options.barY) || 0;
     const scale = Number(options.waveformScope.gainScale) || .1;
+    const from = clampWaveformValue(Number(options.waveformScope.startFraction) || 0, 0, 1);
+    const to = clampWaveformValue(Number.isFinite(options.waveformScope.endFraction) ? options.waveformScope.endFraction : 1, from, 1);
     const count = data.length / 2, curve = [];
     for (let i = 0; i < count; i++) {
-      const x = startX + (i + .5) / count * width;
+      const x = startX + (from + (i + .5) / count * (to - from)) * width;
       // Each vertical segment retains the actual minimum and maximum PCM in
       // its time bin. No oscillator formula or global gain is drawn here.
       for (const value of [data[i*2+1], data[i*2]]) curve.push({ x,
         y: startY + height * (.5 - .5 * Math.max(-1, Math.min(1, value / scale))) });
     }
     const zero = startY + height / 2;
-    return { curve, polygon: [{x:startX,y:zero}, ...curve, {x:startX+width,y:zero}] };
+    return { curve, polygon: [{x:startX+from*width,y:zero}, ...curve, {x:startX+to*width,y:zero}] };
   }
 
   const finite = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;

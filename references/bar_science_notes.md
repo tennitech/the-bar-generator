@@ -440,6 +440,47 @@ preview clock, SVG/PNG, alpha-conversion source or recorded-audio history contra
 is altered. See [timing measurements, format and resource limits](gif_cadence_benchmark.md).
 
 
+## Scope history and fixed physical X coverage — November 10, 2026
+
+Owner live QA exposed a presentation error in the actual PCM scope: configure()
+cleared its ring on each edit, and tick() passed the available duration instead
+of the requested duration to geometry. Stretching that progressively longer
+recording over the full width made the displayed frequency appear to grow.
+
+The X window now always spans the requested physical duration, quantized once
+to an integer extrema-pair count. For N available pairs in a target window of M
+pairs, live coverage is `[1-N/M, 1]`. Bins and the closing polygon stay inside
+that known region. The unknown prefix receives no paint or extrapolated samples;
+its duration is reported as unrecorded. Each added packet advances the visible
+history on the same X scale instead of rescaling a shorter signal to full width.
+The min/max bin count is proportional to coverage, keeping the display’s time
+resolution consistent during filling instead of initially allocating the whole
+1024-bin budget to a short recording.
+
+The live ring retains the longest supported window plus two replay seconds,
+including while shorter or disabled-LFO views are selected. Parameter edits
+retain the actual continuous post-gain samples and their real audible ramps.
+A view containing the latest edit boundary is labeled as including parameter
+changes. The caption does not claim all retained samples match current controls
+or place a sample-exact marker on an asynchronously requested edit. Once older
+history has left the visible window, the mixed-history label clears.
+
+Offline work retains the prior actual frame while the replacement is pending,
+with an explicit previous-settings label. Successful latest renders replace it
+once as complete data; stale or failed jobs do not erase it. No interpolation of
+old/new waveform values is used. Freeze pins the exact frame, timebase and
+export recording through parameter changes and background completion. Resume
+selects current live history or the latest complete silent render. Source labels
+remain live, recorded or offline as appropriate. The existing actual-audio graph,
+LFO/carrier ramps and output route are unchanged.
+
+Native/silent contexts may have different sample rates; their physical durations
+round by at most one extrema pair, rather than changing while history fills.
+SVG/PNG freeze these same coverage bounds. Insufficient replay history still
+gives the existing actionable GIF error; recorded GIFs retain their fixed
+coverage and current 50fps planning/guard behavior. See
+[transition regression and native raster QA](waveform_scope_transitions_qa.md).
+
 ## GIF edge quantization — November 10, 2026
 
 Straight waveform discontinuities already use exact one-sided vertices in the
@@ -449,3 +490,4 @@ GIF now thresholds coverage uniformly at one half. This rounds raster boundaries
 without changing scientific coordinates, duty cycles, official viewport or SVG/PNG
 geometry. Curves and diagonals retain GIF’s binary-alpha pixel steps. Carrier,
 LFO and audio math are untouched. See [encoded evidence](gif_edge_qa.md).
+
