@@ -3,6 +3,31 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 actual audio Waveform scope
+
+Following the owner's VCO/VCA examples and explicit request for a direct scope,
+Waveform now displays extrema from the actual post-gain audio signal. A silent
+side-tap worklet records live audio; with Audio off, OfflineAudioContext runs
+the same shared graph without sound. The view fits two LFO periods or at least
+four carrier periods, including 28.571 seconds at .07Hz. Source, time window,
+filling history and fallback/error state are visible. No mathematical waveform
+or high-rate average substitutes for actual data.
+
+The audible oscillator graph and ramps are extracted intact into a shared
+module and checked against an independent pre-refactor reference. The scope's
+silent output cannot duplicate the audible signal. Ring history is bounded,
+render jobs are debounced/serialized, stale results are discarded, and frozen
+frames remain fixed while explicit audio may continue. Main/header/SVG/PNG/GIF
+share PCM geometry. Still files capture the displayed frame; GIF replays frozen
+recorded history from that frame and can reset when history wraps. The combined
+candidate preserves #153’s 50fps/20ms GIF cadence and encoder guards. It passes
+938 unit tests in 83 suites; native QA includes 90 exact PCM parity cases,
+42 AM-product cases, 24 PNGs and six GIFs through all 600 decoded frames.
+
+See [model and source distinction](bar_science_notes.md#actual-audio-waveform-scope--november-10-2026)
+and [scope QA](waveform_signal_qa.md). No browser escalation was retried.
+Native offline graph/data/codec checks do not establish rendered browser UI,
+physical listening, native downloads, screen-reader output or formal RPI approval.
 
 ## November 10 GIF cadence closer to display-driven motion
 

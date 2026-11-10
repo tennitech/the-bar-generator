@@ -1030,13 +1030,15 @@ function captureLogoExportSnapshot() {
   // Still files and clipboard images always use the default resting phase.
   // GIF adds its full cycle to this same captured origin without changing live playback.
   const lfoSettings = currentShader === 4 ? getWaveformLfoSettings() : null;
+  const scopeCapture = currentShader === 4 ? window.waveformScopeController?.capture(getLoopRuntimeValues().waveformReverse === true) : null;
   const values = JSON.parse(JSON.stringify({ ...getCurrentBarPatternValues(REFERENCE_WIDTH), ...getLoopRuntimeValues(),
     loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: 0,
-    waveformAmplitude: lfoSettings ? window.WaveformLfo.visualAmplitude({
-      amplitude: window.WaveformLfo.amplitude(0, lfoSettings),
-      rate: lfoSettings.rate,
-      amount: lfoSettings.enabled ? lfoSettings.depth / 100 : 0
-    }, lfoSettings.type) : 1 }));
+    ...(scopeCapture ? { waveformScope: scopeCapture.frame,
+      waveformScopeReplaySeconds: scopeCapture.recording?.replaySeconds } : {}),
+    waveformLfoPhase: 0,
+    waveformLfoSampleRate: lfoSettings ? lfoSettings.rate : 2,
+    waveformLfoAmount: lfoSettings?.enabled ? lfoSettings.depth / 100 : 0 }));
+  if (values.waveformScopeRequired && !scopeCapture) throw new Error('The audio scope is not ready. Try exporting again in a moment.');
   const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values, preview: false });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
@@ -1053,6 +1055,7 @@ function captureLogoExportSnapshot() {
   const letters = composition === 'bar' ? '' : Object.values(geometry.paths).map(path => `<path d="${path}" fill="${foreground}"/>`).join('');
   const svgSource = `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="${viewport.width}" height="${viewport.height}" viewBox="${viewport.x} ${viewport.y} ${viewport.width} ${viewport.height}" xmlns="http://www.w3.org/2000/svg"><title>${escapeExportXML(title || `RPI ${family} ${composition === 'bar' ? 'bar' : 'logo'}`)}</title>${letters}${barMarkup}</svg>`;
   return Object.freeze({ family, currentShader, colorMode: currentColorMode, foreground, rgb, inkName, title,
+    waveformRecording: scopeCapture?.recording,
     values: Object.freeze(values), geometry, composition, viewport: Object.freeze(viewport), dimensions: Object.freeze(dimensions), svgSource });
 }
 
@@ -1109,13 +1112,9 @@ function createCapturedGifRenderer(snapshot, framePlan) {
     const values = { ...snapshot.values,
       loopOffsetX: Number(snapshot.values.loopOffsetX || 0) + framePlan.getLoopOffsetX(progress),
       timeSeconds: Number(snapshot.values.timeSeconds || 0) + (snapshot.family === 'waveform' ? framePlan.getTimeSeconds(progress) : 0) };
-    if (snapshot.family === 'waveform') values.waveformAmplitude = window.WaveformLfo.amplitude(
-      framePlan.periodSeconds * progress, { enabled: values.waveformLfo, rate: values.waveformLfoRate, depth: values.waveformLfoDepth, type: values.waveformLfoType });
-    if (snapshot.family === 'waveform') values.waveformAmplitude = window.WaveformLfo.visualAmplitude({
-      amplitude: values.waveformAmplitude, rate: values.waveformLfoRate, amount: values.waveformLfo ? values.waveformLfoDepth / 100 : 0
-    }, values.waveformLfoType, framePlan.periodSeconds / framePlan.frameCount);
-    if (framePlan.lfoAveraged) values.waveformAmplitude = 1 - values.waveformLfoDepth / 100
-      + values.waveformLfoDepth / 100 * window.WaveformLfo.mean(values.waveformLfoType);
+    if (snapshot.family === 'waveform' && snapshot.waveformRecording) {
+      values.waveformScope = snapshot.waveformRecording.frame(snapshot.waveformRecording.replaySeconds * progress);
+    }
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save(); ctx.scale(dimensions.scale, dimensions.scale); ctx.translate(-viewport.x, -viewport.y);
     ctx.fillStyle = foreground; letters.forEach(path => ctx.fill(path));
