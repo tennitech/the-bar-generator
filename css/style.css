@@ -1198,7 +1198,8 @@ input:checked+.slider:before {
   background: var(--bg-sidebar);
   border-radius: 0 0 var(--control-radius) var(--control-radius);
   padding: 4px;
-  transition: all var(--duration-fast) ease;
+  /* Fade only the surface; viewport fitting must settle without resizing motion. */
+  transition: opacity var(--duration-fast) ease, visibility 0s linear var(--duration-fast);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -1212,6 +1213,7 @@ input:checked+.slider:before {
   opacity: 1;
   visibility: visible;
   pointer-events: all;
+  transition-delay: 0s;
 }
 
 .custom-option {

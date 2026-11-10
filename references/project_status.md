@@ -3,6 +3,41 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 picker interruption and dismissal polish
+
+Custom pickers now use the same cleanup when switching directly between
+pickers, pressing outside, moving focus to another control, leaving the window,
+hiding the page or navigating away. A closed picker clears its active row and
+`aria-activedescendant`, reports `aria-expanded=false`, and hides its listbox
+from accessibility APIs immediately. Dismissal preserves the new focus target
+and the current selected value. Selection still returns focus to the trigger,
+now without scrolling the page.
+
+The existing 150 ms opacity fade applies in both directions, with visibility
+held only for the exit fade. Height and position settle immediately when the
+popup fits or flips; interrupted fades reverse through CSS with no cleanup
+timer. Existing reduced-motion rules remove duration and delay. No picker
+colors, typography, options, control layout, artwork, audio or exports change.
+
+Eight controller regressions cover switching/reopening, outside pointer capture,
+synthetic clicks, programmatic focus, blur/page lifecycle, draft cancellation,
+Escape/Tab and selection focus return. Routed shell and asset cache keys advance
+together. The live cloud browser loaded the generator and Export menu during
+inspection, then lost its tab; one fresh recovery tab failed with
+`Protocol error (Page.enable): Target crashed`. Patched desktop/phone rendering,
+visual motion and touch validation therefore remain blocked, not passed. No
+screenshots, physical-device validation, owner acceptance or formal brand
+approval are claimed. Exact unit/CI results are recorded in the pull request.
+
+PR #170's serialized release reconciles with main `631e40f`, retaining #169's
+optional larger-controls feature, early sizing restoration, stylesheet/helper
+cache keys and QA record. Schematic export and Ring Wavefunction naming also
+remain intact. Shared shell, route, bootstrap, base CSS and picker references
+use `20261110-picker-serialized-release`; newer independent helper keys remain.
+Focused picker, shell, guidance, theme, export, ring and larger-controls tests
+are rerun before required CI. Browser verification is limited to what the cloud
+browser permits; final CI, deployment and production evidence is in the PR.
+
 ## November 10 optional larger editor controls release candidate
 
 The generator's three-dot menu offers **Larger controls and text**, a native
