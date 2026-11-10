@@ -94,6 +94,16 @@ not encoded in the transparent GIF. Source alpha quantization is the current
 main policy; queued PR #144 changes its edge policy separately and must survive
 serial reconciliation.
 
+## Reconciliation with published marquee follow-up
+
+Published main `5f7ad20` (PR #146) is merged into this candidate. The only
+conflicts were adjacent Home script references: the new scientific-name catalog
+key and main's newer responsive-marquee key are both retained on both Home URLs.
+All GIF/model/drawing/control source bytes match the fully decoded `8c1e2d1`
+candidate, so its complete raster/codec evidence applies unchanged. Current
+main's markup/CSS/runtime/test improvements and additive status section survive.
+The complete combined suite passes: 912 tests in 81 suites. The initial source-only run was 903 tests in 80 suites; the extra nine tests are main’s published marquee coverage. All 84 inline scripts still compile and whitespace checks pass.
+
 ## Browser and release state
 
 No browser launch, desktop escalation, denied launch retry or close/reopen CI

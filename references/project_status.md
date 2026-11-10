@@ -23,7 +23,7 @@ delays retain approximately 30 fps without a duplicated terminal frame. Existing
 SPEED below 1.2× reports a recovery message before rendering. Extending that
 budget is a pending scope decision, not silently assumed.
 
-Validation: 903 tests in 80 suites pass, all 84 inline scripts compile, 80 native raster recurrence cases pass and four real GIFs decode through all 3600 frames with exact source-pixel parity, timing, transparency and seam checks. A decoded-frame review image was inspected. Release state and limits are recorded in [GIF QA](quantum_gif_qa.md).
+Validation after retaining published marquee follow-up #146: 912 tests in 81 suites pass, all 84 inline scripts compile, 80 native raster recurrence cases pass and four real GIFs decode through all 3600 frames with exact source-pixel parity, timing, transparency and seam checks. A decoded-frame review image was inspected. Release state and limits are recorded in [GIF QA](quantum_gif_qa.md).
 Browser/desktop launch restrictions remain respected; native Node raster/codec
 checks do not establish browser download behavior or perceived smoothness.
 
@@ -48,6 +48,26 @@ touch target. Rendered corner/focus appearance remains unverified under the know
 restrictions; no denied browser action is retried.
 
 The release also preserves PR #143's GIF frame-rate implementation and cache URLs.
+
+## November 10 marquee focus across responsive rows
+
+Nonselected complete bars now dim to 20% opacity, with a uniform 240 ms ease-out
+for both directions and no gap-specific hold or delay. The selection manager
+registers every row added during responsive fitting, repairing lower rows that
+previously had pointer handlers but no stage-wide dimming callback. This applies
+during initial layout and later resize; pruning a hovered link also clears the
+shared owner immediately. DPR does not multiply CSS coordinates.
+Keyboard priority, visible focus, static artwork, drag behavior and reduced
+motion remain intact. Both Home URLs refresh only the affected runtime/CSS keys.
+
+The final combined candidate on main `e19238a` passes all 904 tests in 80 suites.
+Responsive Node VM regressions cover portrait, ultrawide, 4K and 8K CSS viewports,
+DPR1/2/3 and row removal/recreation. They exercise supplied analytic bounds and
+actual fitting/selection code; no rendered or physical-display pass is claimed.
+The optional browser harness now includes native bottom-row hit tests and the
+new opacity/timing expectations. Existing browser permission restrictions are
+respected. See [source finding and QA limits](marquee_focus_followup_qa.md).
+
 
 ## November 10 GIF sampling and resource limits
 
