@@ -2,6 +2,10 @@
 // --- Custom Dropdown Logic ---
 function setupCustomDropdowns() {
   const selects = document.querySelectorAll('.control-select');
+  const dismissals = new Map();
+  const dismissOthers = target => dismissals.forEach((dismiss, wrapper) => {
+    if (!target || !wrapper.contains(target)) dismiss();
+  });
 
   selects.forEach(select => {
     // Check if already initialized to avoid duplicates
@@ -46,6 +50,7 @@ function setupCustomDropdowns() {
     optionsList.className = 'custom-select-options';
     optionsList.id = `${select.id}-options`;
     optionsList.setAttribute('role', 'listbox');
+    optionsList.setAttribute('aria-hidden', 'true');
     optionsList.setAttribute('aria-label', accessibleLabel);
     trigger.setAttribute('aria-controls', optionsList.id);
     wrapper.appendChild(optionsList);
@@ -194,6 +199,7 @@ function setupCustomDropdowns() {
     function setOpen(open) {
       wrapper.classList.toggle('open', open);
       trigger.setAttribute('aria-expanded', String(open));
+      optionsList.setAttribute('aria-hidden', String(!open));
       if (open) {
         preparePreviews();
         fitMenu();
@@ -207,26 +213,21 @@ function setupCustomDropdowns() {
       }
     }
 
+    dismissals.set(wrapper, () => setOpen(false));
+
     function commitOption(option) {
       if (option.classList.contains('is-hidden') || option.classList.contains('is-disabled')) return;
       select.value = option.dataset.value;
       select.dispatchEvent(new Event('change', { bubbles: true }));
       setOpen(false);
-      trigger.focus();
+      trigger.focus({ preventScroll: true });
     }
 
     // Toggle dropdown
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
       trigger.focus({ preventScroll: true });
-      document.querySelectorAll('.custom-select-wrapper').forEach(w => {
-        if (w !== wrapper) {
-          w.classList.remove('open');
-          w.querySelectorAll('.is-active').forEach(option => option.classList.remove('is-active'));
-          const otherTrigger = w.querySelector('.custom-select-trigger');
-          if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
-        }
-      });
+      dismissOthers(trigger);
       setOpen(!wrapper.classList.contains('open'));
     });
 
@@ -288,18 +289,15 @@ function setupCustomDropdowns() {
 
   window.SecondaryColorGuidance?.setup(document);
 
-  // click outside to close dropdowns
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.custom-select-wrapper')) {
-      document.querySelectorAll('.custom-select-wrapper').forEach(w => {
-        w.classList.remove('open');
-        w.querySelectorAll('.is-active').forEach(option => option.classList.remove('is-active'));
-        const trigger = w.querySelector('.custom-select-trigger');
-        if (trigger) {
-          trigger.setAttribute('aria-expanded', 'false');
-          trigger.removeAttribute('aria-activedescendant');
-        }
-      });
-    }
+  // Dismiss before another control handles the pointer, even when its click
+  // stops propagation. Synthetic clicks and programmatic focus get the same
+  // cleanup, without returning focus away from the user's new target.
+  document.addEventListener('pointerdown', event => dismissOthers(event.target), true);
+  document.addEventListener('click', event => dismissOthers(event.target));
+  document.addEventListener('focusin', event => dismissOthers(event.target));
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) dismissOthers();
   });
+  window.addEventListener('blur', () => dismissOthers());
+  window.addEventListener('pagehide', () => dismissOthers());
 }
