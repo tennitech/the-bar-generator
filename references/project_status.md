@@ -3,6 +3,23 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 Color Theme visual scrollbar correction
+
+The Color Theme picker’s thin right-edge scrollbar is hidden using scoped
+standard/WebKit scrollbar rules. Its automatic vertical overflow and native
+wheel, trackpad, touch and keyboard/scroll-into-view paths remain. Existing
+pointer-transparent top/bottom overflow fades are restored as the default menu’s
+scroll affordance, without adding another right-edge line. Other dropdowns and
+the sidebar scrollbar are unchanged.
+
+The separate horizontal ink mark, selected checkmark, independent focus outline,
+exact hover/selected/active text pairings and neutral idle rows are preserved.
+No controller or palette changes. CSS, route shell/bootstrap/fallback and Home
+prefetch versions advance together. All 20 focused tests in five suites,
+JavaScript/80 inline-script syntax and 26 cache/source checks pass after preserving
+#160. See [scrollbar correction QA](theme_scrollbar_qa.md).
+Browser/served-file checks remain restricted; no blocked route is retried.
+
 ## November 10 exact brand text in interactive theme rows
 
 By explicit owner direction, hovered, selected and keyboard-active Color Theme
