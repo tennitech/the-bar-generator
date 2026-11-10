@@ -16,14 +16,13 @@ function setupCustomDropdowns() {
 
     const isColorTheme = select.id === 'color-mode-select';
     if (isColorTheme) wrapper.classList.add('color_theme-select');
-    function addColorSwatch(element, value) {
+    function addColorLabel(element) {
       const label = document.createElement('span');
       label.className = 'color_theme-label';
       label.dataset.selectLabel = '';
       label.textContent = element.textContent;
       element.textContent = '';
       element.appendChild(label);
-      element.appendChild(window.themeModeUtils.createColorSwatch(document, value));
     }
 
     // Create trigger
@@ -39,7 +38,7 @@ function setupCustomDropdowns() {
     const selectedOption = select.options[select.selectedIndex];
     trigger.textContent = selectedOption ? selectedOption.textContent : 'Select...';
     trigger.setAttribute('aria-label', `${accessibleLabel}: ${trigger.textContent}`);
-    if (isColorTheme) addColorSwatch(trigger, select.value);
+    if (isColorTheme) addColorLabel(trigger);
     wrapper.appendChild(trigger);
 
     // Create options list
@@ -107,7 +106,8 @@ function setupCustomDropdowns() {
       customOption.dataset.value = option.value;
       if (isColorTheme) {
         customOption.classList.add('color_theme-option');
-        addColorSwatch(customOption, option.value);
+        addColorLabel(customOption);
+        window.themeModeUtils.styleColorThemeOption(customOption, option.value);
       }
       if (option.hasAttribute('data-coming-soon')) {
         // Native touch pickers cannot expose hover hints: include availability

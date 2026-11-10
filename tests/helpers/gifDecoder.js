@@ -69,7 +69,12 @@ function* decodeFrames(gif) {
   const canvas = new Uint8Array(gif.width * gif.height * 4);
   let previous = null, restore = null;
   for (const frame of gif.frames) {
-    if (previous && previous.disposal === 2) {
+    if (previous && previous.disposal === 2 && previous.transparent && previous.transparentIndex === gif.backgroundIndex
+      && previous.left === 0 && previous.top === 0 && previous.width === gif.width && previous.height === gif.height) {
+      // Same disposal rule, one native clear instead of one fill call per pixel.
+      // Keep long, high-resolution independent decode checks practical.
+      canvas.fill(0);
+    } else if (previous && previous.disposal === 2) {
       for (let y = previous.top; y < previous.top + previous.height; y++) for (let x = previous.left; x < previous.left + previous.width; x++) {
         const i = (y * gif.width + x) * 4;
         if (previous.transparent && previous.transparentIndex === gif.backgroundIndex) canvas.fill(0, i, i + 4);

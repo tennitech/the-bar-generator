@@ -1,128 +1,146 @@
 # Particle on a Ring: GIF QA
 
-November 10, 2026. Based on published main `e19238a`; isolated branch
-`codex/feat-phase-weave-gif`. The earlier Phase Weave candidate `7a12cdf` is
-preserved and is not cherry-picked. The latest user correction calls for an
-established scientific name, so this candidate uses **Particle on a Ring**.
-The exact picture is three **wavefunction phase projections**. Sources,
-equations, chosen modes and drawing limits are in [the model record](quantum_model.md).
-No claim of a particle trajectory, probability-density picture, physical time
-calibration or absolute certification of the decorative rendering is made.
+November 10, 2026. Current candidate retains published main through `492fec2`
+(PR #153), including the neutral contextual theme previews/reference pairs, disclosures,
+outlined Randomize die and responsive marquee behavior. Original feature `8c1e2d1`
+and creative-name candidate `7a12cdf` remain preserved. No model or pattern geometry
+change is made; legacy wave-quantum identifiers, URLs and saved links survive.
 
-## Behavior and compatibility
+## Scientific name and picture
 
-The existing GIF menu action is now available for legacy style `wave-quantum`.
-Before asynchronous work, it captures exact live phase, model speed, REVERSE,
-ink, composition, raster size and title. Every frame uses the same analytic
-state and three fixed polygons as the preview. Live controls/playback/settings
-are never changed. Natural period is `120 / SPEED` seconds. Main's actual
-unchecked direction increases phase and checked REVERSE decreases it; GIF
-matches that code, correcting older prose that described the opposite.
+**Particle on a Ring** names the actual ideal free-particle model. Its picture is
+three wavefunction phase projections, `Re(exp(iα)ψ)` at 0°, 60° and 120°, of the
+normalized equal-weight periodic mode sum −4, 3, 7 with n² time evolution. The
+ribbons show convention-dependent amplitude projections, not particle tracks,
+probability density or measured/calibrated physical data. [Primary sources,
+equations and drawing assumptions](quantum_model.md) support this identification;
+no absolute certification of decorative rendering is implied.
 
-SVG/PNG/clipboard retain main's phase-zero still-image policy. Existing bar-only
-and full-logo viewports, transparent padding, approved theme inks, filenames,
-legacy routes, DOM/control IDs, query fields and saved share envelopes remain.
-Model and bar-pattern sources byte-match the base. No production dependency or
-framework is added; the optional native raster package is QA-only.
+## Default export and bounded quality policy
 
-## Preserved budget and pending scope choice
+Default 1× now exports the **whole seamless 120-second recurrence, 3600 frames at
+30 fps**. Ring-only duration/frame limits are 120 seconds/3600; Ticker, Waveform
+and Gradient keep 100 seconds/3000. Every family retains the 32 MiB two-input-frame
+and 64 MiB encoded guards. Nothing changes SPEED automatically. Below 1×, the
+natural cycle would exceed 120 seconds; the action explains the limit before
+rendering, with an explicit recovery message and no truncated/nonseamless file.
 
-The existing 100-second / 3000-frame / 32 MiB two-input-frame / 64 MiB encoded
-limits are unchanged. At 30 fps, the natural 1× loop needs 120 seconds and 3600
-frames; 0.2× needs 600 seconds and 18000 frames. Those requests cannot satisfy
-the preserved budget. The GIF job therefore asks for SPEED ≥1.2× before renderer
-allocation, without silently changing speed, reducing cadence or truncating the
-cycle. The encoded-file cap can still reject especially large jobs. The user
-was asked whether to extend only this model's duration/frame budget; no
-affirmative answer has been received. Default 1× GIF success is **not** claimed.
-The bounded export is ready for review; that product choice remains explicit.
+For full-logo loops longer than one minute, GIF uses Standard (1160 × 762 px).
+The action visibly discloses Standard and its actual pixel dimensions before
+activation; its accessible name, snapshot, progress and filename agree. Bar-only
+keeps the selected Standard/Large size. Full-logo loops up to one minute likewise
+keep Large if selected. The size selector/saved settings and PNG/SVG/clipboard
+behavior are never changed. This trades resolution for a complete smooth loop,
+with transparent background and unchanged official proportions/model coordinates.
 
-## Automated regression evidence
+The measured 30-second Large full logo was 20.16 MB; roughly 80 MB at 120 seconds
+would exceed 64 MiB. Standard was 8.45 MB, suggesting roughly 34 MB at 120 seconds.
+These are estimates motivating the policy; direct default-loop measurements are
+recorded below. No silent cadence reduction, speed-up or partial-cycle export is
+used. A rectangle-update alternative was rejected before publication: retaining
+the lettering also retains the initial bar unless extra nonuniform-timing frames
+are introduced. The shipped codec and full-frame disposal 2 remain unchanged.
 
-- 903 tests pass in 80 suites, full run without cache.
-- All 84 inline scripts and every changed JavaScript source compile.
-- Whitespace validation passes.
-- New tests exercise the actual speed/direction collector, exact live phase,
-  forward/reverse model parity, fractional speeds, centisecond progress, final
-  seam step, bar-only/full-logo model polygons, synchronous snapshot freezing
-  while controls/theme/size/composition change, unchanged still output, native
-  GIF action visibility and early over-budget rejection without a download.
-- Existing suites retain shared state, settings/history, transport/reduced
-  motion, export UI/cancellation, encoder memory/file guards and other families.
+Capture freezes exact live phase, speed, reverse, ink, composition, actual size
+and title synchronously before yielding. First-frame phase is not reset. Current
+main increases model phase with REVERSE unchecked and decreases with it checked;
+GIF matches that actual source. Main preview transport and settings never change.
+SVG/PNG/clipboard keep main's phase-zero policy and selected size.
 
-## Actual raster, codec and independent decoder
+## Regression and actual-byte evidence
 
-Reproducible command (optional QA environment package only):
+Final full suite: **943 tests in 82 suites pass**, with no cache. All **84 inline scripts** and changed JavaScript compile, and whitespace checks pass. Focused tests cover default download requests, actual default dimensions,
+resolution disclosure before activation, size/composition/speed updates, in-flight
+snapshot edits, fractional speeds, encoder budget scoping, unchanged memory/file
+limits, phase/direction, model polygons, timing and seam step. Full final-suite
+results are recorded with the final handoff and PR.
+
+The original 4× matrix encoded four complete 30-second GIFs, then independently
+decoded all 3600 frames with exact captured-source RGBA equality on every frame.
+Each contained 900 distinct frames, balanced 30/40 ms delays, repeat 0, transparent
+index 0 and disposal 2. First/full-recurrence coverage was identical; the final
+frame was distinct with one ordinary step to the seam. Eighty then-current
+raster theme/size/composition/direction cases also passed. Historical measurements
+are in [results](review-images/ring-gif/results.json).
+
+After retaining #150, **72 current-theme default-speed raster cases** (nine themes,
+both selected sizes/compositions/directions) pass exact foreground, 120-second /
+3600-frame plans, distinct nearby phase and pixel-identical recurrence. Full-logo
+captures consistently use Standard under the advertised policy.
+
+The direct default-speed matrix uses real full canvases, the existing vendored
+codec and the independent decoder through every frame. It compares 64 evenly
+spaced full-pixel source references per GIF, including first and last, and checks
+all decoded frame hashes for motion, metadata/timing and closure. The full-canvas
+transparent-disposal branch of the independent test decoder now uses one bulk
+clear rather than a per-pixel clear; partial-frame/palette-background behavior
+is retained and existing decoder/codec tests pass. This is test throughput only.
+
+### Direct default-speed measurements
+
+All three actual 120-second GIFs passed full independent decoding through
+**10,800 frames**. Each has 3600 distinct frames, balanced 30/40 ms delays, exact
+120000 ms duration, infinite repeat, transparent index 0 and disposal 2. All 192
+full-pixel source reference frames match exactly, including each first and last.
+Full-recurrence raster equality and the ordinary last-to-first phase step pass.
+
+| Selected size / composition | Actual GIF size | Canvas | Bytes | Adapter encode seconds |
+| --- | --- | --- | --- | --- |
+| standard / bar | standard | 1160 × 232 | 11,303,318 | 52.16 |
+| large / bar | large | 2320 × 464 | 27,414,139 | 181.39 |
+| large / logo | standard | 1160 × 762 | 33,795,017 | 131.97 |
+
+The selected Large full-logo request therefore succeeds at the explicitly
+advertised Standard size: **33.80 MB**, comfortably inside 64 MiB. Large bar-only
+keeps its selected resolution at **27.41 MB**; Standard bar-only is **11.30 MB**.
+Standard full-logo selection has the same canvas/render/codec path as this
+advertised Standard rendition; snapshot and UI tests cover both selected sizes.
+
+These are single-run serial Node adapter measurements under shared cloud load,
+not browser-worker performance guarantees. Progress/cancellation stay available.
+Live input bounds are 2,152,960 / 8,611,840 / 7,071,360 bytes respectively, with
+at most two frames in flight; this is not a total-process memory bound. Structured
+[default results](review-images/ring-gif/default-results.json) retain exact values.
+
+![Default-speed decoded frames](review-images/ring-gif/default-decoded-frames.png)
+
+The image was visually inspected. Its labels identify the **selected** size;
+Large + logo uses the advertised Standard 1160 × 762 GIF. The encoding run began
+before #150 reconciliation and captured its then-current white/red QA inks.
+The 72 post-reconciliation raster cases separately verify all nine current
+foreground mappings. Exact two-color GIF byte counts depend on palette indices,
+not the foreground RGB values. Review backgrounds are not encoded in the GIF.
+Only project geometry, unchanged official lettering and QA labels are published.
+No user upload or outside reference image is included.
+
+Reproduction (optional native raster QA dependency, no production dependency):
 
 ```sh
+RPI_RING_GIF_SPEED=1 \
+RPI_RING_GIF_CASES=standard:bar,large:bar,large:logo \
 NODE_PATH=/path/to/native-canvas/node_modules:/path/to/project/node_modules \
-  node scripts/quantumGifEvidence.js /tmp/rpi-ring-gif
+  node scripts/quantumGifEvidence.js /tmp/rpi-ring-gif-default
 ```
 
-80 native raster cases cover every current theme, both sizes/compositions and
-both directions at nonzero phase; recurrence at progress 1 matches progress 0
-pixel-identically and a small phase step changes the raster. Four complete
-30-second GIFs at the existing 4× model speed were then encoded by the shipped
-vendored codec and independently decoded through all **3600 frames**. Each GIF
-contains 900 distinct frames; every decoded RGBA pixel matches its captured,
-palette-quantized source. Both directions and a wrap-crossing starting phase
-are represented. Each GIF has exact 30000 ms duration, balanced 30/40 ms delays,
-repeat 0 (infinite), transparent index 0 and disposal 2. First/full-recurrence
-coverage is identical; the final frame is distinct, with one ordinary encoded
-time step to the seam. There is no duplicate terminal frame.
+## Reconciliation with the later shared 50 fps release
 
-| Export | Canvas | Bytes | Adapter encode seconds |
-| --- | --- | --- | --- |
-| standard / bar | 1160 × 232 | 2,825,839 | 19.89 |
-| standard / logo | 1160 × 762 | 8,450,049 | 58.80 |
-| large / bar | 2320 × 464 | 6,853,366 | 74.00 |
-| large / logo | 2320 × 1524 | 20,161,276 | 206.19 |
-
-Timing is one observation in a shared cloud workload using serial Node codec
-adapters, not native browser workers or a performance guarantee. The live
-input budget remains at most two frames (28,285,440 bytes for Large logo), not
-a total-process memory bound. [Structured results](review-images/ring-gif/results.json)
-contain the exact measurements.
-
-![Independently decoded GIF frames](review-images/ring-gif/decoded-frames.png)
-
-This image was visually inspected. It contains only this project's generated
-primitive geometry, existing official lettering and QA labels; no user-uploaded
-screenshot or third-party reference image is published. It shows decoded frame
-0, 225, 450 and 899 for each export on a dark review backdrop. The backdrop is
-not encoded in the transparent GIF. Source alpha quantization is the current
-main policy; queued PR #144 changes its edge policy separately and must survive
-serial reconciliation.
-
-## Reconciliation with published marquee follow-up
-
-Published main `5f7ad20` (PR #146) is merged into this candidate. The only
-conflicts were adjacent Home script references: the new scientific-name catalog
-key and main's newer responsive-marquee key are both retained on both Home URLs.
-All GIF/model/drawing/control source bytes match the fully decoded `8c1e2d1`
-candidate, so its complete raster/codec evidence applies unchanged. Current
-main's markup/CSS/runtime/test improvements and additive status section survive.
-The complete combined suite passes: 912 tests in 81 suites. The initial source-only run was 903 tests in 80 suites; the extra nine tests are main’s published marquee coverage. All 84 inline scripts still compile and whitespace checks pass.
-
-## Reconciliation with published control disclosures
-
-Published main `df359fd` (PR #147) is also retained. Its native collapsible
-controls, outlined Randomize die, styling and icon licensing survive. Routed
-shell/cache references are rebuilt from main and carry the ring GIF runtime and
-scientific name. Both additive status/licensing sections remain. GIF drawing,
-model and pattern sources still byte-match the fully decoded candidate; main's
-unrelated UI work is preserved in the shared runtime. The full combined suite
-passes: 933 tests in 82 suites, with all 84 inline scripts compiling and no whitespace errors.
+PRs #151–#153 are retained, including the thin paired dice, neutral theme previews
+and 20 ms cadence for translating families. Ring export explicitly retains its
+measured 30 fps default and maximum; its 120-second allowance therefore stays
+3600 frames. This prevents the later shared 50 fps default from breaking default
+ring export or increasing its measured budget. Ring frame plans and phase samples
+exactly match measured commit `33c936e` across 48 speed/phase/direction plans and five phase samples each; renderer/model/encoder sources are byte-identical. The full combined suite passes: 943 tests in 82 suites. No cadence result
+for other families is rolled back.
 
 ## Browser and release state
 
-No browser launch, desktop escalation, denied launch retry or close/reopen CI
-workaround was attempted. Desktop/phone layout, native keyboard interaction,
-real browser downloads, viewer timing and perceived smoothness remain
-unverified. These native checks do not substitute for physical-device or
-formal brand approval.
+No browser/desktop launch, denied-launch retry, protection bypass or close/reopen
+workaround is attempted. Native Node raster/codec measurements do not establish
+browser-worker performance, actual download behavior, physical-device timing or
+perceived smoothness. Existing progress and cancellation remain available.
 
-Ready-PR publication and required Unit tests are recorded in the handoff/PR.
-Merge/deployment remain with serial publisher task
-`01a1c648-8679-70b2-8cc1-6d9514a7c0f4`, coordinated with open PR #144. Do not
-merge concurrently or replace its alpha fix with this branch's older base.
+PR #148 is updated on its existing branch. Serial publisher task
+`01a1c648-8679-70b2-8cc1-6d9514a7c0f4` coordinates normal protected release and
+Pages verification with #144. The default-product decision is resolved by the
+parent: no additional user choice is pending. Preserve #144's alpha fix, this
+ring budget and disclosure, and current main's unrelated UI/theme changes.

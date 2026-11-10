@@ -123,3 +123,23 @@ primitive bar geometry and unchanged official lettering. It contains decoded
 GIF frames and generic QA labels, without the user's reference uploads or any
 new external artwork/font asset. The dark review backdrop is not encoded in the
 transparent GIF. Existing RPI asset permission and approval questions stay open.
+
+
+`references/review-images/ring-gif/default-decoded-frames.png` is the corresponding
+original default-speed (120-second) QA contact sheet, generated from the same
+project primitives/lettering and exact decoded GIFs. Labels describe the selected
+size; the long full-logo rendition uses the disclosed Standard dimensions. The
+run captured then-current test inks before #150 reconciliation; current-theme
+mapping is verified separately. No user upload, external art or font file is added.
+
+## November 10 paired Randomize dice refinement
+
+The flat five-pip predecessor is replaced by a new original vector interpretation
+of the owner's supplied paired-dice reference. A thin outlined rear face sits
+behind an outlined front face with three diagonal round pips. The geometry uses
+a 24-unit viewBox, 1.5-unit strokes and currentColor; pips remain filled circles.
+This follows the owner's later request for this tool's lighter aesthetic rather
+than the reference's heavy filled front. The implementation is project code
+under the existing MIT license. The supplied reference raster is not embedded,
+redistributed, or treated as an external SVG license. Feather sources stay intact.
+

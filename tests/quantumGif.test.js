@@ -20,6 +20,7 @@ function setup() {
   for (const name of ['gradientSpeedSlider', 'gradientReverseToggle', 'rulerRepeatsSlider', 'rulerDivisionsSelect', 'rulerThicknessSlider', 'tickerSlider', 'tickerRatioSlider', 'tickerWidthRatioSlider', 'tickerSpeedSlider', 'tickerReverseToggle', 'waveformSpeedSlider', 'waveformReverseToggle']) r[name] = null;
   r.normalizeLoopSpeed = loops.normalizeLoopSpeed;
   vm.runInContext(main.slice(main.indexOf('function getLoopRuntimeValues('), main.indexOf('function isMotionEnabledForStyle(')), r);
+  r.loopingGifUtils = loops;
   r.select('wave-quantum');
   Object.assign(r.state, { composition: 'bar', size: 'standard' });
   r.state.values.quantumPhase = 0.37123456789;
@@ -95,16 +96,16 @@ test.each(['bar', 'logo'])('GIF draws the same three fixed model polygons at the
 });
 
 test('long natural ring loops retain encoder limits and fail before rendering, without speeding up or shortening', async () => {
-  const { r, elements } = setup(); elements['quantum-speed-slider'].value = '1';
+  const { r, elements } = setup(); elements['quantum-speed-slider'].value = '.5';
   const finish = jest.fn();
   r.document.getElementById = id => elements[id] || { classList: { contains: () => false } };
   r.logoExportUI = { ...r.logoExportUI, begin: () => ({ controller: new AbortController() }), describe() {}, message() {}, finish };
   r.loopingGifUtils = loops; r.transparentGifUtils = gif; r.console.error = jest.fn();
   r.createCapturedGifRenderer = jest.fn(); r.startLogoDownload = jest.fn();
   expect(await r.saveLoopingGIF()).toBeNull();
-  expect(finish).toHaveBeenCalledWith(expect.anything(), 'error', expect.stringContaining('Set SPEED to 1.2× or higher'));
+  expect(finish).toHaveBeenCalledWith(expect.anything(), 'error', expect.stringContaining('Set SPEED to 1× or higher'));
   expect(r.createCapturedGifRenderer).not.toHaveBeenCalled(); expect(r.startLogoDownload).not.toHaveBeenCalled();
-  expect(elements['quantum-speed-slider'].value).toBe('1');
+  expect(elements['quantum-speed-slider'].value).toBe('.5');
   const plan = loops.getLoopingGifFramePlan('wave-quantum', { quantumSpeed: 1 });
   await expect(gif.encode({ width: 1, height: 1, frameCount: plan.frameCount, periodSeconds: plan.periodSeconds })).rejects.toThrow(/limit/);
 });
@@ -125,4 +126,63 @@ test('the existing native GIF action is visible for the legacy ring style', () =
   const main = read('js/main.js');
   vm.runInContext(main.slice(main.indexOf('function updateLoopingGifSaveOption('), main.indexOf('function syncSidebarToggleState(')), r);
   r.updateLoopingGifSaveOption(); expect(r.saveLoopGifButton.hidden).toBe(false);
+});
+
+
+test.each(['logo', 'bar'])('default 1× GIF preserves %s composition, actual phase and honest resolution policy', composition => {
+  const { r, elements } = setup(); elements['quantum-speed-slider'].value = '1';
+  Object.assign(r.state, { composition, size: 'large' });
+  const snapshot = r.captureLogoExportSnapshot({ format: 'gif' });
+  const plan = loops.getLoopingGifFramePlan(snapshot.family, snapshot.values);
+  expect(plan).toMatchObject({ periodSeconds: 120, frameCount: 3600 });
+  expect(snapshot.values.quantumSpeed).toBe(1);
+  expect(snapshot.values.quantumPhase).toBe(model.normalizePhase(0.37123456789));
+  expect(snapshot.composition).toBe(composition);
+  expect(snapshot.dimensions.width).toBe(composition === 'logo' ? 1160 : 2320);
+  expect(snapshot.gifPolicy).toMatchObject({ supported: true, requestedSize: 'large', size: composition === 'logo' ? 'standard' : 'large' });
+  expect(Object.isFrozen(snapshot.gifPolicy)).toBe(true);
+  expect(r.state.size).toBe('large'); expect(elements['quantum-speed-slider'].value).toBe('1');
+  expect(r.captureLogoExportSnapshot().dimensions.width).toBe(2320); // PNG/SVG selection stays Large.
+});
+
+test('ring resolution and duration boundaries preserve resolution up to one minute and never change speed', () => {
+  expect(loops.getRingGifExportPolicy({ quantumSpeed: 2 }, { size: 'large', composition: 'logo' })).toMatchObject({ periodSeconds: 60, size: 'large' });
+  expect(loops.getRingGifExportPolicy({ quantumSpeed: 1.999 }, { size: 'large', composition: 'logo' })).toMatchObject({ size: 'standard' });
+  expect(loops.getRingGifExportPolicy({ quantumSpeed: 0.999 }, { size: 'large', composition: 'bar' })).toMatchObject({ supported: false, size: 'large' });
+});
+
+
+test.each(['logo', 'bar'])('default %s download forwards the 120-second budget and captured actual dimensions', async composition => {
+  const { r, elements } = setup(); elements['quantum-speed-slider'].value = '1';
+  Object.assign(r.state, { composition, size: 'large' });
+  r.document.getElementById = id => elements[id] || { classList: { contains: () => false } };
+  const finished = jest.fn();
+  r.logoExportUI = { ...r.logoExportUI, begin: () => ({ controller: new AbortController() }), describe() {}, ready() {}, message() {}, report() {}, finish: finished };
+  const blob = new Blob(['GIF'], { type: 'image/gif' });
+  r.transparentGifUtils = { ...gif, encode: jest.fn(async request => {
+    expect(request).toMatchObject({ style: 'wave-quantum', periodSeconds: 120, frameCount: 3600,
+      width: composition === 'logo' ? 1160 : 2320, height: composition === 'logo' ? 762 : 464 });
+    return { blob, metrics: {} };
+  }) };
+  r.startLogoDownload = jest.fn();
+  const pending = r.saveLoopingGIF();
+  elements['quantum-speed-slider'].value = '4'; r.state.values.quantumPhase = 0.8;
+  r.state.composition = composition === 'bar' ? 'logo' : 'bar'; r.state.size = 'standard';
+  const result = await pending;
+  expect(result.filename).toContain(composition === 'logo' ? '1160x762' : '2320x464');
+  expect(r.startLogoDownload).toHaveBeenCalledWith(blob, result.filename);
+  expect(finished).toHaveBeenCalledWith(expect.anything(), 'requested', 'GIF download requested.');
+  expect(elements['quantum-speed-slider'].value).toBe('4');
+});
+
+
+test('the shared 50 fps update preserves the ring’s measured 30 fps default and 3600-frame budget', () => {
+  expect(loops.DEFAULT_CAPTURE_FPS).toBe(50);
+  for (const options of [{}, { fps: 50 }]) {
+    const plan = loops.getLoopingGifFramePlan('wave-quantum', { quantumSpeed: 1 }, options);
+    expect(plan).toMatchObject({ periodSeconds: 120, frameCount: 3600 });
+    expect(new Set(gif.frameTiming(plan.periodSeconds, plan.frameCount).delays)).toEqual(new Set([30, 40]));
+  }
+  const ticker = loops.getLoopingGifFramePlan('ticker', { tickerSpeed: .4 });
+  expect(ticker.frameCount).toBe(125);
 });

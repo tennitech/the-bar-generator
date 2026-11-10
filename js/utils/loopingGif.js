@@ -8,11 +8,12 @@
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient', 'wave-quantum']);
-  const DEFAULT_CAPTURE_FPS = 30;
+  // Existing translating families use 50 fps; long ring GIFs retain 30 fps.
+  const DEFAULT_CAPTURE_FPS = 50;
   const MIN_CAPTURE_FPS = 12;
-  const MAX_CAPTURE_FPS = 30;
+  const MAX_CAPTURE_FPS = 50;
   const MIN_CAPTURE_FRAMES = 2;
-  // Covers the existing longest 100-second joint LFO loop at 30 fps.
+  // Retain the existing capture budget; loops over 60 s use fewer samples/s.
   const MAX_CAPTURE_FRAMES = 3000;
   const MIN_GIF_FRAME_DELAY_MS = 20;
   // p5 still uses requestAnimationFrame; this ceiling avoids skipping fast displays.
@@ -188,10 +189,11 @@
       return null;
     }
 
+    const ring = normalizedStyle === 'wave-quantum';
     const fps = clamp(
-      Math.round(toPositiveNumber(options.fps, DEFAULT_CAPTURE_FPS)),
+      Math.round(toPositiveNumber(options.fps, ring ? 30 : DEFAULT_CAPTURE_FPS)),
       MIN_CAPTURE_FPS,
-      MAX_CAPTURE_FPS
+      ring ? 30 : MAX_CAPTURE_FPS
     );
     const barWidth = toPositiveNumber(options.barWidth, 250);
 
@@ -263,6 +265,18 @@
     };
   }
 
+  function getRingGifExportPolicy(values = {}, options = {}) {
+    const model = getQuantumModel();
+    const periodSeconds = model.PERIOD_SECONDS / model.normalizeSpeed(values.quantumSpeed ?? 1);
+    const requestedSize = options.size === 'standard' ? 'standard' : 'large';
+    const useStandard = options.composition !== 'bar' && requestedSize === 'large' && periodSeconds > 60;
+    return {
+      periodSeconds, supported: periodSeconds <= 120,
+      requestedSize, size: useStandard ? 'standard' : requestedSize,
+      note: useStandard ? 'Standard resolution for a full-logo loop longer than one minute.' : ''
+    };
+  }
+
   function getLoopingAnimationState(style, values = {}, options = {}) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
     const framePlan = getLoopingGifFramePlan(normalizedStyle, values, { ...options, carrierOnly: true });
@@ -313,6 +327,7 @@
     normalizeLoopSpeed,
     normalizeMotionSpeedControls,
     isLoopingGifEligibleStyle,
-    getLoopingGifFramePlan
+    getLoopingGifFramePlan,
+    getRingGifExportPolicy
   };
 });

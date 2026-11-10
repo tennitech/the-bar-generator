@@ -84,7 +84,7 @@ The configurable static families retain their natural composition within the can
 
 The combined development checkout includes the revised single Quantum projection model from `ac06247`, `b4288ba`, and `c25cfa5`. It graphs three phase-convention-dependent projections of one normalized free-particle wavefunction on an ideal periodic ring, using modes −4,3,7 with equal coefficient magnitude1/√3. The fixed amplitude bound√3 maps to height; it never uses sampled-peak fitting. A recurrence takes120display seconds at1×, SPEED0.2–4 uniformly scales time. Current main advances model phase by default; REVERSE decreases it. The GIF matches that exact current-model direction. Display seconds have no physical calibration because mass/circumference are unspecified. The curves are not particles, literal trajectories, probabilities or measured data. See [model, equations, sources and limits](quantum_model.md).
 
-Quantum uses the immediate native renderer for main preview and the same phase/polygons in header/SVG/captured PNG; preview bypasses asynchronous static snapshots. Fresh routes and menu selection default to Loop unless reduced motion is requested. Shared restore pauses transport even for older LOOP=true state, drops obsolete density-view fields and retains phase. Same-page legacy-query restoration uses the bounded model normalizers. Phase edits preserve the explicit LOOP selection and temporarily hold model time during pointer drags or numeric editing; playback resumes from the selected phase without catch-up. Particle on a Ring GIF export now captures the exact live phase and model at the natural `120 / SPEED` recurrence with 30 fps centisecond timing. The unchanged 100-second/3000-frame limits require SPEED ≥1.2×; slower loops report the reason without altering controls. See [the model and GIF policy](quantum_model.md). Header rendering and navigation entrance policies are documented separately; no model or brand approval is inferred from software tests.
+Quantum uses the immediate native renderer for main preview and the same phase/polygons in header/SVG/captured PNG; preview bypasses asynchronous static snapshots. Fresh routes and menu selection default to Loop unless reduced motion is requested. Shared restore pauses transport even for older LOOP=true state, drops obsolete density-view fields and retains phase. Same-page legacy-query restoration uses the bounded model normalizers. Phase edits preserve the explicit LOOP selection and temporarily hold model time during pointer drags or numeric editing; playback resumes from the selected phase without catch-up. Particle on a Ring GIF export now captures the exact live phase and model at the natural `120 / SPEED` recurrence with 30 fps centisecond timing. The default 1× natural recurrence is supported with a ring-only 120-second/3600-frame budget and unchanged memory/file guards. Full-logo loops longer than one minute disclose Standard resolution; bar-only retains the selected size. Slower-than-1× loops report the duration limit without altering controls. See [the model and GIF policy](quantum_model.md). Header rendering and navigation entrance policies are documented separately; no model or brand approval is inferred from software tests.
 
 ## Inspection snapshot bounds — October 28, 2026
 
@@ -360,3 +360,13 @@ preview motion, geometry, captured composition or static export coordinates.
 See [measurements and sampling limits](gif_frame_rate_benchmark.md); increased
 temporal samples do not change the pattern's scientific meaning or remove all
 aliasing at dense/fast settings.
+
+## GIF temporal cadence — November 10, 2026
+
+The 30/40 ms GIF sampling cadence is replaced by a 50 fps target on the existing
+elapsed-time sampler. Exact 20 ms holds reduce temporal step size; an odd total
+centisecond requires one 30 ms hold. Full encoded duration and periodic geometry
+closure are preserved, without a duplicated endpoint. The unchanged 3000-frame
+budget can limit longer loops below this target. No scientific coordinates,
+preview clock, SVG/PNG, alpha-conversion source or recorded-audio history contract
+is altered. See [timing measurements, format and resource limits](gif_cadence_benchmark.md).

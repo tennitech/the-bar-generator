@@ -4,29 +4,146 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 
-## November 10 Particle on a Ring GIF candidate
+## November 10 Particle on a Ring GIF export
 
-The former Quantum label becomes **Particle on a Ring**, the established
-scientific model name. Its information card identifies the three wavefunction
-phase projections, equal-weight modes −4, 3, 7 and chosen projection angles.
-It distinguishes amplitude from probability density, trajectories and measured
-data. The creative Phase Weave name is not used. Model, artwork, legacy style,
-URLs, IDs, queries and saved share envelopes remain compatible. Scientific basis
-and primary sources are in [the model record](quantum_model.md).
+The former Quantum label becomes **Particle on a Ring**, the established model
+name. Its card identifies the three convention-dependent wavefunction phase
+projections of equal-weight modes −4, 3, 7. The model, artwork, legacy URLs,
+control IDs, queries and saved links remain unchanged; the creative Phase Weave
+candidate stays separate. [Scientific basis](quantum_model.md).
 
-GIF captures the exact live phase, speed, direction, ink, composition, size and
-title before asynchronous work. Both bar-only and complete-logo frames draw the
-same fixed model polygons as the live view. Existing still/clipboard phase-zero
-behavior stays intact. Natural loops last 120/SPEED seconds; balanced 30/40 ms
-delays retain approximately 30 fps without a duplicated terminal frame. Existing
-100-second/3000-frame, 32 MiB input and 64 MiB encoded limits remain intact, so
-SPEED below 1.2× reports a recovery message before rendering. Extending that
-budget is a pending scope decision, not silently assumed.
+Default 1× exports the complete seamless 120-second cycle at 30 fps, with exact
+live phase, speed/direction, ink and composition captured before asynchronous
+work. Ring-only limits are 120 seconds/3600 frames; other families retain
+100 seconds/3000 frames. The 32 MiB two-input-frame and 64 MiB encoded guards
+remain. SPEED below 1× gets an actionable limit message without changing speed.
 
-Validation after retaining published marquee/control follow-ups #146 and #147: 933 tests in 82 suites pass, all 84 inline scripts compile, 80 native raster recurrence cases pass and four real GIFs decode through all 3600 frames with exact source-pixel parity, timing, transparency and seam checks. A decoded-frame review image was inspected. Release state and limits are recorded in [GIF QA](quantum_gif_qa.md).
-Browser/desktop launch restrictions remain respected; native Node raster/codec
-checks do not establish browser download behavior or perceived smoothness.
+Full-logo GIFs longer than one minute use Standard resolution to stay practical
+within the file budget. The GIF action discloses this and its actual dimensions
+before export; the captured filename/progress use those same dimensions. Bar-only
+retains the selected Standard/Large size, as do full-logo GIFs up to one minute.
+PNG/SVG/clipboard and their selected size remain unchanged. There is no frame-rate
+reduction, truncation, matte or artificial speed change.
 
+Current main's compact theme picker/reference pairs, disclosures, Randomize die
+and responsive marquee follow-ups are preserved. The later 50 fps defaults for translating families are also retained; this bar explicitly keeps its measured 30 fps budget. All 943 tests in 82 suites pass; all 84 inline scripts compile. Three default-speed GIFs decode through all 10,800 frames with verified motion/timing/seam and 192 exact source-pixel references. Default full-logo GIF is 33.80 MB; bar-only is 11.30/27.41 MB at Standard/Large. [GIF QA](quantum_gif_qa.md) records evidence and limits. Browser restrictions remain
+respected; native codec evidence does not establish browser download/playback.
+
+
+## November 10 GIF cadence closer to display-driven motion
+
+The GIF planner now targets approximately 50 fps with 20 ms holds, replacing
+30/40 ms cadence while preserving full duration within 5 ms and the same
+elapsed-time phase samples. Odd centisecond durations need one 30 ms hold.
+Existing 3000-frame, 100-second, two-input-frame/32 MiB and encoded-output/64 MiB
+limits remain. Long loops may therefore have a lower cadence. SVG/PNG, palette,
+current size choices and captured composition are unchanged.
+
+Sixteen matched actual GIFs were independently decoded through all 3400 frames.
+Full-logo Standard Ticker/Waveform/Gradient examples grow from 843046/1538325/
+3019636 bytes to 1404379/2562317/5032238 bytes respectively (2.5/5/10 seconds).
+The measured maximum encoded hold halves from 40 to 20 ms; average held-sample
+age drops from 17 to 10 ms. These are encoded timing metrics, not native browser
+playback proof. All 12 periodic raster recurrence cases close exactly, and 927
+unit tests in 81 suites pass after #151 reconciliation.
+
+The separate PR #144 owns straight-edge alpha quantization; no encoder-alpha
+source is changed here. Its explicit threshold mode also passed a matched
+cadence comparison. The pending actual-PCM waveform task retains its recorded
+history and honest boundary-reset contract; this repair does not synthesize a
+seamless period for recorded audio. Preserve separately approved Quantum limits.
+See [bytes, encoding times, source evidence and format caveats](gif_cadence_benchmark.md).
+GIF retains binary alpha and viewer-dependent presentation. A separate APNG
+option is recommended for partial alpha and finer frame timing; GIF is not
+silently replaced. Publication/deployment evidence is recorded with the PR.
+
+## November 10 neutral theme rows with contextual pair previews
+
+Color Theme now matches the default neutral dropdown until a row is hovered,
+selected or keyboard-active. Those states show the unchanged exact brand pair;
+selection retains the existing checkmark. Keyboard navigation gets the same pair
+preview plus one 2px inset outline using its contrasting foreground. Stacked
+black/white keylines and hover shadows are removed. Color changes are immediate
+to avoid unreadable intermediate blends; the menu border and thin scroll boundary
+remain. Compact typography, geometry, grouping, palette and old-save recovery
+are unchanged. No runtime controller or export implementation changes.
+
+The latest owner PNG was materialized, identity verified and actually inspected
+before editing. All 926 tests in 81 suites pass after preserving PR #151, plus
+JavaScript/80 inline-script syntax, 26 cache and exact source-preservation checks.
+Tests, release status and owner checks are
+recorded in the PR and [state QA record](theme_row_states_qa.md). Existing browser
+restrictions remain; blocked live-network requests are not retried without permission.
+
+## November 10 Randomize dice legibility correction
+
+The first two supplied image IDs resolved to a color picker and contrast table,
+not the Randomize control. Both were materialized, verified and viewed. The
+subsequent authoritative 512 × 512 PNG reference was also materialized and
+viewed: 34,497 bytes, SHA-256
+`246935c79ffd58d665e9f8a4748a1d8779fd7ab7d2c68d2de4f091ad308ab655`.
+It shows overlapping dice with three diagonal pips on the front. The owner's
+later refinement retains that recognizable composition with the generator's
+lighter outlined aesthetic rather than the reference's heavier filled styling.
+
+Randomize now uses thin paired outlines, a tilted rear face, three diagonal
+front pips and larger circular pip centers. The icon stays at the existing
+18 px size and inherits currentColor; button dimensions, accessible/visible
+labels, hover/focus treatment, action callbacks and reduced-motion-aware
+feedback remain unchanged. No theme, disclosure, motion, model or export UI is
+changed. The supplied raster is not published or embedded.
+
+The actual previous/new SVGs were compared beside the existing 10 px RPI Geist
+Mono Randomize label at 18 px icon size in native 32/44 px button reconstructions,
+including light/dark, hover and focus treatments. Native-size 16/18/20/24 px
+raster checks confirm individually visible front-pip centers. This is offline
+SVG/font context evidence, not rendered browser/application proof. Full-suite
+and exact-head CI results are recorded in the PR; native browser, touch,
+screen-reader and physical-device appearance remain unverified under the
+existing browser restriction. No denied browser route is retried.
+
+## November 10 compact theme picker correction
+
+The owner rejected the enlarged bold theme rows. Color Theme again uses its
+previous compact RPIGeistMono typography, uppercase text, padding, row height,
+group headings and existing sidebar checkmark. The full-row pairing colors,
+two-tone hover/focus cues and unobscured scrolling remain; the added circular
+checkmark and oversized type are removed. No new picker design or choices are added.
+
+The supplied accessibility table now governs the existing composition choices:
+Blue, Gray and Silver use black foregrounds on their exact brand backgrounds.
+Gray on Red is retired because it is absent from the normal-text-approved table;
+old query/snapshot values recover to White on Red while keeping other settings.
+Red on White remains removed with its existing Black on White recovery. The
+remaining pairs all meet 4.5:1 normal-text contrast without enlarging the labels.
+The header, popup/help, native interaction logic and export geometry are preserved.
+
+Both new Library PNGs were materialized and their actual pixels inspected.
+All 926 tests in 81 suites, JavaScript/inline syntax, 26 entrypoint cache and
+source-preservation checks pass. Validation and release evidence are recorded in the correction PR and
+[focused QA record](theme_picker_correction_qa.md). Browser rendering and native
+device/screen-reader behavior remain unverified under the existing restrictions.
+
+## November 10 full-color theme rows
+
+Color Theme now presents each retained foreground/background pair as a full-width
+row, matching the owner's accessibility-table reference. Nested swatches are
+removed from rows and the neutral closed trigger. Names stay readable and
+accessible; selected rows have a separate, decorative black/white checkmark.
+
+Row labels use the existing bold RPI Geist face at 20px by default with a 19px
+minimum. All ten pairs meet the 3:1 large-text threshold without changing their
+palette values. Hover uses a two-tone underline; keyboard-active rows use a
+two-tone inset frame. A thin scrollbar keeps rows unobscured by fading overlays,
+and forced-colors mode retains a system-color focus outline. Keyboard, touch,
+selection, legacy-red recovery, header/help/modal and export behavior remain.
+
+Validation: all 926 tests in 81 suites pass after preserving PRs #146 and #147, including pair contrast and state-cue
+checks. JavaScript, source/cache and whitespace checks pass. The optional browser
+script now checks all row colors, hover/active/selected states and touch selection.
+Actual browser rendering and physical-device behavior remain unverified under
+the established restrictions; no denied browser action is retried.
+See [row layout evidence and QA](theme_rows_qa.md) for sources and owner checks.
 
 ## November 10 screenshot-directed control presentation correction
 

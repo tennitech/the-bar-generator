@@ -11,11 +11,13 @@ const { nativeRuntime, installCodecWorkers } = require('./helpers/nativeExportRu
 const { getLoopingGifFramePlan } = require('../js/utils/loopingGif');
 const { encode, preparePixels, createPalette } = require('../js/utils/transparentGif');
 const { parseGif, decodeFrames } = require('../tests/helpers/gifDecoder');
+const cadence = process.env.RPI_GIF_BENCHMARK_MODE === 'cadence';
+const alphaMode = process.env.RPI_GIF_ALPHA_MODE || 'ordered';
 const out = path.resolve(process.argv[2] || '/tmp/rpi-gif-fps');
 const hash = data => createHash('sha256').update(data).digest('hex');
-async function coverageHash(image, foreground) {
+async function coverageHash(image, foreground, alphaMode) {
   const palette = createPalette(foreground);
-  await preparePixels(image, palette);
+  await preparePixels(image, palette, { alphaMode });
   const alpha = new Uint8Array(image.width * image.height);
   for (let i = 0; i < alpha.length; i++) alpha[i] = image.data[i * 4] === palette.key[0]
     && image.data[i * 4 + 1] === palette.key[1] && image.data[i * 4 + 2] === palette.key[2] ? 0 : 255;
@@ -32,14 +34,17 @@ async function main() {
     r.select(item.family); Object.assign(r.state, item);
     Object.assign(r.state.values, { waveformSpeed: 0.2, waveformLfo: false });
     const snapshot = r.captureLogoExportSnapshot();
-    const plan = getLoopingGifFramePlan(item.family, snapshot.values, { barWidth: 250 });
+    const plan = getLoopingGifFramePlan(item.family, snapshot.values, { barWidth: 250, fps: 30 });
     // Reproduce the old shipping cap even when rerunning after the fix.
     const previousCount = Math.max(24, Math.min(72, Math.round(plan.periodSeconds * 24)));
     assert.equal(plan.frameCount, Math.round(Math.round(plan.periodSeconds * 100) * 0.3), 'Run this benchmark on the 30 fps candidate.');
-    const counts = [['previous', previousCount], ['30fps', plan.frameCount]];
+    const candidate = cadence ? getLoopingGifFramePlan(item.family, snapshot.values, { barWidth: 250, fps: 50 }) : null;
+    if (candidate) assert.equal(candidate.frameCount, Math.min(3000, Math.floor(Math.round(plan.periodSeconds * 100) / 2)));
+    const counts = cadence ? [['30fps', plan.frameCount], ['50fps', candidate.frameCount]]
+      : [['previous', previousCount], ['30fps', plan.frameCount]];
     for (const [rate, frameCount] of counts) {
       const renderer = r.createCapturedGifRenderer(snapshot, { ...plan, frameCount });
-      const result = await encode({ ...snapshot.dimensions, frameCount, periodSeconds: plan.periodSeconds,
+      const result = await encode({ alphaMode, ...snapshot.dimensions, frameCount, periodSeconds: plan.periodSeconds,
         foreground: snapshot.rgb, workerScript: 'offline serial codec adapter',
         renderFrame: (index, progress) => {
           const image = renderer.renderFrame(index, progress);
@@ -62,13 +67,16 @@ async function main() {
         if (index === 0 || index === frameCount - 1) {
           const elapsed = delays.slice(0, index).reduce((a, b) => a + b, 0);
           const image = renderer.renderFrame(index, elapsed / result.metrics.durationMs);
-          assert.equal(hash(alpha), await coverageHash(image, snapshot.rgb));
+          assert.equal(hash(alpha), await coverageHash(image, snapshot.rgb, alphaMode));
         }
         index++;
       }
       renderer.release(); assert.equal(index, frameCount); assert.ok(distinct.size > 1);
       fs.writeFileSync(path.join(out, `${item.family}-${item.size}-${item.composition}-${rate}.gif`), bytes);
-      const row = { ...item, rate, ...result.metrics, effectiveFps: frameCount * 1000 / result.metrics.durationMs,
+      const meanHoldMs = delays.reduce((sum, delay) => sum + delay * delay, 0) / (2 * result.metrics.durationMs);
+      const meanDelay = result.metrics.durationMs / frameCount;
+      const delayStdMs = Math.sqrt(delays.reduce((sum, delay) => sum + (delay - meanDelay) ** 2, 0) / frameCount);
+      const row = { ...item, rate, alphaMode, meanHoldMs, delayStdMs, ...result.metrics, effectiveFps: frameCount * 1000 / result.metrics.durationMs,
         delayMs: [...new Set(delays)].sort((a, b) => a - b), decodedFrames: index, distinctFrames: distinct.size, repeat: 0 };
       rows.push(row); fs.writeFileSync(path.join(out, 'results.json'), JSON.stringify(rows, null, 2));
       console.log(JSON.stringify(row));

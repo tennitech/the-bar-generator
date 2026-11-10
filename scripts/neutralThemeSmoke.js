@@ -1,4 +1,4 @@
-/* Brand compositions, neutral control contrast, transparent mark exports, and
+/* Full-color theme rows, neutral control contrast, transparent mark exports, and
    contextual native guidance. Run when a supported browser environment is available. */
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
@@ -17,6 +17,64 @@ function contrast(a, b) {
   const [hi, lo] = [a, b].map(luminance).sort((x, y) => y - x);
   return (hi + .05) / (lo + .05);
 }
+async function themeRowCheck(page, mode, scheme) {
+  const wrapper = page.locator('#color-mode-select').locator('..');
+  const trigger = wrapper.locator('.custom-select-trigger');
+  await trigger.click();
+  const row = wrapper.locator('.custom-option[data-value="' + mode + '"]');
+  const read = element => {
+    const css = getComputedStyle(element);
+    return { bg: css.backgroundColor, ink: css.color, font: parseFloat(css.fontSize),
+      family: css.fontFamily, height: element.getBoundingClientRect().height,
+      shadow: css.boxShadow, outline: css.outlineStyle, outlineColor: css.outlineColor,
+      outlineWidth: css.outlineWidth, transform: css.textTransform };
+  };
+  const expectedBackground = mode === 'lunar' ? '#03060d' : scheme.bg;
+  const selected = await row.evaluate(read);
+  assert.equal(selected.bg, rgb(expectedBackground));
+  assert.equal(selected.ink, rgb(scheme.fg));
+  assert.equal(selected.font, 12);
+  assert.ok(selected.family.includes('RPIGeistMono'));
+  assert.ok(selected.height >= 44);
+  assert.equal(selected.transform, 'uppercase');
+  assert.equal(selected.shadow, 'none');
+  assert.equal(await wrapper.locator('[data-color-theme-swatch]').count(), 0);
+  assert.equal(await row.getAttribute('aria-selected'), 'true');
+  assert.notEqual(await row.evaluate(el => getComputedStyle(el, '::after').content), 'none');
+  assert.equal(await row.locator('.color_theme-indicator').count(), 0);
+
+  const idle = wrapper.locator('.custom-option:not(.selected):not(.is-active):not(.is-hidden)').first();
+  const idleValue = await idle.getAttribute('data-value');
+  const idleScheme = COLOR_SCHEMES[idleValue];
+  const menu = await wrapper.locator('.custom-select-options').evaluate(read);
+  const neutral = await idle.evaluate(read);
+  assert.equal(neutral.bg, menu.bg); assert.equal(neutral.ink, menu.ink);
+  assert.equal(neutral.shadow, 'none'); assert.equal(neutral.outline, 'none');
+  await idle.hover();
+  const hover = await idle.evaluate(read);
+  assert.equal(hover.bg, rgb(idleValue === 'lunar' ? '#03060d' : idleScheme.bg));
+  assert.equal(hover.ink, rgb(idleScheme.fg));
+  assert.equal(hover.shadow, 'none'); assert.equal(hover.outline, 'none');
+  await trigger.hover();
+  assert.deepEqual(await idle.evaluate(read), neutral);
+
+  const values = await wrapper.locator('.custom-option:not(.is-hidden):not(.is-disabled)').evaluateAll(rows => rows.map(el => el.dataset.value));
+  await trigger.press('Home');
+  for (let i = 0; i < values.indexOf(idleValue); i++) await trigger.press('ArrowDown');
+  assert.equal(await trigger.getAttribute('aria-activedescendant'), await idle.getAttribute('id'));
+  const keyboard = await idle.evaluate(read);
+  assert.equal(keyboard.bg, hover.bg); assert.equal(keyboard.ink, hover.ink);
+  assert.equal(keyboard.shadow, 'none'); assert.equal(keyboard.outline, 'solid');
+  assert.equal(keyboard.outlineWidth, '2px'); assert.equal(keyboard.outlineColor, hover.ink);
+  // Moving active focus away restores the nonselected row to its neutral state.
+  await trigger.press(idleValue === values[0] ? 'End' : 'Home');
+  assert.deepEqual(await idle.evaluate(read), neutral);
+  assert.equal((await row.evaluate(read)).bg, rgb(expectedBackground));
+  if (mode === 'blue') await page.screenshot({ path: path.join(evidence, engine + '-theme-rows.png'), scale: 'css' });
+  await trigger.press('Escape');
+  assert.equal(await page.locator('#color-mode-select').inputValue(), mode);
+}
+
 async function guidanceCheck(page) {
   const help = page.locator('#secondary-color-help');
   const dialog = page.locator('#secondary-color-dialog');
@@ -119,10 +177,7 @@ async function guidanceCheck(page) {
       assert.equal(data.overflow, false);
       assert.ok(data.svg.toLowerCase().includes('fill="' + scheme.fg + '"'));
       assert.equal(await page.locator('#secondary-color-help').isVisible(), scheme.secondary);
-      const expectedBackground = mode === 'lunar' ? '#03060d' : scheme.bg;
-      const tile = page.locator('#color-mode-select').locator('..').locator('.custom-select-trigger [data-color-theme-swatch]');
-      assert.equal(await tile.evaluate(el => getComputedStyle(el).backgroundColor), rgb(expectedBackground));
-      assert.equal(await tile.evaluate(el => getComputedStyle(el, '::after').backgroundColor), rgb(scheme.fg));
+      await themeRowCheck(page, mode, scheme);
       if (mode !== 'lunar') {
         assert.equal(data.stage, rgb(scheme.bg));
         assert.equal(data.header, data.sidebar);
@@ -174,9 +229,14 @@ async function guidanceCheck(page) {
       await mobile.locator('.app-sidebar').evaluate(el => getComputedStyle(el).backgroundColor));
     assert.equal(await mobile.locator('#header-logo-preview').evaluate(el => getComputedStyle(el).color), 'rgb(0, 0, 0)');
     const trigger = mobile.locator('#color-mode-select').locator('..').locator('.custom-select-trigger');
-    await trigger.click();
+    await trigger.tap();
     const rows = mobile.locator('#color-mode-select').locator('..').locator('.custom-option:not(.is-hidden)');
-    assert.equal(await rows.locator('[data-color-theme-swatch]').count(), await rows.count());
+    assert.equal(await rows.locator('.color_theme-label').count(), await rows.count());
+    assert.equal(await rows.locator('.color_theme-indicator').count(), 0);
+    assert.equal(await rows.locator('[data-color-theme-swatch]').count(), 0);
+    await mobile.locator('.custom-option[data-value="gold"]').tap();
+    assert.equal(await mobile.locator('#color-mode-select').inputValue(), 'gold');
+    await trigger.tap();
     await mobile.keyboard.press('End');
     await mobile.keyboard.press('Enter');
     await trigger.click();

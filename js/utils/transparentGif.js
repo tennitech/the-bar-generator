@@ -5,6 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const MAX_CAPTURE_FRAMES = 3000;
   const MAX_DURATION_SECONDS = 100;
+  const RING_MAX_CAPTURE_FRAMES = 3600;
+  const RING_MAX_DURATION_SECONDS = 120;
   const MAX_INPUT_FRAME_BYTES = 32 * 1024 * 1024;
   const MAX_ENCODED_BYTES = 64 * 1024 * 1024;
   const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
@@ -83,7 +85,9 @@
     }
     // Validate before allocating workers or arrays. Keep resolution and cadence
     // explicit: excessive jobs fail instead of silently reducing quality.
-    if (frameCount > MAX_CAPTURE_FRAMES || periodSeconds > MAX_DURATION_SECONDS
+    const ring = options.style === 'wave-quantum';
+    if (frameCount > (ring ? RING_MAX_CAPTURE_FRAMES : MAX_CAPTURE_FRAMES)
+      || periodSeconds > (ring ? RING_MAX_DURATION_SECONDS : MAX_DURATION_SECONDS)
       || width * height * 4 * Math.min(2, frameCount) > MAX_INPUT_FRAME_BYTES) {
       throw new RangeError('GIF export exceeds the frame or memory limit. Choose Standard size or a shorter loop.');
     }
@@ -157,5 +161,5 @@
     }
   }
   return { createPalette, frameTiming, preparePixels, encode,
-    MAX_CAPTURE_FRAMES, MAX_DURATION_SECONDS, MAX_INPUT_FRAME_BYTES, MAX_ENCODED_BYTES };
+    MAX_CAPTURE_FRAMES, MAX_DURATION_SECONDS, RING_MAX_CAPTURE_FRAMES, RING_MAX_DURATION_SECONDS, MAX_INPUT_FRAME_BYTES, MAX_ENCODED_BYTES };
 });

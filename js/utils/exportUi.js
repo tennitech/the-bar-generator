@@ -27,12 +27,20 @@
       for (const format of ['png', 'svg', 'gif']) {
         const button = byId(format === 'gif' ? 'save-loop-gif' : `save-${format}`);
         const label = `Download ${format.toUpperCase()}`;
-        const description = format === 'svg' ? 'Scalable vector'
+        let description = format === 'svg' ? 'Scalable vector'
           : format === 'png' ? 'Transparent image' : 'Looping animation';
+        let actionDimensions = dimensions;
+        if (format === 'gif' && byId('style-select')?.value === 'wave-quantum' && root.loopingGifUtils?.getRingGifExportPolicy) {
+          const policy = root.loopingGifUtils.getRingGifExportPolicy({ quantumSpeed: byId('quantum-speed-slider')?.value ?? 1 }, { size: size(), composition: composition() });
+          actionDimensions = root.logoExportOptions.dimensions(policy.size, root.RPI_LOGO_GEOMETRY, composition());
+          description = policy.supported
+            ? `${Number(policy.periodSeconds.toFixed(1))} s loop · 30 fps${policy.note ? ` · Standard (${pixelSize(actionDimensions)}) for long loop` : ''}`
+            : 'Set SPEED to 1× or higher for GIF';
+        }
         if (!button) continue;
         button.querySelector('.option-label').textContent = format.toUpperCase();
         button.querySelector('.option-desc').textContent = description;
-        button.setAttribute('aria-label', `${label}: ${root.logoExportOptions.compositionLabel(composition())}, ${description}${format === 'svg' ? '' : `, ${pixelSize(dimensions)}`}`);
+        button.setAttribute('aria-label', `${label}: ${root.logoExportOptions.compositionLabel(composition())}, ${description}${format === 'svg' ? '' : `, ${pixelSize(actionDimensions)}`}`);
       }
     }
     root.logoClipboard?.sync(credits);
@@ -98,7 +106,7 @@
     if (active !== job) return;
     job.dimensions = job.format === 'svg' ? 'Scalable vector' : pixelSize(snapshot.dimensions);
     job.compositionLabel = snapshot.composition && root.logoExportOptions?.compositionLabel(snapshot.composition);
-    text('export-detail', `${job.compositionLabel ? `${job.compositionLabel} · ` : ''}${job.dimensions} · transparent background`);
+    text('export-detail', `${job.compositionLabel ? `${job.compositionLabel} · ` : ''}${job.dimensions} · transparent background${snapshot.gifPolicy?.note ? ` · ${snapshot.gifPolicy.note}` : ''}`);
   }
   function report(job, progress) {
     if (active !== job || job.controller.signal.aborted || !Number.isFinite(progress.total) || progress.total <= 0) return;
@@ -160,6 +168,7 @@
     }
   }
   function init() {
+    byId('quantum-speed-slider')?.addEventListener('input', () => { if (!active) sync(); });
     byId('save-button')?.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') explainBlocked(); });
     byId('save-button')?.addEventListener('pointerleave', event => { if (event.pointerType !== 'touch') hideBlockedNote(); });
     byId('save-button')?.addEventListener('focus', explainBlocked);

@@ -6,10 +6,10 @@ function fixture(clipboard, nucleotide, withOptions = false) {
   const ids = ['save-menu', 'save-button', 'save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'export-size-large', 'export-size-standard',
     'export-progress', 'export-message', 'export-meter', 'export-cancel', 'copy-png', 'copy-svg',
     'export-composition-logo', 'export-composition-bar', 'export-composition-preview-logo', 'export-composition-preview-bar', 'export-dimensions', 'export-settings',
-    'export-track', 'export-fill', 'export-percent', 'export-detail', 'export-blocked-note', 'export-input-note'];
+    'export-track', 'export-fill', 'export-percent', 'export-detail', 'export-blocked-note', 'export-input-note', 'style-select', 'quantum-speed-slider'];
   const elements = Object.fromEntries(ids.map(id => [id, {
     id, textContent: '', value: 0, listeners: {}, style: {}, attributes: {},
-    querySelector() { return {}; },
+    children: {}, querySelector(selector) { return this.children[selector] || (this.children[selector] = {}); },
     addEventListener(type, callback) { this.listeners[type] = callback; },
     set disabled(value) {
       this.isDisabled = value;
@@ -30,7 +30,7 @@ function fixture(clipboard, nucleotide, withOptions = false) {
   if (withOptions) Object.assign(context, { logoExportOptions: require('../js/utils/exportOptions'),
     RPI_LOGO_GEOMETRY: require('../js/utils/logoGeometry').RPI_LOGO_GEOMETRY });
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/exportUi'), 'utf8'), context);
-  return { ui: context.logoExportUI, elements, document, hideSaveMenu: context.hideSaveMenu };
+  return { ui: context.logoExportUI, elements, document, context, hideSaveMenu: context.hideSaveMenu };
 }
 
 test.each(['error', 'started', 'cancelled'])('finishing %s restores focus even when hiding Cancel blurs it', outcome => {
@@ -248,4 +248,25 @@ test.each(['error', 'cancelled', 'requested', 'copied'])('composition is locked 
   expect(elements['export-composition-bar'].checked).toBe(true);
   elements['export-composition-logo'].listeners.change({ target: { checked: true } });
   expect(ui.composition()).toBe('logo');
+});
+
+
+test('ring GIF discloses actual default resolution and updates with speed/composition without changing selectors', () => {
+  const { ui, elements, context } = fixture(undefined, undefined, true);
+  context.loopingGifUtils = require('../js/utils/loopingGif');
+  elements['style-select'].value = 'wave-quantum';
+  elements['quantum-speed-slider'].value = '1'; elements['export-size-select'].value = 'large';
+  ui.sync();
+  const action = elements['save-loop-gif'];
+  expect(action.querySelector('.option-desc').textContent).toContain('120 s loop · 30 fps · Standard (1160 × 762 px) for long loop');
+  expect(action.attributes['aria-label']).toContain('1160 × 762 px');
+  expect(elements['save-png'].attributes['aria-label']).toContain('2320 × 1524 px');
+  expect(elements['export-size-select'].value).toBe('large');
+  elements['export-composition-bar'].listeners.change({ target: { checked: true } });
+  expect(action.attributes['aria-label']).toContain('Bar only');
+  expect(action.attributes['aria-label']).toContain('2320 × 464 px');
+  expect(action.querySelector('.option-desc').textContent).not.toContain('Standard');
+  elements['quantum-speed-slider'].value = '.5'; elements['quantum-speed-slider'].listeners.input();
+  expect(action.querySelector('.option-desc').textContent).toBe('Set SPEED to 1× or higher for GIF');
+  expect(elements['quantum-speed-slider'].value).toBe('.5');
 });

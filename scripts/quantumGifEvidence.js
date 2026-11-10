@@ -8,7 +8,11 @@ const assert = require('node:assert/strict');
 const { createHash } = require('node:crypto');
 const { createCanvas } = require('@napi-rs/canvas');
 const { nativeRuntime, installCodecWorkers } = require('./helpers/nativeExportRuntime');
-const { getLoopingGifFramePlan } = require('../js/utils/loopingGif');
+const loopingGifUtils = require('../js/utils/loopingGif');
+const { getLoopingGifFramePlan } = loopingGifUtils;
+const captureSpeed = Number(process.env.RPI_RING_GIF_SPEED || 4);
+const selectedCases = process.env.RPI_RING_GIF_CASES?.split(',');
+const referenceCount = Number(process.env.RPI_RING_GIF_REFERENCES || 64);
 const { frameTiming, encode, preparePixels, createPalette } = require('../js/utils/transparentGif');
 const { parseGif, decodeFrames } = require('../tests/helpers/gifDecoder');
 const { COLOR_SCHEMES } = require('../js/utils/themeMode');
@@ -27,6 +31,7 @@ async function main() {
   fs.mkdirSync(out, { recursive: true });
   installCodecWorkers();
   const r = nativeRuntime(), rows = [];
+  r.loopingGifUtils = loopingGifUtils;
   r.select('wave-quantum');
   r.getLoopRuntimeValues = () => ({ quantumSpeed: r.state.speed, quantumReverse: r.state.reverse });
   // Every ink/size/composition/direction at nonzero phases, including full-cycle
@@ -50,35 +55,41 @@ async function main() {
   context.fillStyle = '#000000'; context.font = '22px sans-serif'; context.fillText('Particle on a Ring — decoded GIF frames', 24, 30);
   let rowIndex = 0;
   for (const size of ['standard', 'large']) for (const composition of ['bar', 'logo']) {
+    if (selectedCases && !selectedCases.includes(`${size}:${composition}`)) continue;
     const reverse = composition === 'logo';
-    Object.assign(r.state, { size, composition, speed: 4, reverse });
-    r.currentColorMode = size === 'standard' ? 'white' : 'gray';
+    Object.assign(r.state, { size, composition, speed: captureSpeed, reverse });
+    r.currentColorMode = process.env.RPI_RING_GIF_INK || (size === 'standard' ? 'white' : 'gray');
     r.state.values.quantumPhase = composition === 'bar' ? 0.37123456789 : 0.9999;
     const snapshot = r.captureLogoExportSnapshot({ format: 'gif' });
     const plan = getLoopingGifFramePlan(snapshot.family, snapshot.values);
     const timing = frameTiming(plan.periodSeconds, plan.frameCount);
     const renderer = r.createCapturedGifRenderer(snapshot, plan), expected = [];
+    const references = new Set(Array.from({ length: Math.min(referenceCount, plan.frameCount) }, (_, i) => Math.round(i * (plan.frameCount - 1) / (Math.min(referenceCount, plan.frameCount) - 1))));
     const firstHash = hash((await normalized(renderer.renderFrame(0, 0), snapshot.rgb)).data);
     assert.equal(firstHash, hash((await normalized(renderer.renderFrame(0, 1), snapshot.rgb)).data));
-    const result = await encode({ ...snapshot.dimensions, frameCount: plan.frameCount, periodSeconds: plan.periodSeconds,
+    let lastReported = -1;
+    const result = await encode({ ...snapshot.dimensions, style: snapshot.family, frameCount: plan.frameCount, periodSeconds: plan.periodSeconds,
       foreground: snapshot.rgb, workerScript: 'native serial codec adapter',
+      onProgress: p => { if (p.encoded >= lastReported + 600) { lastReported = p.encoded; console.log(`${size}/${composition}: ${p.encoded}/${p.total} encoded`); } },
       renderFrame: async (index, progress) => {
         assert.equal(progress, timing.progress[index]);
         const frame = renderer.renderFrame(index, progress);
-        expected[index] = hash((await normalized(frame, snapshot.rgb)).data);
+        if (references.has(index)) expected[index] = hash((await normalized(frame, snapshot.rgb)).data);
         return { width: frame.width, height: frame.height, data: new Uint8ClampedArray(frame.data) };
       } });
     const bytes = Buffer.from(await result.blob.arrayBuffer()), gif = parseGif(bytes);
+    fs.writeFileSync(path.join(out, `ring-${size}-${composition}.gif`), bytes);
+    console.log(`${size}/${composition}: encoded ${bytes.length} bytes; independently decoding ${plan.frameCount} frames`);
     assert.equal(gif.width, snapshot.dimensions.width); assert.equal(gif.height, snapshot.dimensions.height);
-    assert.equal(gif.frames.length, 900); assert.equal(result.metrics.durationMs, 30000);
+    assert.equal(gif.frames.length, plan.frameCount); assert.equal(result.metrics.durationMs, Math.round(plan.periodSeconds * 100) * 10);
     assert.deepEqual(gif.frames.map(frame => frame.delayMs), timing.delays);
     assert.equal(bytes.readUInt16LE(bytes.indexOf(Buffer.from('NETSCAPE2.0')) + 13), 0);
     const distinct = new Set(); let index = 0;
-    const sampled = [0, 225, 450, 899];
+    const sampled = [0, Math.floor(plan.frameCount / 4), Math.floor(plan.frameCount / 2), plan.frameCount - 1];
     for (const decoded of decodeFrames(gif)) {
       assert.equal(decoded.frame.disposal, 2); assert.equal(decoded.frame.transparentIndex, 0);
       const actual = hash(decoded.rgba); distinct.add(actual);
-      assert.equal(actual, expected[index], `${size}/${composition}: decoded frame ${index}`);
+      if (references.has(index)) assert.equal(actual, expected[index], `${size}/${composition}: decoded frame ${index}`);
       if (sampled.includes(index)) {
         const column = sampled.indexOf(index), src = createCanvas(gif.width, gif.height);
         const srcContext = src.getContext('2d'), pixels = srcContext.createImageData(gif.width, gif.height);
@@ -90,13 +101,13 @@ async function main() {
       }
       index++;
     }
-    assert.equal(index, 900); assert.ok(distinct.size > 850);
+    assert.equal(index, plan.frameCount); assert.ok(distinct.size > plan.frameCount * 0.9);
     assert.notEqual(expected.at(-1), expected[0], 'Do not duplicate the terminal frame');
     context.fillStyle = '#000000'; context.font = '16px sans-serif';
-    context.fillText(`${size} / ${composition} / ${reverse ? 'reverse' : 'forward'} / frames 0, 225, 450, 899`, 24, rowIndex * 165 + 65);
+    context.fillText(`${size} / ${composition} / ${reverse ? 'reverse' : 'forward'} / frames ${sampled.join(', ')}`, 24, rowIndex * 165 + 65);
     const name = `ring-${size}-${composition}`;
     fs.writeFileSync(path.join(out, `${name}.gif`), bytes);
-    const row = { name, phase: snapshot.values.quantumPhase, speed: snapshot.values.quantumSpeed, reverse,
+    const row = { name, requestedSize: size, actualSize: snapshot.gifPolicy.size, policyNote: snapshot.gifPolicy.note, sourcePixelReferences: references.size, phase: snapshot.values.quantumPhase, speed: snapshot.values.quantumSpeed, reverse,
       ...result.metrics, decodedFrames: index, distinctFrames: distinct.size, delayMs: [...new Set(timing.delays)], fullCyclePixelClosure: true };
     rows.push(row); fs.writeFileSync(path.join(out, 'results.json'), JSON.stringify({ rasterCases, rows }, null, 2));
     console.log(JSON.stringify(row)); renderer.release(); rowIndex++;

@@ -1048,14 +1048,16 @@ function captureLogoExportSnapshot(options = {}) {
   const geometry = RPI_LOGO_GEOMETRY;
   const composition = window.logoExportOptions.normalizeComposition(window.logoExportUI.composition?.());
   const viewport = window.logoExportOptions.viewport(geometry, composition);
-  const dimensions = window.logoExportOptions.dimensions(window.logoExportUI.size(), geometry, composition);
+  const gifPolicy = options.format === 'gif' && family === 'wave-quantum'
+    ? window.loopingGifUtils.getRingGifExportPolicy(values, { size: window.logoExportUI.size(), composition }) : null;
+  const dimensions = window.logoExportOptions.dimensions(gifPolicy ? gifPolicy.size : window.logoExportUI.size(), geometry, composition);
   const inkName = ({ '#ffffff': 'white', '#000000': 'black', '#d6001c': 'red',
     '#0081ce': 'blue', '#cdac38': 'gold', '#e1edf5': 'silver', '#b9ccd8': 'gray' })[foreground.toLowerCase()] || currentColorMode;
   const rgb = [0, 2, 4].map(offset => parseInt(foreground.replace('#', '').slice(offset, offset + 2), 16));
   const letters = composition === 'bar' ? '' : Object.values(geometry.paths).map(path => `<path d="${path}" fill="${foreground}"/>`).join('');
   const svgSource = `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="${viewport.width}" height="${viewport.height}" viewBox="${viewport.x} ${viewport.y} ${viewport.width} ${viewport.height}" xmlns="http://www.w3.org/2000/svg"><title>${escapeExportXML(title || `RPI ${family} ${composition === 'bar' ? 'bar' : 'logo'}`)}</title>${letters}${barMarkup}</svg>`;
   return Object.freeze({ family, currentShader, colorMode: currentColorMode, foreground, rgb, inkName, title,
-    values: Object.freeze(values), geometry, composition, viewport: Object.freeze(viewport), dimensions: Object.freeze(dimensions), svgSource });
+    values: Object.freeze(values), gifPolicy: gifPolicy && Object.freeze(gifPolicy), geometry, composition, viewport: Object.freeze(viewport), dimensions: Object.freeze(dimensions), svgSource });
 }
 
 function throwIfExportCancelled(signal) {
@@ -1186,13 +1188,13 @@ async function runLogoExport(format) {
     else {
       if (!window.loopingGifUtils.isLoopingGifEligibleStyle(snapshot.family)) throw new Error('This pattern does not have a looping GIF.');
       const plan = window.loopingGifUtils.getLoopingGifFramePlan(snapshot.family, snapshot.values, { barWidth: snapshot.geometry.width });
-      if (snapshot.family === 'wave-quantum' && (plan.periodSeconds > window.transparentGifUtils.MAX_DURATION_SECONDS
-        || plan.frameCount > window.transparentGifUtils.MAX_CAPTURE_FRAMES)) {
-        throw new Error('This exact ring loop exceeds the 100-second GIF limit. Set SPEED to 1.2× or higher and try again.');
+      if (snapshot.family === 'wave-quantum' && (plan.periodSeconds > window.transparentGifUtils.RING_MAX_DURATION_SECONDS
+        || plan.frameCount > window.transparentGifUtils.RING_MAX_CAPTURE_FRAMES)) {
+        throw new Error('This exact ring loop exceeds the 120-second GIF limit. Set SPEED to 1× or higher and try again.');
       }
       renderer = createCapturedGifRenderer(snapshot, plan);
       const result = await window.transparentGifUtils.encode({ ...snapshot.dimensions, frameCount: plan.frameCount,
-        periodSeconds: plan.periodSeconds, foreground: snapshot.rgb, workerScript: LOOP_GIF_WORKER_PATH,
+        style: snapshot.family, periodSeconds: plan.periodSeconds, foreground: snapshot.rgb, workerScript: LOOP_GIF_WORKER_PATH,
         renderFrame: renderer.renderFrame, signal: job.controller.signal,
         onProgress: progress => window.logoExportUI.report(job, progress) });
       blob = result.blob; metrics = result.metrics;
