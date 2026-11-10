@@ -8,6 +8,9 @@ PNG and GIF exports share Standard (1000 px logo) and Large (2000 px logo) choic
 
 **[Open the site](https://tennitech.github.io/the-bar-generator/)** · **[Report a bug](https://github.com/tennitech/the-bar-generator/issues/new/choose)** · **[Contribute](contributing.md)**
 
+On Home, press **Space** to pause or resume the scrolling rows. Hover or keyboard
+focus holds an individual lane; your device’s reduced-motion setting is respected.
+
 Public Share controls are currently unavailable. Existing snapshot links still
 load. Downloads and image copying stay in the embedded generator; access
 still depends on the host's iframe permissions.
