@@ -7,8 +7,8 @@
 
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient']);
-  // 20 ms is an exact GIF tick interval, avoiding the old 30/40 ms cadence.
+  const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient', 'wave-quantum']);
+  // Existing translating families use 50 fps; long ring GIFs retain 30 fps.
   const DEFAULT_CAPTURE_FPS = 50;
   const MIN_CAPTURE_FPS = 12;
   const MAX_CAPTURE_FPS = 50;
@@ -100,8 +100,14 @@
     return fallback;
   }
 
+  function getQuantumModel() {
+    // Resolved at call time: the routed loader installs the model after this utility.
+    return typeof quantumModel !== 'undefined' ? quantumModel : require('./quantumModel');
+  }
+
   function getLoopSpeed(style, values = {}) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
+    if (normalizedStyle === 'wave-quantum') return getQuantumModel().normalizeSpeed(values.quantumSpeed ?? 1) / getQuantumModel().PERIOD_SECONDS;
     if (normalizedStyle === 'ticker') {
       return normalizeLoopSpeed(normalizedStyle, values.tickerSpeed);
     }
@@ -118,7 +124,7 @@
     if (!LOOPING_GIF_STYLE_SET.has(normalizedStyle)) return false;
     // Both translating patterns move toward increasing screen x by default.
     // Ticker subtracts its offset; Waveform subtracts temporal phase.
-    const checked = normalizeLoopReverse(normalizedStyle, values[`${normalizedStyle}Reverse`]);
+    const checked = normalizeLoopReverse(normalizedStyle, normalizedStyle === 'wave-quantum' ? values.quantumReverse : values[`${normalizedStyle}Reverse`]);
     return normalizedStyle === 'ticker' ? !checked : checked;
   }
 
@@ -160,6 +166,9 @@
   function advanceLiveLoopPhase(phase, style, values = {}, deltaMs = 0) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
     if (!isLoopingGifEligibleStyle(normalizedStyle)) return 0;
+    if (normalizedStyle === 'wave-quantum') return getQuantumModel().advancePhase(phase, deltaMs, {
+      speed: values.quantumSpeed ?? 1, reverse: getLoopReverse(normalizedStyle, values)
+    });
     const subdivisions = normalizedStyle === 'ticker' ? Math.max(1, Number(values.tickerRatio) || 2) : 1;
     // Keep each frame below a quarter of the smallest repeating tick interval.
     // A delayed frame slows the preview instead of sampling an apparent reversal.
@@ -180,12 +189,31 @@
       return null;
     }
 
+    const ring = normalizedStyle === 'wave-quantum';
     const fps = clamp(
-      Math.round(toPositiveNumber(options.fps, DEFAULT_CAPTURE_FPS)),
+      Math.round(toPositiveNumber(options.fps, ring ? 30 : DEFAULT_CAPTURE_FPS)),
       MIN_CAPTURE_FPS,
-      MAX_CAPTURE_FPS
+      ring ? 30 : MAX_CAPTURE_FPS
     );
     const barWidth = toPositiveNumber(options.barWidth, 250);
+
+    if (normalizedStyle === 'wave-quantum') {
+      const model = getQuantumModel();
+      const speed = model.normalizeSpeed(values.quantumSpeed ?? 1);
+      const periodSeconds = model.PERIOD_SECONDS / speed;
+      // Do not clamp the natural cycle or silently reduce its 30 fps cadence.
+      // The encoder's independent duration/frame/memory guards still apply.
+      const frameCount = Math.round(Math.round(periodSeconds * 100) * fps / 100);
+      const phase = model.normalizePhase(values.quantumPhase);
+      const direction = normalizeLoopReverse(normalizedStyle, values.quantumReverse) ? -1 : 1;
+      return {
+        style: normalizedStyle, frameCount, periodSeconds,
+        frameDelayMs: Math.round(periodSeconds * 1000 / frameCount), repeatWidth: 0,
+        getLoopOffsetX() { return 0; },
+        getQuantumPhase(progress) { return model.normalizePhase(phase + direction * progress); }
+      };
+    }
+
 
     if (normalizedStyle === 'ticker') {
       const speed = getLoopSpeed(normalizedStyle, values);
@@ -238,6 +266,18 @@
     };
   }
 
+  function getRingGifExportPolicy(values = {}, options = {}) {
+    const model = getQuantumModel();
+    const periodSeconds = model.PERIOD_SECONDS / model.normalizeSpeed(values.quantumSpeed ?? 1);
+    const requestedSize = options.size === 'standard' ? 'standard' : 'large';
+    const useStandard = options.composition !== 'bar' && requestedSize === 'large' && periodSeconds > 60;
+    return {
+      periodSeconds, supported: periodSeconds <= 120,
+      requestedSize, size: useStandard ? 'standard' : requestedSize,
+      note: useStandard ? 'Standard resolution for a full-logo loop longer than one minute.' : ''
+    };
+  }
+
   function getLoopingAnimationState(style, values = {}, options = {}) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
     const framePlan = getLoopingGifFramePlan(normalizedStyle, values, { ...options, carrierOnly: true });
@@ -246,6 +286,10 @@
     }
 
     const elapsedSeconds = Math.max(0, Number(options.elapsedSeconds) || 0);
+    if (normalizedStyle === 'wave-quantum') return {
+      ...framePlan, quantumPhase: Number.isFinite(options.phase)
+        ? getQuantumModel().normalizePhase(options.phase) : framePlan.getQuantumPhase(elapsedSeconds / framePlan.periodSeconds)
+    };
     const periodSeconds = Math.max(0.0001, Number(framePlan.periodSeconds) || 1);
     const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
     const cycles = Number.isFinite(options.phase) ? options.phase * direction : elapsedSeconds / periodSeconds;
@@ -284,6 +328,7 @@
     normalizeLoopSpeed,
     normalizeMotionSpeedControls,
     isLoopingGifEligibleStyle,
-    getLoopingGifFramePlan
+    getLoopingGifFramePlan,
+    getRingGifExportPolicy
   };
 });

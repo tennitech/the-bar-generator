@@ -1,0 +1,86 @@
+{
+  "rasterCases": 80,
+  "rows": [
+    {
+      "name": "ring-standard-bar",
+      "requestedSize": "standard",
+      "actualSize": "standard",
+      "policyNote": "",
+      "sourcePixelReferences": 64,
+      "phase": 0.37123456789,
+      "speed": 1,
+      "reverse": false,
+      "width": 1160,
+      "height": 232,
+      "frameCount": 3600,
+      "bytes": 11303318,
+      "durationMs": 120000,
+      "requestedDurationMs": 120000,
+      "prepareMs": 17515.93750800001,
+      "elapsedMs": 52158.08941,
+      "peakInFlight": 2,
+      "maxInputFrameBytes": 2152960,
+      "decodedFrames": 3600,
+      "distinctFrames": 3600,
+      "delayMs": [
+        30,
+        40
+      ],
+      "fullCyclePixelClosure": true
+    },
+    {
+      "name": "ring-large-bar",
+      "requestedSize": "large",
+      "actualSize": "large",
+      "policyNote": "",
+      "sourcePixelReferences": 64,
+      "phase": 0.37123456789,
+      "speed": 1,
+      "reverse": false,
+      "width": 2320,
+      "height": 464,
+      "frameCount": 3600,
+      "bytes": 27414139,
+      "durationMs": 120000,
+      "requestedDurationMs": 120000,
+      "prepareMs": 66691.79776899918,
+      "elapsedMs": 181387.968362,
+      "peakInFlight": 2,
+      "maxInputFrameBytes": 8611840,
+      "decodedFrames": 3600,
+      "distinctFrames": 3600,
+      "delayMs": [
+        30,
+        40
+      ],
+      "fullCyclePixelClosure": true
+    },
+    {
+      "name": "ring-large-logo",
+      "requestedSize": "large",
+      "actualSize": "standard",
+      "policyNote": "Standard resolution for a full-logo loop longer than one minute.",
+      "sourcePixelReferences": 64,
+      "phase": 0.9999,
+      "speed": 1,
+      "reverse": true,
+      "width": 1160,
+      "height": 762,
+      "frameCount": 3600,
+      "bytes": 33795017,
+      "durationMs": 120000,
+      "requestedDurationMs": 120000,
+      "prepareMs": 31742.348372998647,
+      "elapsedMs": 131966.29760600004,
+      "peakInFlight": 2,
+      "maxInputFrameBytes": 7071360,
+      "decodedFrames": 3600,
+      "distinctFrames": 3600,
+      "delayMs": [
+        30,
+        40
+      ],
+      "fullCyclePixelClosure": true
+    }
+  ]
+}

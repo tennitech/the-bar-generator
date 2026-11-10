@@ -297,6 +297,32 @@ and [scope QA](waveform_signal_qa.md). No browser escalation was retried.
 Native offline graph/data/codec checks do not establish rendered browser UI,
 physical listening, native downloads, screen-reader output or formal RPI approval.
 
+## November 10 Particle on a Ring GIF export
+
+The former Quantum label becomes **Particle on a Ring**, the established model
+name. Its card identifies the three convention-dependent wavefunction phase
+projections of equal-weight modes −4, 3, 7. The model, artwork, legacy URLs,
+control IDs, queries and saved links remain unchanged; the creative Phase Weave
+candidate stays separate. [Scientific basis](quantum_model.md).
+
+Default 1× exports the complete seamless 120-second cycle at 30 fps, with exact
+live phase, speed/direction, ink and composition captured before asynchronous
+work. Ring-only limits are 120 seconds/3600 frames; other families retain
+100 seconds/3000 frames. The 32 MiB two-input-frame and 64 MiB encoded guards
+remain. SPEED below 1× gets an actionable limit message without changing speed.
+
+Full-logo GIFs longer than one minute use Standard resolution to stay practical
+within the file budget. The GIF action discloses this and its actual dimensions
+before export; the captured filename/progress use those same dimensions. Bar-only
+retains the selected Standard/Large size, as do full-logo GIFs up to one minute.
+PNG/SVG/clipboard and their selected size remain unchanged. There is no frame-rate
+reduction, truncation, matte or artificial speed change.
+
+Current main's compact theme picker/reference pairs, disclosures, Randomize die
+and responsive marquee follow-ups are preserved. The later 50 fps defaults for translating families are also retained; this bar explicitly keeps its measured 30 fps budget. All 1029 tests in 89 suites pass; all 84 inline scripts compile. Three default-speed GIFs decode through all 10,800 frames with verified motion/timing/seam and 192 exact source-pixel references. With the released alpha correction, default full-logo GIF is 32.04 MB; prior ordered-alpha bar-only measurements are 11.30/27.41 MB at Standard/Large. [GIF QA](quantum_gif_qa.md) records evidence and limits. Completed export status/statistics reset on style, theme, size/composition, parameter edits and credits-context changes. Captured in-flight exports remain cancellable and name their source style; late results do not appear under a new context. Browser restrictions remain
+respected; native codec evidence does not establish browser download/playback.
+
+
 ## November 10 GIF cadence closer to display-driven motion
 
 The GIF planner now targets approximately 50 fps with 20 ms holds, replacing

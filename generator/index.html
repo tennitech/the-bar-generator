@@ -22,7 +22,7 @@
   <script src="js/utils/customDropdowns.js?v=20261110-official-secondary-pairs"></script>
   <script src="js/utils/parameterControls.js?v=20261110-compact-themes-dice"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
-  <script src="js/utils/loopingGif.js?v=20261110-scope-motion"></script>
+  <script src="js/utils/loopingGif.js?v=20261110-ring-release"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
   <script src="js/utils/shareState.js?v=20261110-official-secondary-pairs"></script>
@@ -213,7 +213,7 @@
                   <option value="neural-network">Neural Network</option>
                   <option value="nucleotide">Nucleotide</option>
                   <option value="numeric">Numeric</option>
-                  <option value="wave-quantum">Quantum</option>
+                  <option value="wave-quantum">Particle on a Ring</option>
                   <option value="ruler">Ruler</option>
                   <option value="ticker">Ticker</option>
                   <option value="triangle-grid">Triangle Grid</option>
@@ -433,25 +433,25 @@
             <div class="control control_row control_row-toggle">
               <label for="quantum-motion-toggle" class="control-label control_row-label">LOOP</label>
               <label class="switch">
-                <input type="checkbox" id="quantum-motion-toggle" checked aria-label="Loop quantum animation">
+                <input type="checkbox" id="quantum-motion-toggle" checked aria-label="Loop particle-on-a-ring wavefunction animation">
                 <span class="slider round"></span>
               </label>
             </div>
             <div class="control control_row control_row-toggle">
               <label for="quantum-reverse-toggle" class="control-label control_row-label">REVERSE</label>
               <label class="switch">
-                <input type="checkbox" id="quantum-reverse-toggle" aria-label="Reverse quantum animation">
+                <input type="checkbox" id="quantum-reverse-toggle" aria-label="Reverse particle-on-a-ring wavefunction animation">
                 <span class="slider round"></span>
               </label>
             </div>
             <div class="control slider-control runtime_speed-control">
               <label for="quantum-speed-slider" class="control-label">SPEED <span id="quantum-speed-display" data-slider-value>1×</span></label>
-              <input id="quantum-speed-slider" type="range" min="0.2" max="4" step="0.001" value="1" class="control-slider" aria-label="Quantum motion speed" aria-describedby="quantum-speed-unit">
+              <input id="quantum-speed-slider" type="range" min="0.2" max="4" step="0.001" value="1" class="control-slider" aria-label="Particle-on-a-ring playback speed" aria-describedby="quantum-speed-unit">
               <p id="quantum-speed-unit" class="u-sr-only">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
             </div>
             <div class="control slider-control">
               <label for="quantum-phase" class="control-label">PHASE <span id="quantum-phase-display" data-slider-value>0.0%</span></label>
-              <input id="quantum-phase" type="range" min="0" max="1" step="any" value="0" class="control-slider" aria-label="Quantum phase as fraction of recurrence" aria-describedby="quantum-description">
+              <input id="quantum-phase" type="range" min="0" max="1" step="any" value="0" class="control-slider" aria-label="Particle-on-a-ring phase as fraction of recurrence" aria-describedby="quantum-description">
               <p id="quantum-description" class="control-hint">Position within one full recurrence.</p>
             </div>
           </div>
@@ -1100,7 +1100,7 @@
   <div id="toast-container"></div>
   <script>GeneratorInitialState.apply(document.body); setupCustomDropdowns(); ParameterControls.prepare(document);</script>
   <script src="third_party/gif.js/gif.js"></script>
-  <script src="js/utils/quantumControls.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/quantumControls.js?v=20261110-ring-release"></script>
   <script src="js/utils/previewControls.js?v=20261103-save-removal"></script>
   <script src="js/utils/viewportZoom.js?v=20261103-save-removal"></script>
   <script src="js/utils/viewerTouch.js"></script>
@@ -1111,17 +1111,17 @@
   <script src="js/utils/logoGeometry.js?v=20261103-save-removal"></script>
   <script src="js/utils/urlState.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportOptions.js?v=20261110-export-composition-r2"></script>
-  <script src="js/utils/transparentGif.js?v=20261110-straight-gif-edges-r2"></script>
+  <script src="js/utils/transparentGif.js?v=20261110-ring-release"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportUi.js?v=20261110-export-composition-r2"></script>
-  <script src="js/utils/barInformation.js?v=20261110-compact-sidebar-footer"></script>
+  <script src="js/utils/exportUi.js?v=20261110-ring-release"></script>
+  <script src="js/utils/barInformation.js?v=20261110-ring-release"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
   <script src="js/utils/inputLimitFeedback.js?v=20261110-input-limit-feedback"></script>
-  <script src="js/main.js?v=20261110-input-limit-feedback"></script>
+  <script src="js/main.js?v=20261110-ring-release"></script>
   <script src="js/utils/logoClipboard.js?v=20261110-export-composition-r2"></script>
-  <script src="js/drawing.js?v=20261110-scope-motion"></script>
+  <script src="js/drawing.js?v=20261110-ring-release"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =
