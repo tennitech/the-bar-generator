@@ -133,7 +133,8 @@ test('brand compositions apply the supplied foreground/background pair without a
   vm.runInContext(fs.readFileSync(require.resolve('../js/drawing.js'), 'utf8'), renderer);
   const inkNames = { '#000000': 'black', '#ffffff': 'white', '#d6001c': 'red',
     '#b9ccd8': 'gray', '#e1edf5': 'silver', '#0081ce': 'blue' };
-  const properties = {};
+  const chrome = ['--bg-app', '--bg-header', '--header-artwork-ink', '--text-on-header'];
+  const properties = Object.fromEntries(chrome.map(key => [key, '#d6001c']));
   const target = { style: {
     setProperty: (key, value) => { properties[key] = value; },
     removeProperty: key => { delete properties[key]; }
@@ -151,9 +152,8 @@ test('brand compositions apply the supplied foreground/background pair without a
     expect(exported.svgSource).not.toContain('<rect width="100%"');
     expect(COLOR_SCHEMES[mode].fg).toBe(foreground);
     expect(properties['--preview-foreground']).toBe(foreground);
-    expect(properties['--header-artwork-ink']).toBe(foreground);
-    for (const key of ['--bg-canvas', '--bg-app', '--bg-header']) expect(properties[key]).toBe(background);
-    expect(properties['--text-on-header']).toBe(['#000000', '#d6001c'].includes(background) ? '#ffffff' : '#000000');
+    expect(properties['--bg-canvas']).toBe(background);
+    for (const key of chrome) expect(properties[key]).toBeUndefined();
   }
   applyColorScheme(target, 'lunar');
   expect(properties['--preview-foreground']).toBe('#f4f7fb');
