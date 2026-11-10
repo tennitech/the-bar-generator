@@ -10,7 +10,7 @@ function element() {
     add: (...names) => names.forEach(name => classes.add(name)), remove: (...names) => names.forEach(name => classes.delete(name)), contains: name => classes.has(name)
   } };
 }
-function setup({ selector = true, supported = true, reduced = false, stored = null, nav = 'navigate', fonts = Promise.resolve(), storageThrows = false, ascii = null } = {}) {
+function setup({ selector = true, supported = true, reduced = false, stored = null, nav = 'navigate', fonts = Promise.resolve(), storageThrows = false, ascii = null, repeat = false } = {}) {
   const root = element(), plane = element(), reveal = element();
   const canvas = { ...element(), tagName: 'CANVAS', parentElement: plane };
   canvas.dataset.previewReady = 'true';
@@ -22,13 +22,14 @@ function setup({ selector = true, supported = true, reduced = false, stored = nu
     querySelector: query => query === '#p5-container > canvas' ? canvas
       : query === '[data-entrance-plane="selector"]' ? plane
       : query === '[data-entrance-page="selector"]' ? reveal : null,
+    querySelectorAll: () => [],
     addEventListener: (name, cb) => { documentEvents[name] = cb; },
     startViewTransition: supported ? jest.fn() : undefined
   };
   const window = {
     AsciiEntrance: ascii, matchMedia: () => media, addEventListener: (name, cb) => { windowEvents[name] = cb; },
     localStorage: { getItem: () => { if (storageThrows) throw new Error('storage unavailable'); return stored; } },
-    sessionStorage: { getItem: () => null, setItem: jest.fn() }
+    sessionStorage: { getItem: () => repeat ? 'seen' : null, setItem: jest.fn() }
   };
   const observer = jest.fn(() => ({ observe: jest.fn(), disconnect: jest.fn() }));
   vm.runInNewContext(source, { window, document, performance: { getEntriesByType: () => [{ type: nav }] },
@@ -65,6 +66,36 @@ test('Home decodes each unique image once, waits for fonts, and fades after two 
   expect(s.api.isActive()).toBe(false); expect(s.plane.classList.contains('is-entry-complete')).toBe(true);
   expect(s.root.classList.contains('has-selector-entrance')).toBe(false);
 });
+test.each([[false, 640], [true, 440]])('Home ASCII repeat=%s uses %i ms and retains its bounded cleanup', async (repeat, duration) => {
+  const start = jest.fn(), cleanup = jest.fn();
+  const ascii = { prepare: jest.fn(() => Promise.resolve({ start, cleanup })) };
+  const s = setup({ repeat, ascii });
+  s.api.revealAsset(s.image('loaded')); await flush();
+  jest.advanceTimersByTime(32); await flush();
+  expect(start).toHaveBeenCalledTimes(1);
+  expect(start.mock.calls[0][0]).toBe(duration);
+  expect(s.plane.dataset.entryDuration).toBe(String(duration));
+  expect(s.plane.dataset.entryMode).toBe('ascii');
+  start.mock.calls[0][1]();
+  jest.advanceTimersByTime(duration + 99);
+  expect(s.api.isHoldingArtwork()).toBe(true);
+  jest.advanceTimersByTime(1);
+  expect(s.api.isActive()).toBe(false);
+  expect(cleanup).toHaveBeenCalledTimes(1);
+});
+
+test.each([[false, 580], [true, 400]])('Home plain fade repeat=%s keeps %i ms with or without ASCII preparation', async (repeat, duration) => {
+  for (const ascii of [null, { prepare: jest.fn(() => Promise.resolve(null)) }]) {
+    const s = setup({ repeat, ascii });
+    s.api.revealAsset(s.image('loaded')); await flush();
+    jest.advanceTimersByTime(32); await flush();
+    expect(s.plane.dataset.entryMode).toBe('fade');
+    expect(s.plane.dataset.entryDuration).toBe(String(duration));
+    expect(s.root.style.setProperty).toHaveBeenCalledWith('--selector-entry-duration', `${duration}ms`);
+    s.api.cancel();
+  }
+});
+
 test('Home resize while sources load cannot turn its entrance into a pop', async () => {
   const source = deferred(), s = setup(); s.api.revealAsset(s.image('slow', source.promise));
   s.windowEvents.resize?.();
@@ -89,7 +120,9 @@ test.each(['pointerdown', 'keydown', 'focusin'])('%s immediately exposes pending
   expect(s.root.classList.contains('is-selector-entering')).toBe(false); expect(s.api.isActive()).toBe(false);
 });
 test.each([{ reduced: true }, { stored: 'paused' }, { nav: 'back_forward' }])('Home has no conceal or motion for %j', async options => {
-  const s = setup(options); s.api.revealAsset(s.image('slow', new Promise(() => {}))); await flush();
+  const ascii = { prepare: jest.fn() };
+  const s = setup({ ...options, ascii }); s.api.revealAsset(s.image('slow', new Promise(() => {}))); await flush();
+  expect(ascii.prepare).not.toHaveBeenCalled();
   expect(s.api.isActive()).toBe(false); expect(s.root.classList.contains('has-selector-entrance')).toBe(false);
   expect(s.plane.classList.contains('is-entry-complete')).toBe(true);
 });
@@ -124,14 +157,15 @@ test('Home keeps clocks held until its own opacity transition ends and clears th
 });
 
 
-test('generator completion releases the artwork hold in the same frame', async () => {
+test.each([false, true])('generator repeat=%s retains 580 ms and releases its hold in the same frame', async repeat => {
   const cleanup = jest.fn(), start = jest.fn();
   const ascii = { prepareGenerator: jest.fn(() => Promise.resolve({ cleanup, start })) };
-  const s = setup({ selector: false, ascii });
+  const s = setup({ selector: false, ascii, repeat });
   s.api.revealGenerator(() => '<svg/>', () => true);
   expect(s.api.isHoldingArtwork()).toBe(true);
   await flush();
   expect(s.plane.dataset.entryMode).toBe('ascii');
+  expect(start.mock.calls[0][0]).toBe(580);
   const [, onStart, onFinish] = start.mock.calls[0];
   onStart(); onFinish();
   expect(s.api.isHoldingArtwork()).toBe(false);

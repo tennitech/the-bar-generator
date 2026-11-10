@@ -52,6 +52,24 @@ remain unverified under the documented browser restrictions. No new asset,
 dependency or denied browser action is introduced.
 See [picker QA and compatibility](theme_picker_qa.md) for checks and user test items.
 
+## November 10 slightly longer Home ASCII entrance
+
+Only the Home ASCII reveal is extended: first visits use 640 ms instead of
+580 ms (+60 ms), and repeat visits use 440 ms instead of 400 ms (+40 ms).
+The existing reveal curve, sampling, letter layout, artwork and cleanup margins
+are retained. Plain-fade fallback stays at 580/400 ms; generator ASCII stays at
+580 ms. Reduced motion, saved pause, navigation restoration and user-input
+cancellation still bypass or cancel the entrance. Both Home URLs use the new
+pageEntrance cache key; generator URLs and unrelated transitions are untouched.
+
+After preserving theme release #140 and controls release #141 at main
+`44f8992`, the final cloud candidate passes all 887 tests in 79 suites.
+Regression checks exercise first/repeat Home ASCII timing and cleanup, unchanged
+fade fallback after missing/failed ASCII preparation, unchanged generator timing,
+and reduced-motion/pause/navigation bypass. Final checks and the tested tree
+are recorded in the release PR. Rendered browser QA remains unverified under the
+existing browser permission restrictions; no browser retry or bypass is attempted.
+
 ## November 10 optional intro retry repair
 
 The three-dot menu's Why not... action retains its selected-bar ASCII overlay,

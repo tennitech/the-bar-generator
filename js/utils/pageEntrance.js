@@ -67,7 +67,9 @@
       cancel();
       return;
     }
-    const duration = remember('selector') ? 400 : 580;
+    const repeat = remember('selector');
+    const duration = repeat ? 400 : 580;
+    const asciiDuration = repeat ? 440 : 640;
     const pass = { plane, kind: 'selector', frame: 0, styles: [], hold: true, timer: 0,
       reveal: document.querySelector('[data-entrance-page="selector"]') };
     pass.onTransitionEnd = event => {
@@ -88,11 +90,13 @@
               if (active !== pass) { ascii?.cleanup(); return; }
               pass.ascii = ascii;
               plane.dataset.entryMode = ascii ? 'ascii' : 'fade';
+              const revealDuration = ascii ? asciiDuration : duration;
+              plane.dataset.entryDuration = String(revealDuration);
               if (ascii) root.classList.add('has-ascii-entrance');
-              pass.timer = setTimeout(() => finish(pass), duration + (ascii ? 1000 : 100));
-              ascii?.start(duration, () => {
+              pass.timer = setTimeout(() => finish(pass), revealDuration + (ascii ? 1000 : 100));
+              ascii?.start(revealDuration, () => {
                 clearTimeout(pass.timer);
-                pass.timer = setTimeout(() => finish(pass), duration + 100);
+                pass.timer = setTimeout(() => finish(pass), revealDuration + 100);
               });
               root.classList.add('is-selector-entering');
             });
