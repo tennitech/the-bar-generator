@@ -4246,7 +4246,8 @@ body.theme-lunar .export_menu { min-width: 0; }
   background: currentColor;
   visibility: hidden;
 }
-.has-parameter-change .parameter_marker { visibility: visible; }
+/* Changed markers must stay hidden with the closed touch controls sheet. */
+.has-parameter-change .parameter_marker { visibility: inherit; }
 #app-sidebar .slider_label-row { column-gap: 0.75rem; }
 #app-sidebar .slider_value-group { gap: 0.25rem; }
 #app-sidebar .slider_value-display { min-height: 1.5rem; padding: 0.125rem 0.25rem; }
