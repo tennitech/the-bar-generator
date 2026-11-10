@@ -3401,7 +3401,7 @@ function setup() {
   window.randomizeHistory = window.RandomizeHistory?.initialize({
     snapshots: window.barShareController,
     afterRestore: () => { updateUrlParameters(); window.URLState?.flush(); },
-    announce: (message, type) => Toast.show(message, type)
+    announce: (message, type) => type === 'error' ? Toast.show(message, type) : Toast.announce(message)
   });
   window.ParameterControls.bindActions({
     randomize: style => window.randomizeHistory
