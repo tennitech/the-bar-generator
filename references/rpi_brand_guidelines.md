@@ -23,6 +23,14 @@ Verified on October 27, 2026, through the RPI brand site in the Codex in-app bro
 
 Brand-site access is not a copyright license or project approval. Confirm asset rights and approvals with the RPI sponsor. AGENTS.md remains the repository's canonical agent policy; record and resolve any policy conflict rather than silently widening app behavior.
 
+## November 10, 2026 picker subset clarification
+
+The owner retired Red on White from this tool's available themes. Existing
+red/red-on-white saves recover as Black on White. The other documented
+compositions keep their exact values and now have paired foreground/background
+swatches. This narrower product selection does not change the source guidance
+below. See [picker QA](theme_picker_qa.md).
+
 ## November 10, 2026 owner-supplied color examples
 
 Five readable Brand Hub screenshots were inspected for the requested contextual

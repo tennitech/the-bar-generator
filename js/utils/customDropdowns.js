@@ -10,9 +10,21 @@ function setupCustomDropdowns() {
     // Create wrapper
     const wrapper = document.createElement('div');
     wrapper.className = 'custom-select-wrapper';
-    if (['style-select', 'triangles-direction-select'].includes(select.id)) wrapper.classList.add('select_visual');
+    if (['style-select', 'triangles-direction-select', 'color-mode-select'].includes(select.id)) wrapper.classList.add('select_visual');
     select.parentNode.insertBefore(wrapper, select);
     wrapper.appendChild(select);
+
+    const isColorTheme = select.id === 'color-mode-select';
+    if (isColorTheme) wrapper.classList.add('color_theme-select');
+    function addColorSwatch(element, value) {
+      const label = document.createElement('span');
+      label.className = 'color_theme-label';
+      label.dataset.selectLabel = '';
+      label.textContent = element.textContent;
+      element.textContent = '';
+      element.appendChild(label);
+      element.appendChild(window.themeModeUtils.createColorSwatch(document, value));
+    }
 
     // Create trigger
     const trigger = document.createElement('button');
@@ -27,6 +39,7 @@ function setupCustomDropdowns() {
     const selectedOption = select.options[select.selectedIndex];
     trigger.textContent = selectedOption ? selectedOption.textContent : 'Select...';
     trigger.setAttribute('aria-label', `${accessibleLabel}: ${trigger.textContent}`);
+    if (isColorTheme) addColorSwatch(trigger, select.value);
     wrapper.appendChild(trigger);
 
     // Create options list
@@ -92,6 +105,10 @@ function setupCustomDropdowns() {
       customOption.setAttribute('aria-selected', String(option.selected));
       customOption.textContent = option.textContent;
       customOption.dataset.value = option.value;
+      if (isColorTheme) {
+        customOption.classList.add('color_theme-option');
+        addColorSwatch(customOption, option.value);
+      }
       if (option.hasAttribute('data-coming-soon')) {
         // Native touch pickers cannot expose hover hints: include availability
         // in their label, while preserving the original label for restored URLs.

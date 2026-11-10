@@ -1,4 +1,5 @@
 const {
+  createColorSwatch,
   DEFAULT_COLOR_MODE,
   LEGACY_COLOR_MODE_ALIASES,
   normalizeColorModeValue,
@@ -42,6 +43,8 @@ describe('theme mode utils', () => {
     expect(normalizeColorModeValue('dark')).toBe(LEGACY_COLOR_MODE_ALIASES.dark);
     expect(normalizeColorModeValue('black-on-white')).toBe('black');
     expect(normalizeColorModeValue('white-on-black')).toBe('white');
+    expect(normalizeColorModeValue('red')).toBe('black');
+    expect(normalizeColorModeValue('RED-ON-WHITE')).toBe('black');
   });
 
   test('falls back to the default color mode for unknown values', () => {
@@ -49,6 +52,7 @@ describe('theme mode utils', () => {
     expect(normalizeColorModeValue('link-blue')).toBe(DEFAULT_COLOR_MODE);
     expect(normalizeColorModeValue('')).toBe(DEFAULT_COLOR_MODE);
     expect(normalizeColorModeValue(null)).toBe(DEFAULT_COLOR_MODE);
+    expect(normalizeColorModeValue('constructor')).toBe(DEFAULT_COLOR_MODE);
   });
 
   test('keeps the native select value, custom trigger text, and selected option in sync', () => {
@@ -84,6 +88,21 @@ describe('theme mode utils', () => {
     expect(customOptions[0].classList.contains('selected')).toBe(false);
     expect(customOptions[1].classList.contains('selected')).toBe(true);
     expect(customOptions[2].classList.contains('selected')).toBe(false);
+    const label = { textContent: 'BLACK' }, properties = {};
+    const attributes = {};
+    const swatch = createColorSwatch({ createElement: () => ({
+      dataset: {}, style: { setProperty: (key, value) => { properties[key] = value; } },
+      setAttribute: (key, value) => { attributes[key] = value; }
+    }) }, 'blue');
+    expect(attributes['aria-hidden']).toBe('true');
+    expect(properties).toEqual({ '--theme-swatch-background': '#0081ce', '--theme-swatch-foreground': '#e1edf5' });
+    trigger.querySelector = selector => selector === '[data-select-label]' ? label : swatch;
+    syncCustomSelectState(select, wrapper, 'white', 'WHITE');
+    expect(label.textContent).toBe('WHITE');
+    expect(swatch.dataset.colorTheme).toBe('white');
+    expect(properties).toEqual({ '--theme-swatch-background': '#000000', '--theme-swatch-foreground': '#ffffff' });
+    expect(trigger.querySelector('[data-color-theme-swatch]')).toBe(swatch);
+
   });
 
   test('syncs custom option hidden and disabled state when availability changes', () => {
@@ -115,7 +134,7 @@ test('brand compositions apply the supplied foreground/background pair without a
   const { COLOR_SCHEMES, applyColorScheme, AVAILABLE_COLOR_MODES } = require('../js/utils/themeMode');
   const pairs = [
     ['black', '#000000', '#ffffff'], ['white', '#ffffff', '#000000'],
-    ['white-on-red', '#ffffff', '#d6001c'], ['red', '#d6001c', '#ffffff'],
+    ['white-on-red', '#ffffff', '#d6001c'],
     ['gray-on-red', '#b9ccd8', '#d6001c'], ['blue', '#e1edf5', '#0081ce'],
     ['gold', '#000000', '#cdac38'], ['gray', '#d6001c', '#b9ccd8'],
     ['silver', '#0081ce', '#e1edf5'], ['gray-on-black', '#b9ccd8', '#000000']

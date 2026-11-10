@@ -32,6 +32,12 @@
     const sourceControls = scope.loopingGifUtils && typeof scope.loopingGifUtils.normalizeMotionSpeedControls === 'function'
       ? scope.loopingGifUtils.normalizeMotionSpeedControls(value.controls)
       : { ...value.controls };
+    // Retired Red on White saves retain their other controls and use the
+    // documented neutral fallback before native-option validation.
+    if (['red', 'red-on-white'].includes(sourceControls['color-mode-select'])
+      && manifest['color-mode-select']?.options?.includes('black')) {
+      sourceControls['color-mode-select'] = 'black';
+    }
     if (manifest['triangle-grid-rows']) {
       const variant = Number(sourceControls['triangle-grid-variant-slider'] || 2);
       const defaults = { rows: variant + 1, density: 100, stroke: 100, stagger: 50 };

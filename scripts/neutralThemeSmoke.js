@@ -96,6 +96,10 @@ async function guidanceCheck(page) {
       assert.equal(data.overflow, false);
       assert.ok(data.svg.toLowerCase().includes('fill="' + scheme.fg + '"'));
       assert.equal(await page.locator('#secondary-color-help').isVisible(), scheme.secondary);
+      const expectedBackground = mode === 'lunar' ? '#03060d' : scheme.bg;
+      const tile = page.locator('#color-mode-select').locator('..').locator('.custom-select-trigger [data-color-theme-swatch]');
+      assert.equal(await tile.evaluate(el => getComputedStyle(el).backgroundColor), rgb(expectedBackground));
+      assert.equal(await tile.evaluate(el => getComputedStyle(el, '::after').backgroundColor), rgb(scheme.fg));
       if (mode !== 'lunar') {
         assert.equal(data.stage, rgb(scheme.bg));
         assert.equal(data.header, data.sidebar);
@@ -125,6 +129,10 @@ async function guidanceCheck(page) {
       if (mode === 'blue') await guidanceCheck(page);
       results.push({ mode, ...data, svg: undefined });
     }
+    await page.goto(base + '/generator/ruler/?colorMode=red');
+    await page.locator('#p5-container canvas[data-preview-ready="true"]').waitFor();
+    assert.equal(await page.locator('#color-mode-select').inputValue(), 'black');
+    assert.equal(await page.locator('#color-mode-select option[value="red"]').count(), 0);
     // Changing themes in place exercises change events and both directions of contextual visibility.
     await page.selectOption('#color-mode-select', 'blue', { force: true });
     assert.equal(await page.locator('#secondary-color-help').isVisible(), true);
@@ -142,6 +150,15 @@ async function guidanceCheck(page) {
     assert.equal(await mobile.locator('.app-header').evaluate(el => getComputedStyle(el).backgroundColor),
       await mobile.locator('.app-sidebar').evaluate(el => getComputedStyle(el).backgroundColor));
     assert.equal(await mobile.locator('#header-logo-preview').evaluate(el => getComputedStyle(el).color), 'rgb(0, 0, 0)');
+    const trigger = mobile.locator('#color-mode-select').locator('..').locator('.custom-select-trigger');
+    await trigger.click();
+    const rows = mobile.locator('#color-mode-select').locator('..').locator('.custom-option:not(.is-hidden)');
+    assert.equal(await rows.locator('[data-color-theme-swatch]').count(), await rows.count());
+    await mobile.keyboard.press('End');
+    await mobile.keyboard.press('Enter');
+    await trigger.click();
+    await mobile.keyboard.press('Escape');
+    await mobile.locator('#color-mode-select').selectOption('blue', { force: true });
     await guidanceCheck(mobile);
     assert.equal(await mobile.locator('#app-sidebar').evaluate(el => el.classList.contains('active')), true);
     assert.equal(await mobile.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
