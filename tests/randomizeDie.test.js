@@ -22,7 +22,7 @@ function fixture(style) {
 // Derive the full set from the real controller rather than a hand-maintained list.
 const capabilities = fixture('ticker').api;
 const styles = Object.keys(capabilities.capabilities).filter(style => capabilities.supportsActions(style));
-test.each(styles)('%s Randomize uses a decorative outlined die with its accessible action label', style => {
+test.each(styles)('%s Randomize uses the decorative reference-matched dice with its accessible action label', style => {
   const { button } = fixture(style);
   expect(button.type).toBe('button');
   expect(button.attrs['aria-label']).toBe(`Randomize ${style} parameters`);
@@ -31,9 +31,15 @@ test.each(styles)('%s Randomize uses a decorative outlined die with its accessib
   expect(glyph.attrs['aria-hidden']).toBe('true');
   expect(glyph.innerHTML).toContain('data-control-icon="dice"');
   expect(glyph.innerHTML).toContain('class="parameter_action-icon"');
-  expect(glyph.innerHTML).toContain('stroke="currentColor" stroke-width="2"');
+  expect(glyph.innerHTML).toContain('stroke="currentColor" stroke-width="1.5"');
   expect(glyph.innerHTML).toContain('aria-hidden="true" focusable="false"');
-  expect(glyph.innerHTML).toContain('<rect x="3" y="3" width="18" height="18" rx="2"/>');
-  expect((glyph.innerHTML.match(/<circle /g) || []).length).toBe(5);
-  expect(glyph.innerHTML).not.toMatch(/polyline|rotate-ccw|shuffle/);
+  // Two outlined faces read as dice, with three diagonal pips on the front.
+  expect(glyph.innerHTML).toContain('data-die-face="back"');
+  expect(glyph.innerHTML).toContain('data-die-face="front"');
+  expect((glyph.innerHTML.match(/<circle /g) || []).length).toBe(6);
+  expect(glyph.innerHTML).toContain('cx="5.5" cy="18.5" r="1.35"');
+  expect(glyph.innerHTML).toContain('cx="8.5" cy="15.5" r="1.35"');
+  expect(glyph.innerHTML).toContain('cx="11.5" cy="12.5" r="1.35"');
+  expect(glyph.innerHTML).toContain('<rect x="2" y="9" width="13" height="13" rx="2"/>');
+  expect(glyph.innerHTML).not.toMatch(/rotate-ccw|shuffle|<image|<mask|fill="(?:white|black|#)/);
 });
