@@ -55,7 +55,7 @@ async function main() {
   console.log(`Raster closure: ${rasterCases} current-theme/size/composition/direction cases passed`);
   const sheet = createCanvas(1000, 720), context = sheet.getContext('2d');
   context.fillStyle = '#eeeeee'; context.fillRect(0, 0, sheet.width, sheet.height);
-  context.fillStyle = '#000000'; context.font = '22px sans-serif'; context.fillText('Particle on a Ring — decoded GIF frames', 24, 30);
+  context.fillStyle = '#000000'; context.font = '22px sans-serif'; context.fillText('Ring Wavefunction — decoded GIF frames', 24, 30);
   let rowIndex = 0;
   for (const size of ['standard', 'large']) for (const composition of ['bar', 'logo']) {
     if (selectedCases && !selectedCases.includes(`${size}:${composition}`)) continue;

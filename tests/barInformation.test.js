@@ -6,7 +6,7 @@ test('the card can prepare a detached routed shell before insertion', () => {
     '#bar-information-title': { textContent: 'Solid' }, '#bar-information-description': { textContent: '' }
   };
   sync({ querySelector: selector => elements[selector] });
-  expect(elements['#bar-information-title'].textContent).toBe('Particle on a Ring');
+  expect(elements['#bar-information-title'].textContent).toBe('Ring Wavefunction');
   expect(elements['#bar-information-description'].textContent).toBe(descriptions['wave-quantum'].text);
 });
 

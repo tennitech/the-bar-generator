@@ -3,6 +3,17 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 Ring Wavefunction naming correction
+
+The owner-selected visible name is now **Ring Wavefunction** across Home catalogs,
+the style picker, About heading and accessible controls/editors. This describes
+the plotted wavefunction; the scientific source/model name remains free particle
+on a ring. The explanation of its three wavefunction phase projections is intact.
+Legacy `wave-quantum` routes/IDs, saved configurations, model geometry, timing and
+GIF behavior are unchanged. Updated catalog, helper and routed-shell cache keys
+make the correction available to returning sessions. Historical QA images keep
+the labels used when captured; no export is re-rendered for this copy correction.
+
 ## November 10 schematic export composition cards
 
 The Bar only and Bar + RPI choice cards now show the bar area as a thin,
