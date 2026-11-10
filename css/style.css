@@ -4559,13 +4559,21 @@ body .color_theme-select .color_theme-option {
 }
 body .color_theme-select .color_theme-option:is(:hover, .selected, .is-active) {
   background: var(--theme-option-background);
-  color: var(--theme-option-foreground);
+  color: var(--theme-option-label-foreground);
   box-shadow: none;
 }
 body .color_theme-select .color_theme-option.is-active {
-  outline: 2px solid var(--theme-option-foreground);
+  outline: 2px solid var(--theme-option-label-foreground);
   outline-offset: -2px;
 }
+.color_theme-option .color_theme-label { flex: 1; }
+.color_theme-ink {
+  flex: 0 0 1.5rem;
+  height: 0.25rem;
+  background: var(--theme-option-foreground);
+  visibility: hidden;
+}
+.color_theme-option:is(:hover, .selected, .is-active) .color_theme-ink { visibility: visible; }
 @media (forced-colors: active) {
   body .color_theme-select .color_theme-option.is-active {
     outline: 2px solid Highlight;

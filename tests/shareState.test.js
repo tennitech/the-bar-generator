@@ -119,8 +119,8 @@ test('new LFO snapshots preserve a bounded optional modulation phase without cha
 });
 
 test('retired color compositions restore safely without losing their other settings', () => {
-  const schema = { ...manifest, 'color-mode-select': { options: ['black', 'white', 'white-on-red', 'blue'] } };
-  for (const [legacy, fallback] of [['red', 'black'], ['red-on-white', 'black'], ['gray-on-red', 'white-on-red']]) {
+  const schema = { ...manifest, 'color-mode-select': { options: ['black', 'white', 'white-on-red', 'gray-on-red', 'blue', 'gray', 'silver'] } };
+  for (const [legacy, fallback] of [['red', 'black'], ['red-on-white', 'black'], ['gray-on-red', 'gray-on-red'], ['blue', 'blue'], ['gray', 'gray'], ['silver', 'silver']]) {
     const old = { ...state, controls: { ...state.controls, 'color-mode-select': legacy } };
     const restored = decodeState(rawFragment(old), schema);
     expect(restored.controls).toEqual({ ...state.controls, 'color-mode-select': fallback });

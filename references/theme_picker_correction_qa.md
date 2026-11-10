@@ -1,5 +1,10 @@
 # Compact theme picker correction
 
+Palette authority correction: the accessibility-table-derived substitutions and
+Gray on Red retirement described below are superseded by the verified
+[official secondary-composition audit](secondary_pair_audit.md). Historical
+validation below applies only to the then-existing implementation.
+
 The compact typography and corrected pairings below remain current. Always-colored
 idle rows and two-tone state frames are superseded by the owner’s subsequent
 [neutral row state correction](theme_row_states_qa.md).
