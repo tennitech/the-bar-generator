@@ -1,5 +1,9 @@
 # Compact theme picker correction
 
+The compact typography and corrected pairings below remain current. Always-colored
+idle rows and two-tone state frames are superseded by the owner’s subsequent
+[neutral row state correction](theme_row_states_qa.md).
+
 November 10, 2026. Base: main `78d14f16f94851cc8cee152ceb6e72d154d00421`.
 Branch: `codex/fix-theme-picker-style`; prior branches are preserved.
 

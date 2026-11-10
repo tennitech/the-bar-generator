@@ -25,35 +25,51 @@ async function themeRowCheck(page, mode, scheme) {
   const read = element => {
     const css = getComputedStyle(element);
     return { bg: css.backgroundColor, ink: css.color, font: parseFloat(css.fontSize),
-      weight: Number(css.fontWeight), family: css.fontFamily, height: element.getBoundingClientRect().height, shadow: css.boxShadow, transform: css.textTransform };
+      family: css.fontFamily, height: element.getBoundingClientRect().height,
+      shadow: css.boxShadow, outline: css.outlineStyle, outlineColor: css.outlineColor,
+      outlineWidth: css.outlineWidth, transform: css.textTransform };
   };
   const expectedBackground = mode === 'lunar' ? '#03060d' : scheme.bg;
-  const normal = await row.evaluate(read);
-  assert.equal(normal.bg, rgb(expectedBackground));
-  assert.equal(normal.ink, rgb(scheme.fg));
-  assert.equal(normal.font, 12);
-  assert.ok(normal.family.includes('RPIGeistMono'));
-  assert.ok(normal.height >= 44);
-  assert.equal(normal.transform, 'uppercase');
+  const selected = await row.evaluate(read);
+  assert.equal(selected.bg, rgb(expectedBackground));
+  assert.equal(selected.ink, rgb(scheme.fg));
+  assert.equal(selected.font, 12);
+  assert.ok(selected.family.includes('RPIGeistMono'));
+  assert.ok(selected.height >= 44);
+  assert.equal(selected.transform, 'uppercase');
+  assert.equal(selected.shadow, 'none');
   assert.equal(await wrapper.locator('[data-color-theme-swatch]').count(), 0);
   assert.equal(await row.getAttribute('aria-selected'), 'true');
   assert.notEqual(await row.evaluate(el => getComputedStyle(el, '::after').content), 'none');
   assert.equal(await row.locator('.color_theme-indicator').count(), 0);
 
-  await trigger.press(mode === 'black' ? 'End' : 'Home');
-  await row.hover();
-  const hover = await row.evaluate(read);
-  assert.equal(hover.bg, normal.bg); assert.equal(hover.ink, normal.ink);
-  assert.ok(hover.shadow.includes('rgb(255, 255, 255)') && hover.shadow.includes('rgb(0, 0, 0)'));
+  const idle = wrapper.locator('.custom-option:not(.selected):not(.is-active):not(.is-hidden)').first();
+  const idleValue = await idle.getAttribute('data-value');
+  const idleScheme = COLOR_SCHEMES[idleValue];
+  const menu = await wrapper.locator('.custom-select-options').evaluate(read);
+  const neutral = await idle.evaluate(read);
+  assert.equal(neutral.bg, menu.bg); assert.equal(neutral.ink, menu.ink);
+  assert.equal(neutral.shadow, 'none'); assert.equal(neutral.outline, 'none');
+  await idle.hover();
+  const hover = await idle.evaluate(read);
+  assert.equal(hover.bg, rgb(idleValue === 'lunar' ? '#03060d' : idleScheme.bg));
+  assert.equal(hover.ink, rgb(idleScheme.fg));
+  assert.equal(hover.shadow, 'none'); assert.equal(hover.outline, 'none');
+  await trigger.hover();
+  assert.deepEqual(await idle.evaluate(read), neutral);
 
   const values = await wrapper.locator('.custom-option:not(.is-hidden):not(.is-disabled)').evaluateAll(rows => rows.map(el => el.dataset.value));
   await trigger.press('Home');
-  for (let i = 0; i < values.indexOf(mode); i++) await trigger.press('ArrowDown');
-  assert.equal(await trigger.getAttribute('aria-activedescendant'), await row.getAttribute('id'));
-  const keyboard = await row.evaluate(read);
-  assert.equal(keyboard.bg, normal.bg); assert.equal(keyboard.ink, normal.ink);
-  assert.notEqual(keyboard.shadow, hover.shadow);
-  assert.ok(keyboard.shadow.includes('rgb(255, 255, 255)') && keyboard.shadow.includes('rgb(0, 0, 0)'));
+  for (let i = 0; i < values.indexOf(idleValue); i++) await trigger.press('ArrowDown');
+  assert.equal(await trigger.getAttribute('aria-activedescendant'), await idle.getAttribute('id'));
+  const keyboard = await idle.evaluate(read);
+  assert.equal(keyboard.bg, hover.bg); assert.equal(keyboard.ink, hover.ink);
+  assert.equal(keyboard.shadow, 'none'); assert.equal(keyboard.outline, 'solid');
+  assert.equal(keyboard.outlineWidth, '2px'); assert.equal(keyboard.outlineColor, hover.ink);
+  // Moving active focus away restores the nonselected row to its neutral state.
+  await trigger.press(idleValue === values[0] ? 'End' : 'Home');
+  assert.deepEqual(await idle.evaluate(read), neutral);
+  assert.equal((await row.evaluate(read)).bg, rgb(expectedBackground));
   if (mode === 'blue') await page.screenshot({ path: path.join(evidence, engine + '-theme-rows.png'), scale: 'css' });
   await trigger.press('Escape');
   assert.equal(await page.locator('#color-mode-select').inputValue(), mode);
