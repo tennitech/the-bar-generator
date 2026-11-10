@@ -4036,7 +4036,8 @@ body { min-height: 0; }
 /* A native top-layer dialog keeps guidance separate from the color menu. */
 .color_guidance-button {
   appearance: none;
-  display: block;
+  display: flex;
+  align-items: center;
   width: fit-content;
   margin-top: var(--control-label-gap);
   min-height: 2.75rem;
@@ -4049,14 +4050,18 @@ body { min-height: 0; }
   font: 400 0.75rem/1.5 'RPIGeistMono', monospace;
   text-align: left;
   text-transform: none;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
   cursor: pointer;
 }
 .color_guidance-button[hidden] { display: none; }
-.color_guidance-button:focus-visible,
+.color_guidance-label { display: inline-block; text-decoration: underline; text-underline-offset: 0.2em; }
+.color_guidance-button:focus-visible { outline: none; }
+.color_guidance-button:focus-visible .color_guidance-label {
+  outline: 2px solid var(--rpi-red);
+  outline-offset: 3px;
+  border-radius: var(--control-radius);
+}
 .color_guidance-link:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 3px; }
-.color_guidance-dialog { width: min(44rem, calc(100vw - 2rem)); }
+.color_guidance-dialog { width: min(44rem, calc(100vw - 2rem)); border-radius: var(--control-radius); }
 .color_guidance-dialog::backdrop { background: rgba(0, 0, 0, 0.6); backdrop-filter: none; }
 .color_guidance-dialog .report_dialog-title { font-size: clamp(1.25rem, 3vw, 1.5rem); }
 .color_guidance-dialog .report_dialog-title:focus { outline: none; }
