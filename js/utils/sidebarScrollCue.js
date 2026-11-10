@@ -1,8 +1,8 @@
 /* A passive overflow cue and fade, with no input interception. */
 (function (scope) {
   function measure({ scrollHeight, clientHeight, scrollTop, scrollerTop, scrollerBottom,
-    contentBottom, footerTop, footerSticky, sidebarTop }) {
-    const boundary = footerSticky ? Math.min(scrollerBottom, footerTop) : scrollerBottom;
+    contentBottom, footerTop, sidebarTop }) {
+    const boundary = Math.min(scrollerBottom, footerTop);
     const visible = clientHeight > 0 && scrollHeight - clientHeight - scrollTop > 2
       && contentBottom > boundary + 2 && boundary - scrollerTop >= 48;
     return { visible, top: Math.max(0, boundary - sidebarTop - 24),
@@ -12,7 +12,7 @@
     const sidebar = documentRef.getElementById('app-sidebar');
     const scroller = documentRef.getElementById('sidebar-scroll');
     const content = scroller?.querySelector('.sidebar-content');
-    const footer = scroller?.querySelector('.sidebar-footer');
+    const footer = sidebar?.querySelector('.sidebar-footer');
     if (!sidebar || !scroller || !content || !footer || sidebar.querySelector('[data-scroll-cue]')) return;
     const cue = documentRef.createElement('span');
     cue.className = 'sidebar_scroll-cue';
@@ -33,7 +33,7 @@
       const state = measure({ scrollHeight: scroller.scrollHeight, clientHeight: scroller.clientHeight,
         scrollTop: scroller.scrollTop, scrollerTop: bounds.top, scrollerBottom: bounds.bottom,
         contentBottom: content.getBoundingClientRect().bottom, footerTop: footer.getBoundingClientRect().top,
-        footerSticky: scope.getComputedStyle(footer).position === 'sticky', sidebarTop: sidebar.getBoundingClientRect().top });
+        sidebarTop: sidebar.getBoundingClientRect().top });
       cue.hidden = !state.visible;
       if (state.visible) {
         cue.style.top = `${state.top}px`;

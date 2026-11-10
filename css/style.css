@@ -555,24 +555,44 @@ body {
 }
 
 .bar_information {
-  margin: 0 0 0.75rem;
-  padding: 0.75rem;
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-sm, 2px);
-  background: var(--control-surface);
+  margin: 0 0 0.25rem;
   color: var(--text-primary);
 }
 
-.bar_information-kicker {
-  font-family: 'RPIGeistMono', monospace;
-  font-size: 0.625rem;
-  line-height: 1.4;
+.bar_information-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding-block: 0.625rem;
+  font: 500 0.8125rem/1.5 'RPIGeist', sans-serif;
+  list-style: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  overflow-wrap: anywhere;
+}
+.bar_information-toggle::-webkit-details-marker { display: none; }
+.bar_information-toggle svg { flex: 0 0 1rem; }
+.bar_information[open] > .bar_information-toggle svg { transform: rotate(180deg); }
+.bar_information-toggle:hover { color: var(--text-secondary); }
+.bar_information-toggle:focus-visible,
+.bar_information-content:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
-.bar_information h2 {
-  margin: 0.25rem 0 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.3;
+/* Keep the footer actions and controls reachable even in short touch sheets.
+   Native details hides this focusable reading region while collapsed. */
+.bar_information-content {
+  max-height: min(18rem, 25vh);
+  max-height: min(18rem, 25dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+  padding: 0.125rem 0.25rem 0.75rem;
+  margin-inline: -0.25rem;
+  scrollbar-width: thin;
 }
 
 .bar_information p {
@@ -584,8 +604,6 @@ body {
 .bar_information .bar_information-credit {
   display: none;
   margin-top: 0.5rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--control-border);
 }
 
 .bar_information a {
@@ -601,7 +619,7 @@ body {
 
 body.theme-lunar .bar_information-credit { display: block; }
 
-.bar_information-details { margin-top: 0.5rem; border-top: 1px solid var(--control-border); }
+.bar_information-details { margin-top: 0.5rem; }
 .bar_information-details[hidden] { display: none; }
 .bar_information-details summary { padding-block: 0.625rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
 .bar_information-details summary:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
@@ -609,7 +627,6 @@ body.theme-lunar .bar_information-credit { display: block; }
 .bar_information-people li + li { margin-top: 0.5rem; }
 .bar_information-people a { display: block; padding-block: 0.25rem; font-size: 0.75rem; line-height: 1.4; }
 .bar_information-people span { display: block; color: var(--text-secondary); font-size: 0.75rem; line-height: 1.4; }
-.sidebar-footer:has(.bar_information-details[open]) { position: static; }
 
 
 /* ─── Selects & Inputs ─── */
@@ -2120,19 +2137,12 @@ body.has-logo-animation {
 }
 
 .sidebar-footer {
-  margin-top: auto;
-  position: sticky;
-  bottom: 0;
+  flex: 0 0 auto;
+  position: relative;
   z-index: 3;
-  padding: 18px 20px 20px;
+  padding: 0.5rem 1.25rem 0.75rem;
   background: var(--bg-sidebar);
   border-top: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
-}
-
-/* A pinned information card can cover the entire control area in short windows.
-   Let both sections flow through the same sidebar scroller at these heights. */
-@media (max-height: 40rem) {
-  .sidebar-footer { position: static; }
 }
 
 .sidebar-feedback-btn {
@@ -3716,7 +3726,8 @@ body { min-height: 0; }
     color: var(--text-primary);
     font: 500 0.875rem 'RPIGeist', sans-serif;
   }
-  .sidebar-content, .sidebar-footer { padding: 1rem; }
+  .sidebar-content { padding: 1rem; }
+  .sidebar-footer { padding-inline: 1rem; }
   :root { --control-field-gap: 1.25rem; }
   .control-label { font-size: 0.75rem; letter-spacing: 0.04em; }
   .control-header { flex-wrap: wrap; row-gap: 0.5rem; }
@@ -3777,7 +3788,6 @@ body { min-height: 0; }
 }
 
 @media (pointer: coarse) and (max-width: 1100px) {
-  .sidebar-footer { position: static; }
   .sidebar-scroll { overscroll-behavior: contain; touch-action: pan-y pinch-zoom; }
   .save-option, .report_dialog-secondary, .report_dialog-primary { min-height: 2.75rem; }
   .slider_value-display:hover { box-shadow: none; }

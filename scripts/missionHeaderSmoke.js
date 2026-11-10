@@ -43,6 +43,7 @@ const ready = target => target.locator('#p5-container canvas[data-preview-ready=
       assert.equal(popups, 0, 'export actions must not open former credits links');
       const toggle = page.locator('#mobile-menu-toggle');
       if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
+      await page.locator('#bar-information-toggle').click();
       const details = page.locator('#artemis-information'), summary = details.locator('summary');
       await summary.scrollIntoViewIfNeeded(); await summary.focus(); await page.keyboard.press('Enter');
       assert.equal(await details.getAttribute('open'), '');
@@ -55,7 +56,7 @@ const ready = target => target.locator('#p5-container canvas[data-preview-ready=
         await link.scrollIntoViewIfNeeded(); await link.focus();
         assert.equal(await link.evaluate(el => document.activeElement === el), true);
       }
-      assert.equal(await page.locator('.sidebar-footer').evaluate(el => getComputedStyle(el).position), 'static');
+      assert.equal(await page.locator('.sidebar-footer').evaluate(el => getComputedStyle(el).position), 'relative');
       await page.locator('#report-problem-btn').scrollIntoViewIfNeeded();
       await page.screenshot({ path: path.join(evidence, `${engine}-mission-info-${width}.png`), scale: 'css' });
       await summary.scrollIntoViewIfNeeded(); await summary.click();

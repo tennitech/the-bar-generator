@@ -15,18 +15,40 @@ const evidence = `/tmp/rpi-bar-information-${engine}`;
     await page.goto(`${base}/generator/solid/`);
     await page.waitForFunction(()=>window.barShareController);
     const styles = await page.locator('#style-select option:not([disabled])').evaluateAll(options=>options.map(o=>o.value));
-    assert.equal(styles.length,21);
+    assert.ok(styles.length >= 21);
+    const about = page.locator('#bar-information'), summary = page.locator('#bar-information-toggle');
+    assert.equal(await about.getAttribute('open'), null);
+    assert.equal(await page.locator('#bar-information-description').isVisible(), false);
     for (const style of styles) {
       await page.selectOption('#style-select',style,{force:true});
       const expected=await page.evaluate(style=>BarInformation.descriptions[style],style);
       assert.equal(await page.locator('#bar-information-title').textContent(),expected.title);
       assert.equal(await page.locator('#bar-information-description').textContent(),expected.text);
+      assert.equal((await summary.textContent()).trim(), `About ${expected.title}`);
+      for (const key of ['Enter', 'Space']) {
+        await summary.focus(); await page.keyboard.press(key);
+        assert.equal(await about.getAttribute('open'), '');
+        assert.equal(await page.locator('#bar-information-description').isVisible(), true);
+        await page.keyboard.press(key);
+        assert.equal(await about.getAttribute('open'), null);
+        assert.equal(await page.locator('#bar-information-description').isVisible(), false);
+      }
       await page.locator('#report-problem-btn').scrollIntoViewIfNeeded();
       const card=await page.locator('#bar-information').boundingBox();
       const report=await page.locator('#report-problem-btn').boundingBox();
       assert.ok(card.y+card.height<=report.y);
       assert.equal(await page.locator('#bar-information').count(),1);
     }
+    await summary.click();
+    await page.selectOption('#style-select', 'wave-quantum', { force: true });
+    assert.equal(await about.getAttribute('open'), '');
+    assert.equal((await summary.textContent()).trim(), 'About Quantum');
+    const footer = page.locator('.sidebar-footer'), scroller = page.locator('#sidebar-scroll');
+    const before = await footer.boundingBox();
+    await scroller.evaluate(el => { el.scrollTop = el.scrollHeight; });
+    const after = await footer.boundingBox();
+    assert.equal(after.y, before.y, 'footer stays pinned when controls scroll');
+    assert.ok(await scroller.evaluate(el => !el.contains(document.querySelector('.sidebar-footer'))));
     for(const color of ['black','white','red','lunar']) {
       await page.selectOption('#color-mode-select',color,{force:true});
       assert.equal(await page.locator('.bar_information-credit').isVisible(),color==='lunar');
@@ -50,6 +72,7 @@ const evidence = `/tmp/rpi-bar-information-${engine}`;
     assert.equal(await page.locator('#bar-information-title').textContent(),'Quantum');
     await page.selectOption('#style-select','lunar',{force:true});
     await page.selectOption('#color-mode-select','lunar',{force:true});
+    await page.locator('#bar-information-toggle').click();
     const credit=page.locator('.bar_information-credit a');
     await credit.focus();
     assert.equal(await credit.evaluate(el=>el===document.activeElement),true);
