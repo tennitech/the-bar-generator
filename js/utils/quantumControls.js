@@ -80,7 +80,7 @@
     root.registerSliderValueEditor({
       ...root.MotionSpeed.editor('wave-quantum', el('quantum-speed-slider')),
       slider: el('quantum-speed-slider'), display: el('quantum-speed-display'), refreshDisplay: sync,
-      commit: () => { lastTimestamp = null; sync(); commit(); }, ariaLabel: 'Set particle-on-a-ring playback speed'
+      commit: () => { lastTimestamp = null; sync(); commit(); }, ariaLabel: 'Set Ring Wavefunction playback speed'
     });
     phaseEditor = {
       slider: el('quantum-phase'), display: el('quantum-phase-display'), refreshDisplay: sync,
@@ -89,7 +89,7 @@
         const number = root.parseSliderNumericInput(value);
         return number === null ? null : Math.max(0, Math.min(100, number)) / 100;
       },
-      commit: seek, ariaLabel: 'Set particle-on-a-ring phase percent'
+      commit: seek, ariaLabel: 'Set Ring Wavefunction phase percent'
     };
     root.registerSliderValueEditor(phaseEditor);
     el('style-select').addEventListener('change', () => {

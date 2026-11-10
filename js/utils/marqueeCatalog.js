@@ -32,7 +32,7 @@
     ['grid', 'Grid'], ['lines', 'Lines'], ['point-connect', 'Point Connect'],
     ['neural-network', 'Neural Network'], ['triangle-grid', 'Triangle Grid'],
     ['triangles', 'Triangles'], ['fibonacci-sequence', 'Fibonacci Sequence'],
-    ['union', 'Union'], ['wave-quantum', 'Particle on a Ring'],
+    ['union', 'Union'], ['wave-quantum', 'Ring Wavefunction'],
     ['runway', 'Runway — RPI Flying Club'], ['lunar', 'Artemis II']
   ].map(([value, label]) => {
     const variants = ['', ...(configurations[value] || [])].map((query, variant) => Object.freeze({

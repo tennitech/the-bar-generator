@@ -1,7 +1,7 @@
 # Larger editor controls: release validation
 
-Date: November 10, 2026. Integration base: `862fa8932d10cf4ca570f8a37a263a68d5c3c328`
-(after schematic export cards #168).
+Date: November 10, 2026. Integration base: `e8c0ec94243adee0a4320fde881cefa1fa2eabd5`
+(after schematic export cards #168 and Ring Wavefunction #171).
 Branch: `codex/feat-larger-editor-controls-release`.
 Original candidate: `07beffecbeeae10a773e8e55bd088e2a1816592c`, retained on
 `codex/feat-larger-editor-controls`.
@@ -34,6 +34,13 @@ reference are preserved byte-for-byte. All 90 focused sizing, disclosure,
 shell-cache and export integration tests pass in six suites after integration;
 JavaScript, all 80 generator inline scripts and whitespace checks pass. Shared shell/bootstrap/Home references keep the sizing
 release version. Both additive status entries survive. Branches are retained.
+
+PR #171 landed while #169 was awaiting CI and changed shared cache/status
+references. Its Ring Wavefunction copy, runtime helpers, catalog and tests are
+retained. Shared cache conflicts were resolved additively again; this is the
+reason GitHub had reported the prior head as conflicting. All 99 focused
+integration tests in eight suites pass after #171, including the renamed
+information card and Home catalog. Syntax and whitespace checks also pass.
 
 ## Automated validation
 
@@ -92,7 +99,7 @@ On the final live candidate, check:
   landscape heights. Scroll to the last control and the entire information card.
   Open More options and all dropdown/export menus; every item must remain
   reachable, without clipped text, focus rings or horizontal page overflow.
-- Review Solid, Neural Network, Waveform/Quantum and Artemis II, including long
+- Review Solid, Neural Network, Waveform/Ring Wavefunction and Artemis II, including long
   labels, slider value editing, Reset/Randomize, checkbox toggles and descriptions.
 - Check light/dark/Artemis themes, reduced motion, browser zoom, screen-reader
   switch state and native touch sizing. The mode uses existing theme tokens;

@@ -20,7 +20,7 @@ sidebar fade, theme palettes/states, rendering and export code. Artwork/share
 parameters and font assets are unchanged; preview fit can respond to editor width.
 
 The original candidate `07beffe` remains saved. The release is reconciled with
-`862fa89` (including the released schematic export cards) on
+`e8c0ec9` (including schematic export cards #168 and Ring Wavefunction #171) on
 `codex/feat-larger-editor-controls-release`, with a separate sibling
 menu item reserved for the ongoing keyboard-shortcuts release. Focused tests,
 JavaScript/80 inline-script syntax and whitespace checks pass. All **1,062 tests
@@ -31,6 +31,17 @@ screen-reader, owner-acceptance or formal brand-approval result is claimed.
 The release coordinator granted the exclusive merge slot after #168. Required
 Unit tests must pass on the integrated PR head before normal merge, followed by
 Pages deployment and production file verification.
+
+## November 10 Ring Wavefunction naming correction
+
+The owner-selected visible name is now **Ring Wavefunction** across Home catalogs,
+the style picker, About heading and accessible controls/editors. This describes
+the plotted wavefunction; the scientific source/model name remains free particle
+on a ring. The explanation of its three wavefunction phase projections is intact.
+Legacy `wave-quantum` routes/IDs, saved configurations, model geometry, timing and
+GIF behavior are unchanged. Updated catalog, helper and routed-shell cache keys
+make the correction available to returning sessions. Historical QA images keep
+the labels used when captured; no export is re-rendered for this copy correction.
 
 ## November 10 schematic export composition cards
 
