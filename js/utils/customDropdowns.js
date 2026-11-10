@@ -3,6 +3,7 @@
 function setupCustomDropdowns() {
   const selects = document.querySelectorAll('.control-select');
   const dismissals = new Map();
+  let pointerInPicker = false;
   const dismissOthers = target => dismissals.forEach((dismiss, wrapper) => {
     if (!target || !wrapper.contains(target)) dismiss();
   });
@@ -292,12 +293,23 @@ function setupCustomDropdowns() {
   // Dismiss before another control handles the pointer, even when its click
   // stops propagation. Synthetic clicks and programmatic focus get the same
   // cleanup, without returning focus away from the user's new target.
-  document.addEventListener('pointerdown', event => dismissOthers(event.target), true);
+  document.addEventListener('pointerdown', event => {
+    pointerInPicker = Array.from(dismissals.keys()).some(wrapper => wrapper.contains(event.target));
+    dismissOthers(event.target);
+  }, true);
+  const releasePointer = () => { pointerInPicker = false; };
+  document.addEventListener('pointerup', releasePointer, true);
+  document.addEventListener('pointercancel', releasePointer, true);
   document.addEventListener('click', event => dismissOthers(event.target));
-  document.addEventListener('focusin', event => dismissOthers(event.target));
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) dismissOthers();
+  document.addEventListener('focusin', event => {
+    // A nonfocusable option can focus its scroll container on pointerdown.
+    // Keep it mounted until the following click commits the selection.
+    if (!pointerInPicker) dismissOthers(event.target);
   });
-  window.addEventListener('blur', () => dismissOthers());
-  window.addEventListener('pagehide', () => dismissOthers());
+  const interrupt = () => { releasePointer(); dismissOthers(); };
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) interrupt();
+  });
+  window.addEventListener('blur', interrupt);
+  window.addEventListener('pagehide', interrupt);
 }
