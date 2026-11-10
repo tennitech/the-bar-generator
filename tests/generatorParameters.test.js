@@ -19,7 +19,7 @@ test('startup and runtime share query precedence, typed controls and existing no
   expect(state.colorMode).toBe('white');
   expect(state.waveformEnvelope).toBeUndefined();
   expect(state.waveformEnvelopeWaves).toBeUndefined();
-  expect(state.waveformSpeed).toBe(1);
+  expect(state.waveformSpeed).toBe(1.2);
   expect(read('?trianglesDirection=up&trianglesCount=99','/generator/triangles/').trianglesDirection).toBe('up-right');
   expect(read('?trussFamily=pratt','/generator/truss/').trussFamily).toBe('queen-post');
 });
@@ -74,4 +74,17 @@ test('triangle grid legacy and custom queries restore bounded settings',()=>{
 test('circle gradient URLs restore preset defaults and customized numeric controls', () => {
   expect(read('?circlesGradientVariant=2', '/generator/circles-gradient/')).toMatchObject({circlesGradientVariant:2,circlesGradientColumns:24,circlesGradientRows:2,circlesGradientStagger:0});
   expect(read('?circlesGradientColumns=48&circlesGradientRows=5&circlesGradientSize=25&circlesGradientContrast=0&circlesGradientStagger=0&circlesGradientReverse=true', '/generator/circles-gradient/')).toMatchObject({circlesGradientColumns:48,circlesGradientRows:5,circlesGradientSize:25,circlesGradientContrast:0,circlesGradientStagger:0,circlesGradientReverse:true});
+});
+
+
+test('Gradient retains historical variants and normalizes motion parameters', () => {
+  expect(read('?gradientVariant=2', '/generator/gradient/')).toMatchObject({gradientVariant:2,gradientSpeed:0.1,gradientReverse:false});
+  expect(read('?gradientVariant=2&gradientSpeed=999&gradientReverse=true', '/generator/gradient/')).toMatchObject({gradientVariant:2,gradientSpeed:0.4,gradientReverse:true});
+  expect(read('?gradientSpeed=bad', '/generator/gradient/').gradientSpeed).toBe(0.1);
+});
+
+test('LFO query restores new waveform folds and the complete Grandmother rate range', () => {
+  expect(read('?waveformLfo=true&waveformLfoRate=.07&waveformLfoType=1.25&waveformLfoDepth=100')).toMatchObject({waveformLfo:true,waveformLfoRate:.07,waveformLfoType:1.25,waveformLfoDepth:100});
+  expect(read('?waveformLfoRate=1300&waveformLfoType=3')).toMatchObject({waveformLfoRate:1300,waveformLfoType:3});
+  expect(read('?waveformLfoRate=9999&waveformLfoType=99')).toMatchObject({waveformLfoRate:1300,waveformLfoType:3});
 });

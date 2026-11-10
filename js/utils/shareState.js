@@ -19,6 +19,7 @@
     return {
       seed: Math.floor(bounded('seed', 1, 4294967295)),
       phase: bounded('phase', 0, 1),
+      ...(Number.isFinite(data.lfoPhase) ? { lfoPhase: bounded('lfoPhase', 0, 1) } : {}),
       time: bounded('time', 0, 1e9),
       duration: [0.25, 0.5, 1, 2].includes(data.duration) ? data.duration : 1,
       notes: boundedNotes

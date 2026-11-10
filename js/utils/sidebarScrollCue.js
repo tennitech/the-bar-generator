@@ -1,11 +1,12 @@
-/* A passive overflow cue in the existing scroll fade, with no input interception. */
+/* A passive overflow cue and fade, with no input interception. */
 (function (scope) {
   function measure({ scrollHeight, clientHeight, scrollTop, scrollerTop, scrollerBottom,
     contentBottom, footerTop, footerSticky, sidebarTop }) {
     const boundary = footerSticky ? Math.min(scrollerBottom, footerTop) : scrollerBottom;
     const visible = clientHeight > 0 && scrollHeight - clientHeight - scrollTop > 2
       && contentBottom > boundary + 2 && boundary - scrollerTop >= 48;
-    return { visible, top: Math.max(0, boundary - sidebarTop - 24) };
+    return { visible, top: Math.max(0, boundary - sidebarTop - 24),
+      availableHeight: Math.max(0, boundary - scrollerTop) };
   }
   function init(documentRef = document) {
     const sidebar = documentRef.getElementById('app-sidebar');
@@ -34,7 +35,10 @@
         contentBottom: content.getBoundingClientRect().bottom, footerTop: footer.getBoundingClientRect().top,
         footerSticky: scope.getComputedStyle(footer).position === 'sticky', sidebarTop: sidebar.getBoundingClientRect().top });
       cue.hidden = !state.visible;
-      if (state.visible) cue.style.top = `${state.top}px`;
+      if (state.visible) {
+        cue.style.top = `${state.top}px`;
+        cue.style.setProperty('--sidebar-scroll-fade-space', `${state.availableHeight}px`);
+      }
     }
     const schedule = () => { if (!frame) frame = scope.requestAnimationFrame(update); };
     scroller.addEventListener('scroll', schedule, { passive: true });

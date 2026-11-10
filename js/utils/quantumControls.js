@@ -30,7 +30,7 @@
   function sync() {
     if (!initialized) return;
     el('quantum-group').style.display = el('style-select').value === 'wave-quantum' ? 'block' : 'none';
-    el('quantum-speed-display').textContent = root.quantumModel.normalizeSpeed(el('quantum-speed-slider').value).toFixed(1);
+    root.MotionSpeed.sync('wave-quantum', el('quantum-speed-slider'), el('quantum-speed-display'));
     updatePhaseLabel();
   }
   function pause() {
@@ -78,6 +78,7 @@
     root.addEventListener('pointercancel', finishSeek);
     root.addEventListener('blur', () => { phasePointerId = null; lastTimestamp = null; });
     root.registerSliderValueEditor({
+      ...root.MotionSpeed.editor('wave-quantum', el('quantum-speed-slider')),
       slider: el('quantum-speed-slider'), display: el('quantum-speed-display'), refreshDisplay: sync,
       commit: () => { lastTimestamp = null; sync(); commit(); }, ariaLabel: 'Set quantum motion speed'
     });

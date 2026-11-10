@@ -27,7 +27,7 @@
   }
   function normalizeSpeed(value) {
     const speed = Number(value);
-    return Number.isFinite(speed) ? Math.max(0.2, Math.min(1, speed)) : 1;
+    return Number.isFinite(speed) ? Math.max(0.2, Math.min(4, speed)) : 1;
   }
   function advancePhase(phase, deltaMs, options = {}) {
     // Cap a stalled frame; never catch up across background/overlay pauses.

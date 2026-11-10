@@ -3,7 +3,7 @@ const vm = require('node:vm');
 const model = require('../js/utils/quantumModel');
 
 function harness(search = '', reduced = false) {
-  const target = (value = '') => ({ value, checked: false, style: {}, listeners: {},
+  const target = (value = '') => ({ value, checked: false, style: {}, dataset: {}, listeners: {},
     addEventListener(type, listener) { (this.listeners[type] ||= []).push(listener); },
     emit(type, event = {}) { for (const listener of this.listeners[type] || []) listener(event); },
     setAttribute() {} });
@@ -15,7 +15,7 @@ function harness(search = '', reduced = false) {
   media.matches = reduced;
   document.getElementById = id => elements[id];
   const editors = [];
-  const window = Object.assign(target(), { quantumModel: model, location: { search },
+  const window = Object.assign(target(), { quantumModel: model, MotionSpeed: require('../js/utils/motionSpeed'), location: { search },
     matchMedia: () => media, registerSliderValueEditor: config => editors.push(config),
     ParameterControls: { refreshStyle: jest.fn() },
     updateUrlParameters: jest.fn(), requestUpdate: jest.fn(), parseSliderNumericInput: Number });
