@@ -18,13 +18,38 @@ The existing modal copy, descriptive link, focus return, Escape/backdrop/Close
 dismissal, overflow behavior and reopening controller are preserved.
 
 The new user screenshot was materialized, its identity verified and its pixels
-inspected before editing. All 833 unit tests in 77 suites pass, including the focused theme,
+inspected before editing. After preserving PR #136, all 854 unit tests in 78 suites pass, including the focused theme,
 mobile-browser and modal checks. Required PR checks run before publication. The existing
 browser smoke script now checks header/sidebar equality and the text helper.
 Rendered desktop/mobile appearance and native interactions remain unverified
 under the documented browser restrictions; no denied browser action is retried.
 The standalone release is tracked by [PR #137](https://github.com/tennitech/the-bar-generator/pull/137).
 See [source and QA evidence](brand_color_context_qa.md) for user test items.
+
+## November 10 export composition choice
+
+The export menu adds two illustrated native radio cards, **Bar + RPI** and
+**Bar only**, using existing official vector paths and theme tokens. The complete
+mark and Large raster size remain the defaults. Selection has visible radio,
+border and keyboard-focus states; labels and descriptions remain accessible.
+It persists across menu/style synchronization and locks during export/copy jobs.
+
+One frozen snapshot carries composition and viewport through SVG, PNG, eligible
+Ticker/Waveform/Gradient GIFs and native SVG/PNG clipboard payloads. Bar-only omits letter
+paths and crops to the canonical bar plus proportional clear space, producing
+1160 × 232 / 2320 × 464 rasters. Pattern coordinates, current data/seed/settings,
+transparent backgrounds, resting still phase and existing loop plans remain
+unchanged. No runtime dependency, new asset or replacement logo is added.
+
+Validation and integration guidance are recorded in
+[export composition QA](export_composition_qa.md). Source/unit and offline native
+raster/codec checks are separate from rendered browser QA. Browser launch/socket
+escalation was already rejected in this environment; it was not retried or
+bypassed. Rendered menu layout, real keyboard/touch behavior, screen readers and
+native clipboard/paste remain unverified. The incremental release preserves the published brand composition and PR 133
+motion changes. The reconciled tree passes 854 unit tests, 264 PNG cases,
+12 GIFs / 816 decoded frames and 12 clipboard-adapter requests.
+Engineering validation does not establish owner acceptance or formal brand approval.
 
 ## November 10 six-feature and brand release reconciliation
 

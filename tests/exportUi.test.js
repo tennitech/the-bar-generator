@@ -1,13 +1,15 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-function fixture(clipboard, nucleotide) {
+function fixture(clipboard, nucleotide, withOptions = false) {
   const document = { readyState: 'complete', addEventListener() {}, activeElement: null };
   const ids = ['save-menu', 'save-button', 'save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'export-size-large', 'export-size-standard',
     'export-progress', 'export-message', 'export-meter', 'export-cancel', 'copy-png', 'copy-svg',
+    'export-composition-logo', 'export-composition-bar', 'export-composition-preview-logo', 'export-composition-preview-bar', 'export-dimensions', 'export-settings',
     'export-track', 'export-fill', 'export-percent', 'export-detail', 'export-blocked-note', 'export-input-note'];
   const elements = Object.fromEntries(ids.map(id => [id, {
     id, textContent: '', value: 0, listeners: {}, style: {}, attributes: {},
+    querySelector() { return {}; },
     addEventListener(type, callback) { this.listeners[type] = callback; },
     set disabled(value) {
       this.isDisabled = value;
@@ -25,6 +27,8 @@ function fixture(clipboard, nucleotide) {
   elements['save-menu'].contains = element => element && !['save-menu', 'save-button'].includes(element.id);
   document.getElementById = id => elements[id];
   const context = { document, AbortController, performance, logoClipboard: clipboard, NucleotidePattern: nucleotide, hideSaveMenu: jest.fn() };
+  if (withOptions) Object.assign(context, { logoExportOptions: require('../js/utils/exportOptions'),
+    RPI_LOGO_GEOMETRY: require('../js/utils/logoGeometry').RPI_LOGO_GEOMETRY });
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/exportUi'), 'utf8'), context);
   return { ui: context.logoExportUI, elements, document, hideSaveMenu: context.hideSaveMenu };
 }
@@ -202,4 +206,46 @@ test('incomplete nucleotide blocks exports, then becomes ready without stale dis
   const job=ui.begin('svg');expect(job).not.toBe(null);
   reason='Add 1 base to export.';ui.finish(job,'started','Done');
   expect(elements['save-svg'].disabled).toBe(true);
+});
+
+
+test('composition cards repeatedly switch, preserve size and survive menu/style synchronization', () => {
+  const clipboard = { sync: jest.fn() };
+  const { ui, elements } = fixture(clipboard, null, true);
+  expect(ui.composition()).toBe('logo');
+  expect(elements['export-composition-logo'].checked).toBe(true);
+  expect(elements['export-composition-preview-logo'].innerHTML.match(/<path /g)).toHaveLength(4);
+  expect(elements['export-composition-preview-bar'].innerHTML.match(/<path /g)).toHaveLength(1);
+  for (let cycle = 0; cycle < 5; cycle++) for (const value of ['bar', 'logo']) {
+    elements[`export-composition-${value}`].listeners.change({ target: { checked: true } });
+    expect(ui.composition()).toBe(value);
+    expect(elements[`export-composition-${value}`].checked).toBe(true);
+    expect(elements[`export-composition-${value === 'bar' ? 'logo' : 'bar'}`].checked).toBe(false);
+    expect(elements['export-dimensions'].textContent).toBe(value === 'bar' ? '2320 × 464 px' : '2320 × 1524 px');
+    expect(elements['save-png'].attributes['aria-label']).toContain(value === 'bar' ? 'Bar only' : 'Bar + RPI');
+    ui.sync(true); ui.sync(false);
+    expect(ui.composition()).toBe(value);
+  }
+  elements['export-size-standard'].listeners.change({ target: { checked: true } });
+  elements['export-composition-bar'].listeners.change({ target: { checked: true } });
+  expect(elements['export-dimensions'].textContent).toBe('1160 × 232 px');
+  expect(clipboard.sync).toHaveBeenCalled();
+});
+
+test.each(['error', 'cancelled', 'requested', 'copied'])('composition is locked during work and released after %s', outcome => {
+  const { ui, elements } = fixture(null, null, true);
+  elements['export-composition-bar'].listeners.change({ target: { checked: true } });
+  const job = ui.begin('png');
+  expect(elements['export-composition-bar'].disabled).toBe(true);
+  expect(elements['export-composition-logo'].disabled).toBe(true);
+  elements['export-composition-logo'].listeners.change({ target: { checked: true } });
+  expect(ui.composition()).toBe('bar');
+  ui.describe(job, { composition: 'bar', dimensions: { width: 2320, height: 464 } });
+  expect(elements['export-detail'].textContent).toBe('Bar only · 2320 × 464 px · transparent background');
+  ui.ready(job, { size: 100 });
+  ui.finish(job, outcome, 'Result');
+  expect(elements['export-composition-bar'].disabled).toBe(false);
+  expect(elements['export-composition-bar'].checked).toBe(true);
+  elements['export-composition-logo'].listeners.change({ target: { checked: true } });
+  expect(ui.composition()).toBe('logo');
 });

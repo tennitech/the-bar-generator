@@ -28,3 +28,23 @@ test('Large is the recommended default, including missing or invalid size values
   expect(dimensions(undefined, RPI_LOGO_GEOMETRY)).toEqual(dimensions('large', RPI_LOGO_GEOMETRY));
   expect(dimensions('invalid', RPI_LOGO_GEOMETRY)).toEqual(dimensions('large', RPI_LOGO_GEOMETRY));
 });
+
+
+test('bar-only keeps the same uniform width and padding with a cropped height', () => {
+  const { viewport, normalizeComposition } = require('../js/utils/exportOptions');
+  expect(dimensions('standard', RPI_LOGO_GEOMETRY, 'bar')).toEqual({ logoWidth: 1000, scale: 4, width: 1160, height: 232 });
+  expect(dimensions('large', RPI_LOGO_GEOMETRY, 'bar')).toEqual({ logoWidth: 2000, scale: 8, width: 2320, height: 464 });
+  expect(viewport(RPI_LOGO_GEOMETRY, 'bar')).toEqual({ x: -20, y: 112.4885, width: 290, height: 58 });
+  for (const value of [undefined, null, 'invalid', 'logo', '__proto__']) {
+    expect(normalizeComposition(value)).toBe('logo');
+    expect(dimensions('large', RPI_LOGO_GEOMETRY, value)).toEqual(dimensions('large', RPI_LOGO_GEOMETRY));
+  }
+});
+
+test.each(['svg', 'png', 'gif'])('bar-only %s filenames identify the crop without changing default filenames', format => {
+  const snapshot = { family: 'solid', foreground: '#000000', inkName: 'black', composition: 'bar',
+    dimensions: dimensions('large', RPI_LOGO_GEOMETRY, 'bar') };
+  expect(filename(snapshot, format)).toContain('rpi-bar-solid-bar-only-black-clear-');
+  expect(filename(snapshot, format)).toContain(format === 'svg' ? 'vector' : '2320x464');
+  expect(filename({ ...snapshot, composition: 'logo' }, format)).not.toContain('bar-only');
+});

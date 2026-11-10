@@ -30,7 +30,7 @@ background or border. It retains native button semantics because it opens a
 modal rather than navigating. Its touch area is transparent. Secondary-only
 visibility and all modal content/behavior are unchanged.
 
-All 833 tests in 77 suites pass. Source comparison confirms the palette and
+After preserving PR #136, all 854 tests in 78 suites pass. Source comparison confirms the palette and
 complete modal markup are unchanged; 26 entrypoints and 80 inline scripts pass
 cache/syntax verification. Focused checks exercise theme restoration clearing stale header colors, exact
 palette and export preservation, and the existing modal lifecycle. The existing
@@ -52,9 +52,11 @@ Owner test items after publication:
 
 [PR #137](https://github.com/tennitech/the-bar-generator/pull/137), its required
 checks and Pages deployment carry the release state. A fresh Git fetch confirms
-main 05655f6 is the functional candidate's direct parent (zero commits behind);
-there are no file conflicts to resolve. The candidate is reviewed and the full
-suite is rerun before the PR synchronization update.
+main 05655f6 was the functional candidate's direct parent. Main subsequently
+advanced to fed8e88 with PR #136's export-composition feature. Cache-URL and
+additive status-section overlaps were resolved while retaining the complete
+export release. The combined candidate is reviewed and the full suite is rerun
+before the PR synchronization update.
 Live-file hash verification establishes deployed source, not rendered appearance
 or native device behavior. Existing branches remain preserved.
 
