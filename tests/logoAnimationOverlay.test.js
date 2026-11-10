@@ -196,6 +196,57 @@ describe('logo animation overlay controller', () => {
     };
   }
 
+  test('real submenu binding repeatedly opens the default overlay, cancels and restores menu focus', async () => {
+    const { bind } = require('../js/utils/secretIntro');
+    const documentRef = createMockDocument();
+    const windowRef = createMockWindow();
+    windowRef.performance = { now: () => 100 };
+    const triggerEl = createMockElement();
+    const summary = createMockElement();
+    summary.focus.mockImplementation(() => { documentRef.activeElement = summary; });
+    triggerEl.focus.mockImplementation(() => { documentRef.activeElement = triggerEl; });
+    const disclosure = createMockElement();
+    disclosure.contains = element => element === summary || element === triggerEl;
+    disclosure.querySelector = () => summary;
+    const controller = createLogoAnimationController({ triggerEl, documentRef, windowRef,
+      getReturnFocus: () => summary,
+      getAnimationState: () => ({ foreground: '#000000', finalLogoSvg: '<svg/>' }) });
+    bind({ target: triggerEl, disclosure, documentRef, windowRef, open: controller.open });
+    for (const cancel of ['Escape', 'close', 'iframe']) {
+      disclosure.open = true;
+      triggerEl.dispatch('click');
+      expect(disclosure.open).toBe(false);
+      expect(controller.isOpen()).toBe(true);
+      expect(documentRef.body.classList.contains('has-logo-animation')).toBe(true);
+      expect(controller.getFrame().src).toContain('foreground=%23000000');
+      const overlay = documentRef.body.appendChild.mock.calls[0][0];
+      const chrome = overlay.children[1];
+      const [replay, close] = chrome.children;
+      replay.focus.mockImplementation(() => { documentRef.activeElement = replay; });
+      close.focus.mockImplementation(() => { documentRef.activeElement = close; });
+      jest.advanceTimersByTime(1200);
+      expect(documentRef.activeElement).toBe(close);
+      const preventDefault = jest.fn();
+      documentRef.dispatch('keydown', { key: 'Tab', target: close, preventDefault });
+      expect(documentRef.activeElement).toBe(replay);
+      documentRef.dispatch('keydown', { key: 'Tab', shiftKey: true, target: replay, preventDefault });
+      expect(documentRef.activeElement).toBe(close);
+      const frame = controller.getFrame();
+      if (cancel === 'Escape') documentRef.dispatch('keydown', { key: 'Escape', target: close, preventDefault });
+      else if (cancel === 'close') close.dispatch('click');
+      else windowRef.dispatch('message', { origin: windowRef.location.origin,
+        source: frame.contentWindow, data: { type: 'rpi-logo-animation-close' } });
+      expect(controller.isOpen()).toBe(false);
+      expect(overlay.hidden).toBe(true);
+      expect(frame.remove).toHaveBeenCalledTimes(1);
+      expect(documentRef.body.classList.contains('has-logo-animation')).toBe(false);
+      expect(documentRef.activeElement).toBe(summary);
+      expect(triggerEl.getAttribute('aria-expanded')).toBe('false');
+      expect(documentRef.body.appendChild).toHaveBeenCalledTimes(1);
+    }
+    controller.destroy();
+  });
+
   test('keeps Replay beside Close instead of reserving hidden header action slots', async () => {
     const { controller, documentRef, windowRef, replayEl, closeEl } = createController();
     let rect = { left: 1360, top: 12, width: 38, height: 38 };
