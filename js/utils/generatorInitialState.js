@@ -171,6 +171,7 @@
       if (!target) continue;
       target.classList.remove(...scope.themeModeUtils.AVAILABLE_COLOR_MODES.map(mode => `theme-${mode}`));
       target.classList.add(`theme-${theme}`);
+      scope.themeModeUtils.applyColorScheme(target, theme);
     }
     const themeSelect = root.querySelector('#color-mode-select');
     const styleSelect = root.querySelector('#style-select');

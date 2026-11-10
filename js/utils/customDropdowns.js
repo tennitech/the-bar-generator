@@ -198,8 +198,6 @@ function setupCustomDropdowns() {
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
       trigger.focus({ preventScroll: true });
-      const guidance = document.getElementById('color-guidance');
-      if (guidance) guidance.open = false;
       document.querySelectorAll('.custom-select-wrapper').forEach(w => {
         if (w !== wrapper) {
           w.classList.remove('open');
@@ -267,21 +265,7 @@ function setupCustomDropdowns() {
     requestAnimationFrame(updateScrollFades);
   });
 
-  const guidance = document.getElementById('color-guidance');
-  if (guidance && !guidance.dataset.initialized) {
-    guidance.dataset.initialized = 'true';
-    guidance.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && guidance.open) {
-        event.preventDefault();
-        event.stopPropagation();
-        guidance.open = false;
-        guidance.querySelector('summary').focus();
-      }
-    });
-    document.addEventListener('click', event => {
-      if (!guidance.contains(event.target)) guidance.open = false;
-    });
-  }
+  window.SecondaryColorGuidance?.setup(document);
 
   // click outside to close dropdowns
   document.addEventListener('click', (e) => {

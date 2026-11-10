@@ -9,4 +9,7 @@ test.each([true,false])('intro modal open=%s prevents background sidebar dismiss
   canvasViewport:{contains:()=>false},toggleMobileMenu};
  vm.createContext(context);vm.runInContext(`${source}\nhandleClickOutside({pointerType:'mouse',target:{}});`,context);
  expect(toggleMobileMenu).toHaveBeenCalledTimes(open?0:1);
+ toggleMobileMenu.mockClear();
+ vm.runInContext("handleClickOutside({pointerType:'mouse',target:{closest:()=>({open:true})}});",context);
+ expect(toggleMobileMenu).not.toHaveBeenCalled();
 });

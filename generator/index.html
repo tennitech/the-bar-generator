@@ -11,31 +11,32 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261110-combined-generator-candidate" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261110-combined-brand-refinement" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
-  <script src="js/utils/asciiEntrance.js?v=20261110-combined-generator-candidate"></script>
-  <script src="js/utils/pageEntrance.js?v=20261110-combined-generator-candidate"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261110-combined-generator-candidate"></script>
-  <script src="js/utils/themeMode.js?v=20261103-save-removal"></script>
+  <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/pageEntrance.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/themeMode.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/selectorPreviews.js?v=20261103-nucleotide"></script>
-  <script src="js/utils/customDropdowns.js?v=20261103-save-removal"></script>
+  <script src="js/utils/secondaryColorGuidance.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/customDropdowns.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/parameterControls.js?v=20261104-letter-resolve"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
-  <script src="js/utils/loopingGif.js?v=20261110-combined-generator-candidate"></script>
+  <script src="js/utils/loopingGif.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261110-combined-generator-candidate"></script>
+  <script src="js/utils/shareState.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/randomizeHistory.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/musicStyle.js"></script>
   <script src="js/utils/nucleotidePattern.js?v=20261104-parametric-lfo-recovery"></script>
-  <script src="js/utils/barPattern.js?v=20261110-combined-generator-candidate"></script>
+  <script src="js/utils/barPattern.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
-  <script src="js/utils/motionSpeed.js?v=20261110-combined-generator-candidate"></script>
-  <script src="js/utils/quantumModel.js?v=20261110-combined-generator-candidate"></script>
-  <script src="js/utils/waveformLfo.js?v=20261110-combined-generator-candidate"></script>
-  <script src="js/utils/generatorParameters.js?v=20261110-combined-generator-candidate"></script>
-  <script src="js/utils/generatorInitialState.js?v=20261104-letter-resolve"></script>
+  <script src="js/utils/motionSpeed.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/quantumModel.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/waveformLfo.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/generatorParameters.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261110-combined-brand-refinement"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
 </head>
@@ -218,30 +219,28 @@
           </div>
 
           <div class="control">
-            <label id="color-mode-select-label" for="color-mode-select" class="control-label">LOGO COLOR</label>
+            <label id="color-mode-select-label" for="color-mode-select" class="control-label">COLOR THEME</label>
             <div class="select-wrapper">
               <select id="color-mode-select" data-url-parameter="colorMode" class="control-select">
                 <optgroup label="Primary">
-                  <option value="black">Black</option>
-                  <option value="white">White</option>
-                  <option value="red">Red</option>
+                  <option value="black">Black on White</option>
+                  <option value="white">White on Black</option>
+                  <option value="white-on-red">White on Red</option>
+                  <option value="red">Red on White (limited use)</option>
                 </optgroup>
                 <optgroup label="Secondary">
-                  <option value="blue" data-coming-soon disabled>Blue</option>
-                  <option value="gold" data-coming-soon disabled>Gold</option>
-                  <option value="silver" data-coming-soon disabled>Silver</option>
-                  <option value="gray" data-coming-soon disabled>Gray</option>
+                  <option value="gray-on-red">Gray on Red</option>
+                  <option value="blue">Silver on Blue</option>
+                  <option value="gold">Black on Gold</option>
+                  <option value="gray">Red on Gray</option>
+                  <option value="silver">Blue on Silver</option>
+                  <option value="gray-on-black">Gray on Black</option>
                 </optgroup>
                 <option value="lunar">Mission Control</option>
               </select>
             </div>
-            <details class="color_guidance" id="color-guidance">
-              <summary>Using secondary colors</summary>
-              <div class="color_guidance-popover">
-                <p>Secondary colors are coming soon.</p>
-                <a href="https://brand.rpi.edu/document/4#/-/color" target="_blank" rel="noopener noreferrer" aria-label="Learn how to use secondary colors on the Color page (opens in a new tab).">Learn how to use secondary colors on the Color page.</a>
-              </div>
-            </details>
+            <button type="button" id="secondary-color-help" class="color_guidance-button"
+              aria-haspopup="dialog" aria-controls="secondary-color-dialog" hidden>How to Use</button>
           </div>
         </div>
 
@@ -999,6 +998,24 @@
     </main>
   </div>
 
+  <dialog id="secondary-color-dialog" class="report_dialog color_guidance-dialog"
+    aria-labelledby="secondary-color-title">
+    <div class="report_dialog-panel">
+      <div class="report_dialog-header">
+        <h2 id="secondary-color-title" class="report_dialog-title" tabindex="-1" autofocus>Secondary Color Usage</h2>
+        <button type="button" id="secondary-color-close" class="report_dialog-secondary">Close</button>
+      </div>
+      <ul class="color_guidance-list">
+        <li>Bold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.</li>
+        <li>Use the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.</li>
+        <li>Typography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.</li>
+        <li>Don't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.</li>
+      </ul>
+      <a class="color_guidance-link" href="https://brand.rpi.edu/d/pfJS6BKVKBeq/brand-guidelines#/-/color/secondary-colors"
+        target="_blank" rel="noopener noreferrer">Explore RPI color guidelines<span class="u-sr-only"> (opens in a new tab)</span></a>
+    </div>
+  </dialog>
+
   <dialog id="bug-report-dialog" class="report_dialog" aria-labelledby="bug-report-title">
     <form id="bug-report-form" class="report_dialog-panel" method="dialog">
       <div class="report_dialog-header">
@@ -1051,13 +1068,13 @@
   <div id="toast-container"></div>
   <script>GeneratorInitialState.apply(document.body); setupCustomDropdowns(); ParameterControls.prepare(document);</script>
   <script src="third_party/gif.js/gif.js"></script>
-  <script src="js/utils/quantumControls.js?v=20261110-combined-generator-candidate"></script>
+  <script src="js/utils/quantumControls.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/previewControls.js?v=20261103-save-removal"></script>
   <script src="js/utils/viewportZoom.js?v=20261103-save-removal"></script>
   <script src="js/utils/viewerTouch.js"></script>
   <script src="js/utils/headerMotionSurface.js"></script>
   <script src="js/utils/themeMotion.js"></script>
-  <script src="js/utils/sidebarScrollCue.js?v=20261110-combined-generator-candidate"></script>
+  <script src="js/utils/sidebarScrollCue.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/ui.js?v=20261104-scroll-cue-minimum"></script>
   <script src="js/utils/logoGeometry.js?v=20261103-save-removal"></script>
   <script src="js/utils/urlState.js?v=20261103-save-removal"></script>
@@ -1065,13 +1082,13 @@
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportUi.js?v=20261104-parametric-lfo-recovery"></script>
-  <script src="js/utils/barInformation.js?v=20261110-combined-generator-candidate"></script>
+  <script src="js/utils/barInformation.js?v=20261110-combined-brand-refinement"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
-  <script src="js/main.js?v=20261110-combined-generator-candidate"></script>
+  <script src="js/main.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/logoClipboard.js?v=20261104-parametric-lfo-recovery"></script>
-  <script src="js/drawing.js?v=20261110-combined-generator-candidate"></script>
+  <script src="js/drawing.js?v=20261110-combined-brand-refinement"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

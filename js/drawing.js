@@ -1029,13 +1029,14 @@ function captureLogoExportSnapshot() {
   const foreground = colors[currentColorMode] ? colors[currentColorMode].fg : '#000000';
   // Still files and clipboard images always use the default resting phase.
   // GIF adds its full cycle to this same captured origin without changing live playback.
+  const lfoSettings = currentShader === 4 ? getWaveformLfoSettings() : null;
   const values = JSON.parse(JSON.stringify({ ...getCurrentBarPatternValues(REFERENCE_WIDTH), ...getLoopRuntimeValues(),
     loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: 0,
-    waveformAmplitude: window.WaveformLfo.visualAmplitude({
-      amplitude: window.WaveformLfo.amplitude(0, getWaveformLfoSettings()),
-      rate: getWaveformLfoSettings().rate,
-      amount: getWaveformLfoSettings().enabled ? getWaveformLfoSettings().depth / 100 : 0
-    }, getWaveformLfoSettings().type) }));
+    waveformAmplitude: lfoSettings ? window.WaveformLfo.visualAmplitude({
+      amplitude: window.WaveformLfo.amplitude(0, lfoSettings),
+      rate: lfoSettings.rate,
+      amount: lfoSettings.enabled ? lfoSettings.depth / 100 : 0
+    }, lfoSettings.type) : 1 }));
   const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values, preview: false });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
@@ -1044,7 +1045,8 @@ function captureLogoExportSnapshot() {
   const title = Array.from(String(safeName).normalize('NFC').replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, '').trim()).slice(0, 80).join('');
   const geometry = RPI_LOGO_GEOMETRY;
   const dimensions = window.logoExportOptions.dimensions(window.logoExportUI.size(), geometry);
-  const inkName = ({ '#ffffff': 'white', '#000000': 'black', '#d6001c': 'red' })[foreground.toLowerCase()] || currentColorMode;
+  const inkName = ({ '#ffffff': 'white', '#000000': 'black', '#d6001c': 'red',
+    '#0081ce': 'blue', '#cdac38': 'gold', '#e1edf5': 'silver', '#b9ccd8': 'gray' })[foreground.toLowerCase()] || currentColorMode;
   const rgb = [0, 2, 4].map(offset => parseInt(foreground.replace('#', '').slice(offset, offset + 2), 16));
   const svgSource = `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="${geometry.width + geometry.exportPadding * 2}" height="${geometry.totalHeight + geometry.exportPadding * 2}" viewBox="-${geometry.exportPadding} -${geometry.exportPadding} ${geometry.width + geometry.exportPadding * 2} ${geometry.totalHeight + geometry.exportPadding * 2}" xmlns="http://www.w3.org/2000/svg"><title>${escapeExportXML(title || `RPI ${family} logo`)}</title>${Object.values(geometry.paths).map(path => `<path d="${path}" fill="${foreground}"/>`).join('')}${barMarkup}</svg>`;
   return Object.freeze({ family, currentShader, colorMode: currentColorMode, foreground, rgb, inkName, title,

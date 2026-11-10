@@ -195,7 +195,7 @@ const DEFAULT_SAVE_MENU_COPY = {
 };
 const DEFAULT_INTERFACE_COPY = {
   styleLabel: 'BAR STYLE',
-  colorLabel: 'LOGO COLOR',
+  colorLabel: 'COLOR THEME',
   reportProblem: 'Report a Problem'
 };
 const MISSION_CONTROL_INTERFACE_COPY = {
@@ -275,7 +275,6 @@ const LEGACY_COLOR_MODE_ALIASES = themeModeUtils && themeModeUtils.LEGACY_COLOR_
     'black-on-white': 'black',
     'white-on-black': 'white',
     'red-on-white': 'red',
-    'white-on-red': 'white',
     'light': 'black',
     'dark': 'white'
   };
@@ -337,16 +336,7 @@ const clampLiveAnimationDeltaMs = loopingGifUtils && typeof loopingGifUtils.clam
 
 let currentColorMode = DEFAULT_COLOR_MODE;
 let lastNonLunarColorMode = DEFAULT_COLOR_MODE;
-const colors = {
-  lunar: { bg: '#05070a', fg: '#f4f7fb' },
-  black: { bg: '#ffffff', fg: '#000000' },
-  white: { bg: '#000000', fg: '#ffffff' },
-  red: { bg: '#ffffff', fg: '#d6001c' },
-  blue: { bg: '#ffffff', fg: '#0081CE' },
-  gold: { bg: '#fffaf0', fg: '#CDAC38' },
-  silver: { bg: '#11161d', fg: '#E1EDF5' },
-  gray: { bg: '#151b21', fg: '#B9CCD8' }
-};
+const colors = themeModeUtils.COLOR_SCHEMES;
 
 function padCounterValue(value, digits) {
   return String(Math.max(0, Math.floor(value) || 0)).padStart(digits, '0');
@@ -464,7 +454,10 @@ const themeClassByColorMode = {
   blue: 'theme-blue',
   gold: 'theme-gold',
   silver: 'theme-silver',
-  gray: 'theme-gray'
+  gray: 'theme-gray',
+  'white-on-red': 'theme-white-on-red',
+  'gray-on-red': 'theme-gray-on-red',
+  'gray-on-black': 'theme-gray-on-black'
 };
 
 // Set this to a deployed Google Apps Script web app URL to send reports directly into a Google Sheet.
@@ -1680,7 +1673,8 @@ function randomizeStyleParameters(style) {
 
 function getBugReportContextLabel() {
   const styleLabel = getStyleDisplayName(styleSelect ? styleSelect.value : 'solid');
-  const colorLabel = String(colorModeSelect ? colorModeSelect.value : DEFAULT_COLOR_MODE).replace(/-/g, ' ').toUpperCase();
+  const mode = normalizeColorModeValue(colorModeSelect ? colorModeSelect.value : DEFAULT_COLOR_MODE);
+  const colorLabel = colors[mode].label;
   return `${styleLabel}  •  ${colorLabel}  •  ${window.innerWidth}×${window.innerHeight}`;
 }
 
@@ -1726,7 +1720,7 @@ function openBugReportDialog() {
 
 function buildGitHubIssueUrl() {
   const payload = buildBugReportPayload();
-  const colorThemeLabel = String(payload.colorMode || DEFAULT_COLOR_MODE).replace(/-/g, ' ').toUpperCase();
+  const colorThemeLabel = colors[normalizeColorModeValue(payload.colorMode)].label;
   const issueTitle = `${payload.styleLabel} issue`;
   const issueBody = [
     '### Summary',
@@ -3879,6 +3873,7 @@ function toggleMobileMenu() {
 function handleClickOutside(event) {
   // Modal chrome is not an outside click on the inert background controls.
   if (document.body.classList.contains('has-logo-animation')) return;
+  if (event.target?.closest?.('dialog[open]')) return;
   // Only apply in compact overlay layout where the sidebar covers the workspace.
   if (!isCompactLayoutViewport()) return;
   // Don't close if clicking on the toggle button or inside the sidebar
@@ -4294,7 +4289,8 @@ function applyColorMode(colorMode) {
     lastNonLunarColorMode = currentColorMode;
   }
 
-  document.body.style.setProperty('--preview-foreground', colors[currentColorMode].fg);
+  [document.documentElement, document.body].forEach(target => themeModeUtils.applyColorScheme(target, currentColorMode));
+  window.SecondaryColorGuidance?.sync(currentColorMode);
   syncLunarColorOptionAvailability();
 
   // Remove all theme classes first

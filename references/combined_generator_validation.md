@@ -18,7 +18,7 @@ The original source worktrees and branches are preserved.
 Raw source diffs, source hashes and test logs are retained outside the repository
 at `/workspace/scratch/83f166ead34c/generator-integration-evidence`.
 Cache references for changed runtime/styles, fetched shell and route bootstrap
-share `20261110-combined-generator-candidate`; unchanged assets retain their
+share `20261110-combined-brand-refinement`; unchanged assets retain their
 existing versions. No framework, dependency, waveform frequency claim, official
 logo geometry or profanity-filter policy changed. `main.js` retains the existing
 p5 global-state bridges; multiplier logic is isolated in `motionSpeed.js`.
@@ -42,7 +42,7 @@ p5 global-state bridges; multiplier logic is isolated in `motionSpeed.js`.
 
 ## Completed validation
 
-`npm test -- --runInBand --no-cache`: **831 tests in 76 suites passed** on cloud
+`npm test -- --runInBand --no-cache`: **833 tests in 77 suites passed** on cloud
 Node 24.22.1. Regressions exercise actual controls/model functions, first-frame
 transform capture, static marquee/catalog parity, shared rate migration,
 keyboard/editor multipliers, preserved default rates, bounded LFO joint cycles,
@@ -87,3 +87,20 @@ are separate unfinished tasks and are excluded from this batch.
 6. Waveform LFO: Loop with audio off, then Audio; fold Sine→Sawtooth→Square→Pulse,
    try slow Hz and 1300Hz, Depth, pause/resume, reduced motion, Reset/Undo,
    reload/share, then GIF. Fast LFO should settle visually while audio modulates.
+
+
+## Reconciliation with published PR #134
+
+The final candidate includes exact main `04194d6a4f96aeb67d0d679a24ffad758ba6610e`.
+Dedicated brand utilities, controls, supplied guidance copy, modal behavior,
+source records and focused tests are retained. Only HTML cache references and
+additive project status required conflict resolution; main/drawing/CSS content
+merged additively. Still-export LFO sampling now runs only for Waveform, so brand
+and other-family exports do not acquire an unrelated LFO dependency. All 833
+tests in 77 suites pass after reconciliation. The parent owns the final merge;
+this revision does not claim a deployment or rendered browser pass.
+
+Reconciliation source checks pass: 47 JavaScript files changed since the released
+static-marquee base parse; all 84 inline scripts compile; 369 local runtime/style
+references resolve; 11 dedicated brand files and exact selector/button/dialog
+markup match #134 byte for byte; cache and whitespace checks pass.

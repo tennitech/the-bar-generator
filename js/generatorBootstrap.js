@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261110-combined-generator-candidate';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261110-combined-brand-refinement';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
@@ -20,7 +20,7 @@
       return window.GeneratorRoutes;
     }
 
-    await loadScript('js/utils/generatorRoutes.js?v=20261110-combined-generator-candidate');
+    await loadScript('js/utils/generatorRoutes.js?v=20261110-combined-brand-refinement');
     return window.GeneratorRoutes || null;
   }
 
