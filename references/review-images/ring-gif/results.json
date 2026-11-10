@@ -1,0 +1,97 @@
+{
+  "rasterCases": 80,
+  "rows": [
+    {
+      "name": "ring-standard-bar",
+      "phase": 0.37123456789,
+      "speed": 4,
+      "reverse": false,
+      "width": 1160,
+      "height": 232,
+      "frameCount": 900,
+      "bytes": 2825839,
+      "durationMs": 30000,
+      "requestedDurationMs": 30000,
+      "prepareMs": 11581.321081999995,
+      "elapsedMs": 19894.558458,
+      "peakInFlight": 2,
+      "maxInputFrameBytes": 2152960,
+      "decodedFrames": 900,
+      "distinctFrames": 900,
+      "delayMs": [
+        30,
+        40
+      ],
+      "fullCyclePixelClosure": true
+    },
+    {
+      "name": "ring-standard-logo",
+      "phase": 0.9999,
+      "speed": 4,
+      "reverse": true,
+      "width": 1160,
+      "height": 762,
+      "frameCount": 900,
+      "bytes": 8450049,
+      "durationMs": 30000,
+      "requestedDurationMs": 30000,
+      "prepareMs": 31118.22855000011,
+      "elapsedMs": 58798.67565699999,
+      "peakInFlight": 2,
+      "maxInputFrameBytes": 7071360,
+      "decodedFrames": 900,
+      "distinctFrames": 900,
+      "delayMs": [
+        30,
+        40
+      ],
+      "fullCyclePixelClosure": true
+    },
+    {
+      "name": "ring-large-bar",
+      "phase": 0.37123456789,
+      "speed": 4,
+      "reverse": false,
+      "width": 2320,
+      "height": 464,
+      "frameCount": 900,
+      "bytes": 6853366,
+      "durationMs": 30000,
+      "requestedDurationMs": 30000,
+      "prepareMs": 52382.65023800002,
+      "elapsedMs": 73996.68646799999,
+      "peakInFlight": 2,
+      "maxInputFrameBytes": 8611840,
+      "decodedFrames": 900,
+      "distinctFrames": 900,
+      "delayMs": [
+        30,
+        40
+      ],
+      "fullCyclePixelClosure": true
+    },
+    {
+      "name": "ring-large-logo",
+      "phase": 0.9999,
+      "speed": 4,
+      "reverse": true,
+      "width": 2320,
+      "height": 1524,
+      "frameCount": 900,
+      "bytes": 20161276,
+      "durationMs": 30000,
+      "requestedDurationMs": 30000,
+      "prepareMs": 257799.40040099973,
+      "elapsedMs": 206187.63306700002,
+      "peakInFlight": 2,
+      "maxInputFrameBytes": 28285440,
+      "decodedFrames": 900,
+      "distinctFrames": 900,
+      "delayMs": [
+        30,
+        40
+      ],
+      "fullCyclePixelClosure": true
+    }
+  ]
+}

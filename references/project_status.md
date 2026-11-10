@@ -3,6 +3,91 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 scope contours and useful LFO motion
+
+The owner's screenshot is frozen at 400% zoom with LFO off, frequency10 and a
+.122s window. The sine teeth were geometry: every extrema bin appended max/min
+at the same X and joined the resulting zigzag to the baseline. Separately,
+#163's fastest-detail sweep barely moved a long LFO envelope. Both presentation
+rules are superseded by this repair; the correct audible graph is preserved.
+
+Sparse views now use ordered actual PCM, with linear interpolation between
+adjacent source samples for fractional playback offsets. Dense slow-LFO views
+use a clearly labeled peak envelope: measured min/max bins, upper contour
+forward and lower backward, with monotone interpolation bounded by measured
+values. No oscillator/envelope formula generates the displayed signal. Physical
+X, fixed gain, continuous history, parameter-change labels and freeze persist.
+An enabled nonzero-depth LFO scans one actual LFO cycle per visual cycle;
+otherwise the carrier sets the span. SPEED/reverse still determine display
+playback and matching GIF timing. A two-envelope view therefore travels half
+its width each default3.333s rather than barely shifting one carrier cycle.
+
+The silent tap now transfers exact ordered PCM beside extrema. All sparse
+windows plus trigger/playback margins fit within one second, so live full PCM
+uses a one-second ring; long envelope history retains extrema only, bounded
+at4/.07 seconds. At48kHz live storage is roughly2.8MiB; silent dense recordings
+release full PCM after extrema reduction. No new audio-output path or dependency.
+
+Final Jest1049tests/91suites, syntax/cache/whitespace checks pass. Native exact
+checks:90original/shared audio comparisons error0;42AM-product cases maximum
+3.7253e-9;2816extrema pairs and22528ordered PCM samples exact; tap output unchanged.
+24realPNG exports and8GIFs/1328decoded frames match expected pixels. All166frames
+are unique in each .07/2Hz motion case; high-rate1300Hz has at most one duplicate.
+Actual400% before/after native crops were inspected, including LFO-off sine and
+.07/2Hz peak envelopes. Browser reload and one ordinary tab recovery timed out;
+patched live browser/hardware listening/Safari/iOS remain unverified here. No
+previously denied browser escalation was retried. See [QA](waveform_scope_contours_qa.md).
+
+## November 10 attempted input-limit feedback
+
+Text fields with explicit limits now receive a brief red border and 2px shake
+only after an attempted overflow. Binary/Morse use their existing ten-code-point
+limit; Numeric uses its existing 100-character limit, and report fields retain
+native limits. Nucleotide keeps its normalized-base insertion and 30–50-base
+export rules while sharing the same visual feedback. An exact boundary value is
+valid and does not trigger feedback by itself.
+
+Inline slider editors report out-of-range drafts and retain the existing
+clamp/round/commit behavior, including SPEED's 0.2–4 multiplier and Ticker's
+last-token width ratio. Zoom reports attempted values outside 100–400 percent.
+Feedback does not set aria-invalid, change focus, or create a toast. A nearby
+polite status message explains the limit, keeps existing descriptions, and
+expires after four seconds. Repeated attempts renew the visual cue without
+re-announcing unchanged text. Reduced motion removes the shake and retains
+static red feedback. Independent CSS translation preserves editor positioning.
+No pattern, profanity, audio, geometry or export calculation changes.
+
+Focused event/validation regressions cover boundary values, Unicode selection,
+paste before native truncation, repeated attempts, timers, Numeric length,
+ratio/multiplier parsing, editor disposal and the reduced-motion CSS rule.
+The permitted cloud browser cannot reach the isolated localhost server
+(ERR_CONNECTION_REFUSED); local rendered/mobile/motion QA is not claimed.
+Live verification is recorded with the PR after deployment. No formal brand
+approval is implied.
+
+## November 10 About disclosure chevron consistency
+
+Every About [style] footer now uses the exact same thin SVG as Parameters and
+the other section disclosures, inside the shared 1rem centered icon box. It sits
+beside the label with the same 0.5rem gap. The shared expanded orientation points
+down at 90°; native closed details and collapsed sections point right at 0°.
+The former footer-only heavy down-chevron and 180° override are removed.
+
+Native details/summary behavior, collapsed default, keyboard activation and
+accessible state, existing focus/touch target, style-specific content, preserved
+open/closed state across selection and scroll-cue behavior remain. No footer
+controller, parameter values, sidebar geometry, motion/audio or exports change.
+The icon adds no animation, including under reduced motion.
+
+Focused regressions cover exact SVG/style parity, all style descriptions in both
+native states and every routed generator's shared shell. Actual icon raster bytes
+match Parameters in 16/24px, open/closed and light/dark cases; both 16px states
+were inspected in an offline label reconstruction. This is native SVG/font QA,
+not rendered browser/application evidence. Full suite and exact-head CI results
+are recorded in the PR. Actual browser keyboard/touch/screen-reader behavior and
+responsive appearance remain unverified under the existing restrictions; no
+denied browser route is retried. No active footer PR was found during inspection.
+
 ## November 10 scope playback speed repair
 
 Live owner QA exposed a second scope presentation defect: a roughly .037s
@@ -246,6 +331,32 @@ See [model and source distinction](bar_science_notes.md#actual-audio-waveform-sc
 and [scope QA](waveform_signal_qa.md). No browser escalation was retried.
 Native offline graph/data/codec checks do not establish rendered browser UI,
 physical listening, native downloads, screen-reader output or formal RPI approval.
+
+## November 10 Particle on a Ring GIF export
+
+The former Quantum label becomes **Particle on a Ring**, the established model
+name. Its card identifies the three convention-dependent wavefunction phase
+projections of equal-weight modes −4, 3, 7. The model, artwork, legacy URLs,
+control IDs, queries and saved links remain unchanged; the creative Phase Weave
+candidate stays separate. [Scientific basis](quantum_model.md).
+
+Default 1× exports the complete seamless 120-second cycle at 30 fps, with exact
+live phase, speed/direction, ink and composition captured before asynchronous
+work. Ring-only limits are 120 seconds/3600 frames; other families retain
+100 seconds/3000 frames. The 32 MiB two-input-frame and 64 MiB encoded guards
+remain. SPEED below 1× gets an actionable limit message without changing speed.
+
+Full-logo GIFs longer than one minute use Standard resolution to stay practical
+within the file budget. The GIF action discloses this and its actual dimensions
+before export; the captured filename/progress use those same dimensions. Bar-only
+retains the selected Standard/Large size, as do full-logo GIFs up to one minute.
+PNG/SVG/clipboard and their selected size remain unchanged. There is no frame-rate
+reduction, truncation, matte or artificial speed change.
+
+Current main's compact theme picker/reference pairs, disclosures, Randomize die
+and responsive marquee follow-ups are preserved. The later 50 fps defaults for translating families are also retained; this bar explicitly keeps its measured 30 fps budget. All 1029 tests in 89 suites pass; all 84 inline scripts compile. Three default-speed GIFs decode through all 10,800 frames with verified motion/timing/seam and 192 exact source-pixel references. With the released alpha correction, default full-logo GIF is 32.04 MB; prior ordered-alpha bar-only measurements are 11.30/27.41 MB at Standard/Large. [GIF QA](quantum_gif_qa.md) records evidence and limits. Completed export status/statistics reset on style, theme, size/composition, parameter edits and credits-context changes. Captured in-flight exports remain cancellable and name their source style; late results do not appear under a new context. Browser restrictions remain
+respected; native codec evidence does not establish browser download/playback.
+
 
 ## November 10 GIF cadence closer to display-driven motion
 

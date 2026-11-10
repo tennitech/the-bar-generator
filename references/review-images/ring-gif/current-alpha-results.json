@@ -1,0 +1,34 @@
+{
+  "rasterCases": 0,
+  "rows": [
+    {
+      "name": "ring-large-logo",
+      "foreground": "#000000",
+      "alphaPolicy": "current default",
+      "requestedSize": "large",
+      "actualSize": "standard",
+      "policyNote": "Standard resolution for a full-logo loop longer than one minute.",
+      "sourcePixelReferences": 64,
+      "phase": 0.9999,
+      "speed": 1,
+      "reverse": true,
+      "width": 1160,
+      "height": 762,
+      "frameCount": 3600,
+      "bytes": 32041719,
+      "durationMs": 120000,
+      "requestedDurationMs": 120000,
+      "prepareMs": 32088.747619999936,
+      "elapsedMs": 131248.346722,
+      "peakInFlight": 2,
+      "maxInputFrameBytes": 7071360,
+      "decodedFrames": 3600,
+      "distinctFrames": 3600,
+      "delayMs": [
+        30,
+        40
+      ],
+      "fullCyclePixelClosure": true
+    }
+  ]
+}

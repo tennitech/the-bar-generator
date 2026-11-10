@@ -82,9 +82,9 @@ Button zoom keeps the bar as the inspection focus. Pointer zoom uses the pointer
 
 The configurable static families retain their natural composition within the canonical viewport. The combined renderer uses the complete official vector basis and one selected-control collector for header/preview/SVG/PNG across all static families, superseding the isolated four-family export bypass. Exports capture controls, color, phase, title and Standard/Large size before asynchronous work begins. PNG rasterizes that captured vector; GIF streams captured frames with true palette transparency and disposal2. GIF uses binary alpha with a uniform half-coverage threshold, so PNG/SVG remain the smooth-alpha alternatives. See [transparent exports](transparent_gif_exports.md) for timing, streaming memory budgets, measured benchmarks and limits.
 
-The combined development checkout includes the revised single Quantum projection model from `ac06247`, `b4288ba`, and `c25cfa5`. It graphs three phase-convention-dependent projections of one normalized free-particle wavefunction on an ideal periodic ring, using modes −4,3,7 with equal coefficient magnitude1/√3. The fixed amplitude bound√3 maps to height; it never uses sampled-peak fitting. A recurrence takes120display seconds at1×, SPEED0.2–1 uniformly scales time, and the owner-corrected default evaluates decreasing model time; REVERSE switches to increasing model time. Display seconds have no physical calibration because mass/circumference are unspecified. The curves are not particles, literal trajectories, probabilities or measured data. See [model, equations, sources and limits](quantum_model.md).
+The combined development checkout includes the revised single Quantum projection model from `ac06247`, `b4288ba`, and `c25cfa5`. It graphs three phase-convention-dependent projections of one normalized free-particle wavefunction on an ideal periodic ring, using modes −4,3,7 with equal coefficient magnitude1/√3. The fixed amplitude bound√3 maps to height; it never uses sampled-peak fitting. A recurrence takes120display seconds at1×, SPEED0.2–4 uniformly scales time. Current main advances model phase by default; REVERSE decreases it. The GIF matches that exact current-model direction. Display seconds have no physical calibration because mass/circumference are unspecified. The curves are not particles, literal trajectories, probabilities or measured data. See [model, equations, sources and limits](quantum_model.md).
 
-Quantum uses the immediate native renderer for main preview and the same phase/polygons in header/SVG/captured PNG; preview bypasses asynchronous static snapshots. Fresh routes and menu selection default to Loop unless reduced motion is requested. Shared restore pauses transport even for older LOOP=true state, drops obsolete density-view fields and retains phase. Same-page legacy-query restoration uses the bounded model normalizers. Phase edits preserve the explicit LOOP selection and temporarily hold model time during pointer drags or numeric editing; playback resumes from the selected phase without catch-up. Quantum GIF export is unavailable. Header rendering and navigation entrance policies are documented separately; no model or brand approval is inferred from software tests.
+Quantum uses the immediate native renderer for main preview and the same phase/polygons in header/SVG/captured PNG; preview bypasses asynchronous static snapshots. Fresh routes and menu selection default to Loop unless reduced motion is requested. Shared restore pauses transport even for older LOOP=true state, drops obsolete density-view fields and retains phase. Same-page legacy-query restoration uses the bounded model normalizers. Phase edits preserve the explicit LOOP selection and temporarily hold model time during pointer drags or numeric editing; playback resumes from the selected phase without catch-up. Particle on a Ring GIF export now captures the exact live phase and model at the natural `120 / SPEED` recurrence with 30 fps centisecond timing. The default 1× natural recurrence is supported with a ring-only 120-second/3600-frame budget and unchanged memory/file guards. Full-logo loops longer than one minute disclose Standard resolution; bar-only retains the selected size. Slower-than-1× loops report the duration limit without altering controls. See [the model and GIF policy](quantum_model.md). Header rendering and navigation entrance policies are documented separately; no model or brand approval is inferred from software tests.
 
 ## Inspection snapshot bounds — October 28, 2026
 
@@ -512,3 +512,35 @@ freeze retain the exact shown frame. An arbitrary carrier/LFO ratio need not
 close at a short sweep boundary, and refreshed live snapshots may show a
 different envelope; this is an actual recorded scope, not a claim of periodic
 physical playback. Existing gain modulation, audio ramps and output are intact.
+
+## Ordered PCM, dense peak contours and LFO timebase — November 10, 2026
+
+The earlier same-X max/min zigzag is replaced. Short/sparse views draw ordered
+actual PCM. A fractional source offset linearly interpolates only adjacent PCM
+samples; it does not evaluate an ideal carrier or gain function. The final
+sample's X is its true time, one source interval before the window endpoint.
+Dense slow-LFO views (more than16carrier cycles and LFO below carrierHz/8) show
+measured peak envelopes, not an instantaneous carrier trace. Bins span roughly
+one carrier period, capped at1024. Their upper/lower contours are independent;
+monotone cubic interpolation stays within adjacent measured values and creates
+no new extrema. Captions distinguish peak envelope from PCM trace. High-rate
+modulation retains ordered PCM rather than assuming a slow envelope.
+
+With active nonzero-depth modulation the physical sweep is1/LFOHz, rather than
+1/fastestHz. One sweep takes1/SPEED display seconds, while X still spans two
+LFO periods or four carrier periods, whichever is longer. A quarter-sweep
+therefore moves a two-envelope view by an eighth of its width. Playback may be
+slower or faster than physical recording time and is labeled sample playback.
+Actual envelope-level crossings trigger dense captures; sparse views use real
+rising PCM crossings. Triggers select recorded windows, not synthesized phases.
+
+Two sweep periods of actual extra history provide trigger/playback margin.
+Long extrema storage is bounded at4/.07 seconds; a one-second PCM ring covers
+every supported sparse window and its margin, avoiding full-rate long-history
+storage. Dense offline rendering keeps measured extrema after releasing PCM.
+Audio graph/gain ramps/output and physical partial-history bounds are unchanged.
+SVG/PNG freeze the exact representation; GIF follows its actual captured data,
+selected direction and visual speed. Noncommensurate source ratios may reset
+at the replay boundary, and live snapshot refresh can change the measured
+outline. The display does not claim real-time scrolling or an exact analytic
+envelope between measured bin peaks.

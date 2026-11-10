@@ -98,6 +98,7 @@
   const inputStates = new WeakMap();
   function clearLimit(root) {
     const input = root.querySelector('#nucleotide-input');
+    scope.InputLimitFeedback?.clear(input);
     const state = inputStates.get(input);
     if (state) {
       clearTimeout(state.flashTimer); state.flashTimer = null;
@@ -109,6 +110,10 @@
   }
   function signalLimit(root) {
     const input = root.querySelector('#nucleotide-input');
+    if (scope.InputLimitFeedback) {
+      scope.InputLimitFeedback.signal(input, '50-base limit. Remove a base before adding another.');
+      return;
+    }
     const state = inputStates.get(input);
     const control = root.querySelector('#nucleotide-sequence-control');
     const error = root.querySelector('#nucleotide-limit-error');

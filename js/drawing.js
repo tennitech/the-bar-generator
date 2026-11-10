@@ -1023,16 +1023,19 @@ function escapeExportXML(value) {
   return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[char]);
 }
 
-function captureLogoExportSnapshot() {
+function captureLogoExportSnapshot(options = {}) {
   const nucleotideBlocker = window.NucleotidePattern?.exportBlocker(document);
   if (nucleotideBlocker) throw new Error(nucleotideBlocker);
   const foreground = colors[currentColorMode] ? colors[currentColorMode].fg : '#000000';
-  // Still files and clipboard images always use the default resting phase.
-  // GIF adds its full cycle to this same captured origin without changing live playback.
+  // Still files and clipboard images retain their resting phase. Ring GIFs
+  // capture the exact live phase without changing playback or saved settings.
+  const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
+  const currentValues = getCurrentBarPatternValues(REFERENCE_WIDTH);
   const lfoSettings = currentShader === 4 ? getWaveformLfoSettings() : null;
   const scopeCapture = currentShader === 4 ? window.waveformScopeController?.capture(getLoopRuntimeValues().waveformReverse === true) : null;
-  const values = JSON.parse(JSON.stringify({ ...getCurrentBarPatternValues(REFERENCE_WIDTH), ...getLoopRuntimeValues(),
-    loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: 0,
+  const values = JSON.parse(JSON.stringify({ ...currentValues, ...getLoopRuntimeValues(),
+    loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: options.format === 'gif' && family === 'wave-quantum'
+      ? window.quantumModel.normalizePhase(currentValues.quantumPhase) : 0,
     ...(scopeCapture ? { waveformScope: scopeCapture.frame,
       waveformScopePlaybackSeconds: scopeCapture.recording?.playbackSeconds,
       waveformScopeReplaySeconds: scopeCapture.recording?.replaySeconds } : {}),
@@ -1040,7 +1043,6 @@ function captureLogoExportSnapshot() {
     waveformLfoSampleRate: lfoSettings ? lfoSettings.rate : 2,
     waveformLfoAmount: lfoSettings?.enabled ? lfoSettings.depth / 100 : 0 }));
   if (values.waveformScopeRequired && !scopeCapture) throw new Error('The audio scope is not ready. Try exporting again in a moment.');
-  const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values, preview: false });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
   const rawTitle = window.barShareController?.getName?.() || '';
@@ -1049,7 +1051,9 @@ function captureLogoExportSnapshot() {
   const geometry = RPI_LOGO_GEOMETRY;
   const composition = window.logoExportOptions.normalizeComposition(window.logoExportUI.composition?.());
   const viewport = window.logoExportOptions.viewport(geometry, composition);
-  const dimensions = window.logoExportOptions.dimensions(window.logoExportUI.size(), geometry, composition);
+  const gifPolicy = options.format === 'gif' && family === 'wave-quantum'
+    ? window.loopingGifUtils.getRingGifExportPolicy(values, { size: window.logoExportUI.size(), composition }) : null;
+  const dimensions = window.logoExportOptions.dimensions(gifPolicy ? gifPolicy.size : window.logoExportUI.size(), geometry, composition);
   const inkName = ({ '#ffffff': 'white', '#000000': 'black', '#d6001c': 'red',
     '#0081ce': 'blue', '#cdac38': 'gold', '#e1edf5': 'silver', '#b9ccd8': 'gray' })[foreground.toLowerCase()] || currentColorMode;
   const rgb = [0, 2, 4].map(offset => parseInt(foreground.replace('#', '').slice(offset, offset + 2), 16));
@@ -1057,7 +1061,7 @@ function captureLogoExportSnapshot() {
   const svgSource = `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="${viewport.width}" height="${viewport.height}" viewBox="${viewport.x} ${viewport.y} ${viewport.width} ${viewport.height}" xmlns="http://www.w3.org/2000/svg"><title>${escapeExportXML(title || `RPI ${family} ${composition === 'bar' ? 'bar' : 'logo'}`)}</title>${letters}${barMarkup}</svg>`;
   return Object.freeze({ family, currentShader, colorMode: currentColorMode, foreground, rgb, inkName, title,
     waveformRecording: scopeCapture?.recording,
-    values: Object.freeze(values), geometry, composition, viewport: Object.freeze(viewport), dimensions: Object.freeze(dimensions), svgSource });
+    values: Object.freeze(values), gifPolicy: gifPolicy && Object.freeze(gifPolicy), geometry, composition, viewport: Object.freeze(viewport), dimensions: Object.freeze(dimensions), svgSource });
 }
 
 function throwIfExportCancelled(signal) {
@@ -1124,6 +1128,16 @@ function createCapturedGifRenderer(snapshot, framePlan) {
       const pattern = createBoundedTickGeometry({ ...values, shader: snapshot.currentShader,
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight });
       pattern.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
+    } else if (snapshot.currentShader === 22) {
+      const pattern = createWaveQuantumPatternGeometry({
+        barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,
+        quantumPhase: framePlan.getQuantumPhase(progress)
+      });
+      for (const polygon of pattern.polygons) {
+        ctx.beginPath(); ctx.moveTo(polygon[0].x, polygon[0].y);
+        for (let i = 1; i < polygon.length; i++) ctx.lineTo(polygon[i].x, polygon[i].y);
+        ctx.closePath(); ctx.fill();
+      }
     } else if (snapshot.currentShader === 17) {
       const pattern = createGradientPatternGeometry({
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,
@@ -1162,7 +1176,7 @@ async function runLogoExport(format) {
   let renderer;
   try {
     // Everything used by asynchronous work is captured before yielding to input.
-    const snapshot = captureLogoExportSnapshot();
+    const snapshot = captureLogoExportSnapshot({ format });
     window.logoExportUI.describe(job, snapshot);
     const filename = window.logoExportOptions.filename(snapshot, format);
     await new Promise(resolve => setTimeout(resolve, 0));
@@ -1174,9 +1188,13 @@ async function runLogoExport(format) {
     else {
       if (!window.loopingGifUtils.isLoopingGifEligibleStyle(snapshot.family)) throw new Error('This pattern does not have a looping GIF.');
       const plan = window.loopingGifUtils.getLoopingGifFramePlan(snapshot.family, snapshot.values, { barWidth: snapshot.geometry.width });
+      if (snapshot.family === 'wave-quantum' && (plan.periodSeconds > window.transparentGifUtils.RING_MAX_DURATION_SECONDS
+        || plan.frameCount > window.transparentGifUtils.RING_MAX_CAPTURE_FRAMES)) {
+        throw new Error('This exact ring loop exceeds the 120-second GIF limit. Set SPEED to 1× or higher and try again.');
+      }
       renderer = createCapturedGifRenderer(snapshot, plan);
       const result = await window.transparentGifUtils.encode({ ...snapshot.dimensions, frameCount: plan.frameCount,
-        periodSeconds: plan.periodSeconds, foreground: snapshot.rgb, workerScript: LOOP_GIF_WORKER_PATH,
+        style: snapshot.family, periodSeconds: plan.periodSeconds, foreground: snapshot.rgb, workerScript: LOOP_GIF_WORKER_PATH,
         renderFrame: renderer.renderFrame, signal: job.controller.signal,
         onProgress: progress => window.logoExportUI.report(job, progress) });
       blob = result.blob; metrics = result.metrics;
@@ -1189,14 +1207,14 @@ async function runLogoExport(format) {
     // silently deny it, so never claim a verified download from an iframe.
     const message = `${format.toUpperCase()} download requested.`;
     window.logoExportUI.finish(job, 'requested', message);
-    if (document.getElementById('save-menu')?.classList.contains('hidden')) Toast.show(message, 'info');
+    if (document.getElementById('save-menu')?.classList.contains('hidden')) Toast.show(`${job.sourceLabel ? `${job.sourceLabel} · ` : ''}${message}`, 'info');
     return { filename, metrics: { ...metrics, bytes: blob.size, width: format === 'svg' ? null : snapshot.dimensions.width,
       height: format === 'svg' ? null : snapshot.dimensions.height, elapsedMs: performance.now() - started } };
   } catch (error) {
     const cancelled = error.name === 'AbortError' || job.controller.signal.aborted;
     const message = cancelled ? 'Export cancelled.' : `Export failed: ${error.message}`;
     window.logoExportUI.finish(job, cancelled ? 'cancelled' : 'error', message);
-    if (document.getElementById('save-menu')?.classList.contains('hidden')) Toast.show(message, cancelled ? 'info' : 'error');
+    if (document.getElementById('save-menu')?.classList.contains('hidden')) Toast.show(`${job.sourceLabel ? `${job.sourceLabel} · ` : ''}${message}`, cancelled ? 'info' : 'error');
     if (!cancelled) console.error('Logo export error:', error);
     return null;
   } finally { if (renderer) renderer.release(); }

@@ -259,3 +259,17 @@ test('encoded-output limit aborts the stream and terminates both workers', async
     expect(workers.instances.every(worker => worker.terminated)).toBe(true);
   } finally { workers.restore(); }
 });
+
+
+test('only ring exports accept 120 seconds and 3600 frames; memory/output guard constants stay unchanged', async () => {
+  const { encode, MAX_CAPTURE_FRAMES, MAX_DURATION_SECONDS, MAX_INPUT_FRAME_BYTES, MAX_ENCODED_BYTES } = require('../js/utils/transparentGif');
+  const controller = new AbortController(); controller.abort();
+  const job = { width: 1, height: 1, frameCount: 3600, periodSeconds: 120, foreground: [0, 0, 0], signal: controller.signal };
+  await expect(encode({ ...job, style: 'wave-quantum' })).rejects.toMatchObject({ name: 'AbortError' });
+  for (const style of [undefined, 'waveform', 'ticker', 'gradient']) await expect(encode({ ...job, style })).rejects.toThrow(/limit/);
+  for (const excess of [{ periodSeconds: 120.01 }, { frameCount: 3601 }, { width: 4096, height: 4096 }]) {
+    await expect(encode({ ...job, style: 'wave-quantum', ...excess })).rejects.toThrow(/limit/);
+  }
+  expect([MAX_CAPTURE_FRAMES, MAX_DURATION_SECONDS]).toEqual([3000, 100]);
+  expect(MAX_INPUT_FRAME_BYTES).toBe(32 * 1024 * 1024); expect(MAX_ENCODED_BYTES).toBe(64 * 1024 * 1024);
+});

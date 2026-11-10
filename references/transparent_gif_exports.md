@@ -9,7 +9,7 @@ sizes remain unchanged. Bar-only retains a 1000/2000 px nominal bar width on a
 1160 × 232 / 2320 × 464 canvas, including 80/160 px transparent padding per
 side. Its SVG viewBox is `-20 112.4885 290 58`; artwork coordinates are unchanged.
 
-Current GIF availability is Ticker, Waveform and Gradient; Ruler is static.
+Current GIF availability is Ticker, Waveform, Gradient and Particle on a Ring; Ruler is static. The ring model uses the exact live phase and natural 120/SPEED-second loop. Its ring-only 120-second/3600-frame budget supports default 1×; lower speeds fail with a clear recovery message. Full-logo loops longer than one minute disclose Standard resolution before activation, preserving the whole loop and 30 fps within unchanged memory/output guards. Bar-only keeps the selected size. See [ring export QA](quantum_gif_qa.md).
 Each supported loop uses the captured crop consistently on every frame. The
 same binary-alpha palette, full-frame disposal, streaming, cancellation and
 loop plan remain in use. Bar-only filenames add `bar-only`; complete-mark names
@@ -116,15 +116,31 @@ and 7,438,304 bytes respectively. See [complete measurements, actual decoded
 checks, timings and caveats](gif_frame_rate_benchmark.md). Viewer timing and
 dense/fast temporal aliasing still limit perceived smoothness.
 
+
+## Particle on a Ring default loop — November 10, 2026
+
+The full natural 1× recurrence exports as 120 seconds/3600 frames at 30 fps,
+using a ring-only duration/frame allowance and unchanged 32 MiB input/64 MiB
+encoded guards. Full-logo GIFs longer than one minute visibly disclose Standard
+resolution and actual dimensions before activation; both bar-only sizes retain
+the selected resolution. SPEED and saved size selection are never changed.
+Measured full default loops are 33.80 MB full-logo, 11.30 MB Standard bar-only and
+27.41 MB Large bar-only. All 10,800 frames were independently decoded, including
+192 exact source-pixel references and timing/motion/seam checks. Slower-than-1×
+requests fail early rather than truncate, speed up or reduce cadence.
+See [default-loop QA](quantum_gif_qa.md).
+
 ## 20 ms temporal cadence — November 10, 2026
 
-The default target is now approximately 50 fps. Even-centisecond periodic loops
+Ticker, Waveform and Gradient now target approximately 50 fps. Even-centisecond periodic loops
 use 20 ms holds; odd totals add one 30 ms hold while retaining the encoded full
 duration within 5 ms of the request. The existing 3000-frame and independent
 encoder limits remain, so long loops may sample below 50 fps. Transparency,
 SVG/PNG and composition/size choices are unchanged. PR #144 remains responsible
 for the separate edge-quantization repair. See [actual matched 30-vs-50 exports,
 encoding cost and viewer limits](gif_cadence_benchmark.md).
+
+
 
 
 ## Straight GIF edges — November 10, 2026
@@ -140,3 +156,4 @@ remains an internal comparison option. No audio or LFO behavior changes.
 See [edge evidence and limits](gif_edge_qa.md) for actual encoded comparisons.
 The current 50 fps / 20 ms cadence addresses timing; this repair addresses
 spatial edge artifacts. It does not claim smooth partial transparency from GIF.
+
