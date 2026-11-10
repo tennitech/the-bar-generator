@@ -2,7 +2,8 @@
 
 Date: November 10, 2026. Initial base: main d55bdc1 (published PR #137).
 Branch: `codex/feat-theme-pairing-swatches`. The final candidate also preserves
-main ecec2e1 (PR #139, sidebar footer) and dfcc987 (PR #138, Why not retry).
+main 47a8d95 (PR #135, Home opacity/button), ecec2e1 (PR #139, sidebar
+footer) and dfcc987 (PR #138, Why not retry).
 Shared cache URLs are reconciled while their complete behavior and additive
 status records remain intact.
 
@@ -45,7 +46,7 @@ dependency or workflow is added.
 
 - Focused theme synchronization, legacy query/snapshot recovery and export
   snapshot checks pass.
-- All 866 tests in 78 suites pass after preserving PR #139 and PR #138.
+- All 874 tests in 78 suites pass after preserving PR #135, PR #139 and PR #138.
 - JavaScript and all generator inline scripts are syntax-checked. Route/shell
   cache versions for the changed shared modules are checked for consistency.
 - Source comparisons check unchanged retained palette values, complete modal
