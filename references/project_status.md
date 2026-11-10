@@ -4,6 +4,33 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 
+## November 10 Randomize dice legibility correction
+
+The first two supplied image IDs resolved to a color picker and contrast table,
+not the Randomize control. Both were materialized, verified and viewed. The
+subsequent authoritative 512 × 512 PNG reference was also materialized and
+viewed: 34,497 bytes, SHA-256
+`246935c79ffd58d665e9f8a4748a1d8779fd7ab7d2c68d2de4f091ad308ab655`.
+It shows overlapping dice with three diagonal pips on the front. The owner's
+later refinement retains that recognizable composition with the generator's
+lighter outlined aesthetic rather than the reference's heavier filled styling.
+
+Randomize now uses thin paired outlines, a tilted rear face, three diagonal
+front pips and larger circular pip centers. The icon stays at the existing
+18 px size and inherits currentColor; button dimensions, accessible/visible
+labels, hover/focus treatment, action callbacks and reduced-motion-aware
+feedback remain unchanged. No theme, disclosure, motion, model or export UI is
+changed. The supplied raster is not published or embedded.
+
+The actual previous/new SVGs were compared beside the existing 10 px RPI Geist
+Mono Randomize label at 18 px icon size in native 32/44 px button reconstructions,
+including light/dark, hover and focus treatments. Native-size 16/18/20/24 px
+raster checks confirm individually visible front-pip centers. This is offline
+SVG/font context evidence, not rendered browser/application proof. Full-suite
+and exact-head CI results are recorded in the PR; native browser, touch,
+screen-reader and physical-device appearance remain unverified under the
+existing browser restriction. No denied browser route is retried.
+
 ## November 10 compact theme picker correction
 
 The owner rejected the enlarged bold theme rows. Color Theme again uses its
