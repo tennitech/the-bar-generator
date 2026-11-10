@@ -4559,11 +4559,11 @@ body .color_theme-select .color_theme-option {
 }
 body .color_theme-select .color_theme-option:is(:hover, .selected, .is-active) {
   background: var(--theme-option-background);
-  color: var(--theme-option-label-foreground);
+  color: var(--theme-option-foreground);
   box-shadow: none;
 }
 body .color_theme-select .color_theme-option.is-active {
-  outline: 2px solid var(--theme-option-label-foreground);
+  outline: 2px solid var(--theme-option-focus-foreground);
   outline-offset: -2px;
 }
 .color_theme-option .color_theme-label { flex: 1; }
