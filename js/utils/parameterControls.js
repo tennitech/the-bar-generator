@@ -223,11 +223,12 @@
         const actionLabel = document.createElement('span');
         actionLabel.className = 'parameter_action-label';
         actionLabel.textContent = text;
-        if (action === 'randomize' && scope.FeatherIcons) {
+        if (action === 'randomize') {
           const glyph = document.createElement('span');
           glyph.className = 'parameter_action-glyph';
           glyph.setAttribute('aria-hidden', 'true');
-          glyph.innerHTML = scope.FeatherIcons.getIconMarkup('shuffle', 'parameter_action-icon');
+          // Original paired-dice geometry follows the owner reference; no raster is embedded.
+          glyph.innerHTML = '<svg class="parameter_action-icon" data-control-icon="dice" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g data-die-face="back"><path d="M9 7.2 10.4 2.2Q10.7 1.1 11.8 1.4L21.2 4Q22.3 4.3 22 5.4L19.1 16Q18.8 17.1 17.7 16.8L16.6 16.5"/><circle cx="13" cy="5.4" r="1.25" fill="currentColor" stroke="none"/><circle cx="18.5" cy="6.9" r="1.25" fill="currentColor" stroke="none"/><circle cx="17.5" cy="12.4" r="1.25" fill="currentColor" stroke="none"/></g><g data-die-face="front"><rect x="2" y="9" width="13" height="13" rx="2"/><circle cx="5.5" cy="18.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="11.5" cy="12.5" r="1.35" fill="currentColor" stroke="none"/></g></svg>';
           button.appendChild(glyph);
         }
         button.appendChild(actionLabel);

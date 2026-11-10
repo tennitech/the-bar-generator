@@ -105,3 +105,23 @@ The seven PNG files in `references/review-images/nucleotide-completion/` were
 captured from this application in Chromium and WebKit. They use the existing
 identity, fonts and licensed Feather icons. No external image was added.
 The existing asset permission and formal approval limits still apply.
+
+## November 10 original Randomize die
+
+The outlined five-pip Randomize die in `js/utils/parameterControls.js` is new
+original project UI geometry: one rounded rectangle and five circles, authored
+for the owner's requested icon correction. It uses the existing 24-unit,
+two-unit-stroke, currentColor icon language and the project's MIT software
+license. It is not a Feather asset; the pinned Feather SVGs and notices remain
+unchanged. No external image, library, brand artwork or font is added.
+
+## November 10 paired Randomize dice refinement
+
+The flat five-pip predecessor is replaced by a new original vector interpretation
+of the owner's supplied paired-dice reference. A thin outlined rear face sits
+behind an outlined front face with three diagonal round pips. The geometry uses
+a 24-unit viewBox, 1.5-unit strokes and currentColor; pips remain filled circles.
+This follows the owner's later request for this tool's lighter aesthetic rather
+than the reference's heavy filled front. The implementation is project code
+under the existing MIT license. The supplied reference raster is not embedded,
+redistributed, or treated as an external SVG license. Feather sources stay intact.

@@ -7,39 +7,17 @@ const path = require('node:path');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const { createHash } = require('node:crypto');
-const { createCanvas, Image: NativeImage, Path2D, loadImage } = require('@napi-rs/canvas');
-const { createRuntime, shaders, read } = require('../tests/helpers/exportCompositionRuntime');
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const { shaders, read } = require('../tests/helpers/exportCompositionRuntime');
 const { encode, preparePixels, createPalette } = require('../js/utils/transparentGif');
 const { getLoopingGifFramePlan } = require('../js/utils/loopingGif');
 const { parseGif, decodeFrames } = require('../tests/helpers/gifDecoder');
+const { nativeRuntime, installCodecWorkers } = require('./helpers/nativeExportRuntime');
 const out = path.resolve(process.argv[2] || '/tmp/rpi-export-composition-evidence');
 fs.mkdirSync(out, { recursive: true });
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 // Only the DOM APIs consumed by createRasterExportBlob are adapted. The source
 // is decoded by the native SVG rasterizer, not by a simulated canvas renderer.
-class XMLDocument {
-  constructor(source) { this.source = source; this.documentElement = { setAttribute: (key, value) => {
-    this.source = this.source.replace(/<svg\b[^>]*>/, root => root.replace(new RegExp(`${key}="[^"]*"`), `${key}="${value}"`));
-  } }; }
-  querySelector() { return null; }
-}
-function nativeRuntime() {
-  const urls = new Map(); let serial = 0;
-  class Image extends NativeImage {
-    set src(value) {
-      if (!value) return;
-      this.pending = urls.get(value).arrayBuffer().then(bytes => { super.src = Buffer.from(bytes); });
-    }
-    async decode() { await this.pending; await super.decode(); }
-  }
-  const r = createRuntime({ Path2D, Image,
-    DOMParser: class { parseFromString(source) { return new XMLDocument(source); } },
-    XMLSerializer: class { serializeToString(xml) { return xml.source; } },
-    URL: { createObjectURL: blob => { const url = `local:${++serial}`; urls.set(url, blob); return url; }, revokeObjectURL: url => urls.delete(url) } });
-  r.document.createElement = name => { assert.equal(name, 'canvas'); return createCanvas(1, 1); };
-  r.activeUrls = urls;
-  return r;
-}
 async function pixels(blob) {
   const image = await loadImage(Buffer.from(await blob.arrayBuffer()));
   const canvas = createCanvas(image.width, image.height), ctx = canvas.getContext('2d');
@@ -66,22 +44,6 @@ function checkPixels(image, snapshot, gif = false) {
   assert.ok(ink > 0); if (!bar) assert.ok(letterInk > 0);
   assert.ok(maxInkError <= (gif ? 0 : 1), `${snapshot.family}/${snapshot.colorMode}/${snapshot.composition}: opaque ink changed by ${maxInkError}`);
   return { ink, letterInk, partial, maxInkError };
-}
-function installCodecWorkers() {
-  const source = read('third_party/gif.js/gif.worker.js');
-  global.Worker = class {
-    constructor() {
-      this.self = { postMessage: result => { this.output = result; } };
-      // Evaluate only the repository's trusted, unchanged codec in the local
-      // realm. A VM global proxy adds substantial per-pixel overhead.
-      new Function('self', source)(this.self);
-    }
-    postMessage(message, transfers) {
-      const task = structuredClone(message, { transfer: transfers });
-      this.timer = setTimeout(() => { if (!this.stopped) { this.self.onmessage({ data: task }); this.onmessage({ data: this.output }); } }, 0);
-    }
-    terminate() { this.stopped = true; clearTimeout(this.timer); }
-  };
 }
 async function main() {
   const r = nativeRuntime(), results = { kind: 'Offline source/native raster verification; no browser or OS clipboard', png: [], gif: [], clipboard: [] };

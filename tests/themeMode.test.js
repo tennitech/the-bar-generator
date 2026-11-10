@@ -1,5 +1,6 @@
 const {
-  createColorSwatch,
+  getColorThemePair,
+  styleColorThemeOption,
   DEFAULT_COLOR_MODE,
   LEGACY_COLOR_MODE_ALIASES,
   normalizeColorModeValue,
@@ -45,6 +46,7 @@ describe('theme mode utils', () => {
     expect(normalizeColorModeValue('white-on-black')).toBe('white');
     expect(normalizeColorModeValue('red')).toBe('black');
     expect(normalizeColorModeValue('RED-ON-WHITE')).toBe('black');
+    expect(normalizeColorModeValue('gray-on-red')).toBe('white-on-red');
   });
 
   test('falls back to the default color mode for unknown values', () => {
@@ -88,20 +90,11 @@ describe('theme mode utils', () => {
     expect(customOptions[0].classList.contains('selected')).toBe(false);
     expect(customOptions[1].classList.contains('selected')).toBe(true);
     expect(customOptions[2].classList.contains('selected')).toBe(false);
-    const label = { textContent: 'BLACK' }, properties = {};
-    const attributes = {};
-    const swatch = createColorSwatch({ createElement: () => ({
-      dataset: {}, style: { setProperty: (key, value) => { properties[key] = value; } },
-      setAttribute: (key, value) => { attributes[key] = value; }
-    }) }, 'blue');
-    expect(attributes['aria-hidden']).toBe('true');
-    expect(properties).toEqual({ '--theme-swatch-background': '#0081ce', '--theme-swatch-foreground': '#e1edf5' });
-    trigger.querySelector = selector => selector === '[data-select-label]' ? label : swatch;
+    const label = { textContent: 'BLACK' };
+    trigger.querySelector = () => label;
     syncCustomSelectState(select, wrapper, 'white', 'WHITE');
     expect(label.textContent).toBe('WHITE');
-    expect(swatch.dataset.colorTheme).toBe('white');
-    expect(properties).toEqual({ '--theme-swatch-background': '#000000', '--theme-swatch-foreground': '#ffffff' });
-    expect(trigger.querySelector('[data-color-theme-swatch]')).toBe(swatch);
+    expect(trigger.querySelector('[data-select-label]')).toBe(label);
 
   });
 
@@ -135,9 +128,9 @@ test('brand compositions apply the supplied foreground/background pair without a
   const pairs = [
     ['black', '#000000', '#ffffff'], ['white', '#ffffff', '#000000'],
     ['white-on-red', '#ffffff', '#d6001c'],
-    ['gray-on-red', '#b9ccd8', '#d6001c'], ['blue', '#e1edf5', '#0081ce'],
-    ['gold', '#000000', '#cdac38'], ['gray', '#d6001c', '#b9ccd8'],
-    ['silver', '#0081ce', '#e1edf5'], ['gray-on-black', '#b9ccd8', '#000000']
+    ['blue', '#000000', '#0081ce'],
+    ['gold', '#000000', '#cdac38'], ['gray', '#000000', '#b9ccd8'],
+    ['silver', '#000000', '#e1edf5'], ['gray-on-black', '#b9ccd8', '#000000']
   ];
   const fs = require('node:fs'), vm = require('node:vm');
   const geometry = require('../js/utils/logoGeometry').RPI_LOGO_GEOMETRY;
@@ -181,4 +174,27 @@ test('brand compositions apply the supplied foreground/background pair without a
   applyColorScheme(target, 'unknown');
   expect(properties['--bg-canvas']).toBe('#ffffff');
   expect(properties['--preview-foreground']).toBe('#000000');
+});
+
+test('compact rows retain reference pair styles and meet normal-text contrast with visible two-tone state cues', () => {
+  const { COLOR_SCHEMES } = require('../js/utils/themeMode');
+  const luminance = hex => hex.slice(1).match(/../g).map(value => parseInt(value, 16) / 255)
+    .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
+    .reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
+  const contrast = (a, b) => (Math.max(luminance(a), luminance(b)) + 0.05)
+    / (Math.min(luminance(a), luminance(b)) + 0.05);
+  const properties = {}, option = { dataset: {}, style: { setProperty: (key, value) => { properties[key] = value; } } };
+  for (const [mode, scheme] of Object.entries(COLOR_SCHEMES)) {
+    const pair = getColorThemePair(mode);
+    styleColorThemeOption(option, mode);
+    expect(pair.fg).toBe(scheme.fg);
+    expect(pair.bg).toBe(mode === 'lunar' ? '#03060d' : scheme.bg);
+    expect(option.dataset.colorTheme).toBe(mode);
+    expect(properties['--theme-option-background']).toBe(pair.bg);
+    expect(properties['--theme-option-foreground']).toBe(pair.fg);
+    expect(contrast(pair.fg, pair.bg)).toBeGreaterThanOrEqual(4.5);
+    expect(Math.max(contrast('#000000', pair.bg), contrast('#ffffff', pair.bg))).toBeGreaterThanOrEqual(4.5);
+  }
+  expect(contrast('#000000', '#ffffff')).toBe(21);
+  expect(getColorThemePair('red')).toEqual(getColorThemePair('black'));
 });

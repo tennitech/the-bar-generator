@@ -101,7 +101,9 @@ function installCodecWorker(options = {}) {
       this.timer = setTimeout(() => {
         if (this.terminated) return;
         if (options.fail) this.onerror?.({ preventDefault() {} });
-        else { this.worker.onmessage({ data: task }); this.onmessage?.({ data: this.output }); }
+        else { this.worker.onmessage({ data: task });
+          if (options.oversize) this.output = { data: [new Uint8Array(64 * 1024 * 1024 + 1)], cursor: 64 * 1024 * 1024 + 1 };
+          this.onmessage?.({ data: this.output }); }
       }, options.delay || (task.index === 0 ? 6 : 1));
     }
     terminate() { this.terminated = true; clearTimeout(this.timer); }
@@ -200,6 +202,60 @@ test('invalid frame size is rejected before allocating workers or registering ca
     await expect(encode({ width: 24, height: 12, frameCount: 2, periodSeconds: 1,
       foreground: [0, 0, 0], renderFrame: () => smallFrame(0).data,
       workerScript: 'vendored-worker' })).rejects.toThrow('GIF frame dimensions changed');
+    expect(workers.instances.every(worker => worker.terminated)).toBe(true);
+  } finally { workers.restore(); }
+});
+
+test('30 and 50 fps schedules survive the actual codec with centisecond timing and a complete repeating loop', async () => {
+  const { encode, frameTiming } = require('../js/utils/transparentGif');
+  const { parseGif, decodeFrames } = require('./helpers/gifDecoder');
+  const { getLoopingGifFramePlan } = require('../js/utils/loopingGif');
+  const workers = installCodecWorker();
+  try {
+    for (const fps of [30, 50]) for (const speed of [0.2, 0.3, 1.2]) {
+      const plan = getLoopingGifFramePlan('waveform', { waveformSpeed: speed }, { fps });
+      const timing = frameTiming(plan.periodSeconds, plan.frameCount);
+      const phases = [];
+      const result = await encode({ width: 24, height: 12, frameCount: plan.frameCount, periodSeconds: plan.periodSeconds,
+        foreground: [214, 0, 28], workerScript: 'vendored-worker',
+        renderFrame: (index, progress) => { phases.push({ index, progress }); return smallFrame(index % 288); } });
+      const bytes = Buffer.from(await result.blob.arrayBuffer()), gif = parseGif(bytes);
+      expect(gif.frames.map(frame => frame.delayMs)).toEqual(timing.delays);
+      expect(Math.min(...gif.frames.map(frame => frame.delayMs))).toBeGreaterThanOrEqual(20);
+      if (fps === 50 && speed === .2) expect(new Set(gif.frames.map(frame => frame.delayMs))).toEqual(new Set([20]));
+      expect(gif.frames.reduce((sum, frame) => sum + frame.delayMs, 0)).toBe(timing.durationMs);
+      expect(bytes.readUInt16LE(bytes.indexOf(Buffer.from('NETSCAPE2.0')) + 13)).toBe(0);
+      let index = 0;
+      for (const frame of decodeFrames(gif)) {
+        expect(frame.rgba[(index % 288) * 4 + 3]).toBe(255);
+        expect(frame.frame.disposal).toBe(2); index++;
+      }
+      expect(index).toBe(plan.frameCount);
+      phases.forEach(frame => expect(frame.progress).toBe(timing.progress[frame.index]));
+    }
+  } finally { workers.restore(); }
+});
+
+test.each([
+  { width: 2320, height: 1524, frameCount: 3001, periodSeconds: 100 },
+  { width: 2320, height: 1524, frameCount: 3000, periodSeconds: 101 },
+  { width: 4096, height: 4096, frameCount: 30, periodSeconds: 1 }
+])('oversized GIF work is rejected before workers or frames are allocated: %j', async job => {
+  const { encode } = require('../js/utils/transparentGif');
+  const renderFrame = jest.fn(), workers = installCodecWorker();
+  try {
+    await expect(encode({ ...job, foreground: [0, 0, 0], renderFrame })).rejects.toThrow(/frame or memory limit/);
+    expect(workers.instances).toHaveLength(0); expect(renderFrame).not.toHaveBeenCalled();
+  } finally { workers.restore(); }
+});
+
+test('encoded-output limit aborts the stream and terminates both workers', async () => {
+  const { encode } = require('../js/utils/transparentGif');
+  const workers = installCodecWorker({ oversize: true });
+  try {
+    await expect(encode({ width: 24, height: 12, frameCount: 8, periodSeconds: 0.32,
+      foreground: [0, 0, 0], workerScript: 'vendored-worker', renderFrame: smallFrame }))
+      .rejects.toThrow(/exceeds 64 MiB/);
     expect(workers.instances.every(worker => worker.terminated)).toBe(true);
   } finally { workers.restore(); }
 });

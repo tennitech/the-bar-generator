@@ -129,7 +129,7 @@ describe('loopingGif utils', () => {
 
     expect(plan.style).toBe('waveform');
     expect(plan.periodSeconds).toBeCloseTo(1 / (plan.style === 'ticker' ? 1.6 : 1.2));
-    expect(plan.frameCount).toBe(24);
+    expect(plan.frameCount).toBe(Math.floor(Math.round(plan.periodSeconds * 100) / 2));
     expect(plan.getTimeSeconds(0.5)).toBeCloseTo(0.5 / 1.2);
   });
 
@@ -151,7 +151,7 @@ describe('loopingGif utils', () => {
     });
 
     expect(plan.periodSeconds).toBeCloseTo(1 / (plan.style === 'ticker' ? 1.6 : 1.2));
-    expect(plan.frameCount).toBe(24);
+    expect(plan.frameCount).toBe(Math.floor(Math.round(plan.periodSeconds * 100) / 2));
     expect(plan.frameDelayMs).toBeGreaterThanOrEqual(20);
   });
 
@@ -208,4 +208,35 @@ test('native controls and runtime speed policy agree without changing saved defa
   }
   expect(getLoopSpeedLimits('ticker').default).toBe(0.4);
   expect(getLoopSpeedLimits('waveform').default).toBe(0.3);
+});
+
+// Exercise actual selectable rates rather than only the default frame count.
+test.each(['ticker', 'waveform', 'gradient'])('%s exports with 20 ms minimum encoded delays across its speed range without shortening loops', style => {
+  const { frameTiming } = require('../js/utils/transparentGif');
+  const limits = getLoopSpeedLimits(style);
+  for (const speed of [limits.min, limits.default, limits.max]) {
+    const plan = getLoopingGifFramePlan(style, { [`${style}Speed`]: speed });
+    const timing = frameTiming(plan.periodSeconds, plan.frameCount);
+    expect(plan.frameCount).toBe(Math.floor(timing.durationMs / 20));
+    expect(Math.abs(timing.durationMs - plan.periodSeconds * 1000)).toBeLessThanOrEqual(5);
+    expect(Math.min(...timing.delays)).toBe(20);
+    expect(Math.max(...timing.delays)).toBeLessThanOrEqual(30);
+    expect(plan.frameCount).toBeLessThanOrEqual(3000);
+  }
+});
+
+test('explicit 30 fps remains available for matched comparisons and odd centiseconds preserve duration', () => {
+  const { frameTiming } = require('../js/utils/transparentGif');
+  const old = getLoopingGifFramePlan('waveform', { waveformSpeed: .2 }, { fps: 30 });
+  expect(old.frameCount).toBe(150);
+  const next = getLoopingGifFramePlan('waveform', { waveformSpeed: .2 });
+  const exact = frameTiming(next.periodSeconds, next.frameCount);
+  expect(next.frameCount).toBe(250);
+  expect(new Set(exact.delays)).toEqual(new Set([20]));
+  const odd = getLoopingGifFramePlan('ticker', { tickerSpeed: 1.6 });
+  const timing = frameTiming(odd.periodSeconds, odd.frameCount);
+  expect(odd.frameCount).toBe(31);
+  expect(timing.durationMs).toBe(630);
+  expect(timing.delays.filter(delay => delay === 30)).toHaveLength(1);
+  expect(timing.delays.filter(delay => delay === 20)).toHaveLength(30);
 });

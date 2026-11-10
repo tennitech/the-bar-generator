@@ -10,7 +10,8 @@ function runtime() {
     window:{WaveformLfo:lfo},document:{getElementById:id=>fields[id],querySelector:()=>null},
     style:'waveform',running:true,clampLiveAnimationDeltaMs:delta=>Math.min(50,Math.max(0,delta)),
     getCurrentMotionStyle:()=>context.style,isMotionEnabledForStyle:()=>context.running,
-    waveformLfoVoice:null,waveformVisualLfo:null,waveformLfoTime:0,lastWaveformLfoTimestamp:0,
+    waveformLfoVoice:null,waveformVisualLfo:null,waveformLfoTime:0,waveformScopeTime:0,lastWaveformLfoTimestamp:0,
+    updateWaveformScopeControls:jest.fn(),waveformSpeedSlider:{value:.3},waveformReverseToggle:{checked:false},
     waveformLfoFrame:{phase:0,rate:2,amount:0,amplitude:1}
   };
   vm.createContext(context);
@@ -38,8 +39,27 @@ test('audio-clock frames drive both renderers, and silent handoff keeps phase',(
 test('reduced-motion parameter editing and Reset leave a stable bounded bar',()=>{
   const {context:c,fields}=runtime();c.running=false;
   fields['waveform-lfo-rate'].value=1300;fields['waveform-lfo-type'].value=3;c.updateWaveformLfoControls();
-  expect(c.waveformLfoFrame.amplitude).toBeCloseTo(.2,10);
+  expect(c.waveformLfoFrame.amplitude).toBe(0);
   const phase=c.waveformLfoFrame.phase;c.tickWaveformVisualLfo(10000);expect(c.waveformLfoFrame.phase).toBe(phase);
   c.resetWaveformLfo();expect(c.waveformLfoFrame.amplitude).toBe(1);expect(c.waveformLfoFrame.phase).toBe(0);
   expect(fields['waveform-lfo-toggle'].checked).toBe(false);
+});
+
+
+test('Loop freezes the scope and explicit reset still resets carrier phase', () => {
+  const {context:c}=runtime();
+  const frame={extrema:[-.04,.08,-.09,.03],seconds:1,gainScale:.1,source:'offline'};
+  c.window.waveformScopeController={frame:()=>frame,tick:jest.fn(),status:()=>''};
+  Object.assign(c, { createWaveformPatternGeometry:require('../js/utils/barPattern').createWaveformPatternGeometry,
+    MOTION_ENABLED_BY_STYLE:{waveform:true}, normalizeStyleValue:x=>x,styleSupportsMotion:()=>true,
+    lastAnimationFrameTimestamp:123,resetAnimationClock:jest.fn(),syncMotionToggleState:jest.fn(),requestUpdate:jest.fn() });
+  vm.runInContext(source.slice(source.indexOf('function getLiveWaveformGeometry('),source.indexOf('function getWaveformLfoSettings()')),c);
+  vm.runInContext(source.slice(source.indexOf('function setMotionEnabledForStyle('),source.indexOf('function generateRandomStaffPattern(')),c);
+  const before=c.getLiveWaveformGeometry(0,0,250,18,0);
+  c.setMotionEnabledForStyle('waveform',false);c.running=false;c.tickWaveformVisualLfo(5000);
+  expect(c.window.waveformScopeController.tick).toHaveBeenLastCalledWith(0,false,false);
+  expect(c.getLiveWaveformGeometry(0,0,250,18,0)).toEqual(before);
+  expect(c.resetAnimationClock).not.toHaveBeenCalled();
+  c.setMotionEnabledForStyle('waveform',true,{resetPhase:true});
+  expect(c.resetAnimationClock).toHaveBeenCalledTimes(1);
 });

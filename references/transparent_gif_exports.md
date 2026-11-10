@@ -98,6 +98,34 @@ Disabled LFO preserves the existing frame plan. Unit checks cover joint-cycle
 closure; browser download/decoder and cost validation remain blocked by the
 current cloud sandbox and must be completed before publication.
 
+## Approximately 30 fps — November 10, 2026
+
+The non-LFO 24–72-frame budget is replaced by a duration-based 30 fps target,
+using the existing balanced centisecond delays and actual elapsed-time phases.
+All eligible Ticker, Waveform and Gradient loops now share the bounded frame
+policy, including short/fast loops and existing joint LFO plans. Up to 3000
+frames/100 seconds are accepted; two concurrent input frames stay within 32 MiB
+and encoded chunks within 64 MiB before cleanup. These are individual resource
+limits, not a total browser-memory guarantee. SVG/PNG, current Large default,
+transparent padding, captured controls and composition choices are unchanged.
+
+Matched real renderer/codec measurements show roughly 25% more bytes for a
+2.5-second Ticker, 108% more for a five-second Waveform and 317% more for a
+ten-second Gradient. Large full-logo examples at 30 fps are 1,987,271, 3,635,329
+and 7,438,304 bytes respectively. See [complete measurements, actual decoded
+checks, timings and caveats](gif_frame_rate_benchmark.md). Viewer timing and
+dense/fast temporal aliasing still limit perceived smoothness.
+
+## 20 ms temporal cadence — November 10, 2026
+
+The default target is now approximately 50 fps. Even-centisecond periodic loops
+use 20 ms holds; odd totals add one 30 ms hold while retaining the encoded full
+duration within 5 ms of the request. The existing 3000-frame and independent
+encoder limits remain, so long loops may sample below 50 fps. Transparency,
+SVG/PNG and composition/size choices are unchanged. PR #144 remains responsible
+for the separate edge-quantization repair. See [actual matched 30-vs-50 exports,
+encoding cost and viewer limits](gif_cadence_benchmark.md).
+
 
 ## Straight GIF edges — November 10, 2026
 
@@ -110,5 +138,5 @@ timing, cancellation and two-frame streaming remain intact. The ordered mode
 remains an internal comparison option. No audio or LFO behavior changes.
 
 See [edge evidence and limits](gif_edge_qa.md) for actual encoded comparisons.
-The separate 30 fps task addresses cadence; this repair addresses spatial
-edge artifacts. It does not claim smooth partial transparency from GIF.
+The current 50 fps / 20 ms cadence addresses timing; this repair addresses
+spatial edge artifacts. It does not claim smooth partial transparency from GIF.

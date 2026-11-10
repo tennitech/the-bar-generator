@@ -27,6 +27,11 @@
     button.className = 'sidebar_section-toggle';
     button.dataset.sectionToggle = '';
     button.textContent = title;
+    const icon = documentRef.createElement('span');
+    icon.className = 'sidebar_section-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><polyline points="9 6 15 12 9 18"/></svg>';
+    button.appendChild(icon);
     button.setAttribute('aria-label', `${title.charAt(0)}${title.slice(1).toLowerCase()} section`);
     const body = documentRef.createElement('div');
     body.className = 'sidebar_section-body';

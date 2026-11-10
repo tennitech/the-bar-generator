@@ -8,11 +8,13 @@
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient']);
-  const DEFAULT_CAPTURE_FPS = 24;
+  // 20 ms is an exact GIF tick interval, avoiding the old 30/40 ms cadence.
+  const DEFAULT_CAPTURE_FPS = 50;
   const MIN_CAPTURE_FPS = 12;
-  const MAX_CAPTURE_FPS = 30;
-  const MIN_CAPTURE_FRAMES = 24;
-  const MAX_CAPTURE_FRAMES = 72;
+  const MAX_CAPTURE_FPS = 50;
+  const MIN_CAPTURE_FRAMES = 2;
+  // Retain the existing capture budget; loops over 60 s use fewer samples/s.
+  const MAX_CAPTURE_FRAMES = 3000;
   const MIN_GIF_FRAME_DELAY_MS = 20;
   // p5 still uses requestAnimationFrame; this ceiling avoids skipping fast displays.
   const DEFAULT_LIVE_RENDER_FPS = 1000;
@@ -123,13 +125,14 @@
   function getFrameCountForPeriod(periodSeconds, fps) {
     const maxFrameCountForDelay = Math.max(
       2,
-      Math.floor((periodSeconds * 1000) / MIN_GIF_FRAME_DELAY_MS)
+      Math.floor((Math.round(periodSeconds * 100) * 10) / MIN_GIF_FRAME_DELAY_MS)
     );
     const minFrameCount = Math.min(MIN_CAPTURE_FRAMES, maxFrameCountForDelay);
     const maxFrameCount = Math.min(MAX_CAPTURE_FRAMES, maxFrameCountForDelay);
 
     return clamp(
-      Math.round(periodSeconds * fps),
+      // Match the encoded centisecond duration, including short/fast loops.
+      Math.round(Math.round(periodSeconds * 100) * fps / 100),
       minFrameCount,
       maxFrameCount
     );
@@ -206,24 +209,24 @@
 
     const speed = getLoopSpeed(normalizedStyle, values);
     const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
-    const hasLfo = normalizedStyle === 'waveform' && !options.carrierOnly
-      && (values.waveformLfo === true || values.waveformLfo === 'true') && Number(values.waveformLfoDepth) > 0;
-    const rate = Math.round(clamp(toPositiveNumber(values.waveformLfoRate, 2), 0.07, 1300) * 1000);
-    const gcd = (a, b) => b ? gcd(b, a % b) : a;
-    const jointPeriod = 1000 / gcd(Math.round(speed * 1000), rate);
-    // Fine stored rates can need a very long joint cycle. Bound capture cost;
-    // use the LFO mean when the exact cycle exceeds 100 seconds or 5 Hz.
-    const lfoEnabled = hasLfo && rate < 5000 && jointPeriod <= 100;
-    const lfoAveraged = hasLfo && !lfoEnabled;
-    const periodSeconds = lfoEnabled ? jointPeriod : 1 / speed;
-    const frameCount = lfoEnabled ? Math.min(3000, Math.ceil(periodSeconds * 30)) : getFrameCountForPeriod(periodSeconds, fps);
+    if (normalizedStyle === 'waveform' && values.waveformScope && !options.carrierOnly) {
+      const replaySeconds = Number(values.waveformScopeReplaySeconds) || 0;
+      if (replaySeconds < .1) throw new RangeError('Record a little more audio history before exporting a GIF, or export SVG/PNG.');
+      const periodSeconds = replaySeconds / (speed / .3);
+      const frameCount = getFrameCountForPeriod(periodSeconds, fps);
+      return { style: normalizedStyle, periodSeconds, frameCount,
+        frameDelayMs: Math.round(periodSeconds * 1000 / frameCount),
+        getLoopOffsetX: () => 0, getTimeSeconds: progress => replaySeconds * progress,
+        scopeReplay: true };
+    }
+    const periodSeconds = 1 / speed;
+    const frameCount = getFrameCountForPeriod(periodSeconds, fps);
 
     return {
       style: normalizedStyle,
       frameCount,
       frameDelayMs: Math.round((periodSeconds * 1000) / frameCount),
       periodSeconds,
-      lfoAveraged,
       repeatWidth: 0,
       getLoopOffsetX() {
         return 0;

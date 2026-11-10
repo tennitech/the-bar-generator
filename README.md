@@ -193,3 +193,18 @@ RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit node scripts/waveformVisua
 `RPI_CHROMIUM_PATH` optionally selects a system Chromium executable and
 `RPI_EVIDENCE_DIR` selects the visual LFO screenshot/result directory. The
 server and browser must share a reachable network namespace.
+
+
+Actual Waveform scope verification without a browser is available via
+`scripts/waveformSignalLocal.js`. It uses optional test-only `node-web-audio-api`
+and `@napi-rs/canvas` from the execution environment (not application dependencies)
+to compare pre-refactor/shared graph PCM, verify the silent live capture tap,
+and encode/decode actual SVG/PNG/GIF output. For example:
+
+```sh
+NODE_PATH=/tmp/rpi-lfo-qa/node_modules node scripts/waveformSignalLocal.js /tmp/rpi-waveform-scope-evidence
+```
+
+This is native offline DSP/raster/codec evidence, not a browser, hardware-audio,
+responsive-layout, native download or clipboard acceptance test. See
+[scope model and QA](references/waveform_signal_qa.md).
