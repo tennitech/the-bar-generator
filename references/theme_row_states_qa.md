@@ -1,5 +1,10 @@
 # Neutral theme row states
 
+Palette authority correction: the accessibility-table-derived substitutions and
+Gray on Red retirement described below are superseded by the verified
+[official secondary-composition audit](secondary_pair_audit.md). Historical
+validation below applies only to the then-existing implementation.
+
 November 10, 2026. Base main: `94ee68db8e7aadfbf7ba29bc2de7dad3967dede9`.
 Branch: `codex/fix-theme-row-states`; previous release branches remain preserved.
 

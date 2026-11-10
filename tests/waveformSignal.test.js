@@ -48,7 +48,7 @@ test('the worklet captures post-gain PCM min/max and contributes exactly zero au
   expect(Array.from(batches[1])).toEqual(Array.from(expected.subarray(512)));
 });
 
-test('live capture grows an honestly labeled time window, freezes recording identity, and resizes history for .07Hz',async()=>{
+test('live capture keeps its requested timebase, freezes recording identity and retains history at .07Hz',async()=>{
   let node;const environment={AudioWorkletNode:class {constructor(){node=this;this.port={};}connect(){}disconnect(){}}};
   const input={connect:jest.fn(),disconnect:jest.fn()};
   const c=scope.createController({environment});
@@ -116,7 +116,8 @@ test('routed bootstrap loads the actual audio/scope head dependencies before mai
   const html=fs.readFileSync(require.resolve('../generator/index.html'),'utf8');
   for(const name of ['waveformLfo','waveformAudio','waveformScope']) {
     expect(early).toContain(`'${name}'`);
-    expect(html).toContain(`src="js/utils/${name}.js?v=20261110-waveform-scope"`);
+    const version=name==='waveformScope'?'20261110-scope-history':'20261110-waveform-scope';
+    expect(html).toContain(`src="js/utils/${name}.js?v=${version}"`);
   }
 });
 

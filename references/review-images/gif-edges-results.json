@@ -1,0 +1,473 @@
+{
+  "kind": "Native source raster / encoded GIF; sampled phases, not browser or cadence QA",
+  "rows": [
+    {
+      "name": "waveform-2-standard-bar-ordered",
+      "width": 1160,
+      "height": 232,
+      "decodedFrames": 8,
+      "bytes": 16380,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        260,
+        0,
+        260,
+        0,
+        260,
+        0,
+        260,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2-standard-bar-threshold",
+      "width": 1160,
+      "height": 232,
+      "decodedFrames": 8,
+      "bytes": 16346,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2-standard-logo-ordered",
+      "width": 1160,
+      "height": 762,
+      "decodedFrames": 8,
+      "bytes": 65952,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        260,
+        0,
+        260,
+        0,
+        260,
+        0,
+        260,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2-standard-logo-threshold",
+      "width": 1160,
+      "height": 762,
+      "decodedFrames": 8,
+      "bytes": 64619,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2-large-bar-ordered",
+      "width": 2320,
+      "height": 464,
+      "decodedFrames": 8,
+      "bytes": 34096,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        540,
+        540,
+        540,
+        540,
+        540,
+        540,
+        540,
+        540
+      ]
+    },
+    {
+      "name": "waveform-2-large-bar-threshold",
+      "width": 2320,
+      "height": 464,
+      "decodedFrames": 8,
+      "bytes": 33951,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2-large-logo-ordered",
+      "width": 2320,
+      "height": 1524,
+      "decodedFrames": 8,
+      "bytes": 154974,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        540,
+        540,
+        540,
+        540,
+        540,
+        540,
+        540,
+        540
+      ]
+    },
+    {
+      "name": "waveform-2-large-logo-threshold",
+      "width": 2320,
+      "height": 1524,
+      "decodedFrames": 8,
+      "bytes": 151339,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2.5-standard-bar-ordered",
+      "width": 1160,
+      "height": 232,
+      "decodedFrames": 8,
+      "bytes": 16131,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        260,
+        0,
+        260,
+        0,
+        260,
+        0,
+        260,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2.5-standard-bar-threshold",
+      "width": 1160,
+      "height": 232,
+      "decodedFrames": 8,
+      "bytes": 16121,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2.5-standard-logo-ordered",
+      "width": 1160,
+      "height": 762,
+      "decodedFrames": 8,
+      "bytes": 65678,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        260,
+        0,
+        260,
+        0,
+        260,
+        0,
+        260,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2.5-standard-logo-threshold",
+      "width": 1160,
+      "height": 762,
+      "decodedFrames": 8,
+      "bytes": 64326,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2.5-large-bar-ordered",
+      "width": 2320,
+      "height": 464,
+      "decodedFrames": 8,
+      "bytes": 33527,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        540,
+        540,
+        540,
+        540,
+        540,
+        540,
+        540,
+        540
+      ]
+    },
+    {
+      "name": "waveform-2.5-large-bar-threshold",
+      "width": 2320,
+      "height": 464,
+      "decodedFrames": 8,
+      "bytes": 33529,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "waveform-2.5-large-logo-ordered",
+      "width": 2320,
+      "height": 1524,
+      "decodedFrames": 8,
+      "bytes": 154173,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        540,
+        540,
+        540,
+        540,
+        540,
+        540,
+        540,
+        540
+      ]
+    },
+    {
+      "name": "waveform-2.5-large-logo-threshold",
+      "width": 2320,
+      "height": 1524,
+      "decodedFrames": 8,
+      "bytes": 150654,
+      "sourceRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "encodedRowChanges": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "ticker-0-standard-bar-ordered",
+      "width": 1160,
+      "height": 232,
+      "decodedFrames": 8,
+      "bytes": 38702,
+      "sourceRowChanges": [],
+      "encodedRowChanges": []
+    },
+    {
+      "name": "ticker-0-standard-bar-threshold",
+      "width": 1160,
+      "height": 232,
+      "decodedFrames": 8,
+      "bytes": 36395,
+      "sourceRowChanges": [],
+      "encodedRowChanges": []
+    },
+    {
+      "name": "gradient-0-standard-bar-ordered",
+      "width": 1160,
+      "height": 232,
+      "decodedFrames": 8,
+      "bytes": 30214,
+      "sourceRowChanges": [],
+      "encodedRowChanges": []
+    },
+    {
+      "name": "gradient-0-standard-bar-threshold",
+      "width": 1160,
+      "height": 232,
+      "decodedFrames": 8,
+      "bytes": 30097,
+      "sourceRowChanges": [],
+      "encodedRowChanges": []
+    }
+  ]
+}

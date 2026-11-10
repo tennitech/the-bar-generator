@@ -3,6 +3,107 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 scope transition and X-scale correction
+
+Owner live testing confirmed the actual-audio scope works, then identified a
+frequency/density ramp after parameter edits. The controller cleared the live
+ring on every edit and stretched the growing partial buffer across the full
+bar. It now retains a bounded continuous recording through shape/depth/rate
+and enabled/disabled edits. Changing a timebase reframes actual retained history
+once; later packets keep that fixed physical X scale. Missing history stays
+blank on the left, with recorded seconds and unrecorded space explicitly labeled.
+
+Views spanning an edit say they include parameter changes. Silent rendering
+holds its previous actual frame with a previous-settings label while the latest
+replacement renders; stale completions cannot replace it. Frozen frames and
+recordings remain exact through edits, mute, incoming data and background render
+completion until playback resumes. Audio graph/ramp behavior, fixed gain scale,
+current 50fps GIF cadence and encoder guards are unchanged. Partial-history
+preview, header, SVG and PNG share the same bounded coverage geometry.
+
+See [transition QA and owner checklist](waveform_scope_transitions_qa.md).
+Source, numerical/controller and native raster checks are distinct from browser
+verification. Existing browser restrictions remain respected; owner live
+feedback is the supplied rendered evidence, and no new browser pass is claimed.
+
+
+
+## November 10 routed shell cache follow-up
+
+Live verification of merged #144 found a warm browser could keep the old fetched
+generator shell and its ordered-alpha GIF helper after a normal route reload.
+The helper URL was updated, but every style route and the bootstrap fallback
+still requested the unchanged `20261110-waveform-scope` shell URL. Route shell
+and bootstrap URLs plus Home prefetch now advance together. Actual-audio scope,
+50 fps timing, encoder source/guards, controls and all geometry are unchanged.
+The concurrent #155 official secondary-color release is preserved. Its route
+shell advance is retained in a coordinated new version alongside fallback,
+bootstrap URLs and Home prefetch. A warm-cache regression executes the actual
+loader and confirms it
+requests a fresh shell and loads the corrected helper; all route/fallback/Home
+cache references are checked together. All 941 tests in 84 suites pass; route
+inline scripts, bootstrap syntax and whitespace checks pass. Deployed browser
+GIF/PNG verification
+follows the protected follow-up merge. No cache disabling or hard-refresh
+workaround is required from the user.
+
+## November 10 official secondary composition audit
+
+The current official Brand Hub Secondary Colors page was opened in the permitted
+cloud browser, visually inspected and compared with both original owner screenshots.
+Its six logo examples explicitly show Gray on Red, Silver on Blue, Black on Gold,
+Red on Gray, Blue on Silver and Gray on Black. These govern permitted secondary
+compositions; the Color Accessibility table is not a brand-combination allowlist.
+
+This corrects PR #150: Black on Blue becomes Silver on Blue, Black on Gray becomes
+Red on Gray, Black on Silver becomes Blue on Silver, and Gray on Red is restored.
+Exact official hex values, primary options, Mission Control and default Black on
+White remain. Existing blue/gray/silver saves retain their keys and load the
+correct official composition. Gray on Red query/snapshot values retain that pair;
+the mistaken White on Red migration is removed. Red on White stays removed with
+its existing neutral recovery under the owner's separate instruction.
+
+Idle menu rows remain neutral. Hover/selected/keyboard rows show the composition
+background and a small border-free mark in its actual logo ink. Compact names,
+checkmarks and the single focus outline use accessible black/white UI text,
+following the official typography guidance; no low-contrast label is enlarged or
+mistaken for an alternative permitted logo ink. The native control, modal, layout,
+export transparency and all intervening audio/GIF features remain intact.
+
+All 939 tests in 83 suites pass, including 76 focused preview/export/save checks.
+Source evidence, exact pairs, audit coverage and verification limits are recorded
+in [the official pairing audit](secondary_pair_audit.md) and its standalone PR.
+
+## November 10 straight GIF edge repair
+
+The supplied animation screenshot was materialized with its Library identity,
+verified as a readable 223,213-byte PNG and inspected before diagnosis. Its
+repeating teeth on straight Waveform edges reproduce in GIF alpha conversion:
+the source raster has straight edges, while the former ordered 4 × 4 coverage
+mask varies them across rows. GIF now defaults to uniform half-coverage alpha
+quantization. Palette colors, transparency, disposal, dimensions, geometry,
+SVG/PNG output, audio, LFO and frame timing remain intact. The current 50 fps cadence
+and actual-audio scope behavior remain intact.
+
+Final reconciliation at main `ffbd569` retains #143–#154, including 50 fps /
+20 ms timing, encoder guards and actual post-gain PCM scope: 939 tests in
+83 suites pass. Initial baseline
+was 875 tests in 78 suites. Native raster/actual vendored
+codec comparisons decode 20 historical-geometry fixture files / 160 sampled
+frames across Waveform square
+and square/pulse shapes at both sizes and compositions, plus Ticker and Gradient.
+Straight source edges have zero row variation; old encoded edges add 21,440
+row differences in the measured interior bands; corrected encoded edges add
+zero. The preserved actual-audio pipeline also passes 90 exact PCM parity
+cases, the exact silent tap, 24 PNGs and six GIFs / 600 decoded frames with
+the new alpha mode. Focused regressions also check translating subpixel edges in three exact
+ink colors through the actual codec, including transparency and disposal.
+The supported cloud browser now reaches production and produced a real baseline
+GIF: 166 frames / 3330 ms / 455,925 bytes, with 43,140 edge-row differences in
+measured straight bands. Post-deployment GIF verification follows the protected
+merge. Prior denied local-browser calls were not retried. Native audio, physical
+viewer perception and formal RPI approval are separate from these checks. See [GIF edge QA](gif_edge_qa.md) and its generated review image.
+
 ## November 10 actual audio Waveform scope
 
 Following the owner's VCO/VCA examples and explicit request for a direct scope,
