@@ -4585,6 +4585,9 @@ body .color_theme-select .color_theme-option.is-active {
   pointer-events: none;
 }
 .color_theme-option.selected .color_theme-indicator { visibility: visible; }
+/* This picker has its own high-contrast marker; suppress the legacy sidebar check. */
+#app-sidebar .color_theme-option { padding-right: 0.75rem; }
+#app-sidebar .color_theme-option[aria-selected="true"]::after { content: none; }
 @media (forced-colors: active) {
   body .color_theme-select .color_theme-option.is-active {
     outline: 2px solid Highlight;

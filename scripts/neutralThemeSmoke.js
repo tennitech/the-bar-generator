@@ -37,6 +37,8 @@ async function themeRowCheck(page, mode, scheme) {
   assert.equal(await row.getAttribute('aria-selected'), 'true');
   assert.equal(await row.locator('.color_theme-indicator').getAttribute('aria-hidden'), 'true');
   assert.equal(await row.locator('.color_theme-indicator').evaluate(el => getComputedStyle(el).visibility), 'visible');
+  assert.equal(await row.evaluate(el => getComputedStyle(el, '::after').content), 'none');
+  assert.equal(await row.evaluate(el => getComputedStyle(el).paddingRight), '12px');
 
   await trigger.press(mode === 'black' ? 'End' : 'Home');
   await row.hover();

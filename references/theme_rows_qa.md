@@ -27,6 +27,8 @@ RPIGeist Bold face supplies labels at max(1.25rem, 19px), weight 700, with wrapp
 Hover adds black/white bottom rules. Keyboard-active rows receive black/white
 inset keylines. Selected rows show a black checkmark on a white circular marker
 with a black border; its span is aria-hidden, so option names remain unchanged.
+The legacy sidebar pseudo-element checkmark is suppressed only for these rows
+to avoid a duplicate marker; the picker also overrides the old marker padding.
 The selected marker and keyboard-active frame are independent. Row colors remain
 exact in all three states. A thin scrollbar provides a scroll cue, and color
 rows remain clear of gradient overlays. Forced-colors mode supplies a system
