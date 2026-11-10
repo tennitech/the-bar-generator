@@ -14,9 +14,9 @@ function createRuntime(overrides = {}) {
   const state = { composition: 'logo', size: 'large', title: 'Test <bar> & RPI',
     values: { numericValue: '3.14159265', numericMode: 'height', binaryText: 'RPI', morseText: 'RPI',
       circlesDensity: 10, circlesSizeVariation: 30, circlesFill: 'stroke', waveformType: 0,
-      waveformFrequency: 17, waveformSpeed: 0.3, waveformPoints: 750, waveformLfo: 'none',
+      waveformFrequency: 17, waveformSpeed: 0.3, waveformPoints: 750, waveformLfo: false, waveformLfoRate: 2, waveformLfoDepth: 60, waveformLfoType: 0,
       tickerRepeats: 17, tickerRatio: 3, tickerWidthRatio: 2, tickerSpeed: 0.4,
-      trianglesDirection: 'up-left', trianglesCount: 23, gradientVariant: 2,
+      trianglesDirection: 'up-left', trianglesCount: 23, gradientVariant: 2, gradientSpeed: 0.1,
       circlesGradientVariant: 3, gridVariant: 2, linesVariant: 2, triangleGridVariant: 2,
       nucleotideSequence: 'ATGGTGATGGTGATGGTGATGGTGATGGTG', nucleotideVariant: 'backbone',
       neuralNetworkSeed: 7, neuralNetworkUnits: 9, neuralNetworkHiddenLayers: 2 } };
@@ -32,6 +32,7 @@ function createRuntime(overrides = {}) {
     barShareController: { getName: () => state.title },
     BarShareState: require('../../js/utils/shareState'),
     RulerScale: require('../../js/utils/rulerScale'),
+    WaveformLfo: require('../../js/utils/waveformLfo'),
     NumericControls: require('../../js/utils/numericControls'),
     NucleotidePattern: require('../../js/utils/nucleotidePattern'),
     quantumModel: require('../../js/utils/quantumModel'),
@@ -40,6 +41,7 @@ function createRuntime(overrides = {}) {
       : selector === '#nucleotide-input' ? { value: state.values.nucleotideSequence } : null },
     normalizeStyleValue: value => value,
     getCurrentBarPatternValues: () => state.values,
+    getWaveformLfoSettings: () => ({ enabled: state.values.waveformLfo, rate: state.values.waveformLfoRate, depth: state.values.waveformLfoDepth, type: state.values.waveformLfoType }),
     getLoopRuntimeValues: () => ({ loopOffsetX: 42, timeSeconds: 98, quantumPhase: 0.7 }),
     parseNumericString: value => r.NumericControls.digits(value), ...overrides };
   r.window = r;

@@ -106,7 +106,7 @@ test('composition choices have native radio semantics, visible labels and hidden
   expect(options.dimensions('large', geometry)).toEqual(options.dimensions('large', geometry, 'logo'));
 });
 
-test.each(['ticker', 'waveform'])('%s bar-only GIF remains offered and uses the download-request path', async family => {
+test.each(['ticker', 'waveform', 'gradient'])('%s bar-only GIF remains offered and uses the download-request path', async family => {
   const fills = [];
   const ctx = Object.fromEntries(['setTransform', 'clearRect', 'save', 'scale', 'translate', 'beginPath', 'rect', 'clip', 'fillRect', 'restore']
     .map(name => [name, () => {}]));

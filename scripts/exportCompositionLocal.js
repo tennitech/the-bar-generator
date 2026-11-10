@@ -114,7 +114,7 @@ async function main() {
   fs.writeFileSync(path.join(out, 'png-results.json'), JSON.stringify(results.png, null, 2));
   console.log(`PNG: ${results.png.length} actual encoded images checked`);
   installCodecWorkers();
-  for (const family of ['ticker', 'waveform']) for (const size of ['standard', 'large']) for (const composition of ['logo', 'bar']) {
+  for (const family of ['ticker', 'waveform', 'gradient']) for (const size of ['standard', 'large']) for (const composition of ['logo', 'bar']) {
     r.select(family); r.currentColorMode = family === 'ticker' ? 'white' : (size === 'large' ? 'red' : 'black');
     Object.assign(r.state, { size, composition });
     const snapshot = r.captureLogoExportSnapshot();

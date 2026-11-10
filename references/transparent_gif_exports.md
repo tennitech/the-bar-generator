@@ -9,7 +9,7 @@ sizes remain unchanged. Bar-only retains a 1000/2000 px nominal bar width on a
 1160 × 232 / 2320 × 464 canvas, including 80/160 px transparent padding per
 side. Its SVG viewBox is `-20 112.4885 290 58`; artwork coordinates are unchanged.
 
-Current GIF availability remains Ticker and Waveform; Ruler is already static.
+Current GIF availability is Ticker, Waveform and Gradient; Ruler is static.
 Each supported loop uses the captured crop consistently on every frame. The
 same binary-alpha palette, full-frame disposal, streaming, cancellation and
 loop plan remain in use. Bar-only filenames add `bar-only`; complete-mark names
@@ -69,3 +69,31 @@ GIF cannot preserve smooth partial transparency or overcome every viewer's timin
 ## Ruler edge correction — October 27, 2026
 
 The owner corrected the earlier strict painted-edge interpretation for Ruler. Its natural tick rhythm may leave edge whitespace inside the unchanged 250 × 18 viewport; fixed end caps are removed across preview, header, SVG, PNG and GIF. The frame is never stretched or shifted to force contact. GIF checks retain exact dimensions, full-frame coverage parity, transparency, disposal and no overflow; only Ruler is exempt from mandatory edge-column paint.
+
+
+## Gradient loop — November 10, 2026 (local candidate)
+
+Gradient joins Ticker and Waveform as a GIF-capable family; Ruler is stationary.
+Its 0.02–0.4 cycles/s coverage sweep exports one exact phase cycle in either
+direction, using the same primitive geometry as the live preview/header. It
+inherits transparent-palette, disposal, frame budgeting, size and cancellation
+behavior. SVG/PNG/clipboard use phase zero, preserving each original static stripe
+variant. The default 10-second GIF contains 72 frames; frame-delay quantization
+retains the existing loop timing policy. No gradient-specific browser export
+validation is claimed here because the local browser runtime is blocked; see the
+project status and `scripts/gradientMotionSmoke.js` for the remaining check.
+
+
+## Waveform LFO — November 10 local candidate
+
+Enabled visible LFO adds its selected amplitude waveform to GIF frames. Below
+5 Hz, capture uses an exact joint carrier/LFO period at 30 fps, up to 100 seconds
+and 3000 frames. Fine SPEED values can require longer joint cycles; those
+configurations use the LFO cycle mean with one carrier cycle instead. Input streaming remains bounded
+to two frames; total encoding time and encoded data can grow substantially for
+long periods. Cancel still stops work. At 5 Hz and above, the GIF bar uses the
+LFO cycle mean and the existing carrier period to prevent alias beats at capture
+cadence; audio is never included. See [the visual sampling policy](bar_science_notes.md#visual-waveform-lfo--november-10-2026).
+Disabled LFO preserves the existing frame plan. Unit checks cover joint-cycle
+closure; browser download/decoder and cost validation remain blocked by the
+current cloud sandbox and must be completed before publication.

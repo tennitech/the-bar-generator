@@ -9,6 +9,7 @@ test('style dropdown stays alphabetical within Dynamic and Static without duplic
     seen.push(...options.map(option=>option[1]));
     if (match[1] === 'Dynamic') {
       expect(options.map(option=>option[1])).toContain('circles-gradient');
+      expect(options.map(option=>option[1])).toContain('gradient');
       expect(options.map(option=>option[1])).toContain('triangle-grid');
     }
   }

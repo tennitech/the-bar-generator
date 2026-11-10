@@ -7,7 +7,7 @@
 
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform']);
+  const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient']);
   const DEFAULT_CAPTURE_FPS = 24;
   const MIN_CAPTURE_FPS = 12;
   const MAX_CAPTURE_FPS = 30;
@@ -22,13 +22,15 @@
   // Speeds are major-pattern recurrences per display second, not physical units.
   // Ticker has up to five minor ticks per recurrence.
   const LOOP_SPEED_LIMITS = Object.freeze({
-    ticker: Object.freeze({ min: 0.2, max: 0.8, step: 0.1, default: 0.4 }),
-    waveform: Object.freeze({ min: 0.2, max: 1, step: 0.1, default: 0.3 })
+    gradient: Object.freeze({ min: 0.02, max: 0.4, step: 0.001, default: 0.1 }),
+    ticker: Object.freeze({ min: 0.08, max: 1.6, step: 0.001, default: 0.4 }),
+    waveform: Object.freeze({ min: 0.06, max: 1.2, step: 0.001, default: 0.3 })
   });
   const DEFAULT_LOOP_SPEEDS = Object.freeze(Object.fromEntries(
     Object.entries(LOOP_SPEED_LIMITS).map(([style, limits]) => [style, limits.default])
   ));
   const DEFAULT_LOOP_REVERSE = {
+    gradient: false,
     ticker: false,
     waveform: false
   };
@@ -60,7 +62,7 @@
       && /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim()));
     const numericValue = valid ? Number(value) : NaN;
     return Number.isFinite(numericValue)
-      ? Math.round((clamp(numericValue, limits.min, limits.max) + Number.EPSILON) * 10) / 10 : limits.default;
+      ? Math.round((clamp(numericValue, limits.min, limits.max) + Number.EPSILON) * 1000) / 1000 : limits.default;
   }
 
   // Share owners can migrate only these known legacy controls before strict
@@ -102,8 +104,8 @@
       return normalizeLoopSpeed(normalizedStyle, values.tickerSpeed);
     }
 
-    if (normalizedStyle === 'waveform') {
-      return normalizeLoopSpeed(normalizedStyle, values.waveformSpeed);
+    if (normalizedStyle === 'waveform' || normalizedStyle === 'gradient') {
+      return normalizeLoopSpeed(normalizedStyle, values[`${normalizedStyle}Speed`]);
     }
 
     return getDefaultLoopSpeed(normalizedStyle);
@@ -204,14 +206,24 @@
 
     const speed = getLoopSpeed(normalizedStyle, values);
     const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
-    const periodSeconds = 1 / speed;
-    const frameCount = getFrameCountForPeriod(periodSeconds, fps);
+    const hasLfo = normalizedStyle === 'waveform' && !options.carrierOnly
+      && (values.waveformLfo === true || values.waveformLfo === 'true') && Number(values.waveformLfoDepth) > 0;
+    const rate = Math.round(clamp(toPositiveNumber(values.waveformLfoRate, 2), 0.07, 1300) * 1000);
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+    const jointPeriod = 1000 / gcd(Math.round(speed * 1000), rate);
+    // Fine stored rates can need a very long joint cycle. Bound capture cost;
+    // use the LFO mean when the exact cycle exceeds 100 seconds or 5 Hz.
+    const lfoEnabled = hasLfo && rate < 5000 && jointPeriod <= 100;
+    const lfoAveraged = hasLfo && !lfoEnabled;
+    const periodSeconds = lfoEnabled ? jointPeriod : 1 / speed;
+    const frameCount = lfoEnabled ? Math.min(3000, Math.ceil(periodSeconds * 30)) : getFrameCountForPeriod(periodSeconds, fps);
 
     return {
       style: normalizedStyle,
       frameCount,
       frameDelayMs: Math.round((periodSeconds * 1000) / frameCount),
       periodSeconds,
+      lfoAveraged,
       repeatWidth: 0,
       getLoopOffsetX() {
         return 0;
@@ -224,7 +236,7 @@
 
   function getLoopingAnimationState(style, values = {}, options = {}) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
-    const framePlan = getLoopingGifFramePlan(normalizedStyle, values, options);
+    const framePlan = getLoopingGifFramePlan(normalizedStyle, values, { ...options, carrierOnly: true });
     if (!framePlan) {
       return null;
     }

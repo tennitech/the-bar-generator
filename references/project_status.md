@@ -12,7 +12,7 @@ border and keyboard-focus states; labels and descriptions remain accessible.
 It persists across menu/style synchronization and locks during export/copy jobs.
 
 One frozen snapshot carries composition and viewport through SVG, PNG, eligible
-Ticker/Waveform GIFs and native SVG/PNG clipboard payloads. Bar-only omits letter
+Ticker/Waveform/Gradient GIFs and native SVG/PNG clipboard payloads. Bar-only omits letter
 paths and crops to the canonical bar plus proportional clear space, producing
 1160 × 232 / 2320 × 464 rasters. Pattern coordinates, current data/seed/settings,
 transparent backgrounds, resting still phase and existing loop plans remain
@@ -23,8 +23,22 @@ Validation and integration guidance are recorded in
 raster/codec checks are separate from rendered browser QA. Browser launch/socket
 escalation was already rejected in this environment; it was not retried or
 bypassed. Rendered menu layout, real keyboard/touch behavior, screen readers and
-native clipboard/paste remain unverified. The incremental release preserves the published brand composition changes.
+native clipboard/paste remain unverified. The incremental release preserves the published brand composition and PR 133
+motion changes. The reconciled tree passes 854 unit tests, 264 PNG cases,
+12 GIFs / 816 decoded frames and 12 clipboard-adapter requests.
 Engineering validation does not establish owner acceptance or formal brand approval.
+
+## November 10 six-feature and brand release reconciliation
+
+PR #133 is reconciled with published PR #134 at `04194d6a4f96aeb67d0d679a24ffad758ba6610e`.
+All contextual brand compositions, the How to Use modal, native dialog handling,
+actual-ink filenames and brand source records remain intact. Cache conflicts
+are resolved consistently across shell, route stubs and both Home URLs; status
+sections are additive. Non-Waveform still exports no longer read LFO settings.
+The combined required suite passes **833 tests in 77 suites**; rendered browser,
+native audio and real download QA remain blocked as recorded below. The parent
+thread coordinates merging after the final-head Checks run. No protection or
+workflow requirement was changed.
 
 ## November 10 contextual brand compositions and secondary color guidance
 
@@ -66,42 +80,32 @@ remain separate from source and unit-test verification.
 See [brand color sources and QA](brand_color_context_qa.md) for the evidence,
 compatibility notes, rerun command, and integration concerns.
 
-## November 10 static Home marquee and stable selection
+## November 10 combined generator refinement
 
-The Home instruction prompt starts after 450 ms instead of five seconds. The
-separate Enter generator button is removed on both Home URLs. Each bar remains
-a native link to its exact SVG sample configuration; the first keyboard skip
-link still opens the generator and its accessible style picker.
+The isolated combined candidate includes the 450ms Home prompt, removed separate
+Enter button, static individual marquee bars with 50% neighboring opacity and no
+lift/splitting; canonical aligned generator ASCII entry; a bounded taller sidebar
+overflow fade; dynamic Gradient controls/GIF with static Home previews; normalized
+0.2–4× SPEED controls; a clearer existing shuffle icon; and Waveform audio/visual
+LFO with continuous waveform folding and a separate logarithmic 0.07–1300Hz rate.
 
-All Home previews now use the catalog's canonical SVG stills. The Home pages
-no longer load or start the optional live-preview renderer, allocate its canvases,
-or randomize additional motion parameters. Scrolling, direct drag, pause/resume,
-reduced motion and the existing entrance remain separate. Generator playback,
-scientific geometry and exports are unchanged.
+Original default motion rates, prior valid query/share values, official geometry,
+profanity filtering and reduced-motion handling remain. Gradient and LFO changes
+share the existing preview/header phase and export geometry. Joint LFO GIF loops
+are limited to 100 seconds/3000 frames, with mean amplitude for longer cycles or
+fast LFO. Retained Waveform settings cannot change other styles' GIF plans.
 
-Hover dims every other complete bar to 50% opacity, with no row blur or artwork
-lift. Visible keyboard focus has the same emphasis and takes priority over a
-parked pointer; its lane stays still until blur. Touch clears stale pointer
-selection and retains native vertical pan and pinch. Duplicate decorative links
-retain their existing Tab policy, with keyboard entry through the skip link.
+Validation: **831 tests in 76 suites pass**. Browser/native-audio/download visual
+QA is blocked by the previously established Chromium socket restriction, missing
+WebKit libraries and unreachable managed-browser localhost. The explicitly denied
+browser escalation was not retried. No rendered/device/owner or formal brand
+approval claim is made. The user has authorized publication and plans to test the
+live batch. Export-composition choice and Easter egg repairs remain separate.
 
-Validation: all 787 unit tests in 72 suites pass in cloud Node 24.22.1. JavaScript
-syntax, both Home inline scripts and whitespace checks pass. There are no lint,
-typecheck or build commands in this static application. The new
-`scripts/marqueeStaticSmoke.js` covers actual prompt timing, static sample links,
-scrolling, repeated hovers, unchanged image bounds, keyboard focus, reduced
-motion, native navigation/history and three phone viewports. Historical hover
-and preview-animation smoke entry points now run this current behavior check.
-
-Rendered browser validation is **blocked**, not passed: Playwright's Chromium
-archive download was truncated; installed system Chromium exits with
-`socket() failed: Operation not permitted (1)`. WebKit downloaded, but its required
-Linux libraries are absent and the dependency installer exits with
-`su: System error`. The separate cloud browser's localhost returned
-`Missing or invalid bearer token.` and cannot reach this checkout. No screenshots
-or physical-device validation were produced. Details and rerun commands are in
-[the QA record](marquee_static_focus_qa.md). This remains draft work; no merge,
-deployment, owner acceptance or formal brand approval is claimed.
+Exact source provenance, integration decisions, checks, limits and the owner test
+list are in [combined generator validation](combined_generator_validation.md).
+All original worktrees and branches are preserved. The combined worktree is
+`the-bar-generator-integration`, branch `codex/feat-combined-generator-candidate`.
 
 ## November 6 outstanding-report verification
 

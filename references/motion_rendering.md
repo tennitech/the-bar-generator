@@ -2,6 +2,28 @@
 
 October 27, 2026. Display motion is illustrative, not a calibrated physical measurement.
 
+## November 10 normalized SPEED controls
+
+SPEED displays a multiplier of each original default: Ticker 0.4 bottom-row
+repeats/display second, Waveform 0.3 temporal cycles/display second, Gradient
+0.1 coverage cycles/display second, and Quantum 1× model time. Every control
+spans 0.2–4×, starts at 1×, and supports direct multiplier entry. Arrow keys
+change 0.05×; Page keys change 0.25×; Home/End select the bounds. Dragging uses
+fine native range steps. LFO RATE remains a separate logarithmic Hz control.
+
+URLs and v1 snapshots retain actual rates, never the displayed multiplier.
+The stored ranges are Ticker 0.08–1.6, Waveform 0.06–1.2, Gradient 0.02–0.4,
+and Quantum 0.2–4. Stored repeating-family precision is 0.001, preserving all
+previous valid rates/defaults and avoiding a coarse 0.1 rounding jump. Reset,
+Randomize, Undo and numeric editing share this mapping. Ruler remains static.
+
+At 4× Quantum's nominal recurrence is 30 display seconds and all n² mode
+ratios remain fixed. Live tick sampling guards and GIF delay quantization
+remain in force; a delayed frame can reduce live speed. These are illustrative
+display rates, not calibrated physical frequencies or a flash-safety guarantee.
+See [the integration review](combined_generator_validation.md) for checks and
+remaining browser limitations. Earlier rate tables below are historical.
+
 ## Tiny header
 
 The former header kept one canvas during playback, but cleared and repainted its letters every frame. A 45-frame Chromium probe found identical letter pixels for Ruler, Ticker, and Waveform; it did not reproduce a blank-letter frame. Pause/play did replace the whole mark between SVG and canvas. The dense default Ticker also used a constant row-average fill, so its tiny bar could become stationary. High speed and subpixel stripes are separate sources of perceived shimmer; persistent DOM alone does not prove a physical display is flicker-free.

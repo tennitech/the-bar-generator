@@ -241,3 +241,106 @@ retain the existing captured-origin loop plan. No model, coordinate, natural
 gap, artwork clip, timing or motion-availability rule is changed. See
 [geometry](bar_geometry.md#export-composition--november-10-2026) and
 [verification](export_composition_qa.md).
+
+## Animated Gradient — November 10, 2026 (local candidate)
+
+Gradient retains its two original single-ink stripe patterns at phase zero.
+Coverage changes through the bounded coordinate warp
+`t' = t + 0.28 sin(2π phase) sin(πt)`, followed by the existing linear taper or
+triangular center-coverage rule. The 24 column centers and row coordinates stay
+fixed; no spatial fitting, opacity, added color or measured-data claim is involved.
+The endpoint widths are fixed, all rectangles remain within the 250 × 18 viewport,
+and the cycle is continuous at its wrap. Default speed is 0.1 cycles/s (10 seconds),
+with 0.2–4× default speed (0.02–0.4 cycles/s), Loop and Reverse controls using the existing shared clock.
+Pause holds the current coverage; speed/reverse changes retain phase. Reduced
+motion starts paused, permits explicit playback, and pauses an active loop when
+newly requested. Removing the preference does not restart it.
+
+Live main/header rendering and GIF use the same geometry. SVG/PNG and clipboard
+exports keep the existing resting-phase policy, preserving the original variant
+artwork regardless of preview time. GIF exports one full phase cycle with the
+existing transparent encoder. Historical variants restore with default motion
+settings; paused snapshots retain their recorded phase. Home marquee samples
+receive no gradient phase and remain static; Gradient is deliberately absent
+from the marquee animation allowlist. Existing gradient brand-review questions
+remain open. This records local engineering work, not publication or approval.
+
+
+## November 10 normalized SPEED controls
+
+SPEED displays a multiplier of each original default: Ticker 0.4 bottom-row
+repeats/display second, Waveform 0.3 temporal cycles/display second, Gradient
+0.1 coverage cycles/display second, and Quantum 1× model time. Every control
+spans 0.2–4×, starts at 1×, and supports direct multiplier entry. Arrow keys
+change 0.05×; Page keys change 0.25×; Home/End select the bounds. Dragging uses
+fine native range steps. LFO RATE remains a separate logarithmic Hz control.
+
+URLs and v1 snapshots retain actual rates, never the displayed multiplier.
+The stored ranges are Ticker 0.08–1.6, Waveform 0.06–1.2, Gradient 0.02–0.4,
+and Quantum 0.2–4. Stored repeating-family precision is 0.001, preserving all
+previous valid rates/defaults and avoiding a coarse 0.1 rounding jump. Reset,
+Randomize, Undo and numeric editing share this mapping. Ruler remains static.
+
+At 4× Quantum's nominal recurrence is 30 display seconds and all n² mode
+ratios remain fixed. Live tick sampling guards and GIF delay quantization
+remain in force; a delayed frame can reduce live speed. These are illustrative
+display rates, not calibrated physical frequencies or a flash-safety guarantee.
+See [the integration review](combined_generator_validation.md) for checks and
+remaining browser limitations. Earlier rate tables below are historical.
+
+## Visual Waveform LFO — November 10, 2026
+
+The new LFO control supersedes the November 4 audio-only scope. The label is
+simply **LFO**. Its waveform slider folds continuously between Sine, Sawtooth,
+Square and Pulse, using the carrier's interpolation and 20% pulse duty cycle.
+The sine retains the prior audio phase origin; the other shapes use the same
+quarter-cycle offset. This is generated amplitude modulation, not measured
+sound or pitch vibrato.
+
+Rate covers **0.07–1300 Hz**, the panel range in the primary
+[Moog Grandmother manual v2](https://cdn.inmusicbrands.com/Moog/Grandmother/Grandmother_Manual_Version_2.pdf),
+Modulation RATE, printed page 23 (PDF page index 22). This borrows a documented
+control range, not a claim to emulate the instrument. A logarithmic native
+slider spans the range; the existing numerical editor accepts Hz to hundredths.
+Depth stays 0–100%, with 2 Hz, 60% depth and Sine as defaults.
+
+`gain = 1 - depth + depth × shape(phase)` stays in `[1-depth, 1]`.
+Visual height is multiplied uniformly from the fixed lower edge; x coordinates,
+carrier frequency/travel, official letters, gap and bar viewport stay fixed.
+There is no painted baseline, fitting pass, opacity effect or spatial envelope.
+The preview and header consume the same frame value and shared geometry.
+
+The native audio oscillator preserves phase and uses band-limited PeriodicWave
+coefficients, a constant pulse-DC offset and a limiter for Fourier edge ringing.
+Rate/depth retain 15 ms exponential ramps. An analytic clock integrates those
+same rate ramps. Silent playback uses the existing render scheduler; starting
+and stopping audio hands off the current phase. No sound starts automatically.
+Loop pause and reduced motion hold visual modulation while explicitly requested
+audio can continue. Hidden pages stop audio under the existing policy; artwork
+holds and style changes stop advancing the visual clock without elapsed-time
+catch-up. Reset clears LFO state; query/share/Undo retain all four controls. New snapshots also retain the LFO
+phase; historical snapshots start it at phase zero.
+
+A screen cannot show 1300 cycles/s. The visual amplitude blends to the correct
+cycle mean between 60% and 100% of a limit of `min(10 Hz, frame rate / 6)`.
+Thus a regular 60 Hz display blends from 6 to 10 Hz; at 30 Hz it blends from
+3 to 5 Hz. Rates above the limit remain steady, including Pulse's lower mean.
+Audio still uses the requested full rate. Frame stalls use the existing 50 ms
+visual delta cap, and visual timing is illustrative rather than physical time.
+
+Static SVG/PNG/clipboard retain the existing reproducible resting carrier/LFO
+phase policy, including the selected depth/waveform and high-rate mean rule.
+Waveform GIFs below 5 Hz close both carrier and LFO clocks at their exact common
+period (hundredth-Hz rates, maximum 100 seconds / 3000 frames at 30 fps).
+At 5 Hz and above GIF uses the carrier loop and averaged amplitude, avoiding
+alias beats at its lower frame cadence. Streaming still retains at most two
+input RGBA frames, but long common periods take more encoding time; Cancel
+remains available. GIF timing remains quantized to centiseconds and carries no
+audio. Disabled LFO retains the old carrier geometry and frame plan.
+
+Local unit tests cover waveform math, synthesized coefficient output, bounded
+height, transport ramps/handoffs, pause/suspension/reset and exact joint periods.
+Native audio, rendered responsive layouts and real downloads still need browser
+QA: this cloud sandbox blocks Chromium's Unix sockets, WebKit lacks libraries,
+and the managed browser cannot reach its isolated localhost server. The browser
+harness is present; no browser or physical-device pass is claimed.

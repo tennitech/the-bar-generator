@@ -10,19 +10,23 @@ function element() {
     add: (...names) => names.forEach(name => classes.add(name)), remove: (...names) => names.forEach(name => classes.delete(name)), contains: name => classes.has(name)
   } };
 }
-function setup({ selector = true, supported = true, reduced = false, stored = null, nav = 'navigate', fonts = Promise.resolve(), storageThrows = false } = {}) {
+function setup({ selector = true, supported = true, reduced = false, stored = null, nav = 'navigate', fonts = Promise.resolve(), storageThrows = false, ascii = null } = {}) {
   const root = element(), plane = element(), reveal = element();
+  const canvas = { ...element(), tagName: 'CANVAS', parentElement: plane };
+  canvas.dataset.previewReady = 'true';
+  plane.querySelectorAll = () => [canvas];
   const windowEvents = {}, documentEvents = {}, mediaEvents = {};
   const media = { matches: reduced, addEventListener: (name, cb) => { mediaEvents[name] = cb; } };
   const document = {
     documentElement: root, currentScript: { dataset: { entryKind: selector ? 'selector' : '' } }, hidden: false, body: element(), fonts: { ready: fonts },
-    querySelector: query => query === '[data-entrance-plane="selector"]' ? plane
+    querySelector: query => query === '#p5-container > canvas' ? canvas
+      : query === '[data-entrance-plane="selector"]' ? plane
       : query === '[data-entrance-page="selector"]' ? reveal : null,
     addEventListener: (name, cb) => { documentEvents[name] = cb; },
     startViewTransition: supported ? jest.fn() : undefined
   };
   const window = {
-    matchMedia: () => media, addEventListener: (name, cb) => { windowEvents[name] = cb; },
+    AsciiEntrance: ascii, matchMedia: () => media, addEventListener: (name, cb) => { windowEvents[name] = cb; },
     localStorage: { getItem: () => { if (storageThrows) throw new Error('storage unavailable'); return stored; } },
     sessionStorage: { getItem: () => null, setItem: jest.fn() }
   };
@@ -117,4 +121,38 @@ test('Home keeps clocks held until its own opacity transition ends and clears th
   complete({ target: s.reveal, propertyName: 'opacity' });
   expect(s.api.isActive()).toBe(false);
   expect(s.reveal.events.transitionend).toBeUndefined();
+});
+
+
+test('generator completion releases the artwork hold in the same frame', async () => {
+  const cleanup = jest.fn(), start = jest.fn();
+  const ascii = { prepareGenerator: jest.fn(() => Promise.resolve({ cleanup, start })) };
+  const s = setup({ selector: false, ascii });
+  s.api.revealGenerator(() => '<svg/>', () => true);
+  expect(s.api.isHoldingArtwork()).toBe(true);
+  await flush();
+  expect(s.plane.dataset.entryMode).toBe('ascii');
+  const [, onStart, onFinish] = start.mock.calls[0];
+  onStart(); onFinish();
+  expect(s.api.isHoldingArtwork()).toBe(false);
+  expect(s.plane.dataset.entryActive).toBe('false');
+  expect(cleanup).toHaveBeenCalledTimes(1);
+  s.api.revealGenerator(() => '<svg/>');
+  expect(ascii.prepareGenerator).toHaveBeenCalledTimes(1);
+});
+
+test.each(['input', 'change'])('generator %s during decode cancels without late reentry', async name => {
+  const source = deferred(), cleanup = jest.fn(), start = jest.fn();
+  const ascii = { prepareGenerator: jest.fn(() => source.promise) };
+  const s = setup({ selector: false, ascii });
+  // Setup events before the first mark must not disable the entrance.
+  s.documentEvents[name]({ target: { id: 'a-parameter' } });
+  s.api.revealGenerator(() => '<svg/>', () => true);
+  expect(s.api.isActive()).toBe(true);
+  s.documentEvents[name]({ target: { id: 'a-parameter' } });
+  expect(s.api.isActive()).toBe(false);
+  source.resolve({ cleanup, start }); await flush();
+  expect(cleanup).toHaveBeenCalledTimes(1); expect(start).not.toHaveBeenCalled();
+  s.api.revealGenerator(() => '<svg/>');
+  expect(ascii.prepareGenerator).toHaveBeenCalledTimes(1);
 });

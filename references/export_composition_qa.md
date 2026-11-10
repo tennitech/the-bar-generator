@@ -31,7 +31,7 @@ Only the export viewport changes; the official bar, clip, scientific coordinates
 nested artwork and natural gaps do not move or stretch. SVG/PNG copies share the
 same snapshot and native MIME paths as downloads. Bar-only names include
 `bar-only`; complete-mark names are unchanged. Still files retain the existing
-resting phase zero. Existing animated Ticker/Waveform GIFs remain downloadable
+resting phase zero. Existing animated Ticker/Waveform/Gradient GIFs remain downloadable
 with Bar only selected, with the same loop settings and binary transparency.
 Ruler remains static and does not gain an unsupported GIF action.
 
@@ -141,3 +141,20 @@ new fixture loads the actual shared theme palette and covers all its schemes.
   evidence: `/tmp/rpi-export-release-evidence/`.
 - Browser/OS validation limits above still apply. No denied browser action was
   repeated. PR 133 and all original candidates remain untouched.
+
+## Final reconciliation with published motion release
+
+PR 133 was independently merged as main `05655f68e7a94d31a6c2188b914b3513e6ad0178`
+while this PR was being prepared. Its exact main, pattern, loop planner, LFO,
+brand palette, ASCII and marquee sources are preserved. Export changes in
+drawing.js are confined to composition capture, letter omission and viewport
+translation. The Gradient renderer fixture now supplies its captured viewport.
+
+Final verification: **854 tests in 78 suites pass**; **264 actual PNGs**,
+**12 complete GIFs / 816 decoded frames** (Ticker, Waveform and Gradient at both
+sizes and compositions), and **12 clipboard-adapter requests** pass. Eleven
+changed JavaScript files and all 84 inline scripts parse. Cache references agree;
+whitespace passes. The brand menu and guidance dialog match published main.
+Logs: `/tmp/export-release-r2-jest.log`, `/tmp/export-release-r2-raster.log`;
+evidence: `/tmp/rpi-export-release-r2-evidence/`. Browser and native OS limits
+above remain unchanged. Original source candidates are retained.
