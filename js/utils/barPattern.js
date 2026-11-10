@@ -187,16 +187,43 @@ function createWaveformPatternGeometry(options = {}) {
     const scale = Number(options.waveformScope.gainScale) || .1;
     const from = clampWaveformValue(Number(options.waveformScope.startFraction) || 0, 0, 1);
     const to = clampWaveformValue(Number.isFinite(options.waveformScope.endFraction) ? options.waveformScope.endFraction : 1, from, 1);
-    const count = data.length / 2, curve = [];
+    const mapY = value => startY + height * (.5 - .5 * Math.max(-1, Math.min(1, value / scale)));
+    const samples = options.waveformScope.trace;
+    if (samples?.length > 1) {
+      const traceTo = Math.min(to, from + options.waveformScope.traceDurationSeconds / options.waveformScope.seconds);
+      const curve = samples.map((value, i) => ({
+        x: startX + (from + i / (samples.length - 1) * (traceTo - from)) * width, y: mapY(value)
+      }));
+      const zero = startY + height / 2;
+      return { curve, polygon: [{ x: startX+from*width, y: zero }, ...curve, { x: startX+traceTo*width, y: zero }] };
+    }
+    const count = data.length / 2, curve = [], upper = [], lower = [];
     for (let i = 0; i < count; i++) {
       const x = startX + (from + (i + .5) / count * (to - from)) * width;
-      // Each vertical segment retains the actual minimum and maximum PCM in
-      // its time bin. No oscillator formula or global gain is drawn here.
-      for (const value of [data[i*2+1], data[i*2]]) curve.push({ x,
-        y: startY + height * (.5 - .5 * Math.max(-1, Math.min(1, value / scale))) });
+      const high = { x, y: mapY(data[i*2+1]) }, low = { x, y: mapY(data[i*2]) };
+      curve.push(high, low); upper.push(high); lower.push(low);
     }
-    const zero = startY + height / 2;
-    return { curve, polygon: [{x:startX+from*width,y:zero}, ...curve, {x:startX+to*width,y:zero}] };
+    // Separate range contours avoid a max/min zigzag masquerading as PCM.
+    // Monotone interpolation connects measured bin extrema without overshoot.
+    function contour(points) {
+      const slopes = points.slice(1).map((p,i) => p.y-points[i].y);
+      const tangent = points.map((_,i) => i===0 ? slopes[0] || 0 : i===points.length-1 ? slopes[i-1] || 0
+        : slopes[i-1]*slopes[i] <= 0 ? 0 : 2*slopes[i-1]*slopes[i]/(slopes[i-1]+slopes[i]));
+      const out = [];
+      for (let i=0;i<points.length-1;i++) for (let step=0;step<4;step++) {
+        const t=step/4, t2=t*t, t3=t2*t;
+        out.push({ x: points[i].x+(points[i+1].x-points[i].x)*t,
+          y:(2*t3-3*t2+1)*points[i].y+(t3-2*t2+t)*tangent[i]
+            +(-2*t3+3*t2)*points[i+1].y+(t3-t2)*tangent[i+1] });
+      }
+      out.push(points[points.length-1]);return out;
+    }
+    const top = contour(upper), bottom = contour(lower);
+    return { curve, polygon: [{ x:startX+from*width,y:top[0].y }, ...top,
+      { x:startX+to*width,y:top[top.length-1].y },
+      { x:startX+to*width,y:bottom[bottom.length-1].y }, ...bottom.reverse(),
+      { x:startX+from*width,y:bottom[bottom.length-1].y }] };
+
   }
 
   const finite = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;

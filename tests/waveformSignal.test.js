@@ -27,7 +27,7 @@ test('extrema reduction preserves actual signed PCM peaks and temporal order, no
   const g=geometry({waveformScope:f,exactBarWidth:250,barHeight:18});
   expect(g.curve[0].y).toBeCloseTo(9-90*f.extrema[1],10);
   expect(g.curve[1].y).toBeCloseTo(9-90*f.extrema[0],10);
-  expect(g.polygon[0]).toEqual({x:0,y:9});
+  expect(g.polygon[0]).toEqual({x:0,y:g.curve[0].y});
   const d=g.polygon.map((p,i)=>`${i?'L':'M'} ${p.x} ${p.y}`).join(' ')+' Z';
   expect(createBarPatternSVG({currentShader:4,fgColor:'#000',barStartX:0,barY:0,exactBarWidth:250,barHeight:18,values:{waveformScope:f}})).toContain(`d="${d}"`);
   expect(geometry({waveformScopeRequired:true})).toEqual({curve:[],polygon:[]});
@@ -44,8 +44,10 @@ test('the worklet captures post-gain PCM min/max and contributes exactly zero au
   for(let i=0;i<pcm.length;i+=128)p.process([[pcm.subarray(i,i+128)]],[[output]]);
   expect(batches).toHaveLength(2);expect(output.every(x=>x===0)).toBe(true);
   const expected=scope.pcmExtrema(pcm);
-  expect(Array.from(batches[0])).toEqual(Array.from(expected.subarray(0,512)));
-  expect(Array.from(batches[1])).toEqual(Array.from(expected.subarray(512)));
+  expect(Array.from(batches[0].extrema)).toEqual(Array.from(expected.subarray(0,512)));
+  expect(Array.from(batches[1].extrema)).toEqual(Array.from(expected.subarray(512)));
+  expect(Array.from(batches[0].pcm)).toEqual(Array.from(pcm.subarray(0,2048)));
+  expect(Array.from(batches[1].pcm)).toEqual(Array.from(pcm.subarray(2048)));
 });
 
 test('live capture keeps its requested timebase, freezes recording identity and retains history at .07Hz',async()=>{
@@ -116,7 +118,7 @@ test('routed bootstrap loads the actual audio/scope head dependencies before mai
   const html=fs.readFileSync(require.resolve('../generator/index.html'),'utf8');
   for(const name of ['waveformLfo','waveformAudio','waveformScope']) {
     expect(early).toContain(`'${name}'`);
-    const version=name==='waveformScope'?'20261110-scope-motion':'20261110-waveform-scope';
+    const version=name==='waveformScope'?'20261110-scope-contours':'20261110-waveform-scope';
     expect(html).toContain(`src="js/utils/${name}.js?v=${version}"`);
   }
 });

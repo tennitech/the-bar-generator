@@ -3,6 +3,41 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 scope contours and useful LFO motion
+
+The owner's screenshot is frozen at 400% zoom with LFO off, frequency10 and a
+.122s window. The sine teeth were geometry: every extrema bin appended max/min
+at the same X and joined the resulting zigzag to the baseline. Separately,
+#163's fastest-detail sweep barely moved a long LFO envelope. Both presentation
+rules are superseded by this repair; the correct audible graph is preserved.
+
+Sparse views now use ordered actual PCM, with linear interpolation between
+adjacent source samples for fractional playback offsets. Dense slow-LFO views
+use a clearly labeled peak envelope: measured min/max bins, upper contour
+forward and lower backward, with monotone interpolation bounded by measured
+values. No oscillator/envelope formula generates the displayed signal. Physical
+X, fixed gain, continuous history, parameter-change labels and freeze persist.
+An enabled nonzero-depth LFO scans one actual LFO cycle per visual cycle;
+otherwise the carrier sets the span. SPEED/reverse still determine display
+playback and matching GIF timing. A two-envelope view therefore travels half
+its width each default3.333s rather than barely shifting one carrier cycle.
+
+The silent tap now transfers exact ordered PCM beside extrema. All sparse
+windows plus trigger/playback margins fit within one second, so live full PCM
+uses a one-second ring; long envelope history retains extrema only, bounded
+at4/.07 seconds. At48kHz live storage is roughly2.8MiB; silent dense recordings
+release full PCM after extrema reduction. No new audio-output path or dependency.
+
+Final Jest1049tests/91suites, syntax/cache/whitespace checks pass. Native exact
+checks:90original/shared audio comparisons error0;42AM-product cases maximum
+3.7253e-9;2816extrema pairs and22528ordered PCM samples exact; tap output unchanged.
+24realPNG exports and8GIFs/1328decoded frames match expected pixels. All166frames
+are unique in each .07/2Hz motion case; high-rate1300Hz has at most one duplicate.
+Actual400% before/after native crops were inspected, including LFO-off sine and
+.07/2Hz peak envelopes. Browser reload and one ordinary tab recovery timed out;
+patched live browser/hardware listening/Safari/iOS remain unverified here. No
+previously denied browser escalation was retried. See [QA](waveform_scope_contours_qa.md).
+
 ## November 10 attempted input-limit feedback
 
 Text fields with explicit limits now receive a brief red border and 2px shake

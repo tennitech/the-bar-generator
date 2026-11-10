@@ -55,7 +55,7 @@ async function raw(values,legacy=false,tap=false) {
   if(tap) {
     await context.audioWorklet.addModule('js/waveform-scope-worklet.js');
     const node=new audio.AudioWorkletNode(context,'waveform-scope');
-    node.port.onmessage=event=>batches.push(event.data.slice());
+    node.port.onmessage=event=>batches.push({extrema:event.data.extrema.slice(),pcm:event.data.pcm.slice()});
     master.connect(node);node.connect(context.destination);
   }
   const buffer=await context.startRendering();
@@ -100,9 +100,11 @@ async function main(){
   const tapValues={frequency:24,type:1.5,lfo:{enabled:true,rate:2,depth:100,type:1.5}};
   const plain=await raw(tapValues),tapped=await raw(tapValues,false,true);
   assert.deepEqual(plain.pcm,tapped.pcm);
-  const extrema=scope.pcmExtrema(tapped.pcm),captured=Float32Array.from(tapped.batches.flatMap(data=>Array.from(data)));
+  const extrema=scope.pcmExtrema(tapped.pcm),captured=Float32Array.from(tapped.batches.flatMap(data=>Array.from(data.extrema)));
   assert.ok(captured.length>0);assert.deepEqual(captured,extrema.subarray(0,captured.length));
-  result.tap={pairs:captured.length/2,audibleUnchanged:true,extremaExact:true};
+  const ordered=Float32Array.from(tapped.batches.flatMap(data=>Array.from(data.pcm)));
+  assert.deepEqual(ordered,tapped.pcm.subarray(0,ordered.length));
+  result.tap={pairs:captured.length/2,orderedSamples:ordered.length,audibleUnchanged:true,extremaExact:true,orderedExact:true};
   console.log(`Live worklet side tap: ${captured.length/2} exact actual-PCM extrema pairs; audible samples unchanged`);
   const sheet=createCanvas(1200,720),sc=sheet.getContext('2d');sc.fillStyle='#fff';sc.fillRect(0,0,1200,720);
   sc.fillStyle='#000';sc.font='17px sans-serif';sc.fillText('Actual OfflineAudioContext signal · Sine carrier · 100% LFO depth',20,28);
@@ -133,7 +135,7 @@ async function main(){
   }
   fs.writeFileSync(path.join(out,'contact-sheet.png'),sheet.toBuffer('image/png'));
   workers();
-  for(const rate of [2,100,1300])for(const type of [0,3]) {
+  for(const rate of [.07,2,100,1300])for(const type of [0,3]) {
     const recording=recordings.get(`${rate}/${type}/100`);
     const model={frequency:24,type:0,lfo:{enabled:true,rate,type,depth:100}};
     const view=scope.sweep(recording,model),first=recording.frame(view.origin);
@@ -156,7 +158,7 @@ async function main(){
     const bytes=Buffer.from(await encoded.blob.arrayBuffer());fs.writeFileSync(path.join(out,`rate-${rate}-shape-${type}.gif`),bytes);
     const gif=parseGif(bytes);let frames=0;
     for(const frame of decodeFrames(gif)){assert.equal(hash(frame.rgba),expectedHashes[frames],`Decoded frame ${frames} changed pixels`);frames++;}
-    assert.equal(frames,plan.frameCount);result.gif.push({rate,type,frames,period:plan.periodSeconds,bytes:bytes.length});
+    assert.equal(frames,plan.frameCount);result.gif.push({rate,type,frames,uniqueFrames:new Set(expectedHashes).size,period:plan.periodSeconds,bytes:bytes.length});
     renderer.release();console.log(`GIF ${rate} Hz shape ${type}: ${frames} decoded frames`);
   }
   fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(result,null,2));

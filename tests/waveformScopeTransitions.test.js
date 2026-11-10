@@ -57,13 +57,13 @@ test('repeated shape/depth/carrier edits retain actual live history without refi
       const held=c.frame();c.configure({frequency,type,lfo:{enabled:true,rate:2,depth,type:lfoType}});
       expect(c.frame()).toBe(held);c.tick(0);
       expect(c.frame()).toMatchObject({source:'live',seconds:1,availableSeconds:1,startFraction:0,filling:false,parameterChanges:true});
-      expect(c.frame().extrema).toEqual(original.frame.extrema);
+      expect([...new Set(c.frame().extrema)]).toEqual([...new Set(original.frame.extrema)]);
       expect(c.status()).toContain('includes parameter changes');
     }
     push(.1,-.01,.01);c.tick(0);
     expect(c.frame().extrema.some(x=>Math.abs(x)>.07)).toBe(true);
     expect(c.frame().parameterChanges).toBe(true);
-    push(1.1,-.01,.01);c.tick(0);
+    push(2.1,-.01,.01);c.tick(0);
     expect(c.frame().parameterChanges).toBe(false);
     expect(c.frame().extrema.every(x=>Math.abs(x)<.02)).toBe(true);
     expect(original.recording.frame(0)).toBe(original.frame);

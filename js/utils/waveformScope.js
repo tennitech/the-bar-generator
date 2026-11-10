@@ -2,7 +2,7 @@
 (function(root) {
   const GROUP = 8, BINS = 1024, REPLAY = 2, SETTLE = .25;
   const SWEEP_HZ = .3;
-  const MAX_HISTORY_SECONDS = 2 / .07 + REPLAY;
+  const MAX_HISTORY_SECONDS = 4 / .07;
   function settings(values = {}) {
     return { frequency: Math.max(10, Math.min(100, Number(values.frequency) || 24)),
       type: Math.max(0, Math.min(3, Number(values.type) || 0)), lfo: root.WaveformLfo.normalize(values.lfo) };
@@ -20,14 +20,16 @@
     }
     return result;
   }
-  function frame(data, rate, start, seconds, source, extra = {}) {
+  function frame(data, rate, start, seconds, source, extra = {}, pcm = null) {
     const first = Math.max(0, Math.floor(start * rate + 1e-9));
     const target = Math.max(1, Math.floor(seconds * rate + 1e-9));
     const count = Math.min(data.length / 2 - first, target);
     if (count < 1) return null;
     // Keep approximately the same time represented by each display bin as
     // coverage fills, rather than spending all 1024 bins on a short prefix.
-    const bins = Math.min(count, Math.max(1, Math.ceil(Math.min(BINS, target) * count / target)));
+    const resolution = extra.displayMode === 'envelope'
+      ? Math.min(BINS, Math.max(2, Math.ceil(seconds * extra.carrierHz))) : Math.min(BINS, target);
+    const bins = Math.min(count, Math.max(1, Math.ceil(resolution * count / target)));
     const extrema = [];
     for (let x = 0; x < bins; x++) {
       const a = first + Math.floor(x * count / bins), b = first + Math.floor((x+1) * count / bins);
@@ -36,18 +38,33 @@
       extrema.push(min, max);
     }
     const coverage = count / target;
+    let trace = null, traceDurationSeconds = 0;
+    if (pcm && extra.displayMode === 'trace') {
+      const sampleRate = rate * GROUP, begin = Math.max(0, start * sampleRate);
+      const length = Math.min(count * GROUP, pcm.length - Math.ceil(begin));
+      // Linear reconstruction between adjacent actual PCM samples removes
+      // quantized eight-sample motion without inventing an oscillator.
+      trace = [];
+      const points = Math.min(16384, length);
+      for (let i = 0; i < points; i++) {
+        const at = begin + i * (length - 1) / Math.max(1, points - 1);
+        const a = Math.floor(at), fraction = at - a;
+        trace.push(pcm[a] + (pcm[Math.min(a + 1, pcm.length - 1)] - pcm[a]) * fraction);
+      }
+      trace = Object.freeze(trace); traceDurationSeconds = (length - 1) / sampleRate;
+    }
     return Object.freeze({ extrema: Object.freeze(extrema), seconds: target / rate,
       availableSeconds: count / rate,
       startFraction: extra.alignEnd ? 1 - coverage : 0,
       endFraction: extra.alignEnd ? 1 : coverage,
-      source, gainScale: .1, ...extra });
+      source, gainScale: .1, ...extra, ...(trace ? { trace, traceDurationSeconds } : {}) });
   }
-  function recording(data, rate, seconds, source, extra = {}) {
+  function recording(data, rate, seconds, source, extra = {}, pcm = null) {
     // data is private and never modified after construction. Snapshots retain
     // the recording even when controls replace the controller's current one.
     const windowPairs = Math.max(1, Math.floor(seconds * rate + 1e-9));
     seconds = windowPairs / rate;
-    const replayPairs = Math.max(0, Math.min(Math.floor(REPLAY * rate + 1e-9), data.length / 2 - windowPairs));
+    const replayPairs = Math.max(0, Math.min(Math.floor((extra.replayLimit ?? REPLAY) * rate + 1e-9), data.length / 2 - windowPairs));
     const replaySeconds = replayPairs / rate;
     return Object.freeze({ source, seconds, replaySeconds,
       triggerBefore(limit, searchSeconds) {
@@ -61,7 +78,27 @@
         }
         return Math.max(0, end) / rate;
       },
-      frame: offset => frame(data, rate, Math.max(0, Math.min(replaySeconds, Number(offset) || 0)), seconds, source, extra) });
+      triggerEnvelopeBefore(limit, carrierPeriod, lfoPeriod) {
+        const step = Math.max(1, Math.round(carrierPeriod * rate));
+        const end = Math.min(replayPairs, Math.floor(limit * rate));
+        const begin = Math.max(0, end - Math.ceil(lfoPeriod * rate));
+        const peaks = [];
+        for (let i = begin; i <= end; i += step) {
+          let peak = 0;
+          for (let j = i; j < Math.min(data.length / 2, i + step); j++) peak = Math.max(peak, Math.abs(data[j*2]), Math.abs(data[j*2+1]));
+          peaks.push({ at: i, peak });
+        }
+        const low = Math.min(...peaks.map(p => p.peak)), high = Math.max(...peaks.map(p => p.peak));
+        const level = (low + high) / 2;
+        if (high - low > 1e-5) for (let i = peaks.length - 1; i > 0; i--) {
+          if (peaks[i-1].peak <= level && peaks[i].peak > level) {
+            const fraction = (level - peaks[i-1].peak) / (peaks[i].peak - peaks[i-1].peak);
+            return (peaks[i-1].at + fraction * (peaks[i].at - peaks[i-1].at)) / rate;
+          }
+        }
+        return Math.max(0, end) / rate;
+      },
+      frame: offset => frame(data, rate, Math.max(0, Math.min(replaySeconds, Number(offset) || 0)), seconds, source, extra, pcm) });
   }
   function replayFrom(captured, origin, first, reverse = false) {
     const span = captured.replaySeconds;
@@ -74,16 +111,22 @@
   }
   function sweepSpan(values) {
     const v = settings(values);
-    // Limit motion to one cycle of the fastest detail per visual sweep.
-    // X remains physical audio time; only playback is slowed.
-    return 1 / Math.max(root.WaveformAudio.frequency(v.frequency),
-      v.lfo.enabled && v.lfo.depth > 0 ? v.lfo.rate : 0);
+    return 1 / (v.lfo.enabled && v.lfo.depth > 0 ? v.lfo.rate : root.WaveformAudio.frequency(v.frequency));
+  }
+  function displaySettings(values) {
+    const v = settings(values), carrierHz = root.WaveformAudio.frequency(v.frequency);
+    const displayMode = v.lfo.enabled && v.lfo.depth > 0 && carrierHz * duration(v) > 16
+      && v.lfo.rate < carrierHz / 8 ? 'envelope' : 'trace';
+    return { displayMode, carrierHz, replayLimit: Math.max(.1, 2 * sweepSpan(v)) };
   }
   function sweep(captured, values) {
     const requestedSpan = sweepSpan(values);
     const span = captured.replaySeconds >= requestedSpan ? requestedSpan : 0;
     const latest = Math.max(0, captured.replaySeconds - span);
-    const origin = captured.triggerBefore(latest, 1 / root.WaveformAudio.frequency(values.frequency));
+    const display = displaySettings(values);
+    const origin = display.displayMode === 'envelope'
+      ? captured.triggerEnvelopeBefore(latest, 1 / display.carrierHz, requestedSpan)
+      : captured.triggerBefore(latest, 1 / display.carrierHz);
     return { captured, origin, span };
   }
   function sweepReplay(view, offset, first, reverse) {
@@ -97,24 +140,26 @@
       } });
   }
   async function render(values, environment = root) {
-    const v = settings(values), seconds = duration(v), sampleRate = 48000;
+    const v = settings(values), seconds = duration(v), sampleRate = 48000, display = displaySettings(v);
     const Context = environment.OfflineAudioContext || environment.webkitOfflineAudioContext;
     if (!Context) throw new Error('This browser cannot render a silent audio scope. Start Audio for a live scope.');
-    const context = new Context(1, Math.ceil((seconds + REPLAY + SETTLE) * sampleRate), sampleRate);
+    const context = new Context(1, Math.ceil((seconds + display.replayLimit + SETTLE) * sampleRate), sampleRate);
     try { await context.audioWorklet?.addModule('js/pulse-worklet.js'); } catch (_) { /* Same Square fallback as the audible graph. */ }
     const master = context.createGain(); master.connect(context.destination);
     master.gain.setValueAtTime(0, 0); master.gain.linearRampToValueAtTime(1, .05);
     const graph = root.WaveformAudio.create(context, master, v, {}, environment.AudioWorkletNode);
     graph.update(v);
     const buffer = await context.startRendering();
-    const data = pcmExtrema(buffer.getChannelData(0).subarray(Math.round(SETTLE * sampleRate)));
-    return recording(data, sampleRate / GROUP, seconds, 'offline', { pulse: graph.pulseWorkletNode || v.type <= 2 ? 'worklet' : 'square-fallback' });
+    const pcm = buffer.getChannelData(0).subarray(Math.round(SETTLE * sampleRate));
+    return recording(pcmExtrema(pcm), sampleRate / GROUP, seconds, 'offline', {
+      ...display, pulse: graph.pulseWorkletNode || v.type <= 2 ? 'worklet' : 'square-fallback'
+    }, display.displayMode === 'trace' ? pcm : null);
   }
   function createController({ onChange = () => {}, environment = root } = {}) {
     let key = '', currentKey = '', currentSettings, offlineKey = '', offline = null, current = null;
     let error = '', rendering = false, generation = 0;
     let pending = null, cancelPending = () => {}, queue = Promise.resolve(), timer;
-    let tap = null, input = null, ring = null, written = 0, pairRate = 0, attachGeneration = 0;
+    let tap = null, input = null, ring = null, pcmRing = null, hasPcm = false, written = 0, pairRate = 0, attachGeneration = 0;
     let currentRecording = null, exportRecording = null, lastWritten = -1, lastEditAt = null, liveError = '';
     let offset = 0, currentOrigin = 0, currentReverse = false, running = true;
     let currentSweep = null, liveCycle = null;
@@ -130,14 +175,18 @@
     function liveData(seconds) {
       const count = Math.min(written, ring.length / 2, Math.floor(seconds * pairRate + 1e-9));
       const data = new Float32Array(count * 2), first = written - count;
+      const pcmPairs = pcmRing.length / GROUP;
+      const pcm = hasPcm && count <= pcmPairs ? new Float32Array(count * GROUP) : null;
       for (let i = 0; i < count; i++) {
         const index = ((first+i) % (ring.length/2)) * 2;
         data[i*2] = ring[index]; data[i*2+1] = ring[index+1];
+        if (pcm) for (let j = 0; j < GROUP; j++) pcm[i*GROUP+j] = pcmRing[((first+i) % pcmPairs)*GROUP+j];
       }
-      return { data, first };
+      return { data, pcm, first };
     }
     function showOffline(captured, time, capturedKey) {
-      showSweep(sweep(captured, currentSettings), time, capturedKey);
+      const view = currentSweep?.captured === captured && currentKey === capturedKey ? currentSweep : sweep(captured, currentSettings);
+      showSweep(view, time, capturedKey);
     }
 
     function configure(values, immediate = false) {
@@ -177,11 +226,11 @@
     function detach() {
       attachGeneration++;
       if (tap) { if (input) input.disconnect(tap); tap.port.onmessage = null; tap.disconnect(); }
-      tap = input = ring = null; written = 0; lastWritten = -1; liveCycle = null; lastEditAt = null; liveError = '';
+      tap = input = ring = pcmRing = null; hasPcm = false; written = 0; lastWritten = -1; liveCycle = null; lastEditAt = null; liveError = '';
     }
     async function attach(context, destination) {
       detach(); const token = attachGeneration;
-      try { await context.audioWorklet.addModule('js/waveform-scope-worklet.js'); }
+      try { await context.audioWorklet.addModule('js/waveform-scope-worklet.js?v=20261110-scope-contours'); }
       catch (failure) { liveError = ' · live capture unavailable'; onChange(); throw failure; }
       if (token !== attachGeneration) return;
       try { tap = new environment.AudioWorkletNode(context, 'waveform-scope'); }
@@ -191,12 +240,19 @@
       // Keep the longest supported view plus replay history even while a
       // short timebase is selected. Edits never resize or clear the live ring.
       ring = new Float32Array(Math.ceil(MAX_HISTORY_SECONDS * pairRate) * 2);
+      // Every sparse view plus trigger/playback margin fits in one second.
+      // Dense views retain only long-term extrema, keeping memory bounded.
+      pcmRing = new Float32Array(Math.ceil(pairRate) * GROUP);
       tap.port.onmessage = event => {
-        const data = event.data;
+        const data = event.data?.extrema || event.data, pcm = event.data?.pcm;
         if (!ring || !(data instanceof Float32Array)) return;
         for (let i = 0; i < data.length; i += 2) {
           const index = (written++ % (ring.length / 2)) * 2;
           ring[index] = data[i]; ring[index+1] = data[i+1];
+          if (pcm instanceof Float32Array && pcm.length === data.length / 2 * GROUP) {
+            for (let j = 0; j < GROUP; j++) pcmRing[((written-1) % (pcmRing.length/GROUP))*GROUP+j] = pcm[i/2*GROUP+j];
+            hasPcm = true;
+          }
         }
       };
       input.connect(tap); tap.connect(context.destination);
@@ -212,17 +268,18 @@
         if (!written) return current;
         const requested = duration(currentSettings), target = Math.floor(requested * pairRate + 1e-9);
         const cycle = Math.floor((Number(seconds) || 0) * SWEEP_HZ);
-        const historySettled = current?.parameterChanges && lastEditAt !== null && written - target - Math.ceil(2 / root.WaveformAudio.frequency(currentSettings.frequency) * pairRate) > lastEditAt;
+        const historySettled = current?.parameterChanges && lastEditAt !== null && written - target - Math.ceil(2 * sweepSpan(currentSettings) * pairRate) > lastEditAt;
         const refresh = !currentSweep || current.source !== 'live' || liveCycle !== cycle
           || lastWritten < 0 || current.filling || historySettled;
         if (refresh && lastWritten !== written) {
           lastWritten = written; liveCycle = cycle;
-          const { data, first } = liveData(requested + REPLAY);
-          const visibleFirst = Math.max(first, written - target - Math.ceil(2 / root.WaveformAudio.frequency(currentSettings.frequency) * pairRate));
+          const display = displaySettings(currentSettings);
+          const { data, pcm, first } = liveData(requested + display.replayLimit);
+          const visibleFirst = Math.max(first, written - target - Math.ceil(2 * sweepSpan(currentSettings) * pairRate));
           const captured = recording(data, pairRate, requested, 'live', {
-            alignEnd: true, filling: data.length / 2 < target, requestedSeconds: requested,
+            ...display, alignEnd: true, filling: data.length / 2 < target, requestedSeconds: requested,
             parameterChanges: lastEditAt !== null && visibleFirst <= lastEditAt
-          });
+          }, pcm);
           currentSweep = sweep(captured, currentSettings);
         }
         if (currentSweep?.captured.source === 'live') showSweep(currentSweep, seconds, key);
@@ -242,7 +299,7 @@
       if (!current) return error || 'Rendering audio signal…';
       const label = current.source === 'live' ? (tap && running ? 'Live audio capture' : 'Recorded audio') : 'Offline audio render';
       const previous = currentKey !== key;
-      return `${label} · ${current.seconds.toFixed(3)} s window · slowed sample sweep${!running ? ' · frozen' : ''}`
+      return `${label} · ${current.seconds.toFixed(3)} s window · ${current.displayMode === 'envelope' ? 'peak envelope' : 'PCM trace'} · sample playback${!running ? ' · frozen' : ''}`
         + (previous ? ` · previous settings${rendering ? ' (rendering update)' : error ? ' (update unavailable)' : ''}` : '')
         + (current.filling ? ` · filling history: ${current.availableSeconds.toFixed(3)} s recorded; blank area is unrecorded` : '')
         + (current.parameterChanges ? ' · includes parameter changes' : '')
@@ -255,7 +312,7 @@
     };
   }
 
-  const api = { settings, duration, sweepSpan, sweep, sweepReplay, pcmExtrema, frame, recording, replayFrom, render, createController };
+  const api = { settings, duration, displaySettings, sweepSpan, sweep, sweepReplay, pcmExtrema, frame, recording, replayFrom, render, createController };
   root.WaveformScope = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

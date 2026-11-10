@@ -512,3 +512,35 @@ freeze retain the exact shown frame. An arbitrary carrier/LFO ratio need not
 close at a short sweep boundary, and refreshed live snapshots may show a
 different envelope; this is an actual recorded scope, not a claim of periodic
 physical playback. Existing gain modulation, audio ramps and output are intact.
+
+## Ordered PCM, dense peak contours and LFO timebase — November 10, 2026
+
+The earlier same-X max/min zigzag is replaced. Short/sparse views draw ordered
+actual PCM. A fractional source offset linearly interpolates only adjacent PCM
+samples; it does not evaluate an ideal carrier or gain function. The final
+sample's X is its true time, one source interval before the window endpoint.
+Dense slow-LFO views (more than16carrier cycles and LFO below carrierHz/8) show
+measured peak envelopes, not an instantaneous carrier trace. Bins span roughly
+one carrier period, capped at1024. Their upper/lower contours are independent;
+monotone cubic interpolation stays within adjacent measured values and creates
+no new extrema. Captions distinguish peak envelope from PCM trace. High-rate
+modulation retains ordered PCM rather than assuming a slow envelope.
+
+With active nonzero-depth modulation the physical sweep is1/LFOHz, rather than
+1/fastestHz. One sweep takes1/SPEED display seconds, while X still spans two
+LFO periods or four carrier periods, whichever is longer. A quarter-sweep
+therefore moves a two-envelope view by an eighth of its width. Playback may be
+slower or faster than physical recording time and is labeled sample playback.
+Actual envelope-level crossings trigger dense captures; sparse views use real
+rising PCM crossings. Triggers select recorded windows, not synthesized phases.
+
+Two sweep periods of actual extra history provide trigger/playback margin.
+Long extrema storage is bounded at4/.07 seconds; a one-second PCM ring covers
+every supported sparse window and its margin, avoiding full-rate long-history
+storage. Dense offline rendering keeps measured extrema after releasing PCM.
+Audio graph/gain ramps/output and physical partial-history bounds are unchanged.
+SVG/PNG freeze the exact representation; GIF follows its actual captured data,
+selected direction and visual speed. Noncommensurate source ratios may reset
+at the replay boundary, and live snapshot refresh can change the measured
+outline. The display does not claim real-time scrolling or an exact analytic
+envelope between measured bin peaks.
