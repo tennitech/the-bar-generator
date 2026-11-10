@@ -340,7 +340,7 @@ function setHoveredAsset(state, asset) {
 // hover. Opacity is applied to each complete link, never a clipped row.
 function bindStageFocus(stage, rowStates) {
   let focusedRow = null;
-  rowStates.forEach(state => {
+  const bindRow = state => {
     state.onHoverChange = (_, asset) => {
       if (asset) {
         focusedRow?.element.classList.remove('is-focus-row');
@@ -353,7 +353,9 @@ function bindStageFocus(stage, rowStates) {
         focusedRow = null;
       }
     };
-  });
+  };
+  rowStates.forEach(bindRow);
+  return bindRow;
 }
 
 function setPressedAsset(state, asset) {
@@ -653,7 +655,7 @@ function ensureRowItems(state) {
   while (state.items.length > requiredCount) {
     const removed = state.items.pop();
     if (state.hoveredAsset === removed.asset) {
-      state.hoveredAsset = null;
+      setHoveredAsset(state, null);
       state.isHovered = false;
     }
     if (state.pressedAsset === removed.asset) {
@@ -710,7 +712,7 @@ function syncRowMeasurements(rowStates, force = false) {
   });
 }
 
-function syncRowVerticalLayout(rowStates, stage) {
+function syncRowVerticalLayout(rowStates, stage, bindRowFocus) {
   if (!stage || !rowStates.length) {
     return;
   }
@@ -738,6 +740,7 @@ function syncRowVerticalLayout(rowStates, stage) {
   }
   while (rowStates.length < neededRows) {
     const state = createRow(rowStates.length);
+    bindRowFocus(state);
     rowStates.push(state);
     stage.append(state.element);
   }
@@ -830,7 +833,7 @@ function initMarqueeScene() {
 
   const rowStates = Array.from({ length: ROW_COUNT }, (_, index) => createRow(index));
   rowStates.forEach(state => stage.append(state.element));
-  bindStageFocus(stage, rowStates);
+  const bindRowFocus = bindStageFocus(stage, rowStates);
   const cancelInteractions = () => rowStates.forEach(resetRowInteraction);
   stage.addEventListener('pointerdown', event => {
     if (event.isPrimary === false) cancelInteractions();
@@ -864,7 +867,7 @@ function initMarqueeScene() {
     const metrics = syncMarqueeSizing(root);
     syncHeroScale(root, metrics);
     syncRowMeasurements(rowStates, true);
-    syncRowVerticalLayout(rowStates, stage);
+    syncRowVerticalLayout(rowStates, stage, bindRowFocus);
   };
   syncInitialLayout();
 
@@ -880,7 +883,7 @@ function initMarqueeScene() {
       const metrics = syncMarqueeSizing(root);
       syncHeroScale(root, metrics);
       syncRowMeasurements(rowStates);
-      syncRowVerticalLayout(rowStates, stage);
+      syncRowVerticalLayout(rowStates, stage, bindRowFocus);
     });
   }
 
