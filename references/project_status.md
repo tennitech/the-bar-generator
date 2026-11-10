@@ -26,6 +26,26 @@ restrictions; no denied browser action is retried.
 
 The release also preserves PR #143's GIF frame-rate implementation and cache URLs.
 
+## November 10 marquee focus across responsive rows
+
+Nonselected complete bars now dim to 20% opacity, with a uniform 240 ms ease-out
+for both directions and no gap-specific hold or delay. The selection manager
+registers every row added during responsive fitting, repairing lower rows that
+previously had pointer handlers but no stage-wide dimming callback. This applies
+during initial layout and later resize; pruning a hovered link also clears the
+shared owner immediately. DPR does not multiply CSS coordinates.
+Keyboard priority, visible focus, static artwork, drag behavior and reduced
+motion remain intact. Both Home URLs refresh only the affected runtime/CSS keys.
+
+The final combined candidate on main `e19238a` passes all 904 tests in 80 suites.
+Responsive Node VM regressions cover portrait, ultrawide, 4K and 8K CSS viewports,
+DPR1/2/3 and row removal/recreation. They exercise supplied analytic bounds and
+actual fitting/selection code; no rendered or physical-display pass is claimed.
+The optional browser harness now includes native bottom-row hit tests and the
+new opacity/timing expectations. Existing browser permission restrictions are
+respected. See [source finding and QA limits](marquee_focus_followup_qa.md).
+
+
 ## November 10 GIF sampling and resource limits
 
 Eligible GIF loops now target approximately 30 fps over their complete duration,

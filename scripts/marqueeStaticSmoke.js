@@ -25,6 +25,21 @@ async function target(page, direction) {
     }
   }, direction);
 }
+async function bottomTarget(page) {
+  return page.evaluate(() => {
+    const lanes = [...document.querySelectorAll('.marquee_row')];
+    for (let index = lanes.length - 1; index >= 0; index--) {
+      const bounds = lanes[index].getBoundingClientRect();
+      for (let y = Math.max(20, bounds.top); y < Math.min(innerHeight - 20, bounds.bottom); y += 12)
+        for (let x = 20; x < innerWidth - 20; x += 20) {
+          const a = document.elementFromPoint(x, y)?.closest('.bar_asset_wrap');
+          if (a && !a.closest('.is-measure') && a.closest('.marquee_row') === lanes[index]) {
+            a.id = 'static-test'; return { x, y, index, rowCount: lanes.length };
+          }
+        }
+    }
+  });
+}
 const rows = page => page.locator('.marquee_track').evaluateAll(nodes => nodes.map(n => n.style.transform));
 const position = page => page.locator('#static-test').evaluate(a => a.closest('.marquee_track').style.transform);
 async function artwork(page) {
@@ -89,19 +104,19 @@ async function inspectFocus(page, id = 'static-test') {
       const point=await target(page,direction); assert.ok(point);
       const before=await inspectFocus(page);
       for(let repeat=0;repeat<4;repeat++) {
-        await page.mouse.move(point.x,point.y); await page.waitForTimeout(190);
+        await page.mouse.move(point.x,point.y); await page.waitForTimeout(270);
         const focused=await inspectFocus(page);
         assert.equal(focused.selected,'1');
-        assert.ok(focused.others.every(opacity=>opacity==='0.5'),'each other complete bar is exactly half opaque');
+        assert.ok(focused.others.every(opacity=>opacity==='0.2'),'each other complete bar is at 20% opacity');
         assert.ok(focused.filters.every(filter=>filter==='none'),'no row or bar blur');
         assert.deepEqual(focused.rects,before.rects,'hover never splits, scales or lifts any part of any bar');
         await assertStatic(page);
         await page.screenshot({path:path.join(evidence,`${engine}-${direction}-hover.png`)});
-        await page.mouse.move(1400,880); await page.waitForTimeout(190);
+        await page.mouse.move(1400,880); await page.waitForTimeout(270);
         const cleared=await inspectFocus(page);
         assert.ok([cleared.selected,...cleared.others].every(opacity=>opacity==='1'));
       }
-      results.push({direction,repeatedHovers:4,opacity:0.5,allImageBoundsUnchanged:true});
+      results.push({direction,repeatedHovers:4,opacity:0.2,allImageBoundsUnchanged:true});
     }
     const point=await target(page,'is-forward');
     await page.mouse.move(point.x,point.y);
@@ -112,9 +127,9 @@ async function inspectFocus(page, id = 'static-test') {
       a.id='keyboard-test'; a.focus(); return {visible:a.matches(':focus-visible'),outline:getComputedStyle(a).outlineStyle};
     });
     assert.ok(keyboard.visible); assert.notEqual(keyboard.outline,'none');
-    await page.waitForTimeout(190);
+    await page.waitForTimeout(270);
     const focused=await inspectFocus(page,'keyboard-test');
-    assert.equal(focused.selected,'1'); assert.ok(focused.others.every(opacity=>opacity==='0.5'),'keyboard selection takes priority over parked pointer');
+    assert.equal(focused.selected,'1'); assert.ok(focused.others.every(opacity=>opacity==='0.2'),'keyboard selection takes priority over parked pointer');
     await page.screenshot({path:path.join(evidence,`${engine}-keyboard.png`)});
     await page.evaluate(()=>document.activeElement.blur()); await page.mouse.move(1400,880);
     await page.keyboard.press('Space');
@@ -140,6 +155,26 @@ async function inspectFocus(page, id = 'static-test') {
     await page.goBack(); await ready(page); await assertStatic(page);
     results.push({selectedBarNavigation:href,keyboardSkipNavigation:true,history:true});
     await page.close();
+    for (const [width,height,dpr,extra] of [[1230,1470,1,true],[1230,1470,2,true],
+      [5120,1440,2,true],[3840,2160,2,false]]) {
+      const wide = await browser.newPage({viewport:{width,height},deviceScaleFactor:dpr,reducedMotion:'no-preference'});
+      wide.on('pageerror',e=>errors.push(e.message));
+      await wide.goto(base); await ready(wide); await assertStatic(wide);
+      const transition = await wide.locator('.bar_asset_wrap').first().evaluate(a => ({
+        duration:getComputedStyle(a).transitionDuration, delay:getComputedStyle(a).transitionDelay
+      }));
+      assert.equal(transition.duration,'0.24s'); assert.equal(transition.delay,'0s');
+      await wide.keyboard.press('Space');
+      const point = await bottomTarget(wide); assert.ok(point,'native bottom-row hit target');
+      if (extra) assert.ok(point.index >= 10,'hit a row created after the initial ten');
+      await wide.mouse.move(point.x,point.y); await wide.waitForTimeout(270);
+      const focused = await inspectFocus(wide);
+      assert.equal(focused.selected,'1');
+      assert.ok(focused.others.every(opacity=>opacity==='0.2'),'bottom-row hover dims every other bar');
+      await wide.mouse.move(width-2,height-2); await wide.waitForTimeout(270);
+      results.push({width,height,dpr,bottomRow:point.index,rowCount:point.rowCount,nativeHitTesting:true,opacity:0.2});
+      await wide.close();
+    }
     for(const [width,height] of [[390,844],[320,568],[844,390]]) {
       const phone=await browser.newPage({viewport:{width,height},hasTouch:true,isMobile:true,reducedMotion:'no-preference'});
       phone.on('pageerror',e=>errors.push(e.message));
@@ -160,7 +195,7 @@ async function inspectFocus(page, id = 'static-test') {
         return {hovered:a.classList.contains('is-hovered'),touchAction:getComputedStyle(a).touchAction};
       });
       assert.equal(touch.hovered,false); assert.ok(touch.touchAction.includes('pan-y')&&touch.touchAction.includes('pinch-zoom'));
-      await phone.waitForTimeout(190);
+      await phone.waitForTimeout(270);
       const untouched=await inspectFocus(phone); assert.ok([untouched.selected,...untouched.others].every(opacity=>opacity==='1'));
       await phone.screenshot({path:path.join(evidence,`${engine}-phone-${width}.png`)});
       // Real tap, rather than a synthetic click, still opens the chosen generator.
