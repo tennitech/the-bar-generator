@@ -1,5 +1,20 @@
 # Transparent exports
 
+## Current composition choices — November 10, 2026
+
+The illustrated **Bar + RPI** / **Bar only** selector applies to all downloads
+and image copying. Bar + RPI and Large remain the current defaults (superseding
+the historical Standard default recorded below). The historical complete-mark
+sizes remain unchanged. Bar-only retains a 1000/2000 px nominal bar width on a
+1160 × 232 / 2320 × 464 canvas, including 80/160 px transparent padding per
+side. Its SVG viewBox is `-20 112.4885 290 58`; artwork coordinates are unchanged.
+
+Current GIF availability is Ticker, Waveform and Gradient; Ruler is static.
+Each supported loop uses the captured crop consistently on every frame. The
+same binary-alpha palette, full-frame disposal, streaming, cancellation and
+loop plan remain in use. Bar-only filenames add `bar-only`; complete-mark names
+are unchanged. No theme-colored matte is added. See [composition QA](export_composition_qa.md).
+
 October 27, 2026. This document records export behavior and local validation; it does not establish formal RPI approval.
 
 ## Sizes and placement

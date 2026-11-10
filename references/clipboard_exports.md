@@ -1,5 +1,13 @@
 # Clipboard exports
 
+November 10 update: **Bar + RPI** / **Bar only** selects the shared frozen
+composition for both native MIME payloads. PNG uses the selected crop's raster
+dimensions; SVG carries that crop's scalable viewBox and omits letter paths for
+bar-only. The original full-mark dimensions/viewBox below remain valid for
+Bar + RPI. Request-time composition, size and data remain frozen even if the
+controls change during preparation. Native capability, activation, policy and
+recovery behavior are unchanged. See [composition QA](export_composition_qa.md).
+
 November 3 update: public Share controls are removed. Embedded image-copy
 actions now detect explicit Permissions Policy denials and keep retry feedback
 on the current page. See [Frontify compatibility and host requirements](frontify_exports.md).

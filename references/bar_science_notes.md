@@ -230,6 +230,18 @@ signal, pitch vibrato or an audio-bearing export. Legacy spatial-envelope fields
 remain retired; new LFO settings use separate bounded query/share controls.
 
 
+## Export composition — November 10, 2026
+
+Bar-only export omits the official lettering and crops the export viewport to
+the unchanged canonical 250 × 18 bar plus 20 reference units of clear space.
+The complete-mark option remains the default. Both choices use the same current
+pattern fragment, selected data, seed, model parameters, color and captured
+settings. Existing still-export resting phase zero is preserved; supported GIFs
+retain the existing captured-origin loop plan. No model, coordinate, natural
+gap, artwork clip, timing or motion-availability rule is changed. See
+[geometry](bar_geometry.md#export-composition--november-10-2026) and
+[verification](export_composition_qa.md).
+
 ## Animated Gradient — November 10, 2026 (local candidate)
 
 Gradient retains its two original single-ink stripe patterns at phase zero.

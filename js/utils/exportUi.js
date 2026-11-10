@@ -1,15 +1,20 @@
 (function (root) {
-  let active = null, nextId = 0, lastProgressAt = 0;
+  let active = null, nextId = 0, lastProgressAt = 0, selectedComposition = 'logo';
   const byId = id => document.getElementById(id);
-  const controls = () => ['save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'export-size-large', 'export-size-standard', 'copy-svg', 'copy-png'].map(byId).filter(Boolean);
+  const controls = () => ['save-png', 'save-svg', 'save-loop-gif', 'export-size-select', 'export-size-large', 'export-size-standard', 'copy-svg', 'copy-png', 'export-composition-logo', 'export-composition-bar'].map(byId).filter(Boolean);
   const text = (id, value) => { const element = byId(id); if (element) element.textContent = value; };
   function size() { return byId('export-size-select')?.value === 'standard' ? 'standard' : 'large'; }
+  function composition() { return selectedComposition; }
   function pixelSize(dimensions) { return `${dimensions.width} × ${dimensions.height} px`; }
   function fileSize(bytes) {
     if (bytes < 1000) return `${bytes} B`;
     return bytes < 1000000 ? `${Math.round(bytes / 1000)} KB` : `${(bytes / 1000000).toFixed(1)} MB`;
   }
   function sync(credits = false) {
+    for (const value of ['logo', 'bar']) {
+      const option = byId(`export-composition-${value}`);
+      if (option) option.checked = composition() === value;
+    }
     for (const value of ['large', 'standard']) {
       const option = byId(`export-size-${value}`);
       if (option) option.checked = size() === value;
@@ -17,7 +22,7 @@
     if (byId('export-settings')) byId('export-settings').hidden = credits;
     if (byId('export-host-note')) byId('export-host-note').hidden = credits || !root.embedSupport?.isEmbedded();
     if (!credits && root.RPI_LOGO_GEOMETRY && root.logoExportOptions) {
-      const dimensions = root.logoExportOptions.dimensions(size(), root.RPI_LOGO_GEOMETRY);
+      const dimensions = root.logoExportOptions.dimensions(size(), root.RPI_LOGO_GEOMETRY, composition());
       text('export-dimensions', pixelSize(dimensions));
       for (const format of ['png', 'svg', 'gif']) {
         const button = byId(format === 'gif' ? 'save-loop-gif' : `save-${format}`);
@@ -27,7 +32,7 @@
         if (!button) continue;
         button.querySelector('.option-label').textContent = format.toUpperCase();
         button.querySelector('.option-desc').textContent = description;
-        button.setAttribute('aria-label', `${label}: ${description}${format === 'svg' ? '' : `, ${pixelSize(dimensions)}`}`);
+        button.setAttribute('aria-label', `${label}: ${root.logoExportOptions.compositionLabel(composition())}, ${description}${format === 'svg' ? '' : `, ${pixelSize(dimensions)}`}`);
       }
     }
     root.logoClipboard?.sync(credits);
@@ -92,7 +97,8 @@
   function describe(job, snapshot) {
     if (active !== job) return;
     job.dimensions = job.format === 'svg' ? 'Scalable vector' : pixelSize(snapshot.dimensions);
-    text('export-detail', `${job.dimensions} · transparent background`);
+    job.compositionLabel = snapshot.composition && root.logoExportOptions?.compositionLabel(snapshot.composition);
+    text('export-detail', `${job.compositionLabel ? `${job.compositionLabel} · ` : ''}${job.dimensions} · transparent background`);
   }
   function report(job, progress) {
     if (active !== job || job.controller.signal.aborted || !Number.isFinite(progress.total) || progress.total <= 0) return;
@@ -111,7 +117,7 @@
   }
   function ready(job, blob) {
     if (active !== job) return;
-    job.fileDetail = `${job.dimensions || job.format.toUpperCase()} · ${fileSize(blob.size)}`;
+    job.fileDetail = `${job.compositionLabel ? `${job.compositionLabel} · ` : ''}${job.dimensions || job.format.toUpperCase()} · ${fileSize(blob.size)}`;
     text('export-detail', job.fileDetail);
   }
   function finish(job, outcome, value) {
@@ -161,6 +167,24 @@
     document.addEventListener('click', event => {
       if (!byId('save-button')?.contains(event.target) && !byId('export-blocked-note')?.contains(event.target)) hideBlockedNote();
     });
+    // Native radio inputs supply Tab/arrow/Space behavior and checked semantics.
+    // These static diagrams reuse official paths; they are composition guides,
+    // not a second live renderer or a replacement for the current bar preview.
+    for (const value of ['logo', 'bar']) {
+      const diagram = byId(`export-composition-preview-${value}`);
+      const geometry = root.RPI_LOGO_GEOMETRY;
+      if (diagram && geometry && root.logoExportOptions) {
+        const frame = root.logoExportOptions.viewport(geometry, value);
+        diagram.setAttribute('viewBox', `${frame.x} ${frame.y} ${frame.width} ${frame.height}`);
+        const paths = value === 'bar' ? [geometry.barPath] : [...Object.values(geometry.paths), geometry.barPath];
+        diagram.innerHTML = paths.map(path => `<path d="${path}" fill="currentColor"/>`).join('');
+      }
+      byId(`export-composition-${value}`)?.addEventListener('change', event => {
+        if (!event.target.checked || active) return;
+        selectedComposition = value;
+        sync(false);
+      });
+    }
     for (const value of ['large', 'standard']) {
       byId(`export-size-${value}`)?.addEventListener('change', event => {
         if (!event.target.checked || active) return;
@@ -192,7 +216,7 @@
     byId('save-button')?.addEventListener('keydown', dismiss);
     sync(false);
   }
-  root.logoExportUI = { size, sync, explainBlocked, begin, describe, report, message, ready, finish, isBusy: () => !!active };
+  root.logoExportUI = { size, composition, sync, explainBlocked, begin, describe, report, message, ready, finish, isBusy: () => !!active };
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();

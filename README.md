@@ -4,7 +4,7 @@
 
 A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a pattern, adjust its controls, and export an SVG or PNG. The asset menu also copies SVG and PNG images where supported. Ticker, Waveform, and Gradient also support looping GIF exports.
 
-PNG and GIF exports share Standard (1000 px logo) and Large (2000 px logo) choices. Their complete canvases are 1160 × 762 and 2320 × 1524 px, including padding. SVG remains vector. GIF uses binary transparency; PNG preserves smooth partial alpha. See [export sizes, timing, and measured cost](references/transparent_gif_exports.md).
+Choose **Bar + RPI** (the default complete mark) or **Bar only** in the export menu. The illustrated choice applies to SVG/PNG downloads, image copying and supported GIFs. PNG and GIF share Standard (1000 px artwork) and Large (2000 px artwork, the default). Complete-mark canvases are 1160 × 762 and 2320 × 1524 px; bar-only canvases are 1160 × 232 and 2320 × 464 px. All include proportional clear space and a transparent background. SVG remains vector. GIF uses binary transparency; PNG preserves smooth partial alpha. See [export sizes, timing, and measured cost](references/transparent_gif_exports.md).
 
 **[Open the site](https://tennitech.github.io/the-bar-generator/)** · **[Report a bug](https://github.com/tennitech/the-bar-generator/issues/new/choose)** · **[Contribute](contributing.md)**
 
