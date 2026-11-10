@@ -6,7 +6,7 @@ describe('generator first-paint theme', () => {
   test.each(['black', 'white', 'red', 'blue', 'gold', 'silver', 'gray'])('resolves %s without renderer initialization', theme => {
     expect(resolveTheme(`?colorMode=${theme}`, 'solid')).toBe(theme);
   });
-  test.each([['dark', 'white'], ['light', 'black'], ['white-on-red', 'white'], ['invalid', 'black'], ['', 'black']])('normalizes %s through the runtime alias map', (theme, expected) => {
+  test.each([['dark', 'white'], ['light', 'black'], ['white-on-red', 'white-on-red'], ['invalid', 'black'], ['', 'black']])('normalizes %s through the runtime alias map', (theme, expected) => {
     expect(resolveTheme(`?colorMode=${theme}`, 'ruler')).toBe(expected);
   });
   test('restricts mission control to Artemis and leaves missing query at the existing default', () => {

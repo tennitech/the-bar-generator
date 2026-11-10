@@ -1,7 +1,44 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-11-06
+**Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
+
+## November 10 contextual brand compositions and secondary color guidance
+
+The color menu now names foreground and background together. Primary choices
+include Black on White, White on Black, White on Red, and the explicitly limited
+Red on White treatment. Secondary choices reproduce the six combinations in the
+owner's Brand Hub screenshots: Gray on Red, Silver on Blue, Black on Gold, Red
+on Gray, Blue on Silver, and Gray on Black. Exact published hex values are shared
+by first paint, the preview, the header mark, and the runtime export ink; control
+chrome and small header text retain accessible neutral colors.
+
+The former coming-soon disclosure is replaced by a red How to Use button that
+appears only for secondary compositions. It opens a native modal dialog with a
+dimmed background, the four supplied Secondary Color Usage bullets, and the
+descriptive Brand Hub link. The controller handles contextual visibility, Close,
+Escape cancellation, deliberate backdrop clicks, scroll reset, focus return,
+and reopening. Modal interactions preserve the mobile sidebar behind the dialog,
+and generator shortcuts stay inactive within it. Native dialog behavior supplies focus containment and an inert
+background.
+
+Validation: all 784 unit tests in 72 suites pass in cloud Node 24.22.1.
+The two focused new checks exercise exact palette propagation into preview and
+export snapshots, filenames, and the modal controller's lifecycle. JavaScript
+syntax, inline generator scripts, entrypoint consistency, exact guidance copy,
+and whitespace checks pass. Rendered browser QA, actual native focus trapping,
+responsive layout/scrolling, touch behavior, and raster download appearance remain
+unverified in this environment. Known Chromium socket sandbox and missing WebKit
+library blockers were respected; no browser bypass or new browser screenshots
+were attempted. The existing neutral-theme smoke script now checks the new
+compositions and modal when a working browser is available.
+
+This change is separate from the six-feature release candidate. The owner has
+authorized its own reviewed PR to main without waiting for the other features.
+Publication is recorded by that PR; rendered browser QA and formal RPI approval
+remain separate from source and unit-test verification.
+See [brand color sources and QA](brand_color_context_qa.md) for the evidence,
+compatibility notes, rerun command, and integration concerns.
 
 ## November 6 outstanding-report verification
 
