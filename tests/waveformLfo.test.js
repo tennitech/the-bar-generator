@@ -73,7 +73,7 @@ test('captured audio GIF replays history at the selected speed without averaging
     const values={waveformSpeed:.3,waveformLfo:true,waveformLfoRate:rate,waveformLfoDepth:100,
       waveformScope:{source:'offline'},waveformScopeReplaySeconds:2};
     const plan=getLoopingGifFramePlan('waveform',values);
-    expect(plan.periodSeconds).toBe(2);expect(plan.frameCount).toBe(60);expect(plan.scopeReplay).toBe(true);
+    expect(plan.periodSeconds).toBe(2);expect(plan.frameCount).toBe(getLoopingGifFramePlan('ticker',{tickerSpeed:.5}).frameCount);expect(plan.scopeReplay).toBe(true);
     expect(getLoopingAnimationState('waveform',values,{phase:.4}).timeSeconds).toBeCloseTo(.4/.3,8);
   }
 });

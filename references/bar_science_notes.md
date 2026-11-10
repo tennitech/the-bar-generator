@@ -428,3 +428,13 @@ preview motion, geometry, captured composition or static export coordinates.
 See [measurements and sampling limits](gif_frame_rate_benchmark.md); increased
 temporal samples do not change the pattern's scientific meaning or remove all
 aliasing at dense/fast settings.
+
+## GIF temporal cadence — November 10, 2026
+
+The 30/40 ms GIF sampling cadence is replaced by a 50 fps target on the existing
+elapsed-time sampler. Exact 20 ms holds reduce temporal step size; an odd total
+centisecond requires one 30 ms hold. Full encoded duration and periodic geometry
+closure are preserved, without a duplicated endpoint. The unchanged 3000-frame
+budget can limit longer loops below this target. No scientific coordinates,
+preview clock, SVG/PNG, alpha-conversion source or recorded-audio history contract
+is altered. See [timing measurements, format and resource limits](gif_cadence_benchmark.md).

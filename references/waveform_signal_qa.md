@@ -32,8 +32,9 @@ maximum absolute error **0**. Forty-two post-gain AM-product comparisons span
 .07/2/1300Hz, seven LFO folds and 25/100% depth, with maximum error
 **3.7253e-9**. The native capture worklet returns **2816 exact extrema pairs**
 and adds no audible output. Pulse mean is .0599667 and RMS .1 at its expected
-80% duty. All **24 actual PNGs** and **six GIFs / 360 decoded frames** pass;
-all GIF frame pixels match independent palette/alpha references. These are
+80% duty. All **24 actual PNGs** and **six GIFs / 600 decoded frames** pass;
+all GIF frame pixels match independent palette/alpha references. The combined
+candidate retains main #153’s 50fps/20ms cadence and existing frame/memory guards. These are
 native test-engine results, not browser/hardware listening claims.
 
 The full suite, exact published tree/head, required CI and merge/deploy status
