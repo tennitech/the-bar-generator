@@ -848,6 +848,7 @@ function cancelSliderValueEditor(config) {
   // Removing a focused input may synchronously blur it. Clear the reference
   // first so Escape cannot accidentally commit, and commits cannot re-enter.
   config.editorInput = null;
+  if (typeof window !== 'undefined' && window.InputLimitFeedback) window.InputLimitFeedback.dispose(editor);
   editor.remove();
   config.display.removeAttribute('aria-hidden');
   if (valueGroup) {
@@ -859,15 +860,25 @@ function cancelSliderValueEditor(config) {
   }
 }
 
+function sliderEditorLimit(config, rawValue) {
+  const value = parseSliderNumericInput(rawValue, { token: config.limitToken || 'first' });
+  const min = config.editorMin ?? Number(config.slider.min);
+  const max = config.editorMax ?? Number(config.slider.max);
+  return value === null ? '' : window.InputLimitFeedback.rangeMessage(value, min, max);
+}
+
 function commitSliderValueEditor(config) {
   if (!config || !config.editorInput || !config.display) return;
 
   const valueGroup = config.display.parentElement;
   const rawValue = config.editorInput.value;
   const editor = config.editorInput;
+  const limitMessage = typeof window !== 'undefined' && window.InputLimitFeedback ? sliderEditorLimit(config, rawValue) : '';
+  if (limitMessage) window.InputLimitFeedback.signal(config.display, limitMessage);
   // Removing a focused input may synchronously blur it. Clear the reference
   // first so Escape cannot accidentally commit, and commits cannot re-enter.
   config.editorInput = null;
+  if (typeof window !== 'undefined' && window.InputLimitFeedback) window.InputLimitFeedback.dispose(editor);
   editor.remove();
   config.display.removeAttribute('aria-hidden');
   if (valueGroup) {
@@ -913,6 +924,7 @@ function activateSliderValueEditor(config) {
     ? config.getEditorValue()
     : config.display.textContent.trim();
   input.setAttribute('aria-label', config.ariaLabel || 'Set slider value');
+  window.InputLimitFeedback.clear(config.display);
 
   config.editorInput = input;
   if (valueGroup) {
@@ -924,6 +936,9 @@ function activateSliderValueEditor(config) {
 
   input.addEventListener('input', function () {
     resizeSliderValueEditorInput(input);
+    const message = sliderEditorLimit(config, input.value);
+    if (message) window.InputLimitFeedback.signal(input, message);
+    else window.InputLimitFeedback.clear(input);
   });
   input.addEventListener('blur', function () {
     commitSliderValueEditor(config);
@@ -2422,6 +2437,8 @@ function setup() {
     const applyInput = () => {
       const raw = zoomLevelDisplay.value.trim();
       const percent = /^fit$/i.test(raw) ? 100 : Number(raw.replace('%', ''));
+      const message = window.InputLimitFeedback.rangeMessage(percent, 100, 400);
+      if (message) window.InputLimitFeedback.signal(zoomLevelDisplay, message);
       if (Number.isFinite(percent) && percent > 0) setZoomLevel(percent / 100);
     };
     zoomLevelDisplay.addEventListener('change', applyInput);
@@ -3251,6 +3268,7 @@ function setup() {
         const numericValue = parseSliderNumericInput(value, { token: 'last' });
         return numericValue === null ? null : normalizeSliderValue(tickerWidthRatioSlider, numericValue);
       },
+      limitToken: 'last',
       ariaLabel: 'Set ticker width ratio',
       getEditorValue: () => tickerWidthRatioDisplay ? tickerWidthRatioDisplay.textContent.trim() : ''
     },
