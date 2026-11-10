@@ -235,8 +235,11 @@
       if (diagram && geometry && root.logoExportOptions) {
         const frame = root.logoExportOptions.viewport(geometry, value);
         diagram.setAttribute('viewBox', `${frame.x} ${frame.y} ${frame.width} ${frame.height}`);
-        const paths = value === 'bar' ? [geometry.barPath] : [...Object.values(geometry.paths), geometry.barPath];
-        diagram.innerHTML = paths.map(path => `<path d="${path}" fill="currentColor"/>`).join('');
+        const letters = value === 'bar' ? '' : Object.values(geometry.paths)
+          .map(path => `<path d="${path}" fill="currentColor"/>`).join('');
+        // A schematic boundary identifies the bar area without implying a style or ink.
+        const bar = `<path d="${geometry.barPath}" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>`;
+        diagram.innerHTML = letters + bar;
       }
       byId(`export-composition-${value}`)?.addEventListener('change', event => {
         if (!event.target.checked || active) return;
