@@ -52,9 +52,9 @@ test('a warm routed page fetches the new shell and loads its current runtime hel
   expect(requested[0]).not.toBe(oldURL);
   expect(loaded).toContain(currentShell.match(/js\/utils\/transparentGif\.js\?v=[\w-]+/)[0]);
   expect(loaded).not.toContain('js/utils/transparentGif.js?v=20261110-gif-30fps');
-  for (const file of ['ui', 'main']) {
-    expect(loaded).toContain(`js/${file}.js?v=20261110-quiet-undo-r3`);
-  }
+  expect(loaded).toContain('js/ui.js?v=20261110-quiet-undo-r3');
+  expect(loaded).toContain('js/main.js?v=20261110-input-limit-feedback');
+  expect(loaded).toContain('js/utils/inputLimitFeedback.js?v=20261110-input-limit-feedback');
   expect(loaded).not.toContain('js/ui.js?v=20261104-scroll-cue-minimum');
   expect(loaded).not.toContain('js/main.js?v=20261110-waveform-scope');
 });

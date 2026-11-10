@@ -3,6 +3,33 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 attempted input-limit feedback
+
+Text fields with explicit limits now receive a brief red border and 2px shake
+only after an attempted overflow. Binary/Morse use their existing ten-code-point
+limit; Numeric uses its existing 100-character limit, and report fields retain
+native limits. Nucleotide keeps its normalized-base insertion and 30–50-base
+export rules while sharing the same visual feedback. An exact boundary value is
+valid and does not trigger feedback by itself.
+
+Inline slider editors report out-of-range drafts and retain the existing
+clamp/round/commit behavior, including SPEED's 0.2–4 multiplier and Ticker's
+last-token width ratio. Zoom reports attempted values outside 100–400 percent.
+Feedback does not set aria-invalid, change focus, or create a toast. A nearby
+polite status message explains the limit, keeps existing descriptions, and
+expires after four seconds. Repeated attempts renew the visual cue without
+re-announcing unchanged text. Reduced motion removes the shake and retains
+static red feedback. Independent CSS translation preserves editor positioning.
+No pattern, profanity, audio, geometry or export calculation changes.
+
+Focused event/validation regressions cover boundary values, Unicode selection,
+paste before native truncation, repeated attempts, timers, Numeric length,
+ratio/multiplier parsing, editor disposal and the reduced-motion CSS rule.
+The permitted cloud browser cannot reach the isolated localhost server
+(ERR_CONNECTION_REFUSED); local rendered/mobile/motion QA is not claimed.
+Live verification is recorded with the PR after deployment. No formal brand
+approval is implied.
+
 ## November 10 About disclosure chevron consistency
 
 Every About [style] footer now uses the exact same thin SVG as Parameters and
