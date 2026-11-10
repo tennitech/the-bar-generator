@@ -67,7 +67,7 @@
     });
   }
   function editor(style, slider) {
-    return { getEditorValue: () => Number(multiplier(style, slider.value).toFixed(2)).toString(),
+    return { editorMin: 0.2, editorMax: 4, getEditorValue: () => Number(multiplier(style, slider.value).toFixed(2)).toString(),
       parseValue: value => {
         const text = String(value).trim().replace(/(?:×|x)$/i, '').trim();
         return /^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(text) ? rate(style, Number(text)) : null;
