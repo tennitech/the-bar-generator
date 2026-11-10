@@ -4,6 +4,24 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 
+## November 10 neutral theme rows with contextual pair previews
+
+Color Theme now matches the default neutral dropdown until a row is hovered,
+selected or keyboard-active. Those states show the unchanged exact brand pair;
+selection retains the existing checkmark. Keyboard navigation gets the same pair
+preview plus one 2px inset outline using its contrasting foreground. Stacked
+black/white keylines and hover shadows are removed. Color changes are immediate
+to avoid unreadable intermediate blends; the menu border and thin scroll boundary
+remain. Compact typography, geometry, grouping, palette and old-save recovery
+are unchanged. No runtime controller or export implementation changes.
+
+The latest owner PNG was materialized, identity verified and actually inspected
+before editing. All 926 tests in 81 suites pass after preserving PR #151, plus
+JavaScript/80 inline-script syntax, 26 cache and exact source-preservation checks.
+Tests, release status and owner checks are
+recorded in the PR and [state QA record](theme_row_states_qa.md). Existing browser
+restrictions remain; blocked live-network requests are not retried without permission.
+
 ## November 10 Randomize dice legibility correction
 
 The first two supplied image IDs resolved to a color picker and contrast table,
