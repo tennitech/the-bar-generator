@@ -44,6 +44,11 @@ const evidence = process.env.RPI_EVIDENCE_DIR || '/tmp/rpi-short-sidebar';
         await page.screenshot({ path: `${evidence}/${engine}-${family}-${size.width}x${size.height}-controls.png` });
         const card = page.locator('#bar-information');
         await card.scrollIntoViewIfNeeded(); assert.equal(await card.isVisible(), true);
+        const summary = page.locator('#bar-information-toggle');
+        if (await card.getAttribute('open') === null) await summary.click();
+        const reading = page.locator('.bar_information-content');
+        await reading.focus(); await page.keyboard.press('End');
+        assert.ok(await reading.evaluate(el => el.scrollTop + el.clientHeight >= el.scrollHeight - 2));
         assert.ok((await page.locator('#bar-information-description').textContent()).length > 100);
         const report = page.locator('#report-problem-btn'); await reachable(report); await report.click();
         await page.keyboard.press('Escape');
@@ -53,6 +58,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR || '/tmp/rpi-short-sidebar';
           await report.scrollIntoViewIfNeeded();
         }
         await page.screenshot({ path: `${evidence}/${engine}-${family}-${size.width}x${size.height}-card.png` });
+        await summary.click();
         await reachable(theme); await theme.focus(); await page.keyboard.press('Enter');
         assert.equal(await theme.getAttribute('aria-expanded'), 'true'); await page.keyboard.press('Escape');
       }

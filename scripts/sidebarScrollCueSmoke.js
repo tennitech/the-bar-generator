@@ -81,8 +81,9 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
       await page.selectOption('#style-select', 'wave-quantum', { force: true });
       await page.setViewportSize({ width: 1280, height: 650 });
       await cue.waitFor({ state: 'visible' });
-      // An expanded About section can switch its footer from sticky to flow.
+      // Expanded descriptions never become more controls; the footer stays pinned.
       await page.selectOption('#style-select', 'lunar', { force: true });
+      await page.locator('#bar-information-toggle').click();
       await page.locator('#artemis-information').evaluate(el => { el.open = true; });
       await scroller.evaluate(el => { el.scrollTop = el.scrollHeight; });
       await cue.waitFor({ state: 'hidden' });

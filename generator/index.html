@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261110-preview-chrome-export" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261110-compact-sidebar-footer" rel="stylesheet" type="text/css" />
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/pageEntrance.js?v=20261110-combined-brand-refinement"></script>
@@ -954,10 +954,14 @@
         </div>
 
         </div>
-        <div class="sidebar-footer">
-          <aside id="bar-information" class="bar_information" aria-labelledby="bar-information-title">
-            <span class="bar_information-kicker">ABOUT THIS BAR</span>
-            <h2 id="bar-information-title">Solid</h2>
+      </div>
+      <div class="sidebar-footer">
+          <details id="bar-information" class="bar_information">
+            <summary id="bar-information-toggle" class="bar_information-toggle">
+              <span>About <span id="bar-information-title">Solid</span></span>
+              <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </summary>
+            <div id="bar-information-content" class="bar_information-content" tabindex="0" role="region" aria-labelledby="bar-information-toggle">
             <p id="bar-information-description"></p>
             <details id="artemis-information" class="bar_information-details" hidden>
               <summary>Learn about RPI × Artemis II</summary>
@@ -971,7 +975,8 @@
               <a href="https://github.com/the-astronot/boromir/blob/main/README.md" target="_blank"
                 rel="noopener noreferrer">View BOROMIR source code</a>
             </p>
-          </aside>
+            </div>
+          </details>
           <div class="sidebar_footer-actions">
           <button id="report-problem-btn" class="sidebar-feedback-btn" type="button">
             <span id="report-problem-label">Report a Problem</span>
@@ -986,7 +991,6 @@
             </div>
           </details>
           </div>
-        </div>
       </div>
     </aside>
 
@@ -1096,7 +1100,7 @@
   <script src="js/utils/viewerTouch.js"></script>
   <script src="js/utils/headerMotionSurface.js"></script>
   <script src="js/utils/themeMotion.js"></script>
-  <script src="js/utils/sidebarScrollCue.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/sidebarScrollCue.js?v=20261110-compact-sidebar-footer"></script>
   <script src="js/ui.js?v=20261104-scroll-cue-minimum"></script>
   <script src="js/utils/logoGeometry.js?v=20261103-save-removal"></script>
   <script src="js/utils/urlState.js?v=20261103-save-removal"></script>
@@ -1104,7 +1108,7 @@
   <script src="js/utils/transparentGif.js"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportUi.js?v=20261110-export-composition-r2"></script>
-  <script src="js/utils/barInformation.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/barInformation.js?v=20261110-compact-sidebar-footer"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
