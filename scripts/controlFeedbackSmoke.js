@@ -73,8 +73,8 @@ const reset = (page, style) => page.locator(`[data-parameter-style="${style}"][d
       assert.equal(await page.locator('#circles-group [data-parameter-summary]').textContent(), '2 changed from defaults');
       assert.equal(await undo.isDisabled(), true);
       await page.waitForFunction(() => document.getElementById('toast-status').textContent === 'Previous variation restored.');
-      await page.locator('.toast_dismiss').click();
-      results.push('Undo restores artwork, changed markers and accessible outcome');
+      assert.equal(await page.locator('#toast-container .toast').count(), 0, 'normal Undo has no visible toast');
+      results.push('Undo quietly restores artwork, changed markers and accessible outcome');
     }
     await page.screenshot({ path: `${evidence}/light-controls.png` });
     await page.selectOption('#color-mode-select', 'white', { force: true });

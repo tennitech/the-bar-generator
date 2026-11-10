@@ -39,6 +39,8 @@ const ready = page => page.waitForFunction(() => window.randomizeHistory && wind
       assert.equal(after.runtime.seed, before.runtime.seed, `${style}: exact seed`);
       assert.equal(await svg(page), artwork, `${style}: actual SVG restored exactly`);
       assert.equal(await undo(page, style).isEnabled(), false, `${style}: only one undo`);
+      assert.equal(await page.locator('#toast-container .toast').count(), 0, `${style}: normal Undo is quiet`);
+      await page.waitForFunction(() => document.getElementById('toast-status').textContent === 'Previous variation restored.');
       assert.equal(await action(page, style, 'randomize').evaluate(el => el === document.activeElement), true, `${style}: focus returns to Randomize`);
       console.log(`PASS ${style}: exact configuration, seed and SVG`);
     }

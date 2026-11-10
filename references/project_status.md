@@ -17,8 +17,30 @@ exact hover/selected/active text pairings and neutral idle rows are preserved.
 No controller or palette changes. CSS, route shell/bootstrap/fallback and Home
 prefetch versions advance together. All 20 focused tests in five suites,
 JavaScript/80 inline-script syntax and 26 cache/source checks pass after preserving
-#160. See [scrollbar correction QA](theme_scrollbar_qa.md).
+#160. All 953 tests in 86 suites also pass after preserving #159. See
+[scrollbar correction QA](theme_scrollbar_qa.md).
 Browser/served-file checks remain restricted; no blocked route is retried.
+
+## November 10 quiet Undo
+
+Successful Undo restores the previous variation without a visible notification.
+The existing persistent, visually hidden status region still announces the
+restoration; native disabled state, accessible labels, keyboard activation and
+focus return to Randomize are retained. Repeated successful cycles can announce
+the same outcome again. Exhausted history remains disabled and produces no
+notification. Restoration errors retain their visible error toast and alert
+region, with the previous variation available for retry. Randomize history,
+edit invalidation, artwork and exports are unchanged.
+
+The shell/bootstrap and changed script cache references advance together for
+warm routed pages. Focused regression tests cover quiet live announcements and
+the real Undo callback's success/error routing; the existing browser Undo and
+control-feedback checks now assert that successful restoration creates no toast.
+All 953 unit tests in 86 suites pass, along with changed-script syntax, all 81
+inline scripts and whitespace checks. The cloud browser confirmed the previous
+visible toast on production; it cannot reach the isolated localhost server
+(`ERR_CONNECTION_REFUSED`). Post-release browser evidence is recorded with the
+pull request; no local rendered pass is claimed.
 
 ## November 10 exact brand text in interactive theme rows
 

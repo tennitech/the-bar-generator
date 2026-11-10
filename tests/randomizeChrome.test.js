@@ -93,7 +93,33 @@ test('history wires the same early button without inserting chrome, and restores
   expect(undo.disabled).toBe(true);
   expect(randomize.focus).toHaveBeenCalledWith({ preventScroll: true });
   expect(announce).toHaveBeenCalledWith('Previous variation restored.');
+  // Exhausted history neither changes artwork nor adds another announcement.
+  undo.listeners.click();
+  expect(current).toEqual({ controls: { count: '8' }, runtime: { seed: 1 } });
+  expect(announce).toHaveBeenCalledTimes(1);
   expect(actions.children).toHaveLength(3);
+});
+
+test('a failed Undo keeps history enabled for retry and reports the error instead of success', () => {
+  const { scope, groups } = fixture();
+  scope.ParameterControls.prepare();
+  const [randomize, undo] = groups[0].header.querySelector('.control-header-actions').children;
+  let current = { controls: { count: '8' } }, fail = true;
+  const announce = jest.fn();
+  const history = scope.RandomizeHistory.initialize({ snapshots: {
+    capture: () => current, isRestoring: () => false,
+    restoreLocal(value) { if (fail) throw Error('temporary'); current = value; }
+  }, announce });
+  history.randomize('circles', () => { current = { controls: { count: '12' } }; });
+  undo.listeners.click();
+  expect(undo.disabled).toBe(false);
+  expect(announce).toHaveBeenCalledWith('The previous variation could not be restored. Try Undo again.', 'error');
+  expect(randomize.focus).not.toHaveBeenCalled();
+  fail = false;
+  undo.listeners.click();
+  expect(current.controls.count).toBe('8');
+  expect(undo.disabled).toBe(true);
+  expect(announce).toHaveBeenLastCalledWith('Previous variation restored.');
 });
 
 test.each([1, 87])('startup feedback includes saved seed %i and ignores intermediate renderer defaults', seed => {

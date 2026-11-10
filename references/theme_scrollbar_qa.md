@@ -35,6 +35,7 @@ checks pass in five suites after preserving #160. JavaScript and all 80 inline
 scripts pass syntax checks; 26 entrypoint/shell/bootstrap/Home cache keys agree.
 Exact comparisons preserve the controller/palette/export/audio/GIF/modal sources,
 row-state CSS, horizontal ink mark and HTML bodies.
+All 953 tests in 86 suites also pass after preserving quiet Undo-feedback #159.
 The full required CI remains the merge gate. Source comparisons verify all
 production controller/palette/render/export/save/audio/GIF modules and HTML bodies
 are unchanged, apart from cache references. CSS and shell/bootstrap/fallback/Home
@@ -56,3 +57,6 @@ remain because they are a different element from the requested scrollbar.
 
 Final reconciliation preserves changed-setting marker PR #160, current main
 `9be283918160b6ef7b6ea7e55331b56533f9d0fa`, including touch controls and cache keys.
+
+Publication reconciliation also preserves quiet Undo-feedback PR #159, main
+`ec03c542118ca9e014574351058915b30ff70842`, including current controller/cache changes.
