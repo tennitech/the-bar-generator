@@ -3,6 +3,10 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.transparentGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const MAX_CAPTURE_FRAMES = 3000;
+  const MAX_DURATION_SECONDS = 100;
+  const MAX_INPUT_FRAME_BYTES = 32 * 1024 * 1024;
+  const MAX_ENCODED_BYTES = 64 * 1024 * 1024;
   const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
   const abortError = () => new DOMException('Export cancelled.', 'AbortError');
   const checkAbort = signal => { if (signal && signal.aborted) throw abortError(); };
@@ -77,6 +81,12 @@
     if (![width, height, frameCount].every(Number.isInteger) || width < 1 || height < 1 || width > 65535 || height > 65535 || frameCount < 2) {
       throw new Error('Invalid GIF frame dimensions.');
     }
+    // Validate before allocating workers or arrays. Keep resolution and cadence
+    // explicit: excessive jobs fail instead of silently reducing quality.
+    if (frameCount > MAX_CAPTURE_FRAMES || periodSeconds > MAX_DURATION_SECONDS
+      || width * height * 4 * Math.min(2, frameCount) > MAX_INPUT_FRAME_BYTES) {
+      throw new RangeError('GIF export exceeds the frame or memory limit. Choose Standard size or a shorter loop.');
+    }
     const palette = createPalette(options.foreground);
     const timing = frameTiming(periodSeconds, frameCount);
     const controller = new AbortController();
@@ -89,7 +99,7 @@
     const concurrency = Math.min(2, frameCount);
     const workers = [], parts = new Array(frameCount);
     const started = performance.now();
-    let next = 0, prepared = 0, encoded = 0, prepareMs = 0, inFlight = 0, peakInFlight = 0;
+    let next = 0, prepared = 0, encoded = 0, prepareMs = 0, encodedBytes = 0, inFlight = 0, peakInFlight = 0;
     const progress = () => options.onProgress && options.onProgress({ prepared, encoded, total: frameCount });
     const request = (worker, task) => new Promise((resolve, reject) => {
       const timeout = setTimeout(() => finish(new Error('GIF encoder timed out. Try again.')), 120000);
@@ -127,6 +137,10 @@
           checkAbort(signal);
           parts[index] = frame.data.map((page, pageIndex) => pageIndex === frame.data.length - 1
             ? page.subarray(0, frame.cursor) : page);
+          encodedBytes += parts[index].reduce((total, part) => total + part.byteLength, 0);
+          if (encodedBytes > MAX_ENCODED_BYTES) {
+            throw new RangeError('GIF exceeds 64 MiB. Choose Standard size or a shorter loop.');
+          }
           inFlight--; encoded++; progress();
         }
       }));
@@ -142,5 +156,6 @@
       if (externalSignal) externalSignal.removeEventListener('abort', forwardAbort);
     }
   }
-  return { createPalette, frameTiming, preparePixels, encode };
+  return { createPalette, frameTiming, preparePixels, encode,
+    MAX_CAPTURE_FRAMES, MAX_DURATION_SECONDS, MAX_INPUT_FRAME_BYTES, MAX_ENCODED_BYTES };
 });

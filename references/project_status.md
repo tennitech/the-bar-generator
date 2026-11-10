@@ -4,6 +4,31 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 
+## November 10 GIF sampling and resource limits
+
+Eligible GIF loops now target approximately 30 fps over their complete duration,
+replacing the old 24 fps request capped to 72 frames. Balanced 30/40 ms GIF delays
+preserve full duration within 5 ms and sample actual elapsed phases. Counts range
+from 2 to 3000; guards bound 100 seconds, two input frames to 32 MiB and encoded
+chunks to 64 MiB, with cleanup and explicit recovery guidance. Preview motion,
+SVG/PNG and captured composition/size remain intact.
+
+Matched cloud exports measured 1.25× bytes for a 2.5-second Ticker, 2.08× for a
+five-second Waveform and 4.17× for a ten-second Gradient. Sixteen real GIFs were
+independently decoded through all 2052 frames, with exact duration/repeat/disposal
+and first/last renderer coverage checked. A final Large bar-only Waveform also
+passed on the integrated default plan/limited encoder. All 12 combinations of
+family, size and composition have identical phase-0/full-recurrence raster
+coverage. The existing native matrix checked 264 PNG/SVG cases.
+
+All 890 tests in 79 suites pass after reconciling theme #140 and LFO/sidebar #141;
+syntax and whitespace checks pass. See [exact bytes, encoding times, limits and
+verification caveats](gif_frame_rate_benchmark.md). Rendered browser/native
+playback and perceived smoothness remain unverified because prior browser
+execution denials were respected. No formal brand acceptance is claimed.
+Publication and serial integration with the separate visual LFO signal repair
+await the ready PR's required checks. Existing branches are retained.
+
 ## November 10 LFO, speed landmarks and sidebar disclosures
 
 LFO now sits with the Waveform parameters, above Motion and Preview. Its help

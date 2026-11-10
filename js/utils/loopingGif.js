@@ -8,11 +8,12 @@
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient']);
-  const DEFAULT_CAPTURE_FPS = 24;
+  const DEFAULT_CAPTURE_FPS = 30;
   const MIN_CAPTURE_FPS = 12;
   const MAX_CAPTURE_FPS = 30;
-  const MIN_CAPTURE_FRAMES = 24;
-  const MAX_CAPTURE_FRAMES = 72;
+  const MIN_CAPTURE_FRAMES = 2;
+  // Covers the existing longest 100-second joint LFO loop at 30 fps.
+  const MAX_CAPTURE_FRAMES = 3000;
   const MIN_GIF_FRAME_DELAY_MS = 20;
   // p5 still uses requestAnimationFrame; this ceiling avoids skipping fast displays.
   const DEFAULT_LIVE_RENDER_FPS = 1000;
@@ -123,13 +124,14 @@
   function getFrameCountForPeriod(periodSeconds, fps) {
     const maxFrameCountForDelay = Math.max(
       2,
-      Math.floor((periodSeconds * 1000) / MIN_GIF_FRAME_DELAY_MS)
+      Math.floor((Math.round(periodSeconds * 100) * 10) / MIN_GIF_FRAME_DELAY_MS)
     );
     const minFrameCount = Math.min(MIN_CAPTURE_FRAMES, maxFrameCountForDelay);
     const maxFrameCount = Math.min(MAX_CAPTURE_FRAMES, maxFrameCountForDelay);
 
     return clamp(
-      Math.round(periodSeconds * fps),
+      // Match the encoded centisecond duration, including short/fast loops.
+      Math.round(Math.round(periodSeconds * 100) * fps / 100),
       minFrameCount,
       maxFrameCount
     );
@@ -216,7 +218,7 @@
     const lfoEnabled = hasLfo && rate < 5000 && jointPeriod <= 100;
     const lfoAveraged = hasLfo && !lfoEnabled;
     const periodSeconds = lfoEnabled ? jointPeriod : 1 / speed;
-    const frameCount = lfoEnabled ? Math.min(3000, Math.ceil(periodSeconds * 30)) : getFrameCountForPeriod(periodSeconds, fps);
+    const frameCount = getFrameCountForPeriod(periodSeconds, fps);
 
     return {
       style: normalizedStyle,
