@@ -83,7 +83,7 @@ async function inspectFocus(page, id = 'static-test') {
       assert.equal(decodeURI(item.src),decodeURI(sample.path));
     }
     results.push({promptDelayMs:Math.round(promptDelay),scrollingWithStaticSources:true,canonicalLinks:inventory.length});
-    await page.getByRole('button',{name:'Pause motion',exact:true}).click();
+    await page.keyboard.press('Space');
     await page.mouse.move(1400,880); await page.waitForTimeout(200);
     for(const direction of ['is-forward','is-backward']) {
       const point=await target(page,direction); assert.ok(point);
@@ -117,16 +117,16 @@ async function inspectFocus(page, id = 'static-test') {
     assert.equal(focused.selected,'1'); assert.ok(focused.others.every(opacity=>opacity==='0.5'),'keyboard selection takes priority over parked pointer');
     await page.screenshot({path:path.join(evidence,`${engine}-keyboard.png`)});
     await page.evaluate(()=>document.activeElement.blur()); await page.mouse.move(1400,880);
-    await page.getByRole('button',{name:'Resume motion',exact:true}).click();
+    await page.keyboard.press('Space');
     await page.locator('#static-test').focus();
     const held=await position(page); await page.waitForTimeout(220); assert.equal(await position(page),held,'focused lane stays still');
     await page.evaluate(()=>document.activeElement.blur());
     await page.waitForFunction(before=>document.getElementById('static-test').closest('.marquee_track').style.transform!==before,held);
     await page.emulateMedia({reducedMotion:'reduce'});
-    await page.getByRole('button',{name:'Motion paused',exact:true}).waitFor();
+    await page.waitForFunction(() => document.documentElement.dataset.marqueeMotionPaused === 'true');
     const stopped=await rows(page); await page.waitForTimeout(220); assert.deepEqual(await rows(page),stopped);
     await assertStatic(page);
-    assert.ok(await page.locator('#marquee-motion-toggle').isDisabled());
+    assert.equal(await page.locator('#marquee-motion-toggle').count(), 0);
     results.push({keyboardSelection:true,focusHoldsLane:true,reducedMotion:true});
     // The actual native bar anchor and its parameters survive button removal.
     const native=await target(page,'is-forward'); assert.ok(native);
@@ -145,7 +145,7 @@ async function inspectFocus(page, id = 'static-test') {
       phone.on('pageerror',e=>errors.push(e.message));
       await phone.goto(base); await ready(phone); await assertStatic(phone);
       assert.equal(await phone.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-      await phone.getByRole('button',{name:'Pause motion',exact:true}).tap();
+      await phone.keyboard.press('Space');
       const mobilePoint=await phone.evaluate(()=>{
         for(let y=80;y<innerHeight/2;y+=12) for(let x=20;x<innerWidth-20;x+=16) {
           const a=document.elementFromPoint(x,y)?.closest('.bar_asset_wrap');

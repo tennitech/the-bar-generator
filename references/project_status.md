@@ -142,6 +142,56 @@ remain separate from source and unit-test verification.
 See [brand color sources and QA](brand_color_context_qa.md) for the evidence,
 compatibility notes, rerun command, and integration concerns.
 
+## November 10 uniform marquee easing and motion button removal
+
+All complete Home bar links now use one 160 ms opacity transition in both
+directions, with `cubic-bezier(0.25, 0.46, 0.45, 0.94)` replacing `ease`.
+The curve responds earlier and settles gently within the existing duration.
+There is no gap-specific state, timing or dim hold: pointer leave still clears
+selection synchronously. Hover and visible keyboard focus retain exact 50%
+neighbor dimming, keyboard priority and the original focus outline. Static SVG
+artwork, row physics, generator rendering and exports are unchanged; reduced
+motion still disables transitions.
+
+Both Home URLs remove the play/pause button and its reserved layout space.
+Space now pauses or resumes all rows, including from the generator skip link;
+modified keys, repeated keys, editable controls and dialogs are ignored. The
+Home region advertises the shortcut and its status through assistive-technology
+guidance. Saved pause, cross-tab pause and system reduced motion keep their
+existing behavior; Space cannot override reduced motion. No replacement visible
+button is added. Both stylesheet and runtime cache keys agree on both URLs.
+
+The original main `04194d6` candidate passes all 797 tests in 73 suites.
+The final reconciliation builds on merged PR #133 / main `05655f6` and passes
+all 841 tests in 77 suites. Its exact tested tree is recorded in PR #135.
+After export-composition PR #136 advanced main to `fed8e88`, a second clean
+reconciliation preserves its complete export tree and Home prefetch key. The
+combined candidate passes all 862 tests in 78 suites.
+The subsequent clean reconciliation with preview-background PR #137 / main
+`d55bdc1` also passes all 862 tests in 78 suites, retaining its theme, preview
+and export files byte for byte.
+The clean combined tree with Why not repair PR #138 / main `dfcc987` passes
+all 867 tests in 78 suites. Its generator repair and updated Home prefetch are
+retained, and required CI is rerun after synchronizing this release branch.
+After sidebar-footer PR #139 / main `ecec2e1`, the clean synchronized candidate
+passes all 871 tests in 78 suites and retains its footer and cache references.
+The new adjacent-bar lifecycle regression verifies immediate clearing in a gap,
+selection on the next bar and protection from a stale leave event. Existing
+static-artwork, keyboard, reduced-motion, drag and export regressions pass.
+Analytical curve evaluation at 16 ms gives 18.7% transition progress instead of
+9.5%; at 40 ms the difference narrows to 45.3% versus 40.9%, with both finishing
+at 160 ms. These are calculated curve values, not rendered frame measurements.
+The shortcut regressions exercise pause/resume, reduced-motion priority and
+noninterference with typing and modified keys. Updated browser smoke scripts
+cover the removed control and keyboard alternative but remain unexecuted.
+JavaScript parsing, both Home inline scripts and whitespace checks pass.
+
+Rendered browser QA remains blocked by the previously recorded and explicitly
+denied browser runtime permissions; no browser retry, bypass, screenshots or
+visual acceptance is claimed. PR #133 is already merged. Its generator changes,
+Home dependency references and documentation are retained; all earlier branches
+and worktrees are preserved.
+
 ## November 10 combined generator refinement
 
 The isolated combined candidate includes the 450ms Home prompt, removed separate
