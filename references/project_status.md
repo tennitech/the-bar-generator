@@ -4,6 +4,27 @@
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 
+## November 10 full-color theme rows
+
+Color Theme now presents each retained foreground/background pair as a full-width
+row, matching the owner's accessibility-table reference. Nested swatches are
+removed from rows and the neutral closed trigger. Names stay readable and
+accessible; selected rows have a separate, decorative black/white checkmark.
+
+Row labels use the existing bold RPI Geist face at 20px by default with a 19px
+minimum. All ten pairs meet the 3:1 large-text threshold without changing their
+palette values. Hover uses a two-tone underline; keyboard-active rows use a
+two-tone inset frame. A thin scrollbar keeps rows unobscured by fading overlays,
+and forced-colors mode retains a system-color focus outline. Keyboard, touch,
+selection, legacy-red recovery, header/help/modal and export behavior remain.
+
+Validation: all 926 tests in 81 suites pass after preserving PRs #146 and #147, including pair contrast and state-cue
+checks. JavaScript, source/cache and whitespace checks pass. The optional browser
+script now checks all row colors, hover/active/selected states and touch selection.
+Actual browser rendering and physical-device behavior remain unverified under
+the established restrictions; no denied browser action is retried.
+See [row layout evidence and QA](theme_rows_qa.md) for sources and owner checks.
+
 ## November 10 screenshot-directed control presentation correction
 
 The owner's 702 × 542 PNG was materialized from the specified Library ID into

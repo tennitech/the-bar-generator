@@ -7,6 +7,9 @@ footer) and dfcc987 (PR #138, Why not retry).
 Shared cache URLs are reconciled while their complete behavior and additive
 status records remain intact.
 
+The nested-swatch presentation below is superseded by the owner's
+[full-row layout](theme_rows_qa.md); its legacy recovery and other behavior remain.
+
 ## Behavior and scope
 
 The color menu and selected trigger show a 2.25 × 1.5rem background tile
