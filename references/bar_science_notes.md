@@ -347,3 +347,16 @@ Native audio, rendered responsive layouts and real downloads still need browser
 QA: this cloud sandbox blocks Chromium's Unix sockets, WebKit lacks libraries,
 and the managed browser cannot reach its isolated localhost server. The browser
 harness is present; no browser or physical-device pass is claimed.
+
+## GIF time sampling — November 10, 2026
+
+Ticker, Waveform and Gradient exports target approximately 30 frames per second
+across the selected full loop. Frame count follows the encoded centisecond
+duration, with 30/40 ms delays; each geometry sample uses its actual elapsed
+time. No endpoint frame is duplicated. The 72-frame ceiling and 24-frame floor
+no longer undersample slow loops or oversample short ones. Up to 3000 frames
+and 100 seconds are bounded without changing the loop's mathematical period,
+preview motion, geometry, captured composition or static export coordinates.
+See [measurements and sampling limits](gif_frame_rate_benchmark.md); increased
+temporal samples do not change the pattern's scientific meaning or remove all
+aliasing at dense/fast settings.
