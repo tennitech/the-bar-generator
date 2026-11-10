@@ -3,6 +3,29 @@
 **Last Updated:** 2026-11-10
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 10 About disclosure chevron consistency
+
+Every About [style] footer now uses the exact same thin SVG as Parameters and
+the other section disclosures, inside the shared 1rem centered icon box. It sits
+beside the label with the same 0.5rem gap. The shared expanded orientation points
+down at 90°; native closed details and collapsed sections point right at 0°.
+The former footer-only heavy down-chevron and 180° override are removed.
+
+Native details/summary behavior, collapsed default, keyboard activation and
+accessible state, existing focus/touch target, style-specific content, preserved
+open/closed state across selection and scroll-cue behavior remain. No footer
+controller, parameter values, sidebar geometry, motion/audio or exports change.
+The icon adds no animation, including under reduced motion.
+
+Focused regressions cover exact SVG/style parity, all style descriptions in both
+native states and every routed generator's shared shell. Actual icon raster bytes
+match Parameters in 16/24px, open/closed and light/dark cases; both 16px states
+were inspected in an offline label reconstruction. This is native SVG/font QA,
+not rendered browser/application evidence. Full suite and exact-head CI results
+are recorded in the PR. Actual browser keyboard/touch/screen-reader behavior and
+responsive appearance remain unverified under the existing restrictions; no
+denied browser route is retried. No active footer PR was found during inspection.
+
 ## November 10 scope playback speed repair
 
 Live owner QA exposed a second scope presentation defect: a roughly .037s
