@@ -230,13 +230,9 @@ window.animationTime = 0;
 // Audio variables
 let audioContext;
 let gainNode;
-let waveformLfoVoice = null;
 let waveformCarrier = null;
-let waveformVisualLfo = null;
-let waveformLfoTime = 0;
 let waveformScopeTime = 0;
-let lastWaveformLfoTimestamp = 0;
-let waveformLfoFrame = { phase: 0, rate: 2, amount: 0, amplitude: 1 };
+let lastWaveformScopeTimestamp = 0;
 let isAudioPlaying = false;
 let activeAudioPreviewType = null;
 let hasShownAudioHintToast = false;
@@ -1185,8 +1181,7 @@ function updateWaveformScopeControls() {
     onChange: () => { syncStatus(); requestUpdate(); }
   });
   window.waveformScopeController.configure({
-    frequency: waveformFrequencySlider?.value || 24, type: waveformTypeSlider?.value || 0,
-    lfo: getWaveformLfoSettings()
+    frequency: waveformFrequencySlider?.value || 24, type: waveformTypeSlider?.value || 0
   });
   syncStatus();
 }
@@ -1197,67 +1192,26 @@ function getLiveWaveformGeometry(barStartX, barY, exactBarWidth, barHeight, time
     waveformScopeRequired: true, waveformScope: window.waveformScopeController?.frame() });
 }
 
-function getWaveformLfoSettings() {
-  return window.WaveformLfo.normalize({
-    enabled: document.getElementById('waveform-lfo-toggle')?.checked,
-    rate: document.getElementById('waveform-lfo-rate')?.value,
-    depth: document.getElementById('waveform-lfo-depth')?.value,
-    type: document.getElementById('waveform-lfo-type')?.value
-  });
-}
-
 // The existing p5 scheduler owns the visual clock; no marquee timer is added.
-function tickWaveformVisualLfo(timestamp, suspended = false) {
+function tickWaveformScope(timestamp, suspended = false) {
   if (suspended || getCurrentMotionStyle() !== 'waveform') {
-    lastWaveformLfoTimestamp = 0;
+    lastWaveformScopeTimestamp = 0;
     return;
   }
-  if (!waveformVisualLfo) updateWaveformLfoControls();
-  const elapsed = lastWaveformLfoTimestamp ? clampLiveAnimationDeltaMs(timestamp - lastWaveformLfoTimestamp) / 1000 : 0;
-  lastWaveformLfoTimestamp = timestamp;
+  const elapsed = lastWaveformScopeTimestamp ? clampLiveAnimationDeltaMs(timestamp - lastWaveformScopeTimestamp) / 1000 : 0;
+  lastWaveformScopeTimestamp = timestamp;
   const scope = window.waveformScopeController;
   scope?.tick(waveformScopeTime, isMotionEnabledForStyle('waveform'), waveformReverseToggle?.checked === true);
   const scopeStatus = document.getElementById('waveform-scope-status');
   if (scopeStatus && scope) scopeStatus.textContent = scope.status();
   if (!isMotionEnabledForStyle('waveform')) return;
   waveformScopeTime += elapsed * Number(waveformSpeedSlider?.value || .3) / .3 * (waveformReverseToggle?.checked ? -1 : 1);
-  waveformLfoTime += elapsed;
-  waveformLfoFrame = waveformLfoVoice ? waveformLfoVoice.sample() : waveformVisualLfo.sample(waveformLfoTime);
-  if (waveformLfoVoice) waveformVisualLfo.restore(waveformLfoFrame, waveformLfoTime);
 }
 
-function updateWaveformLfoControls() {
-  const state = getWaveformLfoSettings();
-  const settings = document.getElementById('waveform-lfo-settings');
-  if (settings) settings.hidden = !state.enabled;
-  for (const [id, value, label] of [['rate', state.rate, `${state.rate} Hz`], ['depth', state.depth, `${state.depth}%`], ['type', state.type, window.WaveformLfo.waveNames[Math.round(state.type)]]]) {
-    const field = document.getElementById(`waveform-lfo-${id}`);
-    const display = document.getElementById(`waveform-lfo-${id}-display`);
-    if (field) { field.value = value; field.setAttribute('aria-valuetext', label); }
-    if (display) display.textContent = label;
-  }
-  const ratePosition = document.querySelector('[data-lfo-rate-position]');
-  if (ratePosition) {
-    ratePosition.value = window.WaveformLfo.ratePosition(state.rate);
-    ratePosition.setAttribute('aria-valuetext', `${state.rate} Hz`);
-  }
-  if (!waveformVisualLfo) waveformVisualLfo = window.WaveformLfo.createTransport(state, waveformLfoTime);
-  else waveformVisualLfo.update(state, waveformLfoTime, !isMotionEnabledForStyle('waveform'));
-  waveformLfoVoice?.update(state);
-  waveformLfoFrame = waveformVisualLfo.sample(waveformLfoTime);
-  updateWaveformScopeControls();
-}
-
-function resetWaveformLfo() {
-  waveformVisualLfo = null;
-  waveformLfoTime = 0;
+function resetWaveformScope() {
   waveformScopeTime = 0;
-  lastWaveformLfoTimestamp = 0;
-  document.getElementById('waveform-lfo-type').value = 0;
-  document.getElementById('waveform-lfo-toggle').checked = false;
-  document.getElementById('waveform-lfo-rate').value = 2;
-  document.getElementById('waveform-lfo-depth').value = 60;
-  updateWaveformLfoControls();
+  lastWaveformScopeTimestamp = 0;
+  updateWaveformScopeControls();
 }
 
 function getCurrentAudioPreviewType() {
@@ -1400,11 +1354,11 @@ function resetStyleParameters(style) {
 
       break;
     case 'waveform':
-      resetWaveformLfo();
       if (waveformTypeSlider) waveformTypeSlider.value = 0;
       if (waveformFrequencySlider) waveformFrequencySlider.value = 24;
       if (waveformSpeedSlider) waveformSpeedSlider.value = getDefaultLoopSpeed('waveform');
       if (waveformReverseToggle) waveformReverseToggle.checked = false;
+      resetWaveformScope();
       updateWaveformTypeDisplay();
       updateWaveformFrequencyDisplay();
       updateWaveformSpeedDisplay();
@@ -1581,15 +1535,11 @@ function randomizeStyleParameters(style) {
       updateTickerSpeedDisplay();
       break;
     case 'waveform':
-      document.getElementById('waveform-lfo-type').value = randomStepValue(0, 3, 0.01);
-      document.getElementById('waveform-lfo-toggle').checked = randomChance(0.5);
-      document.getElementById('waveform-lfo-rate').value = randomStepValue(0.5, 5, 0.1);
-      document.getElementById('waveform-lfo-depth').value = randomStepValue(25, 100, 5);
-      updateWaveformLfoControls();
       if (waveformTypeSlider) waveformTypeSlider.value = pickRandom(['0', '1', '2', '3']);
       if (waveformFrequencySlider) waveformFrequencySlider.value = randomDifferentStep(waveformFrequencySlider, 12, 88);
       if (waveformSpeedSlider) waveformSpeedSlider.value = window.MotionSpeed.rate('waveform', randomStepValue(0.2, 4, 0.05));
       if (waveformReverseToggle) waveformReverseToggle.checked = randomChance(0.5);
+      updateWaveformScopeControls();
       updateWaveformTypeDisplay();
       updateWaveformFrequencyDisplay();
       updateWaveformSpeedDisplay();
@@ -2672,17 +2622,6 @@ function setup() {
     });
   }
 
-  for (const id of ['waveform-lfo-toggle', 'waveform-lfo-rate', 'waveform-lfo-depth', 'waveform-lfo-type']) {
-    document.getElementById(id).addEventListener('input', () => {
-      updateWaveformLfoControls(); updateUrlParameters(); requestUpdate();
-    });
-  }
-
-  document.querySelector('[data-lfo-rate-position]').addEventListener('input', function () {
-    const rate = document.getElementById('waveform-lfo-rate');
-    rate.value = window.WaveformLfo.positionRate(this.value);
-    rate.dispatchEvent(new Event('input', { bubbles: true }));
-  });
   if (waveformAudioBtn) {
     waveformAudioBtn.addEventListener('click', function (e) {
       e.preventDefault();
@@ -3286,13 +3225,6 @@ function setup() {
       commit: () => { updateWaveformSpeedDisplay(); updateUrlParameters(); requestUpdate(); },
       ariaLabel: 'Set waveform motion speed'
     },
-    ...['rate', 'depth', 'type'].map(id => ({
-      slider: document.getElementById(`waveform-lfo-${id}`),
-      display: document.getElementById(`waveform-lfo-${id}-display`),
-      refreshDisplay: updateWaveformLfoControls,
-      commit: () => { updateWaveformLfoControls(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: `Set LFO ${id}`
-    })),
     {
       slider: circlesDensitySlider,
       display: circlesDensityDisplay,
@@ -3469,7 +3401,7 @@ function setup() {
 
   document.addEventListener('visibilitychange', function () {
     invalidateLunarPreviewFrame();
-    lastWaveformLfoTimestamp = 0;
+    lastWaveformScopeTimestamp = 0;
     lastAnimationFrameTimestamp = 0;
     if (document.hidden) {
       handleDocumentAudioDeactivation();
@@ -4320,7 +4252,6 @@ function applyColorMode(colorMode) {
 
 function getCurrentBarPatternValues(exactBarWidth) {
   const loopAnimationState = getCurrentLoopAnimationState(exactBarWidth);
-  const lfo = getWaveformLfoSettings();
   const timeSeconds = loopAnimationState
     ? loopAnimationState.timeSeconds
     : (typeof window.animationTime !== 'undefined'
@@ -4345,13 +4276,6 @@ function getCurrentBarPatternValues(exactBarWidth) {
     waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
     waveformScopeRequired: currentShader === 4,
     waveformScope: currentShader === 4 ? window.waveformScopeController?.frame() : null,
-    waveformLfoPhase: waveformLfoFrame.phase,
-    waveformLfoSampleRate: waveformLfoFrame.rate,
-    waveformLfoAmount: waveformLfoFrame.amount,
-    waveformLfo: lfo.enabled,
-    waveformLfoRate: lfo.rate,
-    waveformLfoDepth: lfo.depth,
-    waveformLfoType: lfo.type,
     timeSeconds,
     circlesFill: circlesFillSelect ? circlesFillSelect.value : 'stroke',
     circlesDensity: circlesDensitySlider ? circlesDensitySlider.value : 50,
@@ -5473,9 +5397,8 @@ async function startWaveformAudio() {
   const mappedFrequency = minFreq + (normalizedFreq * (maxFreq - minFreq));
 
   waveformCarrier = window.WaveformAudio.create(audioContext, gainNode, {
-    frequency, type: Number(waveformTypeSlider.value), lfo: getWaveformLfoSettings()
-  }, waveformLfoFrame);
-  waveformLfoVoice = waveformCarrier.lfo;
+    frequency, type: Number(waveformTypeSlider.value)
+  });
   oscillators = waveformCarrier.oscillators;
   oscillatorGains = waveformCarrier.oscillatorGains;
   pulseWorkletNode = waveformCarrier.pulseWorkletNode;
@@ -5544,12 +5467,6 @@ function stopWaveformAudio() {
   window.waveformScopeController?.detach();
   waveformCarrier = null;
   try {
-    if (waveformLfoVoice && waveformVisualLfo) {
-      if (isMotionEnabledForStyle('waveform')) waveformLfoFrame = waveformLfoVoice.sample();
-      waveformVisualLfo.restore(waveformLfoFrame, waveformLfoTime);
-    }
-    waveformLfoVoice?.stop(audioContext.currentTime + 0.05);
-    waveformLfoVoice = null;
     // Clear any previously scheduled values to fix play/pause bug
     gainNode.gain.cancelScheduledValues(audioContext.currentTime);
 
@@ -6108,11 +6025,6 @@ function updateUrlParameters() {
     if (waveformSpeedSlider && parseFloat(waveformSpeedSlider.value) !== getDefaultLoopSpeed('waveform')) {
       params.set('waveformSpeed', waveformSpeedSlider.value);
     }
-    const lfo = getWaveformLfoSettings();
-    if (lfo.enabled) params.set('waveformLfo', 'true');
-    if (lfo.rate !== 2) params.set('waveformLfoRate', lfo.rate);
-    if (lfo.depth !== 60) params.set('waveformLfoDepth', lfo.depth);
-    if (lfo.type !== 0) params.set('waveformLfoType', lfo.type);
     if (waveformReverseToggle && waveformReverseToggle.checked) {
       params.set('waveformReverse', 'true');
     }
@@ -6345,11 +6257,7 @@ function applyUrlParameters() {
   if (waveformReverseToggle) {
     waveformReverseToggle.checked = params.waveformReverse;
   }
-  document.getElementById('waveform-lfo-type').value = params.waveformLfoType;
-  document.getElementById('waveform-lfo-toggle').checked = params.waveformLfo;
-  document.getElementById('waveform-lfo-rate').value = params.waveformLfoRate;
-  document.getElementById('waveform-lfo-depth').value = params.waveformLfoDepth;
-  updateWaveformLfoControls();
+  updateWaveformScopeControls();
 
   // Apply circles parameters
   if (circlesFillSelect) {
@@ -6372,7 +6280,7 @@ function applyUrlParameters() {
 }
 
 function updateAllDisplays() {
-  updateWaveformLfoControls();
+  updateWaveformScopeControls();
   // Update all slider displays
   updateRulerRepeatsDisplay();
   updateRulerUnitsDisplay();
@@ -6510,7 +6418,7 @@ function draw() {
   const currentTime = getAnimationNowMs();
   const drawingSuspended = document.hidden || document.body.classList.contains('has-logo-animation') || window.PageEntrance?.isHoldingArtwork?.();
   window.quantumControls.tick(currentTime, drawingSuspended);
-  tickWaveformVisualLfo(currentTime, drawingSuspended);
+  tickWaveformScope(currentTime, drawingSuspended);
   const currentMotionStyle = getCurrentMotionStyle();
   if (drawingSuspended) {
     invalidateLunarPreviewFrame();
@@ -7566,7 +7474,6 @@ function setupShareLinks() {
   window.BarShareState.initialize({
     sanitize: sanitizeBarText,
     capture: () => ({ seed: sharePatternSeed, phase: liveMotionPhase, time: window.animationTime,
-      lfoPhase: waveformLfoFrame.phase,
       notes: currentStaffNotes, duration: currentNoteDuration }),
     restore: (state, options = {}) => {
       stopAudio();
@@ -7582,10 +7489,8 @@ function setupShareLinks() {
         if (toggle) toggle.checked = MOTION_ENABLED_BY_STYLE[style];
         if (styleSelect.value === style && !MOTION_ENABLED_BY_STYLE[style] && style !== 'gradient') resetAnimationClock();
       }
-      waveformLfoTime = 0;
-      lastWaveformLfoTimestamp = 0;
-      waveformVisualLfo = window.WaveformLfo.createTransport(getWaveformLfoSettings(), 0, { phase: state.lfoPhase || 0 });
-      updateWaveformLfoControls();
+      lastWaveformScopeTimestamp = 0;
+      updateWaveformScopeControls();
       document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
         button.classList.toggle('active', Number(button.dataset.duration) === state.duration);
       });
@@ -7620,9 +7525,7 @@ function setupShareLinks() {
         button.classList.toggle('active', Number(button.dataset.duration) === 1);
       });
       resetAnimationClock();
-      waveformVisualLfo = null;
-      waveformLfoTime = 0;
-      lastWaveformLfoTimestamp = 0;
+      lastWaveformScopeTimestamp = 0;
       for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       applyUrlParameters();
       const quantumQuery = new URLSearchParams(location.search);

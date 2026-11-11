@@ -3,6 +3,29 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 Waveform LFO removal
+
+The owner requested complete removal of Waveform's LFO. The toggle, waveform,
+rate and depth controls, tooltip, modulation audio graph, visual transport,
+export metadata and URL/share runtime fields are removed. Old queries and v1
+share links retain their valid carrier/motion settings and ignore retired fields.
+The carrier's Sine–Sawtooth–Square–Pulse morph, pitch mapping, normalized gains,
+pulse duty, native fallback and audio start/stop fade remain intact. Music's
+separate instrument effects are outside this Waveform change.
+
+The actual PCM scope remains, with a four-carrier-period window and one-carrier-
+period sweep. Loop, Reverse, Speed, freeze, Audio, source/error status and
+SVG/PNG/clipboard/GIF snapshots remain. One second of bounded live history now
+covers every supported carrier setting; there is no modulation-envelope mode.
+Warm-route, shell, first-paint and affected dependency cache keys advance together.
+
+Native DSP/raster/codec checks pass: 15 carrier comparisons have zero PCM error,
+Pulse retains 80% duty, the live tap is silent and exact, nine PNGs render and
+996 frames from six GIFs decode exactly. These are not browser or hardware-audio
+acceptance. Browser checks were not rerun through an alternate route after the
+prior access denial. See [current evidence and limits](waveform_lfo_removal_qa.md).
+Earlier LFO/scope records below are historical and superseded by this entry.
+
 ## November 11 separated dice with varied rolls
 
 The owner's latest refinement separates Randomize's two complete thin die faces.

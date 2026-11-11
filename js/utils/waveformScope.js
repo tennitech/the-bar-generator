@@ -2,14 +2,14 @@
 (function(root) {
   const GROUP = 8, BINS = 1024, REPLAY = 2, SETTLE = .25;
   const SWEEP_HZ = .3;
-  const MAX_HISTORY_SECONDS = 4 / .07;
+  const MAX_HISTORY_SECONDS = 1;
   function settings(values = {}) {
     return { frequency: Math.max(10, Math.min(100, Number(values.frequency) || 24)),
-      type: Math.max(0, Math.min(3, Number(values.type) || 0)), lfo: root.WaveformLfo.normalize(values.lfo) };
+      type: Math.max(0, Math.min(3, Number(values.type) || 0)) };
   }
   function duration(values) {
     const v = settings(values), hz = root.WaveformAudio.frequency(v.frequency);
-    return Math.max(4 / hz, v.lfo.enabled && v.lfo.depth > 0 ? 2 / v.lfo.rate : 0);
+    return 4 / hz;
   }
   function pcmExtrema(pcm) {
     const result = new Float32Array(Math.floor(pcm.length / GROUP) * 2);
@@ -27,8 +27,7 @@
     if (count < 1) return null;
     // Keep approximately the same time represented by each display bin as
     // coverage fills, rather than spending all 1024 bins on a short prefix.
-    const resolution = extra.displayMode === 'envelope'
-      ? Math.min(BINS, Math.max(2, Math.ceil(seconds * extra.carrierHz))) : Math.min(BINS, target);
+    const resolution = Math.min(BINS, target);
     const bins = Math.min(count, Math.max(1, Math.ceil(resolution * count / target)));
     const extrema = [];
     for (let x = 0; x < bins; x++) {
@@ -78,26 +77,6 @@
         }
         return Math.max(0, end) / rate;
       },
-      triggerEnvelopeBefore(limit, carrierPeriod, lfoPeriod) {
-        const step = Math.max(1, Math.round(carrierPeriod * rate));
-        const end = Math.min(replayPairs, Math.floor(limit * rate));
-        const begin = Math.max(0, end - Math.ceil(lfoPeriod * rate));
-        const peaks = [];
-        for (let i = begin; i <= end; i += step) {
-          let peak = 0;
-          for (let j = i; j < Math.min(data.length / 2, i + step); j++) peak = Math.max(peak, Math.abs(data[j*2]), Math.abs(data[j*2+1]));
-          peaks.push({ at: i, peak });
-        }
-        const low = Math.min(...peaks.map(p => p.peak)), high = Math.max(...peaks.map(p => p.peak));
-        const level = (low + high) / 2;
-        if (high - low > 1e-5) for (let i = peaks.length - 1; i > 0; i--) {
-          if (peaks[i-1].peak <= level && peaks[i].peak > level) {
-            const fraction = (level - peaks[i-1].peak) / (peaks[i].peak - peaks[i-1].peak);
-            return (peaks[i-1].at + fraction * (peaks[i].at - peaks[i-1].at)) / rate;
-          }
-        }
-        return Math.max(0, end) / rate;
-      },
       frame: offset => frame(data, rate, Math.max(0, Math.min(replaySeconds, Number(offset) || 0)), seconds, source, extra, pcm) });
   }
   function replayFrom(captured, origin, first, reverse = false) {
@@ -111,22 +90,18 @@
   }
   function sweepSpan(values) {
     const v = settings(values);
-    return 1 / (v.lfo.enabled && v.lfo.depth > 0 ? v.lfo.rate : root.WaveformAudio.frequency(v.frequency));
+    return 1 / root.WaveformAudio.frequency(v.frequency);
   }
   function displaySettings(values) {
     const v = settings(values), carrierHz = root.WaveformAudio.frequency(v.frequency);
-    const displayMode = v.lfo.enabled && v.lfo.depth > 0 && carrierHz * duration(v) > 16
-      && v.lfo.rate < carrierHz / 8 ? 'envelope' : 'trace';
-    return { displayMode, carrierHz, replayLimit: Math.max(.1, 2 * sweepSpan(v)) };
+    return { displayMode: 'trace', carrierHz, replayLimit: .1 };
   }
   function sweep(captured, values) {
     const requestedSpan = sweepSpan(values);
     const span = captured.replaySeconds >= requestedSpan ? requestedSpan : 0;
     const latest = Math.max(0, captured.replaySeconds - span);
     const display = displaySettings(values);
-    const origin = display.displayMode === 'envelope'
-      ? captured.triggerEnvelopeBefore(latest, 1 / display.carrierHz, requestedSpan)
-      : captured.triggerBefore(latest, 1 / display.carrierHz);
+    const origin = captured.triggerBefore(latest, 1 / display.carrierHz);
     return { captured, origin, span };
   }
   function sweepReplay(view, offset, first, reverse) {
@@ -147,13 +122,13 @@
     try { await context.audioWorklet?.addModule('js/pulse-worklet.js'); } catch (_) { /* Same Square fallback as the audible graph. */ }
     const master = context.createGain(); master.connect(context.destination);
     master.gain.setValueAtTime(0, 0); master.gain.linearRampToValueAtTime(1, .05);
-    const graph = root.WaveformAudio.create(context, master, v, {}, environment.AudioWorkletNode);
+    const graph = root.WaveformAudio.create(context, master, v, environment.AudioWorkletNode);
     graph.update(v);
     const buffer = await context.startRendering();
     const pcm = buffer.getChannelData(0).subarray(Math.round(SETTLE * sampleRate));
     return recording(pcmExtrema(pcm), sampleRate / GROUP, seconds, 'offline', {
       ...display, pulse: graph.pulseWorkletNode || v.type <= 2 ? 'worklet' : 'square-fallback'
-    }, display.displayMode === 'trace' ? pcm : null);
+    }, pcm);
   }
   function createController({ onChange = () => {}, environment = root } = {}) {
     let key = '', currentKey = '', currentSettings, offlineKey = '', offline = null, current = null;
@@ -237,11 +212,10 @@
       catch (failure) { liveError = ' · live capture unavailable'; onChange(); throw failure; }
       input = destination;
       pairRate = context.sampleRate / GROUP;
-      // Keep the longest supported view plus replay history even while a
-      // short timebase is selected. Edits never resize or clear the live ring.
+      // One second covers four periods at the lowest carrier frequency plus
+      // trigger/replay margin. Edits never resize or clear the live ring.
       ring = new Float32Array(Math.ceil(MAX_HISTORY_SECONDS * pairRate) * 2);
-      // Every sparse view plus trigger/playback margin fits in one second.
-      // Dense views retain only long-term extrema, keeping memory bounded.
+      // Retain ordered PCM for the same bounded history as the extrema.
       pcmRing = new Float32Array(Math.ceil(pairRate) * GROUP);
       tap.port.onmessage = event => {
         const data = event.data?.extrema || event.data, pcm = event.data?.pcm;
@@ -299,7 +273,7 @@
       if (!current) return error || 'Rendering audio signal…';
       const label = current.source === 'live' ? (tap && running ? 'Live audio capture' : 'Recorded audio') : 'Offline audio render';
       const previous = currentKey !== key;
-      return `${label} · ${current.seconds.toFixed(3)} s window · ${current.displayMode === 'envelope' ? 'peak envelope' : 'PCM trace'} · sample playback${!running ? ' · frozen' : ''}`
+      return `${label} · ${current.seconds.toFixed(3)} s window · PCM trace · sample playback${!running ? ' · frozen' : ''}`
         + (previous ? ` · previous settings${rendering ? ' (rendering update)' : error ? ' (update unavailable)' : ''}` : '')
         + (current.filling ? ` · filling history: ${current.availableSeconds.toFixed(3)} s recorded; blank area is unrecorded` : '')
         + (current.parameterChanges ? ' · includes parameter changes' : '')

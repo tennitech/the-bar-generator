@@ -1,8 +1,7 @@
-global.WaveformLfo=require('../js/utils/waveformLfo');
 global.WaveformAudio=require('../js/utils/waveformAudio');
 const scope=require('../js/utils/waveformScope');
 const {createWaveformPatternGeometry:geometry}=require('../js/utils/barPattern');
-const base={frequency:24,type:0,lfo:{enabled:true,rate:2,depth:100,type:0}};
+const base={frequency:24,type:0};
 const pairRate=1000;
 async function live(initial=base,extra={}) {
   let node;
@@ -49,18 +48,19 @@ test('min/max display resolution stays proportional to the fixed time window dur
   }
 });
 
-test('repeated shape/depth/carrier edits retain actual live history without refill or X-scale growth',async()=>{
+test('repeated shape/carrier edits retain actual live history without refill or X-scale growth',async()=>{
   const {controller:c,push}=await live();
   try {
     push(4);c.tick(0);const original=c.capture();
-    for(const [frequency,type,depth,lfoType] of [[10,.5,25,1],[100,3,60,2],[24,0,100,3]]) {
-      const held=c.frame();c.configure({frequency,type,lfo:{enabled:true,rate:2,depth,type:lfoType}});
+    for(const [frequency,type] of [[10,.5],[100,3],[24,0]]) {
+      const held=c.frame();c.configure({frequency,type});
       expect(c.frame()).toBe(held);c.tick(0);
-      expect(c.frame()).toMatchObject({source:'live',seconds:1,availableSeconds:1,startFraction:0,filling:false,parameterChanges:true});
+      const seconds=Math.floor(scope.duration({frequency,type})*pairRate)/pairRate;
+      expect(c.frame()).toMatchObject({source:'live',seconds,availableSeconds:seconds,startFraction:0,filling:false,parameterChanges:true});
       expect([...new Set(c.frame().extrema)]).toEqual([...new Set(original.frame.extrema)]);
       expect(c.status()).toContain('includes parameter changes');
     }
-    push(.1,-.01,.01);c.tick(0);
+    push(.005,-.01,.01);c.tick(0);
     expect(c.frame().extrema.some(x=>Math.abs(x)>.07)).toBe(true);
     expect(c.frame().parameterChanges).toBe(true);
     push(2.1,-.01,.01);c.tick(0);
@@ -71,32 +71,26 @@ test('repeated shape/depth/carrier edits retain actual live history without refi
   } finally {c.dispose();}
 });
 
-test('rate changes reframe once and keep subsequent partial packets at the chosen scale',async()=>{
-  const {controller:c,push}=await live();
+test('carrier pitch changes reframe once and keep partial history on the chosen scale',async()=>{
+  const {controller:c,push}=await live({frequency:100,type:0});
   try {
-    push(.2);c.tick(0);expect(c.frame()).toMatchObject({seconds:1,availableSeconds:.2,startFraction:.8});
-    c.configure({...base,lfo:{...base.lfo,rate:.5}});c.tick(0);
-    expect(c.frame()).toMatchObject({seconds:4,availableSeconds:.2,startFraction:.95,filling:true});
-    push(.1);c.tick(0);expect(c.frame().seconds).toBe(4);expect(c.frame().startFraction).toBeCloseTo(.925,12);
-    c.configure({...base,lfo:{...base.lfo,rate:4}});c.tick(0);
-    expect(c.frame()).toMatchObject({seconds:.5,availableSeconds:.3,startFraction:.4});
-    push(.1);c.tick(0);expect(c.frame().seconds).toBe(.5);expect(c.frame().startFraction).toBeCloseTo(.2,12);
-    c.configure({...base,frequency:100,lfo:{...base.lfo,rate:1300}});c.tick(0);
-    const target=Math.floor(scope.duration({...base,frequency:100,lfo:{...base.lfo,rate:1300}})*pairRate)/pairRate;
-    expect(c.frame()).toMatchObject({seconds:target,startFraction:0,filling:false});
+    push(.004);c.tick(0);expect(c.frame()).toMatchObject({seconds:.007,availableSeconds:.004,filling:true});
+    c.configure({frequency:10,type:0});c.tick(0);
+    expect(c.frame()).toMatchObject({seconds:.122,availableSeconds:.004,filling:true});
+    push(.01);c.tick(0);expect(c.frame().seconds).toBe(.122);expect(c.frame().startFraction).toBeCloseTo(1-.014/.122,12);
+    push(.3);c.tick(0);expect(c.frame()).toMatchObject({seconds:.122,startFraction:0,filling:false});
+    c.configure({frequency:100,type:0});c.tick(0);expect(c.frame()).toMatchObject({seconds:.007,startFraction:0,filling:false});
   } finally {c.dispose();}
 });
 
-test('short/disabled views preserve the long ring for a later slow LFO instead of throwing history away',async()=>{
-  const {controller:c,push}=await live({...base,lfo:{...base.lfo,enabled:false}});
+test('bounded history survives ring wraps and all supported carrier timebases',async()=>{
+  const {controller:c,push}=await live({frequency:100,type:0});
   try {
-    push(32);c.tick(0);
-    c.configure({...base,lfo:{...base.lfo,rate:.07}});c.tick(0);
-    expect(c.frame()).toMatchObject({seconds:28.571,availableSeconds:28.571,startFraction:0,filling:false,parameterChanges:true});
-    c.configure({...base,lfo:{...base.lfo,depth:0}});c.tick(0);
-    expect(c.frame()).toMatchObject({startFraction:0,filling:false});
-    c.configure({...base,lfo:{...base.lfo,rate:.07}});c.tick(0);
-    expect(c.frame()).toMatchObject({seconds:28.571,startFraction:0,filling:false});
+    push(4);c.tick(0);
+    for(const frequency of [10,100,24,10]) {
+      c.configure({frequency,type:0});c.tick(0);
+      expect(c.frame()).toMatchObject({seconds:Math.floor(scope.duration({frequency})*pairRate)/pairRate,startFraction:0,filling:false});
+    }
   } finally {c.dispose();}
 });
 
@@ -104,8 +98,8 @@ test('freeze holds exact data, recording and timebase through edits, incoming sa
   const {controller:c,push}=await live();
   try {
     push(3);c.tick(0);const held=c.frame(),captured=c.capture();c.tick(0,false);
-    for(const rate of [4,.07,1300]) {
-      c.configure({...base,frequency:100,lfo:{...base.lfo,rate}});push(.1,-.01,.01);c.tick(0,false);
+    for(const frequency of [10,73,100]) {
+      c.configure({...base,frequency});push(.1,-.01,.01);c.tick(0,false);
       expect(c.frame()).toBe(held);expect(c.capture().recording).toBe(captured.recording);
       expect(c.status()).toContain('frozen');expect(c.status()).toContain('previous settings');
     }
@@ -122,11 +116,11 @@ test('silent edits hold a labeled previous frame until one complete latest rende
     c.tick(.3);const held=c.frame(),original=c.capture();
     c.configure({...base,type:1},true);await jest.advanceTimersByTimeAsync(0);
     expect(c.frame()).toBe(held);expect(c.status()).toContain('previous settings (rendering update)');
-    c.configure({...base,type:2,lfo:{...base.lfo,rate:.5}},true);
+    c.configure({...base,type:2,frequency:10},true);
     jobs[1].finish(.04);await jest.advanceTimersByTimeAsync(0);
     expect(c.frame()).toBe(held);expect(jobs).toHaveLength(3);
     jobs[2].finish(.08);await c.ready();
-    expect(c.frame()).toMatchObject({source:'offline',seconds:4,startFraction:0,endFraction:1});
+    expect(c.frame()).toMatchObject({source:'offline',seconds:Math.floor(scope.duration({frequency:10})*6000)/6000,startFraction:0,endFraction:1});
     expect(c.frame().extrema.every(x=>x>.07)).toBe(true);expect(c.status()).not.toContain('previous settings');
     expect(original.recording.frame(0)).toBe(original.frame);
     expect(original.frame.extrema.every(x=>x<.02)).toBe(true);
@@ -157,12 +151,13 @@ test('offline/live/mute handoffs retain source labels and fill a fixed target wi
     await jest.advanceTimersByTimeAsync(100);jobs[0].finish(.01);await c.ready();
     const offline=c.frame();expect(offline.source).toBe('offline');c.tick(1);
     expect(c.frame()).toBe(offline);expect(c.status()).toContain('waiting for live audio');
-    push(.05);c.tick(1);expect(c.frame()).toMatchObject({source:'live',seconds:1,availableSeconds:.05,filling:true,startFraction:.95});
-    c.configure({...base,lfo:{...base.lfo,rate:.07}},true);c.tick(1);
+    push(.005);c.tick(1);const seconds=Math.floor(scope.duration(base)*pairRate)/pairRate;
+    expect(c.frame()).toMatchObject({source:'live',seconds,availableSeconds:.005,filling:true,startFraction:1-.005/seconds});
+    c.configure({...base,frequency:10},true);c.tick(1);
     const liveFrame=c.frame();await jest.advanceTimersByTimeAsync(0);jobs[1].finish(.08);await c.ready();
-    expect(c.frame()).toBe(liveFrame);expect(liveFrame.seconds).toBe(28.571);
+    expect(c.frame()).toBe(liveFrame);expect(liveFrame.seconds).toBe(.122);
     c.tick(1,false);c.detach();c.tick(2,false);expect(c.frame()).toBe(liveFrame);
     c.tick(2,true);expect(c.frame()).toMatchObject({source:'offline',startFraction:0,endFraction:1});
-    expect(c.frame().seconds).toBeCloseTo(2/.07,3);
+    expect(c.frame().seconds).toBeCloseTo(4/32.7,3);
   } finally {c.dispose();create.mockRestore();jest.useRealTimers();}
 });

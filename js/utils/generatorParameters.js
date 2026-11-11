@@ -80,10 +80,6 @@ function read() {
     waveformFrequency: parseInt(params.get('waveformFrequency')) || 24,
     waveformSpeed: window.loopingGifUtils.normalizeLoopSpeed('waveform', params.get('waveformSpeed')),
     waveformReverse: params.get('waveformReverse') === 'true',
-    waveformLfoType: window.WaveformLfo.normalize({ type: params.get('waveformLfoType') }).type,
-    waveformLfo: params.get('waveformLfo') === 'true',
-    waveformLfoRate: window.WaveformLfo.normalize({ rate: params.get('waveformLfoRate') }).rate,
-    waveformLfoDepth: window.WaveformLfo.normalize({ depth: params.get('waveformLfoDepth') }).depth,
 
 
     // Circles parameters

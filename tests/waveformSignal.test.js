@@ -1,20 +1,18 @@
 const fs=require('node:fs'), vm=require('node:vm');
-global.WaveformLfo=require('../js/utils/waveformLfo');
 global.WaveformAudio=require('../js/utils/waveformAudio');
 const scope=require('../js/utils/waveformScope');
 const {createWaveformPatternGeometry:geometry,createBarPatternSVG}=require('../js/utils/barPattern');
 const {createRuntime}=require('./helpers/exportCompositionRuntime');
 const {getLoopingGifFramePlan}=require('../js/utils/loopingGif');
-const values={frequency:24,type:0,lfo:{enabled:true,rate:2,depth:100,type:0}};
+const values={frequency:24,type:0};
 
-test('physical timebase covers two real LFO cycles and at least four carrier cycles across all rates',()=>{
+test('physical timebase covers exactly four carrier cycles, ignoring retired settings',()=>{
   for(const frequency of [10,24,100])for(const rate of [.07,2,100,1300]) {
-    const v={...values,frequency,lfo:{...values.lfo,rate}};
-    expect(scope.duration(v)*rate).toBeGreaterThanOrEqual(2-1e-12);
-    expect(scope.duration(v)*WaveformAudio.frequency(frequency)).toBeGreaterThanOrEqual(4-1e-12);
-    expect(scope.duration(v)).toBeLessThanOrEqual(2/.07);
+    const v={...values,frequency,lfo:{enabled:true,rate,depth:100,type:3}};
+    expect(scope.duration(v)*WaveformAudio.frequency(frequency)).toBeCloseTo(4,12);
+    expect(scope.settings(v)).toEqual({frequency,type:0});
+    expect(scope.duration(v)).toBeLessThanOrEqual(4/32.7);
   }
-  expect(scope.duration({...values,lfo:{enabled:false}})*WaveformAudio.frequency(24)).toBeCloseTo(4,12);
 });
 
 test('extrema reduction preserves actual signed PCM peaks and temporal order, not a reconstructed oscillator',()=>{
@@ -50,20 +48,20 @@ test('the worklet captures post-gain PCM min/max and contributes exactly zero au
   expect(Array.from(batches[1].pcm)).toEqual(Array.from(pcm.subarray(2048)));
 });
 
-test('live capture keeps its requested timebase, freezes recording identity and retains history at .07Hz',async()=>{
+test('live capture keeps carrier timebase, freezes recording identity and retains history across pitch edits',async()=>{
   let node;const environment={AudioWorkletNode:class {constructor(){node=this;this.port={};}connect(){}disconnect(){}}};
   const input={connect:jest.fn(),disconnect:jest.fn()};
   const c=scope.createController({environment});
   c.configure(values);await c.attach({sampleRate:48000,audioWorklet:{addModule:async()=>{}},destination:{}},input);
   node.port.onmessage({data:Float32Array.from({length:12000},(_,i)=>i%2?.08:-.04)});
-  c.tick(0,true);expect(c.frame()).toMatchObject({source:'live',seconds:1,filling:false});
+  c.tick(0,true);expect(c.frame()).toMatchObject({source:'live',seconds:Math.floor(scope.duration(values)*6000)/6000,filling:false});
   const captured=c.capture(),held=c.frame();expect(captured.recording.frame(0)).toBe(held);expect(captured.recording.frame(captured.recording.replaySeconds)).toBe(held);c.tick(100,false);
   node.port.onmessage({data:new Float32Array(12000)});c.tick(100,false);
   expect(c.frame()).toBe(held);expect(c.capture().recording).toBe(captured.recording);
-  c.configure({...values,lfo:{...values.lfo,rate:.07}});
+  c.configure({...values,frequency:10});
   node.port.onmessage({data:Float32Array.from({length:12000},()=>.01)});
-  c.tick(0,true);expect(c.frame()).toMatchObject({source:'live',filling:true,requestedSeconds:2/.07});
-  expect(c.status()).toContain('filling history');
+  c.tick(0,true);expect(c.frame()).toMatchObject({source:'live',filling:false,requestedSeconds:4/32.7});
+  expect(c.status()).not.toContain('filling history');
   c.detach();expect(input.disconnect).toHaveBeenCalled();c.dispose();
 });
 
@@ -81,7 +79,7 @@ test('SVG/PNG freeze displayed PCM and GIF reads the frozen actual recording aft
   r.select('waveform');r.state.composition='bar';r.state.values.waveformScopeRequired=true;
   const snapshot=r.captureLogoExportSnapshot();
   expect(snapshot.values.waveformScope).toEqual(f);expect(snapshot.waveformRecording).toBe(recording);
-  r.state.values.waveformLfoDepth=0;expect(snapshot.values.waveformLfoDepth).toBe(60);
+  r.state.values.waveformFrequency=100;expect(snapshot.values.waveformFrequency).toBe(17);
   const paths=[],ctx=Object.fromEntries(['setTransform','clearRect','save','scale','translate','beginPath','rect','clip','restore'].map(k=>[k,()=>{}]));
   ctx.fill=path=>paths.push(path.d);ctx.getImageData=()=>null;
   r.Path2D=class {constructor(d){this.d=d;}};r.document.createElement=()=>({getContext:()=>ctx});
@@ -116,9 +114,9 @@ test('routed bootstrap loads the actual audio/scope head dependencies before mai
   const bootstrap=fs.readFileSync(require.resolve('../js/generatorBootstrap'),'utf8');
   const early=bootstrap.slice(bootstrap.indexOf('const earlySources'),bootstrap.indexOf('await Promise.all(earlySources'));
   const html=fs.readFileSync(require.resolve('../generator/index.html'),'utf8');
-  for(const name of ['waveformLfo','waveformAudio','waveformScope']) {
+  for(const name of ['waveformAudio','waveformScope']) {
     expect(early).toContain(`'${name}'`);
-    const version=name==='waveformScope'?'20261110-scope-contours':'20261110-waveform-scope';
+    const version='20261111-remove-lfo';
     expect(html).toContain(`src="js/utils/${name}.js?v=${version}"`);
   }
 });

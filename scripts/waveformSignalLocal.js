@@ -1,6 +1,6 @@
 /* Offline native SVG/PNG/GIF verification; never launches a browser.
  * Requires test-only @napi-rs/canvas and node-web-audio-api (not an application dependency).
- * NODE_PATH=/tmp/rpi-lfo-qa/node_modules node scripts/waveformSignalLocal.js [out]
+ * NODE_PATH=/tmp/rpi-audio-qa/node_modules node scripts/waveformSignalLocal.js [out]
  */
 const fs=require('node:fs'), path=require('node:path'), assert=require('node:assert/strict');
 const {createCanvas,Image:NativeImage,Path2D,loadImage}=require('@napi-rs/canvas');
@@ -34,7 +34,7 @@ function workers() {
     terminate(){this.stopped=true;clearTimeout(this.timer);}
   };
 }
-global.WaveformLfo=require('../js/utils/waveformLfo');
+const carrierOnly = { create: (_context, destination) => ({ input: destination }) };
 global.WaveformAudio=require('../js/utils/waveformAudio');
 const scope=require('../js/utils/waveformScope');
 const audio=require('node-web-audio-api');
@@ -46,9 +46,9 @@ async function raw(values,legacy=false,tap=false) {
   if(legacy) {
     // Native audible context is already running before original graph creation.
     const running=new Proxy(context,{get(target,key){if(key==='state')return 'running';const value=target[key];return typeof value==='function'?value.bind(target):value;}});
-    await reference(running,master,values,WaveformLfo,audio.AudioWorkletNode);
+    await reference(running,master,values,carrierOnly,audio.AudioWorkletNode);
   } else {
-    const graph=WaveformAudio.create(context,master,values,{},audio.AudioWorkletNode);
+    const graph=WaveformAudio.create(context,master,values,audio.AudioWorkletNode);
     master.gain.cancelScheduledValues(0);master.gain.setValueAtTime(0,0);master.gain.linearRampToValueAtTime(1,.05);graph.update(values);
   }
   const batches=[];
@@ -62,42 +62,27 @@ async function raw(values,legacy=false,tap=false) {
   await new Promise(resolve=>setImmediate(resolve));
   return {pcm:buffer.getChannelData(0).slice(),batches};
 }
-async function actualGain(lfo) {
-  const context=new audio.OfflineAudioContext(1,24000,48000);
-  const voice=WaveformLfo.create(context,context.destination,lfo),source=context.createConstantSource();
-  source.offset.value=1;source.connect(voice.input);source.start(0);
-  const buffer=await context.startRendering();return buffer.getChannelData(0).slice();
-}
 async function main(){
   const r=runtime(),result={kind:'Native offline Web Audio/export QA; no browser, hardware audio or OS download',audio:[],png:[],gif:[]};
-  let ordinal=0,maxError=0;
-  for(const frequency of [10,100])for(const type of [0,.5,1,1.5,2])for(const rate of [.07,2,1300])for(const depth of [0,25,100]) {
-    const values={frequency,type,lfo:{enabled:true,rate,depth,type:[0,1.5,3][ordinal++%3]}};
+  let maxError=0;
+  for(const frequency of [10,24,100])for(const type of [0,.5,1,1.5,2]) {
+    const values={frequency,type};
     const before=await raw(values,true),after=await raw(values);
     let error=0;for(let i=0;i<before.pcm.length;i++)error=Math.max(error,Math.abs(before.pcm[i]-after.pcm[i]));
     assert.ok(error<1e-7,`Audible graph changed: ${JSON.stringify(values)} ${error}`);
-    maxError=Math.max(maxError,error);result.audio.push({frequency,type,rate,depth,error});
+    maxError=Math.max(maxError,error);result.audio.push({frequency,type,error});
   }
   console.log(`Audio: ${result.audio.length} original/shared graph PCM comparisons; max error ${maxError}`);
-  let amProductMaxError=0,amCases=0;
-  for(const rate of [.07,2,1300])for(const type of [0,.5,1,1.5,2,2.5,3])for(const depth of [25,100]) {
-    const values={frequency:24,type:0,lfo:{enabled:true,rate,type,depth}};
-    const wet=await raw(values),dry=await raw({...values,lfo:{...values.lfo,enabled:false}}),gain=await actualGain(values.lfo);
-    for(let i=12000;i<wet.pcm.length;i++)amProductMaxError=Math.max(amProductMaxError,Math.abs(wet.pcm[i]-dry.pcm[i]*gain[i]));
-    amCases++;
-  }
-  assert.ok(amProductMaxError<1e-7,`Post-gain PCM is not the AM product: ${amProductMaxError}`);
-  result.am={cases:amCases,maxError:amProductMaxError};console.log(`Actual post-gain AM product: ${amCases} cases; max error ${amProductMaxError}`);
   // Independent worklet contexts can start at different phases in the native
   // test engine. Pulse preservation is verified by exact graph/message events
   // in Jest, and actual duty/DC/RMS here rather than claiming phase identity.
-  const pulse=await raw({frequency:100,type:3,lfo:{enabled:false}});
+  const pulse=await raw({frequency:100,type:3});
   let pulseMean=0,pulseSquare=0;
   for(let i=12000;i<pulse.pcm.length;i++){pulseMean+=pulse.pcm[i];pulseSquare+=pulse.pcm[i]**2;}
   pulseMean/=12000;const pulseRms=Math.sqrt(pulseSquare/12000);
   assert.ok(Math.abs(pulseMean-.06)<.002);assert.ok(Math.abs(pulseRms-.1)<1e-5);
   result.pulse={mean:pulseMean,rms:pulseRms,expectedDuty:.8,independentStartupPhase:true};
-  const tapValues={frequency:24,type:1.5,lfo:{enabled:true,rate:2,depth:100,type:1.5}};
+  const tapValues={frequency:24,type:1.5};
   const plain=await raw(tapValues),tapped=await raw(tapValues,false,true);
   assert.deepEqual(plain.pcm,tapped.pcm);
   const extrema=scope.pcmExtrema(tapped.pcm),captured=Float32Array.from(tapped.batches.flatMap(data=>Array.from(data.extrema)));
@@ -107,15 +92,15 @@ async function main(){
   result.tap={pairs:captured.length/2,orderedSamples:ordered.length,audibleUnchanged:true,extremaExact:true,orderedExact:true};
   console.log(`Live worklet side tap: ${captured.length/2} exact actual-PCM extrema pairs; audible samples unchanged`);
   const sheet=createCanvas(1200,720),sc=sheet.getContext('2d');sc.fillStyle='#fff';sc.fillRect(0,0,1200,720);
-  sc.fillStyle='#000';sc.font='17px sans-serif';sc.fillText('Actual OfflineAudioContext signal · Sine carrier · 100% LFO depth',20,28);
+  sc.fillStyle='#000';sc.font='17px sans-serif';sc.fillText('Actual OfflineAudioContext signal · unmodulated carrier',20,28);
   const recordings=new Map();let row=0;
-  for(const rate of [.07,2,100,1300])for(const type of [0,1.5,3])for(const depth of [25,100]) {
-    const model={frequency:24,type:0,lfo:{enabled:true,rate,type,depth}};
-    const recording=await scope.render(model,audio);recordings.set(`${rate}/${type}/${depth}`,recording);
+  for(const frequency of [10,24,100])for(const type of [0,1.5,3]) {
+    const model={frequency,type};
+    const recording=await scope.render(model,audio);recordings.set(`${frequency}/${type}`,recording);
     const view=scope.sweep(recording,model),first=recording.frame(view.origin);
     const replay=scope.sweepReplay(view,0,first,false);
     r.waveformScopeController={capture:()=>({frame:first,recording:replay})};
-    Object.assign(r.state.values,{waveformLfo:true,waveformLfoRate:rate,waveformLfoType:type,waveformLfoDepth:depth,waveformScopeRequired:true});
+    Object.assign(r.state.values,{waveformFrequency:frequency,waveformType:type,waveformScopeRequired:true});
     const snapshot=r.captureLogoExportSnapshot(),png=await r.createPNGExportBlob(snapshot,new AbortController().signal);
     assert.equal(png.type,'image/png');const bytes=Buffer.from(await png.arrayBuffer()),image=await loadImage(bytes);
     assert.equal(image.width,1160);assert.equal(image.height,232);
@@ -123,21 +108,21 @@ async function main(){
     const pixels=ctx.getImageData(0,0,image.width,image.height).data;
     let ink=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i])ink++;
     assert.ok(ink>0);
-    const name=`rate-${rate}-shape-${type}-depth-${depth}`;
+    const name=`frequency-${frequency}-shape-${type}`;
     fs.writeFileSync(path.join(out,`${name}.png`),bytes);
-    if(depth===100) {
+    {
       fs.writeFileSync(path.join(out,`${name}.svg`),snapshot.svgSource);
       const column=type===0?0:type===1.5?1:2,y=55+Math.floor(row/3)*160;
-      sc.fillStyle='#000';sc.font='14px sans-serif';sc.fillText(`${rate} Hz · shape ${type} · ${recording.seconds.toFixed(3)} s`,20+column*395,y);
+      sc.fillStyle='#000';sc.font='14px sans-serif';sc.fillText(`${WaveformAudio.frequency(frequency).toFixed(2)} Hz · shape ${type} · ${recording.seconds.toFixed(3)} s`,20+column*395,y);
       sc.drawImage(image,10+column*395,y+5,386,77);row++;
     }
-    result.png.push({rate,type,depth,seconds:recording.seconds,width:image.width,height:image.height,ink});
+    result.png.push({frequency,type,seconds:recording.seconds,width:image.width,height:image.height,ink});
   }
   fs.writeFileSync(path.join(out,'contact-sheet.png'),sheet.toBuffer('image/png'));
   workers();
-  for(const rate of [.07,2,100,1300])for(const type of [0,3]) {
-    const recording=recordings.get(`${rate}/${type}/100`);
-    const model={frequency:24,type:0,lfo:{enabled:true,rate,type,depth:100}};
+  for(const frequency of [10,24,100])for(const type of [0,3]) {
+    const recording=recordings.get(`${frequency}/${type}`);
+    const model={frequency,type};
     const view=scope.sweep(recording,model),first=recording.frame(view.origin);
     const replay=scope.sweepReplay(view,0,first,false);
     r.waveformScopeController={capture:()=>({frame:first,recording:replay})};
@@ -155,11 +140,11 @@ async function main(){
         expectedHashes[index]=hash(expected.data);
         return {width:frame.width,height:frame.height,data:new Uint8ClampedArray(frame.data)};
       }});
-    const bytes=Buffer.from(await encoded.blob.arrayBuffer());fs.writeFileSync(path.join(out,`rate-${rate}-shape-${type}.gif`),bytes);
+    const bytes=Buffer.from(await encoded.blob.arrayBuffer());fs.writeFileSync(path.join(out,`frequency-${frequency}-shape-${type}.gif`),bytes);
     const gif=parseGif(bytes);let frames=0;
     for(const frame of decodeFrames(gif)){assert.equal(hash(frame.rgba),expectedHashes[frames],`Decoded frame ${frames} changed pixels`);frames++;}
-    assert.equal(frames,plan.frameCount);result.gif.push({rate,type,frames,uniqueFrames:new Set(expectedHashes).size,period:plan.periodSeconds,bytes:bytes.length});
-    renderer.release();console.log(`GIF ${rate} Hz shape ${type}: ${frames} decoded frames`);
+    assert.equal(frames,plan.frameCount);result.gif.push({frequency,type,frames,uniqueFrames:new Set(expectedHashes).size,period:plan.periodSeconds,bytes:bytes.length});
+    renderer.release();console.log(`GIF frequency ${frequency} shape ${type}: ${frames} decoded frames`);
   }
   fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(result,null,2));
   console.log(`PASS: ${result.audio.length} audio parity cases, exact live tap, ${result.png.length} PNGs, ${result.gif.length} GIFs, ${result.gif.reduce((n,g)=>n+g.frames,0)} decoded frames. ${out}`);
