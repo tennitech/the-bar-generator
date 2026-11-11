@@ -17,7 +17,7 @@ controllers, selection and all other editor states remain unchanged. Current
 main already includes copy audit #187, menu release #184 and dice #191; their
 copy, startup/About modules, presentation and animation are preserved. Only the
 two CSS scopes and their synchronized cache keys change production behavior.
-All 31 focused checks in five suites, JavaScript/81 inline-script syntax and
+All 37 focused checks in seven suites, JavaScript/81 inline-script syntax and
 source/cache checks pass. See [spacing rationale and QA limits](color_help_spacing_qa.md).
 
 
