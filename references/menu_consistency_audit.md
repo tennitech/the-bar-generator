@@ -63,3 +63,6 @@ images in a permitted browser environment. No screenshots were manufactured.
 Reconciled onto #182, preserving its Ring/GIF runtime keys and #181 trackpad
 behavior. Routed shell, bootstrap fallback and Home prefetch advance together
 so returning visitors receive the updated dialog markup and helper.
+
+Reconciled again after #183: independent dice motion CSS, parameter-control
+helper keys and documentation are retained. Final local tests: 1,128 / 96 suites.

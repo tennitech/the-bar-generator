@@ -3,6 +3,32 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 independent Randomize dice motion
+
+Randomize's two existing SVG dice now move around their own fill-box centers.
+The rear die lifts with a small clockwise tilt and settles over 240ms; the front
+die counter-tilts and settles over 280ms, each with a gentle recoil. The icon
+geometry, thin stroke, fixed 18px slot, button dimensions, labels and Randomize
+callback remain unchanged. Transforms do not affect document layout; bounded
+visible overflow avoids clipping the tiny excursions.
+
+Repeated clicks cancel/replace each die's response from its current computed
+pose, keeping only one active animation per die. Completion callbacks cannot
+clear a newer response. Natural finish leaves no persistent transform. Page
+exit, backgrounding or a live reduced-motion preference cancel both; reduced
+motion and unavailable SVG animation keep a static icon. Keyboard-generated
+native clicks use the same immediate Randomize action and feedback path.
+Undo/Reset retain their existing label response. No bar model/export changes.
+
+Tests cover distinct transforms/timing, rapid repetition and continuity, stale
+completion, normal cleanup, reduced motion, page interruption, unsupported
+animation and native-click/controller semantics. Eight light/dark 18px key-pose
+reconstructions were inspected within the existing button context and bounded
+overflow envelope. This is offline SVG evidence, not browser motion QA. Full
+suite, exact-head required CI and production evidence are recorded in the PR.
+Actual native keyboard/touch, browser animation timing and aesthetic acceptance
+remain unverified; no prior denied browser route is retried.
+
 ## November 11 Ring route cache recovery
 
 Post-release inspection caught existing route stubs reusing the older fetched
@@ -2560,7 +2586,7 @@ them into one interaction. Export geometry, official palette, bar generation,
 audio and the custom theme rows are unchanged. See
 [the inventory and QA limits](menu_consistency_audit.md).
 
-Validation: 1,118 tests across 96 suites pass; helper/smoke syntax and whitespace
+Validation: 1,128 tests across 96 suites pass; helper/smoke syntax and whitespace
 checks pass. Rendered browser, native keyboard/touch, zoom and Safari checks remain
 unverified under the existing browser restriction. A reusable four-viewport,
 three-theme smoke check is included for a permitted browser environment.

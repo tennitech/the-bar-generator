@@ -11,10 +11,10 @@ function fixture(style) {
   const header = { textContent: 'PARAMETERS', querySelector: () => null,
     replaceChildren(...children) { this.children = children; }, after() {} };
   const group = { dataset: { parameterActions: style }, querySelector: () => header, querySelectorAll: () => [] };
-  const document = { createElement: () => node(),
+  const document = { hidden: false, addEventListener: jest.fn(), createElement: () => node(),
     querySelectorAll: selector => selector === '[data-parameter-actions]' ? [group] : [],
     querySelector: selector => selector.startsWith('[data-parameter-actions=') ? group : null };
-  const scope = {};
+  const scope = { matchMedia: () => ({ matches: false, addEventListener: jest.fn() }), addEventListener: jest.fn() };
   vm.runInNewContext(source, { window: scope, document });
   scope.ParameterControls.prepare(document);
   return { button: header.children[1].children[0], api: scope.ParameterControls };
@@ -42,4 +42,18 @@ test.each(styles)('%s Randomize uses the decorative reference-matched dice with 
   expect(glyph.innerHTML).toContain('cx="11.5" cy="12.5" r="1.35"');
   expect(glyph.innerHTML).toContain('<rect x="2" y="9" width="13" height="13" rx="2"/>');
   expect(glyph.innerHTML).not.toMatch(/rotate-ccw|shuffle|<image|<mask|fill="(?:white|black|#)/);
+});
+
+
+test.each([0, 1])('native click activation (detail=%s) randomizes once and animates both faces without delaying the action', detail => {
+  const { button, api } = fixture('ticker');
+  const animate = () => jest.fn(() => ({ cancel: jest.fn(), finished: new Promise(() => {}) }));
+  const back = { animate: animate() }, front = { animate: animate() };
+  button.querySelector = selector => selector.includes('back') ? back : front;
+  const randomize = jest.fn(); api.bindActions({ randomize });
+  button.listeners.click({ detail, preventDefault() {} });
+  expect(randomize).toHaveBeenCalledTimes(1); expect(randomize).toHaveBeenCalledWith('ticker');
+  expect(back.animate).toHaveBeenCalledTimes(1); expect(front.animate).toHaveBeenCalledTimes(1);
+  expect(randomize.mock.invocationCallOrder[0]).toBeLessThan(back.animate.mock.invocationCallOrder[0]);
+  expect(button.attrs['aria-label']).toBe('Randomize ticker parameters');
 });

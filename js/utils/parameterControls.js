@@ -29,19 +29,39 @@
       scope.addEventListener('pagehide', cancelFeedback);
       document.addEventListener('visibilitychange', () => { if (document.hidden) cancelFeedback(); });
     }
-    if (feedbackMotion.matches || document.hidden) return;
-    const target = button.querySelector(action === 'randomize' ? '.parameter_action-icon' : '.parameter_action-label');
-    if (!target?.animate) return;
-    feedbackAnimations.get(target)?.cancel();
-    const frames = action === 'randomize'
-      ? [{ transform: 'rotate(0deg)' }, { transform: 'rotate(-18deg)', offset: 0.4 }, { transform: 'rotate(0deg)' }]
-      : action === 'undo' ? [{ transform: 'translateX(-2px)', opacity: 0.7 }, { transform: 'translateX(0)', opacity: 1 }]
-      : [{ opacity: 0.6 }, { opacity: 1 }];
-    const animation = target.animate(frames, { duration: action === 'randomize' ? 220 : 160, easing: 'ease-out' });
-    feedbackAnimations.set(target, animation);
-    const done = () => { if (feedbackAnimations.get(target) === animation) feedbackAnimations.delete(target); };
-    animation.finished.then(done, done);
+    if (feedbackMotion.matches || document.hidden) { cancelFeedback(); return; }
+    const rest = 'translate(0px, 0px) rotate(0deg)';
+    const responses = action === 'randomize' ? [
+      { target: button.querySelector('[data-die-face="back"]'), duration: 240, frames: [
+        { transform: rest },
+        { transform: 'translate(0.25px, -0.6px) rotate(7deg)', offset: 0.36 },
+        { transform: 'translate(0px, 0.15px) rotate(-2deg)', offset: 0.72 },
+        { transform: rest }
+      ] },
+      { target: button.querySelector('[data-die-face="front"]'), duration: 280, frames: [
+        { transform: rest },
+        { transform: 'translate(-0.25px, 0.5px) rotate(-8deg)', offset: 0.42 },
+        { transform: 'translate(0px, -0.1px) rotate(2deg)', offset: 0.78 },
+        { transform: rest }
+      ] }
+    ] : [{ target: button.querySelector('.parameter_action-label'), duration: 160,
+      frames: action === 'undo'
+        ? [{ transform: 'translateX(-2px)', opacity: 0.7 }, { transform: 'translateX(0)', opacity: 1 }]
+        : [{ opacity: 0.6 }, { opacity: 1 }] }];
+    for (const { target, duration, frames } of responses) {
+      if (typeof target?.animate !== 'function') continue;
+      const previous = feedbackAnimations.get(target);
+      // A repeated activation continues from each die's current displayed pose.
+      const current = action === 'randomize' && previous ? scope.getComputedStyle?.(target)?.transform : null;
+      previous?.cancel();
+      const keyframes = current && current !== 'none' ? [{ ...frames[0], transform: current }, ...frames.slice(1)] : frames;
+      const animation = target.animate(keyframes, { duration, easing: 'ease-out' });
+      feedbackAnimations.set(target, animation);
+      const done = () => { if (feedbackAnimations.get(target) === animation) feedbackAnimations.delete(target); };
+      animation.finished.then(done, done);
+    }
   }
+
   function supportsActions(style) {
     return Object.prototype.hasOwnProperty.call(capabilities, style) && Boolean(capabilities[style]);
   }
