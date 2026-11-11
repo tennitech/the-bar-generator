@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261111-independent-dice-ring" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261111-export-choice-states" rel="stylesheet" type="text/css" />
   <link href="css/editor-accessibility.css?v=20261110-larger-controls-release" rel="stylesheet" type="text/css">
   <script src="js/utils/editorAccessibility.js?v=20261110-larger-controls-release"></script>
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
@@ -109,19 +109,19 @@
             <fieldset class="export_composition">
               <legend class="export_size-label">Export composition</legend>
               <div class="export_composition-options">
-                <label class="export_composition-option">
+                <label class="export_composition-option export_choice">
                   <input id="export-composition-logo" type="radio" name="export-composition" value="logo" checked>
                   <span class="export_composition-art" aria-hidden="true">
                     <svg id="export-composition-preview-logo" xmlns="http://www.w3.org/2000/svg" focusable="false"></svg>
                   </span>
-                  <span class="export_composition-title">Bar + RPI</span>
+                  <span class="export_composition-title export_choice-label"><span class="export_choice-text">Bar + RPI</span><span class="export_choice-reserve" aria-hidden="true">Bar + RPI</span></span>
                 </label>
-                <label class="export_composition-option">
+                <label class="export_composition-option export_choice">
                   <input id="export-composition-bar" type="radio" name="export-composition" value="bar">
                   <span class="export_composition-art" aria-hidden="true">
                     <svg id="export-composition-preview-bar" xmlns="http://www.w3.org/2000/svg" focusable="false"></svg>
                   </span>
-                  <span class="export_composition-title">Bar only</span>
+                  <span class="export_composition-title export_choice-label"><span class="export_choice-text">Bar only</span><span class="export_choice-reserve" aria-hidden="true">Bar only</span></span>
                 </label>
               </div>
             </fieldset>
@@ -131,13 +131,13 @@
               <option value="standard">Standard</option>
             </select>
             <div class="export_size-options" role="radiogroup" aria-labelledby="export-size-label" aria-describedby="export-dimensions export-size-note">
-              <label class="export_size-option">
+              <label class="export_size-option export_choice">
                 <input id="export-size-large" type="radio" name="export-size" value="large" checked>
-                <span>Large <small>Recommended</small></span>
+                <span class="export_size-copy"><span class="export_choice-label"><span class="export_choice-text">Large</span><span class="export_choice-reserve" aria-hidden="true">Large</span></span> <small>Recommended</small></span>
               </label>
-              <label class="export_size-option">
+              <label class="export_size-option export_choice">
                 <input id="export-size-standard" type="radio" name="export-size" value="standard">
-                <span>Standard</span>
+                <span class="export_size-copy"><span class="export_choice-label"><span class="export_choice-text">Standard</span><span class="export_choice-reserve" aria-hidden="true">Standard</span></span></span>
               </label>
             </div>
             <p id="export-dimensions" class="export_dimensions">2320 × 1524 px</p>

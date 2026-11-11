@@ -90,3 +90,13 @@ The official source pages were read in a browser. Rendered app QA was unavailabl
 in this environment. Final layout at phone/desktop widths, native screen-reader behavior,
 physical devices, aesthetic acceptance and formal RPI approval are not established
 by source review or the unit suite. Review screenshots are not included.
+
+## Release reconciliation after #188
+
+Rebased onto `81605e5`, preserving the entire export markup and CSS from #188.
+Only shell/bootstrap cache versions conflict; they advance together for this
+copy release, while export CSS retains its current key. Both project-status
+entries remain. Rechecked the copied official color guidance and all generator
+ARIA names, roles and relationships against current main. #184 remains a separate
+following release and is not included here. Final combined test and CI results
+are recorded on PR #187.

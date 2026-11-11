@@ -20,6 +20,24 @@ behavior, dependencies or logo assets change. Export-card cleanup is coordinated
 separately. [Audit record](ui_copy_audit.md) distinguishes code/tests, rendered
 checks and formal approval. Fresh route and fallback keys load the updated shell.
 
+## November 11 uniform export choice states
+
+Export composition and image size now share one bordered choice style, native
+radio semantics/glyph, neutral hover, menu-token selected fill and bold selected
+labels. Bold layout footprints are reserved with inaccessible copies; borders
+stay 1px in every state. Choices, Download/Copy and Cancel share an outside
+keyboard focus ring, and pressed action icons inherit the text color. Disabled
+hover is suppressed; forced colors restores system selection and native radios.
+
+The public baseline was visually and keyboard inspected. Candidate rendered QA
+remains unverified because the available browser environment could not open it;
+an optional multi-width/theme/editor-size regression script is included. All 1,130 tests across 96 suites pass, including source,
+contrast and existing export/interaction checks.
+See [QA evidence and limits](export_choice_states_qa.md). Cache keys advance
+through route first paint and fetched shell together. This export-only change
+does not include the pending #184 three-dot menu/dialog work, or any real artwork,
+renderer, export dimensions, palette, scientific model or motion changes.
+
 ## November 11 export-composition copy cleanup
 
 The composition choices retain their visible names, Bar + RPI and Bar only, and
