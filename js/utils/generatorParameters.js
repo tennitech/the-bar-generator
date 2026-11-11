@@ -94,10 +94,10 @@ function read() {
     trussThickness: parseFloat(params.get('trussThickness')) || 2,
 
     // Staff parameters
-    staffNotes: params.get('staffNotes') || '',
-    staffTempo: parseInt(params.get('staffTempo')) || 120,
-    staffInstrument: params.get('staffInstrument') || 'piano',
-    staffNoteShape: normalizeMusicNoteShape(params.get('staffNoteShape') || 'circle'),
+    staffNotes: window.MusicStyle.serialize(params.has('staffNotes') ? params.get('staffNotes') : window.MusicStyle.presets.rise),
+    staffTempo: Math.max(60, Math.min(240, Math.round(Number(params.get('staffTempo')) || 120))),
+    staffInstrument: ['piano', 'synth', 'marimba'].includes(params.get('staffInstrument')) ? params.get('staffInstrument') : 'piano',
+    staffNoteShape: normalizeMusicNoteShape(params.get('staffNoteShape') || 'square'),
     staffReverb: params.get('staffReverb') === 'true',
     staffTremolo: params.get('staffTremolo') === 'true',
 

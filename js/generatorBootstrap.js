@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261111-waveform-notes-r2';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261111-music-score-r2';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
@@ -20,7 +20,7 @@
       return window.GeneratorRoutes;
     }
 
-    await loadScript('js/utils/generatorRoutes.js?v=20261111-waveform-notes-r2');
+    await loadScript('js/utils/generatorRoutes.js?v=20261111-music-score-r2');
     return window.GeneratorRoutes || null;
   }
 
@@ -45,10 +45,10 @@
     const bodyClone = doc.body.cloneNode(true);
     const scriptSources = Array.from(bodyClone.querySelectorAll('script[src]'))
       .map(script => script.getAttribute('src'))
-      .filter(src => src && !(window.GeneratorRoutes && src.startsWith('js/utils/generatorRoutes.js')));
+      .filter(src => src && !(window.GeneratorRoutes && src.startsWith('js/utils/generatorRoutes.js?v=20261111-music-score-r2')));
     if (window.__RPI_GENERATOR_ROUTE_STYLE__ === 'lunar') {
       const lunarSource = 'js/utils/lunarBarAsset.js?v=20261103-save-removal';
-      const patternIndex = scriptSources.findIndex(src => src.startsWith('js/utils/barPattern.js'));
+      const patternIndex = scriptSources.findIndex(src => src.startsWith('js/utils/barPattern.js?v=20261111-music-score-r2'));
       scriptSources.splice(patternIndex < 0 ? scriptSources.length : patternIndex, 0, lunarSource);
     }
 
@@ -59,8 +59,8 @@
       .map(name => shellSources.find(src => src.startsWith(`js/utils/${name}.js`))).filter(Boolean);
     await Promise.all(earlySources.map(source => { earlyScripts.add(source); return loadScript(source); }));
     // Reconcile fetched shell CSS before inserting its chrome (also protects old route stubs).
-    const shellCSS = doc.querySelector('link[rel="stylesheet"][href*="css/style.css"]');
-    const routeCSS = document.querySelector('link[rel="stylesheet"][href*="css/style.css"]');
+    const shellCSS = doc.querySelector('link[rel="stylesheet"][href*="css/style.css?v=20261111-music-score-r2"]');
+    const routeCSS = document.querySelector('link[rel="stylesheet"][href*="css/style.css?v=20261111-music-score-r2"]');
     if (shellCSS && routeCSS && routeCSS.getAttribute('href') !== shellCSS.getAttribute('href')) {
       await new Promise((resolve, reject) => {
         routeCSS.onload = resolve;

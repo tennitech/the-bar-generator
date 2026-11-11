@@ -28,6 +28,28 @@ is retained pending explicit user testing; automated checks are not acceptance.
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 Music piano-roll rebuild
+
+Music is selectable at `/generator/music/` while remaining under **Under
+Construction**, pending owner review. It is not added to the Home catalog or
+promoted to another category. The old clipped pseudo-staff is replaced with a
+shared chromatic score: C4–C5 occupy 13 fixed semitone lanes, onset and duration
+map to horizontal position and length, and the complete phrase fills the time
+domain. Rests consume time without paint. Original Rise & return, Arpeggio and
+Syncopation presets, four geometric treatments, labeled native note/rest buttons,
+removable events and 16-beat capacity provide an accessible composer.
+
+The same validated score drives preview, header/selector samples, SVG/PNG, URL
+state, Reset/Randomize/Undo and synthesized audio. Sharps no longer collide with
+naturals. The dormant graphics-export crash is removed. Audio uses equal
+temperament at A4 = 440 Hz, with tempo, voice and effects explicitly sound-only.
+No autoplay, new animation, dependencies or logo geometry changes. Empty/all-rest
+scores receive export recovery guidance. Snapshot notes are copied and frozen.
+
+See [model and QA record](music_bar.md) for sources, native export review images,
+automated coverage and browser limitations. This is an experimental application
+of piano-roll coordinates, not staff notation or a claim of formal RPI approval.
+
 ## November 11 taller physical marquee targets
 
 Directional prediction is removed following user testing. Each native bar link
