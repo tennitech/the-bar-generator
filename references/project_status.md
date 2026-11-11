@@ -28,6 +28,20 @@ is retained pending explicit user testing; automated checks are not acceptance.
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 routed generator startup recovery
+
+The Data Graph release exposed a shared bootstrap omission: its two head-only
+modules were absent from the routed loader, so initial query parsing failed on
+all styles, including Runway. The routed bootstrap now loads the graph model
+and controls before the pattern renderer and parameter parser. Route/bootstrap/
+shell cache identities advance together so returning clients receive the repair.
+
+Regression tests execute the actual bootstrap with the browser-mode model and
+parser on Runway and Data Graph, verify rendered graph SVG, and require every
+shell script to be loaded by the route or bootstrap. These fail against the old
+loader and pass against the repair. No bar geometry, data, exports or API change.
+Physical iOS Safari acceptance remains separate from automated validation.
+
 ## November 11 Data Graph numeric reconstruction
 
 Data Graph is now an accessible testing option within Under Construction, with
