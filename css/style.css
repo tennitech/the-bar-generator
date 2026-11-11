@@ -4061,11 +4061,11 @@ body { min-height: 0; }
 .color_guidance-button {
   appearance: none;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   width: fit-content;
-  margin-top: var(--control-label-gap);
+  margin-top: 0;
   min-height: 2.75rem;
-  padding: 0;
+  padding: var(--control-hint-gap) 0 0;
   border: 0;
   border-radius: 0;
   background: none;

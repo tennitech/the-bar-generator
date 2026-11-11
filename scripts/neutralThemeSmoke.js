@@ -142,6 +142,28 @@ async function guidanceCheck(page) {
   assert.equal(focus.buttonOutline, 'none');
   assert.equal(focus.labelOutline, 'rgb(214, 0, 28)');
   assert.equal(focus.labelOutlineWidth, '2px');
+  const originalSize = await page.evaluate(() => document.documentElement.dataset.editorSize || 'standard');
+  for (const size of ['standard', 'large']) {
+    await page.evaluate(value => { document.documentElement.dataset.editorSize = value; }, size);
+    await help.scrollIntoViewIfNeeded();
+    await help.focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
+    const layout = await help.evaluate(el => {
+      const target = el.getBoundingClientRect(), label = el.querySelector('.color_guidance-label');
+      const text = label.getBoundingClientRect();
+      const select = document.getElementById('color-mode-select').closest('.select-wrapper').getBoundingClientRect();
+      const hit = document.elementFromPoint(target.left + Math.min(target.width / 2, 12), target.top + 1);
+      return { targetGap: target.top - select.bottom, textGap: text.top - select.bottom,
+        height: target.height, buttonOutline: getComputedStyle(el).outlineStyle,
+        labelOutline: getComputedStyle(label).outlineWidth,
+        hitIsHelp: hit?.closest('#secondary-color-help') === el };
+    });
+    assert.ok(layout.targetGap >= -0.5 && layout.targetGap <= 0.5);
+    assert.ok(layout.textGap >= 5.5 && layout.textGap <= 8);
+    assert.ok(layout.height >= (size === 'large' ? 48 : 44));
+    assert.equal(layout.buttonOutline, 'none'); assert.equal(layout.labelOutline, '2px');
+    assert.equal(layout.hitIsHelp, true);
+  }
+  await page.evaluate(value => { document.documentElement.dataset.editorSize = value; }, originalSize);
   await help.click();
   assert.equal(await dialog.evaluate(el => el.matches(':modal')), true);
   const corners = await dialog.evaluate(el => ({

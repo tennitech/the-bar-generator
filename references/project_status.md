@@ -3,6 +3,42 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 directional marquee handoff
+
+Pointer travel previews the next native hit-tested bar up to 60ms/72px ahead,
+coalescing input into one frame and at most three hit tests. Only that local bar
+brightens early; it never owns selection or pauses a row. Prediction expires
+80ms after the last sample and is disabled for touch, drag, keyboard focus and
+reduced motion. Native hit testing preserves rotated geometry and overlay bounds.
+
+Real gaps still start brightening immediately, with a rate-12 critically damped
+field release rather than rate 26. A 32ms crossing raises background opacity to
+0.246 rather than 0.362; 50ms raises it to 0.298 rather than 0.499. There is no
+hold or debounce. Actual selection and local highlights retain rate 26, exact
+20% settled background, continuous value/velocity and cleanup. Art and exports
+are unchanged. Unit regressions cover preview expiry, immediate release, focus,
+touch/drag exclusion and bounded hit-testing. Cloud production browser initially
+opened but subsequent input timed out; rendered verification is not yet claimed.
+
+## November 11 compact Color Theme helper spacing
+
+How to use now sits closer to the Color Theme dropdown. Its transparent button
+keeps the 44px minimum hit area (48px in large-controls mode), but aligns its
+label at the top with the existing 6px hint-gap padding rather than centering it
+below an additional label-sized margin. No negative margin, transform, absolute
+hit-area extension or overlap is used. Large-controls mode also retains the
+existing tight red label focus outline instead of the generic full-button outline.
+
+Secondary-only visibility, text/copy, exact theme palette, modal/keyboard/touch
+controllers, selection and all other editor states remain unchanged. Current
+main already includes copy audit #187, menu release #184 and dice #191; their
+copy, startup/About modules, presentation and animation are preserved. Only the
+two CSS scopes and their synchronized cache keys change production behavior.
+All 37 focused checks in seven suites, JavaScript/81 inline-script syntax and
+source/cache checks pass. See [spacing rationale and QA limits](color_help_spacing_qa.md).
+
+
+
 ## November 11 continuous marquee emphasis
 
 Rapid hover reversals no longer restart a CSS opacity transition with a shortened
