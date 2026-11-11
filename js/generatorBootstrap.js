@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261111-data-graph-r3';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261111-route-dependencies-r1';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
@@ -55,7 +55,7 @@
     // Download dependencies together; async=false preserves their execution order.
     const shellSources = Array.from(doc.querySelectorAll('script[src]'), script => script.getAttribute('src'));
     const earlyScripts = new Set();
-    const earlySources = ['waveformNotes', 'numericControls', 'selectorPreviews', 'rulerScale', 'loopingGif', 'featherIcons', 'shareState', 'randomizeHistory', 'musicStyle', 'nucleotidePattern', 'barPattern', 'tickerDisplay', 'profanityFilter', 'quantumModel', 'quantumStudyModel', 'motionSpeed', 'sidebarSections', 'waveformAudio', 'waveformScope', 'generatorParameters', 'barInformation']
+    const earlySources = ['waveformNotes', 'numericControls', 'selectorPreviews', 'rulerScale', 'loopingGif', 'featherIcons', 'shareState', 'randomizeHistory', 'musicStyle', 'nucleotidePattern', 'dataGraph', 'dataGraphControls', 'barPattern', 'tickerDisplay', 'profanityFilter', 'quantumModel', 'quantumStudyModel', 'motionSpeed', 'sidebarSections', 'waveformAudio', 'waveformScope', 'generatorParameters', 'barInformation']
       .map(name => shellSources.find(src => src.startsWith(`js/utils/${name}.js`))).filter(Boolean);
     await Promise.all(earlySources.map(source => { earlyScripts.add(source); return loadScript(source); }));
     // Reconcile fetched shell CSS before inserting its chrome (also protects old route stubs).

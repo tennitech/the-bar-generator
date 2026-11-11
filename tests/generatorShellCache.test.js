@@ -61,3 +61,52 @@ test('a warm routed page fetches the new shell and loads its current runtime hel
   expect(loaded).not.toContain('js/main.js?v=20261110-waveform-scope');
   expect(loaded).toContain(currentShell.match(/js\/utils\/keyboardShortcuts\.js\?v=[\w-]+/)[0]);
 });
+
+test.each(['runway', 'graph'])('routed %s startup loads the graph model before its consumers', async style => {
+  const route = read(`generator/${style}/index.html`);
+  const shell = read('generator/index.html');
+  const loaded = [], initialStates = [], errors = [];
+  const realModules = new Set(['waveformNotes', 'numericControls', 'rulerScale', 'loopingGif',
+    'musicStyle', 'nucleotidePattern', 'dataGraph', 'dataGraphControls', 'barPattern', 'generatorParameters']);
+  const scope = { URLSearchParams, console: { error: error => errors.push(String(error)) },
+    GeneratorRoutes: require('../js/utils/generatorRoutes'),
+    location: { pathname: `/the-bar-generator/generator/${style}/`, search: '?graphData=-1,0,1&graphSource=custom', hash: '' },
+    GeneratorInitialState: { resolveTheme: () => 'black', apply() { initialStates.push(scope.GeneratorParameters.read()); }, syncHeaderLayout() {} },
+    setupCustomDropdowns() {}, ParameterControls: { prepare() {} },
+    p5: function () {}, setup() {},
+    fetch: async () => ({ ok: true, text: async () => shell }),
+    DOMParser: class { parseFromString(source) {
+      const bodyScripts = scriptNodes(source.slice(source.indexOf('<body')));
+      return { title: 'Generator', querySelector: () => null, querySelectorAll: () => scriptNodes(source),
+        body: { cloneNode: () => ({ childNodes: [], querySelectorAll: () => bodyScripts }) } };
+    } } };
+  scope.window = scope;
+  const context = vm.createContext(scope);
+  scope.document = { querySelector: () => null, createElement: () => ({}),
+    body: { append(script) {
+      loaded.push(script.src);
+      const name = script.src.match(/js\/utils\/([^/?]+)\.js/)?.[1];
+      try { if (realModules.has(name)) vm.runInContext(read(script.src.split('?')[0]), context); script.onload(); }
+      catch (error) { errors.push(error.message); script.onerror(); }
+    }, replaceChildren() {}, removeAttribute() {} },
+    getElementById: id => id === 'retry-generator' ? { addEventListener() {} } : null };
+  vm.runInContext(route.match(/<script>\s*(window\.__RPI_GENERATOR_ROUTE_STYLE__[\s\S]*?)<\/script>/)[1], context);
+  await vm.runInContext(read('js/generatorBootstrap.js'), context);
+  expect(errors).toEqual([]);
+  expect(initialStates).toHaveLength(1);
+  expect(initialStates[0]).toMatchObject({ style, graphData: '-1,0,1', graphSource: 'custom' });
+  const indexOf = name => loaded.findIndex(src => src.startsWith(`js/utils/${name}.js`));
+  expect(indexOf('dataGraph')).toBeGreaterThanOrEqual(0);
+  for (const consumer of ['dataGraphControls', 'barPattern', 'generatorParameters']) {
+    expect(indexOf('dataGraph')).toBeLessThan(indexOf(consumer));
+  }
+  // Prove barPattern did not permanently capture an undefined browser global.
+  expect(vm.runInContext(`createBarPatternSVG({ currentShader: 12, barStartX: 0, barY: 0,
+    exactBarWidth: 250, barHeight: 18, fgColor: '#000000', values: GeneratorParameters.read() })`, context)).toContain('<path');
+  expect(scope.DataGraphControls).toBeDefined();
+  expect(scope.__RPI_GENERATOR_P5_INSTANCE__).toBeDefined();
+  // Head-only dependencies must be present in either the route stub or the
+  // bootstrap load, even when a future feature adds a new shell helper.
+  const allLoaded = new Set([...scriptNodes(route).map(node => node.getAttribute('src')), ...loaded]);
+  for (const node of scriptNodes(shell)) expect(allLoaded.has(node.getAttribute('src'))).toBe(true);
+});
