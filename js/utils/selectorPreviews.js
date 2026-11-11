@@ -11,7 +11,7 @@
     if (!Object.hasOwn(shaders, style)) return '';
     const values = { timeSeconds: 0, loopOffsetX: 0, quantumPhase: 0,
       rulerRepeats: 10, rulerUnits: 10, tickerRepeats: 34, tickerRatio: 2, tickerWidthRatio: 2,
-      waveformType: 0, waveformFrequency: 24, waveformSpeed: .3, waveformPoints: 750,
+      waveformType: 0, waveformNote: 24, waveformSpeed: .3, waveformPoints: 750,
       circlesDensity: 50, circlesSizeVariation: 0, circlesFill: 'stroke',
       binaryText: 'RPI', morseText: 'RPI', numericMode: 'dotmatrix',
       linesVariant: 2, triangleGridVariant: 2, trianglesCount: 14, trianglesDirection: 'down-right' };

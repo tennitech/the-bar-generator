@@ -77,7 +77,7 @@ test('preparation stays within control groups, leaving the separate About footer
 test('Waveform keeps carrier, scope, Motion and Audio without the retired modulation controls', () => {
   const waveform = html.slice(html.indexOf('id="waveform-group"'), html.indexOf('id="circles-group"'));
   expect(waveform).not.toMatch(/waveform[-_]lfo|LFO/);
-  for(const id of ['waveform-type-slider','waveform-frequency-slider','waveform-scope-status','waveform-motion-toggle','waveform-reverse-toggle','waveform-speed-slider','waveform-audio-btn']) expect(waveform).toContain(`id="${id}"`);
+  for(const id of ['waveform-type-slider','waveform-note-slider','waveform-scope-status','waveform-motion-toggle','waveform-reverse-toggle','waveform-speed-slider','waveform-audio-btn']) expect(waveform).toContain(`id="${id}"`);
 });
 
 

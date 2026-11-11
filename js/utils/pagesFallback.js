@@ -47,7 +47,8 @@
     'tickerSpeed',
     'tickerReverse',
     'waveformType',
-    'waveformFrequency',
+    'waveformFrequency', // Read-only legacy migration.
+    'waveformNote',
     'waveformSpeed',
     'waveformReverse',
     'waveformEnvelope',

@@ -31,6 +31,17 @@
     const sourceControls = scope.loopingGifUtils && typeof scope.loopingGifUtils.normalizeMotionSpeedControls === 'function'
       ? scope.loopingGifUtils.normalizeMotionSpeedControls(value.controls)
       : { ...value.controls };
+    // A new field distinguishes MIDI notes from the retired linear index.
+    if (manifest['waveform-note-slider'] && scope.WaveformNotes) {
+      const legacy = sourceControls['waveform-frequency-slider'];
+      if (!Object.hasOwn(sourceControls, 'waveform-note-slider')) {
+        if (legacy !== undefined && (!Number.isFinite(Number(legacy)) || Number(legacy) < 10 || Number(legacy) > 100)) {
+          throw new Error('This share link has an invalid legacy waveform frequency.');
+        }
+        sourceControls['waveform-note-slider'] = String(scope.WaveformNotes.fromLegacy(legacy));
+      }
+      delete sourceControls['waveform-frequency-slider'];
+    }
     // Retired Red on White saves retain their other controls and use the
     // documented neutral fallback before native-option validation.
     if (['red', 'red-on-white'].includes(sourceControls['color-mode-select'])

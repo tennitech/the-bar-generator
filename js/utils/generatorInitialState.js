@@ -160,6 +160,10 @@
       if (!field || !field.dataset.urlParameter) return;
       let value = field.value;
       if (display.id === 'waveform-type-display') value = ['SINE', 'SAWTOOTH', 'SQUARE', 'PULSE'][Math.min(3, Math.max(0, Math.round(Number(value))))];
+      else if (display.id === 'waveform-note-display' && scope.WaveformNotes) {
+        const note = scope.WaveformNotes.get(value); value = note.name;
+        field.setAttribute('aria-valuetext', `${note.name}, ${note.frequencyHz.toFixed(3)} hertz`);
+      }
       else if (display.id === 'lines-variant-display') value = Number(value) === 1 ? 'LG' : 'MD';
       else if (display.id === 'neural-network-input-display') value += '%';
       else if (display.id === 'ticker-ratio-display') value += ':1';

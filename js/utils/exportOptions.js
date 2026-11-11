@@ -50,7 +50,7 @@
     if (snapshot.family === 'waveform') {
       const type = Number(values.waveformType);
       tokens.push(Number.isInteger(type) ? (['sine', 'saw', 'square', 'pulse'][type] || 'wave') : `wave-${String(type).replace('.', 'p')}`);
-      tokens.push(`f${values.waveformFrequency || 24}`);
+      tokens.push(`midi${values.waveformNote || 24}`);
     }
     if (snapshot.family === 'ruler') tokens.push(`r${values.rulerRepeats || 10}`, `u${values.rulerUnits || 10}`, `t${values.rulerThickness || 1}`);
     if (snapshot.family === 'ticker') tokens.push(`n${values.tickerRepeats || 34}`, `ratio${values.tickerRatio || 2}`);

@@ -4,14 +4,14 @@ const scope=require('../js/utils/waveformScope');
 const {createWaveformPatternGeometry:geometry,createBarPatternSVG}=require('../js/utils/barPattern');
 const {createRuntime}=require('./helpers/exportCompositionRuntime');
 const {getLoopingGifFramePlan}=require('../js/utils/loopingGif');
-const values={frequency:24,type:0};
+const values={note:24,type:0};
 
-test('physical timebase covers exactly four carrier cycles, ignoring retired settings',()=>{
-  for(const frequency of [10,24,100])for(const rate of [.07,2,100,1300]) {
-    const v={...values,frequency,lfo:{enabled:true,rate,depth:100,type:3}};
-    expect(scope.duration(v)*WaveformAudio.frequency(frequency)).toBeCloseTo(4,12);
-    expect(scope.settings(v)).toEqual({frequency,type:0});
-    expect(scope.duration(v)).toBeLessThanOrEqual(4/32.7);
+test('physical timebase covers the nearest whole-cycle window for every selected note',()=>{
+  const notes=require('../js/utils/waveformNotes');
+  for(const note of [24,49,84])for(const rate of [.07,2,100,1300]) {
+    const v={...values,note,lfo:{enabled:true,rate,depth:100,type:3}};
+    expect(scope.duration(v)*WaveformAudio.frequency(note)).toBeCloseTo(notes.get(note).cycles,12);
+    expect(scope.settings(v)).toEqual({note,type:0});
   }
 });
 
@@ -54,13 +54,13 @@ test('live capture keeps carrier timebase, freezes recording identity and retain
   const c=scope.createController({environment});
   c.configure(values);await c.attach({sampleRate:48000,audioWorklet:{addModule:async()=>{}},destination:{}},input);
   node.port.onmessage({data:Float32Array.from({length:12000},(_,i)=>i%2?.08:-.04)});
-  c.tick(0,true);expect(c.frame()).toMatchObject({source:'live',seconds:Math.floor(scope.duration(values)*6000)/6000,filling:false});
+  c.tick(0,true);expect(c.frame()).toMatchObject({source:'live',seconds:scope.duration(values),filling:false});
   const captured=c.capture(),held=c.frame();expect(captured.recording.frame(0)).toBe(held);expect(captured.recording.frame(captured.recording.replaySeconds)).toBe(held);c.tick(100,false);
   node.port.onmessage({data:new Float32Array(12000)});c.tick(100,false);
   expect(c.frame()).toBe(held);expect(c.capture().recording).toBe(captured.recording);
-  c.configure({...values,frequency:10});
+  c.configure({...values,note:24});
   node.port.onmessage({data:Float32Array.from({length:12000},()=>.01)});
-  c.tick(0,true);expect(c.frame()).toMatchObject({source:'live',filling:false,requestedSeconds:4/32.7});
+  c.tick(0,true);expect(c.frame()).toMatchObject({source:'live',filling:false,requestedSeconds:scope.duration({note:24})});
   expect(c.status()).not.toContain('filling history');
   c.detach();expect(input.disconnect).toHaveBeenCalled();c.dispose();
 });
@@ -116,7 +116,7 @@ test('routed bootstrap loads the actual audio/scope head dependencies before mai
   const html=fs.readFileSync(require.resolve('../generator/index.html'),'utf8');
   for(const name of ['waveformAudio','waveformScope']) {
     expect(early).toContain(`'${name}'`);
-    const version='20261111-remove-lfo';
+    const version='20261111-waveform-notes-r2';
     expect(html).toContain(`src="js/utils/${name}.js?v=${version}"`);
   }
 });
@@ -129,4 +129,13 @@ test('captured replay starts at the displayed phase and reverses without synthes
   expect(forward.frame(0)).toBe(first);expect(forward.frame(2)).toBe(first);
   expect(forward.frame(.2)).toEqual(recorded.frame(.8));
   expect(reverse.frame(.2)).toEqual(recorded.frame(.4));
+});
+
+test('frozen scope note/type metadata describes captured PCM rather than newer control values',()=>{
+  const pcm=Float32Array.from({length:48000},(_,i)=>.1*Math.sin(i*.01));
+  const recorded=scope.recording(scope.pcmExtrema(pcm),6000,scope.duration({note:49}), 'offline',scope.displaySettings({note:49,type:1.5}),pcm);
+  const frame=recorded.frame(0),r=createRuntime({waveformScopeController:{capture:()=>({frame,recording:recorded})}});
+  r.select('waveform');Object.assign(r.state.values,{waveformNote:84,waveformType:3});
+  const snapshot=r.captureLogoExportSnapshot();
+  expect(snapshot.values.waveformNote).toBe(49);expect(snapshot.values.waveformType).toBe(1.5);
 });

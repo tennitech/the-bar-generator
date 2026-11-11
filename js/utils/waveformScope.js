@@ -1,15 +1,15 @@
 /* Actual PCM scope: bounded min/max recording, offline rendering and live tap. */
 (function(root) {
-  const GROUP = 8, BINS = 1024, REPLAY = 2, SETTLE = .25;
+  const GROUP = 8, BINS = 1024, REPLAY = 2, SETTLE = .5;
+  const notes = root.WaveformNotes || (typeof require === 'function' ? require('./waveformNotes') : null);
   const SWEEP_HZ = .3;
   const MAX_HISTORY_SECONDS = 1;
   function settings(values = {}) {
-    return { frequency: Math.max(10, Math.min(100, Number(values.frequency) || 24)),
+    return { note: notes.read(values),
       type: Math.max(0, Math.min(3, Number(values.type) || 0)) };
   }
   function duration(values) {
-    const v = settings(values), hz = root.WaveformAudio.frequency(v.frequency);
-    return 4 / hz;
+    return notes.get(settings(values).note).seconds;
   }
   function pcmExtrema(pcm) {
     const result = new Float32Array(Math.floor(pcm.length / GROUP) * 2);
@@ -40,19 +40,20 @@
     let trace = null, traceDurationSeconds = 0;
     if (pcm && extra.displayMode === 'trace') {
       const sampleRate = rate * GROUP, begin = Math.max(0, start * sampleRate);
-      const length = Math.min(count * GROUP, pcm.length - Math.ceil(begin));
-      // Linear reconstruction between adjacent actual PCM samples removes
-      // quantized eight-sample motion without inventing an oscillator.
+      const sampleSpan = Math.max(0, Math.min(seconds * sampleRate, pcm.length - 1 - begin));
+      // Include both exact physical endpoints. Their sample indices are usually
+      // fractional because equal-tempered periods are not integer sample counts.
+      // Linear interpolation is a numerical reconstruction, not exact analog PCM.
       trace = [];
-      const points = Math.min(16384, length);
+      const points = Math.min(16384, Math.ceil(sampleSpan) + 1);
       for (let i = 0; i < points; i++) {
-        const at = begin + i * (length - 1) / Math.max(1, points - 1);
+        const at = begin + i * sampleSpan / Math.max(1, points - 1);
         const a = Math.floor(at), fraction = at - a;
         trace.push(pcm[a] + (pcm[Math.min(a + 1, pcm.length - 1)] - pcm[a]) * fraction);
       }
-      trace = Object.freeze(trace); traceDurationSeconds = (length - 1) / sampleRate;
+      trace = Object.freeze(trace); traceDurationSeconds = sampleSpan / sampleRate;
     }
-    return Object.freeze({ extrema: Object.freeze(extrema), seconds: target / rate,
+    return Object.freeze({ extrema: Object.freeze(extrema), seconds,
       availableSeconds: count / rate,
       startFraction: extra.alignEnd ? 1 - coverage : 0,
       endFraction: extra.alignEnd ? 1 : coverage,
@@ -61,12 +62,23 @@
   function recording(data, rate, seconds, source, extra = {}, pcm = null) {
     // data is private and never modified after construction. Snapshots retain
     // the recording even when controls replace the controller's current one.
-    const windowPairs = Math.max(1, Math.floor(seconds * rate + 1e-9));
-    seconds = windowPairs / rate;
+    // Keep the physical duration N/f. Quantizing to GROUP-sample blocks
+    // truncates the last cycle; integer counts are only storage bounds.
+    const windowPairs = Math.max(1, Math.ceil(seconds * rate));
     const replayPairs = Math.max(0, Math.min(Math.floor((extra.replayLimit ?? REPLAY) * rate + 1e-9), data.length / 2 - windowPairs));
     const replaySeconds = replayPairs / rate;
     return Object.freeze({ source, seconds, replaySeconds,
       triggerBefore(limit, searchSeconds) {
+        // Interpolate the crossing time in ordered PCM, rather than selecting
+        // a coarse eight-sample extrema block. Samples are never phase-forced.
+        if (pcm) {
+          const sampleRate = rate * GROUP;
+          const end = Math.min(pcm.length - 1, Math.floor(Math.min(replaySeconds, limit) * sampleRate));
+          const begin = Math.max(1, end - Math.ceil(searchSeconds * sampleRate));
+          for (let i = end; i >= begin; i--) if (pcm[i-1] <= 0 && pcm[i] > 0) {
+            return (i - 1 - pcm[i-1] / (pcm[i] - pcm[i-1])) / sampleRate;
+          }
+        }
         // Select an actual rising crossing; never alter or synthesize samples.
         const end = Math.min(replayPairs, Math.floor(limit * rate));
         const begin = Math.max(1, end - Math.ceil(searchSeconds * rate));
@@ -90,11 +102,11 @@
   }
   function sweepSpan(values) {
     const v = settings(values);
-    return 1 / root.WaveformAudio.frequency(v.frequency);
+    return 1 / root.WaveformAudio.frequency(v.note);
   }
   function displaySettings(values) {
-    const v = settings(values), carrierHz = root.WaveformAudio.frequency(v.frequency);
-    return { displayMode: 'trace', carrierHz, replayLimit: .1 };
+    const v = settings(values), carrierHz = root.WaveformAudio.frequency(v.note);
+    return { displayMode: 'trace', carrierHz, note: v.note, type: v.type, cycles: notes.get(v.note).cycles, replayLimit: .1 };
   }
   function sweep(captured, values) {
     const requestedSpan = sweepSpan(values);
@@ -119,15 +131,14 @@
     const Context = environment.OfflineAudioContext || environment.webkitOfflineAudioContext;
     if (!Context) throw new Error('This browser cannot render a silent audio scope. Start Audio for a live scope.');
     const context = new Context(1, Math.ceil((seconds + display.replayLimit + SETTLE) * sampleRate), sampleRate);
-    try { await context.audioWorklet?.addModule('js/pulse-worklet.js'); } catch (_) { /* Same Square fallback as the audible graph. */ }
     const master = context.createGain(); master.connect(context.destination);
     master.gain.setValueAtTime(0, 0); master.gain.linearRampToValueAtTime(1, .05);
     const graph = root.WaveformAudio.create(context, master, v, environment.AudioWorkletNode);
     graph.update(v);
     const buffer = await context.startRendering();
-    const pcm = buffer.getChannelData(0).subarray(Math.round(SETTLE * sampleRate));
+    const pcm = buffer.getChannelData(0).slice(Math.round(SETTLE * sampleRate));
     return recording(pcmExtrema(pcm), sampleRate / GROUP, seconds, 'offline', {
-      ...display, pulse: graph.pulseWorkletNode || v.type <= 2 ? 'worklet' : 'square-fallback'
+      ...display, pulse: 'band-limited-periodic-wave'
     }, pcm);
   }
   function createController({ onChange = () => {}, environment = root } = {}) {
@@ -138,6 +149,9 @@
     let currentRecording = null, exportRecording = null, lastWritten = -1, lastEditAt = null, liveError = '';
     let offset = 0, currentOrigin = 0, currentReverse = false, running = true;
     let currentSweep = null, liveCycle = null;
+    // Bounded per-controller LRU. Render on demand, reuse recent immutable PCM.
+    // 8 entries keep memory bounded; do not pre-render all 61 x 301 morph values.
+    const cache = new Map();
     function showSweep(view, time, capturedKey) {
       currentSweep = view;
       const phase = (((Number(time) || 0) * SWEEP_HZ) % 1 + 1) % 1;
@@ -180,7 +194,11 @@
           queue = queue.then(async () => {
             if (token !== generation) return resolve(null);
             try {
-              const captured = await render(next, environment);
+              let captured = cache.get(nextKey);
+              if (captured) cache.delete(nextKey);
+              else captured = await render(next, environment);
+              cache.set(nextKey, captured);
+              while (cache.size > 8) cache.delete(cache.keys().next().value);
               if (token === generation) {
                 offline = captured; offlineKey = nextKey; rendering = false;
                 // Frozen data remains frozen across edits. A first still can
@@ -212,7 +230,7 @@
       catch (failure) { liveError = ' · live capture unavailable'; onChange(); throw failure; }
       input = destination;
       pairRate = context.sampleRate / GROUP;
-      // One second covers four periods at the lowest carrier frequency plus
+      // One second covers the adaptive whole-cycle window plus
       // trigger/replay margin. Edits never resize or clear the live ring.
       ring = new Float32Array(Math.ceil(MAX_HISTORY_SECONDS * pairRate) * 2);
       // Retain ordered PCM for the same bounded history as the extrema.
@@ -240,6 +258,11 @@
         // Capture continuously, but present immutable, triggered sweeps at
         // the selected visual speed rather than racing through native PCM.
         if (!written) return current;
+        const stableHistory = written - (lastEditAt || 0) > (SETTLE + duration(currentSettings) + .1) * pairRate;
+        if (!stableHistory) {
+          if (offline && offlineKey === key) showOffline(offline, seconds, offlineKey);
+          return current;
+        }
         const requested = duration(currentSettings), target = Math.floor(requested * pairRate + 1e-9);
         const cycle = Math.floor((Number(seconds) || 0) * SWEEP_HZ);
         const historySettled = current?.parameterChanges && lastEditAt !== null && written - target - Math.ceil(2 * sweepSpan(currentSettings) * pairRate) > lastEditAt;
@@ -273,16 +296,17 @@
       if (!current) return error || 'Rendering audio signal…';
       const label = current.source === 'live' ? (tap && running ? 'Live audio capture' : 'Recorded audio') : 'Offline audio render';
       const previous = currentKey !== key;
-      return `${label} · ${current.seconds.toFixed(3)} s window · PCM trace · sample playback${!running ? ' · frozen' : ''}`
+      const pitch = notes.get(current.note);
+      return `${label} · ${pitch.name} · ${pitch.frequencyHz.toFixed(3)} Hz · ${current.cycles} ${current.cycles === 1 ? 'cycle' : 'cycles'} · ${(current.seconds * 1000).toFixed(6)} ms window · interpolated PCM${!running ? ' · frozen' : ''}`
         + (previous ? ` · previous settings${rendering ? ' (rendering update)' : error ? ' (update unavailable)' : ''}` : '')
         + (current.filling ? ` · filling history: ${current.availableSeconds.toFixed(3)} s recorded; blank area is unrecorded` : '')
         + (current.parameterChanges ? ' · includes parameter changes' : '')
-        + (tap && current.source !== 'live' && running ? ' · waiting for live audio' : '')
+        + (tap && current.source !== 'live' && running ? ' · waiting for settled live audio' : '')
         + (current.pulse === 'square-fallback' ? ' · Square fallback' : '') + liveError;
     }
     return { configure, attach, detach, tick, frame: () => current, capture, status,
       ready: () => pending,
-      dispose() { generation++; clearTimeout(timer); cancelPending(); detach(); offline = current = currentRecording = exportRecording = null; }
+      dispose() { generation++; clearTimeout(timer); cancelPending(); detach(); offline = current = currentRecording = exportRecording = null; cache.clear(); }
     };
   }
 

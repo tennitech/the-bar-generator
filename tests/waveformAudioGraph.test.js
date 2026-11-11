@@ -1,41 +1,55 @@
-const reference=require('./fixtures/waveformAudioReference');
 const audio=require('../js/utils/waveformAudio');
-const carrierOnly = { create: (_context, destination) => ({ input: destination }) };
+const notes=require('../js/utils/waveformNotes');
 function engine() {
   const events=[];let serial=0;
-  function parameter(id) {return {id,value:1,...Object.fromEntries(['cancelScheduledValues','setValueAtTime','setTargetAtTime','linearRampToValueAtTime','exponentialRampToValueAtTime'].map(name=>[name,(...args)=>events.push([id,name,...args])]))};}
-  function node(type) {const id=`${type}:${serial++}`;return {id,connect:other=>events.push([id,'connect',other.id]),disconnect:()=>{},start:(...args)=>events.push([id,'start',...args]),stop:()=>{}};}
-  const context={state:'running',currentTime:0,
+  function parameter(id) {return {id,value:0,...Object.fromEntries(['cancelScheduledValues','setValueAtTime','linearRampToValueAtTime'].map(name=>[name,(...args)=>events.push([id,name,...args])]))};}
+  function node(type) {const id=`${type}:${serial++}`;return {id,connect:other=>events.push([id,'connect',other.id]),start:time=>events.push([id,'start',time]),stop:time=>events.push([id,'stop',time])};}
+  const context={currentTime:0,sampleRate:48000,
     createGain:()=>{const n=node('gain');n.gain=parameter(n.id+'.gain');return n;},
     createOscillator:()=>{const n=node('osc');n.frequency=parameter(n.id+'.frequency');n.setPeriodicWave=wave=>events.push([n.id,'wave',wave]);return n;},
-    createWaveShaper:()=>node('limiter'),createConstantSource:()=>{const n=node('constant');n.offset=parameter(n.id+'.offset');return n;},
-    createPeriodicWave:(real,imaginary,options)=>({real:Array.from(real),imaginary:Array.from(imaginary),options})};
-  class Worklet {constructor(){Object.assign(this,node('pulse'));this.port={postMessage:message=>events.push([this.id,'message',message])};}}
-  const master=context.createGain();return {context,master,Worklet,events};
+    createPeriodicWave:jest.fn((real,imaginary)=>({real,imaginary}))};
+  return {context,master:node('master'),events};
 }
-test('extracted actual graph schedules exactly the same oscillator, pulse, crossfade and gain events as pre-refactor carrier with the modulation stage bypassed',async()=>{
-  for(const type of [0,.5,1,1.5,2,2.5,3])for(const frequency of [10,24,100]) {
-    const values={frequency,type,lfo:{enabled:true,rate:2,depth:60,type:1.5}};
-    const before=engine(),after=engine();
-    const old=await reference(before.context,before.master,values,carrierOnly,before.Worklet);
-    const current=audio.create(after.context,after.master,values,after.Worklet);
-    after.master.gain.cancelScheduledValues(0);after.master.gain.setValueAtTime(0,0);after.master.gain.linearRampToValueAtTime(1,.05);current.update(values);
-    expect(after.events).toEqual(before.events);
-    old.update({frequency:73,type:2.7});current.update({frequency:73,type:2.7});
-    expect(after.events).toEqual(before.events);
+test('all four carriers use exact note frequencies and one explicit phase origin without worklets or pitch glides',()=>{
+  for(const note of [24,49,69,84]) {
+    const e=engine(),graph=audio.create(e.context,e.master,{note,type:3});
+    expect(graph.pulseWorkletNode).toBe(null);
+    const starts=e.events.filter(x=>x[1]==='start');expect(starts).toHaveLength(4);
+    expect(new Set(starts.map(x=>x[2]))).toEqual(new Set([.01]));
+    expect(e.events.filter(x=>x[0].includes('.frequency') && x[1]==='setValueAtTime').every(x=>x[2]===notes.get(note).frequencyHz)).toBe(true);
+    expect(e.events.some(x=>x[1]==='exponentialRampToValueAtTime')).toBe(false);
+    expect(e.events.filter(x=>x[1]==='connect' && x[2]===e.master.id)).toHaveLength(4);
+    expect(e.context.createPeriodicWave).toHaveBeenCalledTimes(1);
   }
 });
+test('pulse is a DC-free finite Fourier model of positive-first bipolar duty, natively normalized and band limited',()=>{
+  const {real,imag}=audio.pulseCoefficients(.8);
+  expect(real).toHaveLength(2049);expect(real[0]).toBe(0);expect(imag[0]).toBe(0);
+  function value(phase){let sum=0;for(let k=1;k<real.length;k++)sum+=real[k]*Math.cos(2*Math.PI*k*phase)+imag[k]*Math.sin(2*Math.PI*k*phase);return sum;}
+  // Removing the mean 2D−1 leaves +2(1−D) for fraction D, and −2D otherwise.
+  expect(value(.4)).toBeCloseTo(.4,2);expect(value(.9)).toBeCloseTo(-1.6,2);
+  const square=audio.pulseCoefficients(.5,32);
+  for(let k=2;k<=32;k+=2)expect(Math.abs(square.imag[k])+Math.abs(square.real[k])).toBeLessThan(1e-14);
+});
+test('finite 50ms ramps reach steady gains, unchanged settings reuse pulse coefficients, cache is bounded',()=>{
+  const e=engine(),g=audio.create(e.context,e.master,{note:24,type:3});
+  g.update({note:24,type:3});expect(e.context.createPeriodicWave).toHaveBeenCalledTimes(1);
+  for(let i=0;i<=100;i++)g.update({note:24,type:2+i/100});
+  expect(e.context.createPeriodicWave).toHaveBeenCalledTimes(102);
+  expect(e.events.filter(x=>x[1]==='linearRampToValueAtTime').every(x=>x[3]===.05)).toBe(true);
+  expect(e.events.some(x=>x[1]==='setTargetAtTime')).toBe(false);
+});
+test('audio stop is scheduled at a whole carrier phase after release, including note edits',()=>{
+  const e=engine(),g=audio.create(e.context,e.master,{note:24,type:0});
+  const f=Math.fround(notes.get(24).frequencyHz);
+  let stop=g.nextCycleBoundary(.07);expect(stop).toBeGreaterThanOrEqual(.07);expect((stop-.01)*f).toBeCloseTo(Math.round((stop-.01)*f),12);
+  e.context.currentTime=.123;g.update({note:49,type:0});
+  stop=g.nextCycleBoundary(.2);const phase=(.123-.01)*f+(stop-.123)*Math.fround(notes.get(49).frequencyHz);
+  expect(stop).toBeGreaterThanOrEqual(.2);expect(phase).toBeCloseTo(Math.round(phase),12);
+});
 
-test('Square fallback preserves the pre-refactor pulse branch without a worklet',async()=>{
-  const quiet=jest.spyOn(console,'error').mockImplementation(()=>{});
-  try {
-    for(const type of [2.5,3]) {
-      const values={frequency:24,type,lfo:{enabled:true,rate:2,depth:100,type:0}};
-      const before=engine(),after=engine(),Missing=class {constructor(){throw new Error('unavailable');}};
-      await reference(before.context,before.master,values,carrierOnly,Missing);
-      const graph=audio.create(after.context,after.master,values,Missing);
-      after.master.gain.cancelScheduledValues(0);after.master.gain.setValueAtTime(0,0);after.master.gain.linearRampToValueAtTime(1,.05);graph.update(values);
-      expect(graph.pulseWorkletNode).toBe(null);expect(after.events).toEqual(before.events);
-    }
-  } finally {quiet.mockRestore();}
+test('stopped voices have their own finite gain release even if a rapid restart cancels the shared master fade',()=>{
+  const e=engine(),g=audio.create(e.context,e.master,{note:24,type:0});
+  const stop=g.nextCycleBoundary(.08);g.fadeOutAt(stop);
+  expect(e.events.filter(x=>x[1]==='linearRampToValueAtTime' && x[2]===0 && x[3]===stop)).toHaveLength(4);
 });

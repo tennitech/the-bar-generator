@@ -1,6 +1,28 @@
 # Bar meaning and source notes
 
-## Current Waveform model — November 11, 2026
+## Current Waveform note model — November 11, 2026
+
+The note redesign supersedes all earlier Waveform frequency/timebase and Pulse
+sections below. MIDI 24–84 selects C1–C6 in twelve-tone equal temperament,
+A4=440 Hz. Derive `f=440*2^((m−69)/12)` without decimal rounding. Choose integer
+`N=round(f/fC1)` and plot the adaptive physical duration `N/f`. C1 is
+30.578051463771438 ms per period; its octave Cs fit 1–32 cycles in that span.
+Other notes change the window rather than detuning the pitch.
+
+The scope retains actual synthesized Float32 PCM with fractional-sample
+endpoints, finite transition settling and truthful live/offline/frozen labels.
+Pulse uses a native band-limited, DC-free finite Fourier PeriodicWave. Native
+oscillators start together and stop at a scheduled whole-carrier-phase boundary
+after a finite release. Sample clocks, Float32 parameters, interpolation and GIF
+centisecond delays remain explicitly disclosed numerical/physical limits.
+The 61 descriptors and bounded recent PCM/PeriodicWave caches avoid eager
+rendering of all configurations. No LFO is restored.
+
+See [equations, phase/pulse conventions, cache policy and primary sources](waveform_notes.md)
+and [tests and native export evidence](waveform_notes_qa.md). These define the
+current scientific contract; historical sections are retained as change history.
+
+## Historical LFO-removal model — superseded by the note redesign
 
 The owner's “remove the LFO completely” direction supersedes the historical
 November 4/10 modulation sections below. Waveform has no LFO controls, graph,
@@ -50,7 +72,7 @@ The owner clarified that the fixed viewport is a containment boundary, not a dem
 | Fibonacci Sequence | Segment widths follow consecutive values `34, 21, 13, 8, 5, 3, 2, 1` in descending order. Gaps separate the values visually. |
 | Ruler | REPEATS counts major intervals across the fixed width; DIVISIONS counts equal subdivisions of each interval. Major ticks are full-height, halves 3/4-height, thirds/quarters/fifths 1/2-height, and finer fractions 1/4-height. It is a dimensionless illustrative scale, not a calibrated physical ruler. |
 | Numeric | Visualizes digits supplied by the user or generated from the selected formula. It does not claim to measure an external quantity. |
-| Waveform | Actual PCM from the generated carrier, rendered silently or captured from live playback; not an external recording. |
+| Waveform | Note-selected synthesized PCM over an adaptive whole-cycle window; A4=440 Hz, 12-TET, C1–C6. Fractional samples are interpolated; this is not an external measurement. |
 | Ticker | Repeating visual ticks with configurable ratios. It is not tied to a physical time or length unit. |
 | Neural Network | Untrained feedforward model with computed weighted sums, tanh/sigmoid activation and deterministic dense or local connections. Ring centers encode activation area; dashed edges indicate negative weights. See [model, sources and limits](neural_network_model.md). |
 | Artemis II | The splashdown counter uses April 10, 2026, 8:07 p.m. EDT, matching [NASA's splashdown record](https://www.nasa.gov/gallery/artemis-ii-splashdown-and-recovery/). The bar artwork is a supplied project asset, not mission telemetry. |

@@ -77,7 +77,8 @@ function read() {
 
     // Waveform parameters
     waveformType: parseFloat(params.get('waveformType')) || 0,
-    waveformFrequency: parseInt(params.get('waveformFrequency')) || 24,
+    waveformNote: params.has('waveformNote') ? window.WaveformNotes.normalize(params.get('waveformNote'))
+      : window.WaveformNotes.fromLegacy(params.get('waveformFrequency')),
     waveformSpeed: window.loopingGifUtils.normalizeLoopSpeed('waveform', params.get('waveformSpeed')),
     waveformReverse: params.get('waveformReverse') === 'true',
 
