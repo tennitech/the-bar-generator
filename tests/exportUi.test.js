@@ -220,14 +220,14 @@ test('composition cards repeatedly switch, preserve size and survive menu/style 
     expect(ui.composition()).toBe(value);
     expect(elements[`export-composition-${value}`].checked).toBe(true);
     expect(elements[`export-composition-${value === 'bar' ? 'logo' : 'bar'}`].checked).toBe(false);
-    expect(elements['export-dimensions'].textContent).toBe(value === 'bar' ? '2320 × 464 px' : '2320 × 1524 px');
+    expect(elements['export-dimensions'].textContent).toBe(value === 'bar' ? 'PNG · 4752 × 951 px' : 'PNG · 4752 × 3121 px');
     expect(elements['save-png'].attributes['aria-label']).toContain(value === 'bar' ? 'Bar only' : 'Bar + RPI');
     ui.sync(true); ui.sync(false);
     expect(ui.composition()).toBe(value);
   }
   elements['export-size-standard'].listeners.change({ target: { checked: true } });
   elements['export-composition-bar'].listeners.change({ target: { checked: true } });
-  expect(elements['export-dimensions'].textContent).toBe('1160 × 232 px');
+  expect(elements['export-dimensions'].textContent).toBe('PNG · 1160 × 232 px');
   expect(clipboard.sync).toHaveBeenCalled();
 });
 
@@ -259,15 +259,31 @@ test('ring GIF discloses actual default resolution and updates with speed/compos
   const action = elements['save-loop-gif'];
   expect(action.querySelector('.option-desc').textContent).toContain('4.3 s loop · up to 50 fps');
   expect(action.attributes['aria-label']).toContain('2320 × 1524 px');
-  expect(elements['save-png'].attributes['aria-label']).toContain('2320 × 1524 px');
+  expect(elements['save-png'].attributes['aria-label']).toContain('4752 × 3121 px');
   expect(elements['export-size-select'].value).toBe('large');
   elements['export-composition-bar'].listeners.change({ target: { checked: true } });
   expect(action.attributes['aria-label']).toContain('Bar only');
   expect(action.attributes['aria-label']).toContain('2320 × 464 px');
   expect(action.querySelector('.option-desc').textContent).not.toContain('Standard');
   elements['quantum-speed-slider'].value = '.5'; elements['quantum-speed-slider'].listeners.input();
-  expect(action.querySelector('.option-desc').textContent).toBe('8.6 s loop · up to 50 fps');
+  expect(action.querySelector('.option-desc').textContent).toBe('2320 × 464 px · 8.6 s loop · up to 50 fps');
   expect(elements['quantum-speed-slider'].value).toBe('.5');
+});
+
+test.each(['ticker', 'waveform', 'gradient'])('%s action discloses GIF pixels separately from PNG before activation', family => {
+  const { ui, elements } = fixture(undefined, undefined, true);
+  elements['style-select'].value = family;
+  for (const size of ['large', 'standard']) for (const composition of ['logo', 'bar']) {
+    elements[`export-size-${size}`].listeners.change({ target: { checked: true } });
+    elements[`export-composition-${composition}`].listeners.change({ target: { checked: true } });
+    const png = require('../js/utils/exportOptions').dimensions(size, require('../js/utils/logoGeometry').RPI_LOGO_GEOMETRY, composition);
+    const gif = require('../js/utils/exportOptions').dimensions(size, require('../js/utils/logoGeometry').RPI_LOGO_GEOMETRY, composition, 'gif');
+    expect(elements['export-dimensions'].textContent).toBe(`PNG · ${png.width} × ${png.height} px`);
+    expect(elements['save-loop-gif'].querySelector('.option-desc').textContent).toBe(`${gif.width} × ${gif.height} px · Looping animation`);
+    expect(elements['save-loop-gif'].attributes['aria-label']).toContain(`${gif.width} × ${gif.height} px`);
+    expect(elements['save-svg'].attributes['aria-label']).not.toContain('px');
+    expect(ui.size()).toBe(size);
+  }
 });
 
 

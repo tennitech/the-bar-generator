@@ -30,7 +30,7 @@ test('bold-footprint copies are inaccessible and exactly match the visible label
     expect(reserve).toBe(visible);
     labels.push(visible);
   }
-  expect(labels).toEqual(['Bar + RPI', 'Bar only', 'Large', 'Standard']);
+  expect(labels).toEqual(['Bar + RPI', 'Bar only', 'High resolution', 'Smaller file']);
   expect(rule('.export_choice-label > span')).toContain('grid-area: 1 / 1');
   expect(rule('.export_choice-reserve')).toContain('visibility: hidden');
   expect(rule('.export_choice-reserve')).toContain('font-weight: 700');

@@ -273,7 +273,7 @@
     return {
       periodSeconds, supported: periodSeconds <= 120,
       requestedSize, size: useStandard ? 'standard' : requestedSize,
-      note: useStandard ? 'Standard resolution for a full-logo loop longer than one minute.' : ''
+      note: useStandard ? 'Smaller file for a full-logo loop longer than one minute.' : ''
     };
   }
 

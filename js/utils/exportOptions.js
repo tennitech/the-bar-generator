@@ -3,7 +3,9 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.logoExportOptions = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  const SIZES = Object.freeze({ standard: 1000, large: 2000 });
+  // Retain internal keys for existing controls; labels describe the tradeoff.
+  const SIZES = Object.freeze({ standard: 1000, large: 4096 });
+  const GIF_SIZES = Object.freeze({ standard: 1000, large: 2000 });
   const DEFAULT_SIZE = 'large';
   // Cropping changes the viewport, never the scientific or official coordinates.
   function normalizeComposition(value) { return value === 'bar' ? 'bar' : 'logo'; }
@@ -14,8 +16,9 @@
       width: geometry.width + geometry.exportPadding * 2,
       height: (barOnly ? geometry.barHeight : geometry.totalHeight) + geometry.exportPadding * 2 };
   }
-  function dimensions(size, geometry, composition) {
-    const logoWidth = SIZES[size] || SIZES[DEFAULT_SIZE];
+  function dimensions(size, geometry, composition, format = 'png') {
+    const sizes = format === 'gif' ? GIF_SIZES : SIZES;
+    const logoWidth = sizes[size === 'standard' ? 'standard' : DEFAULT_SIZE];
     const scale = logoWidth / geometry.width;
     const frame = viewport(geometry, composition);
     return { logoWidth, scale, width: Math.ceil(frame.width * scale), height: Math.ceil(frame.height * scale) };
@@ -58,5 +61,5 @@
     const title = safeTitle(snapshot.title, Math.max(0, Math.min(64, 175 - utf8Length(base))));
     return `${base}${title ? `--${title}` : ''}.${format}`;
   }
-  return { SIZES, DEFAULT_SIZE, normalizeComposition, compositionLabel, viewport, dimensions, safeTitle, filename };
+  return { SIZES, GIF_SIZES, DEFAULT_SIZE, normalizeComposition, compositionLabel, viewport, dimensions, safeTitle, filename };
 });

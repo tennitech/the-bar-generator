@@ -3,6 +3,21 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 high-resolution PNG exports
+
+The size choices are now **High resolution · Recommended** and **Smaller file**.
+The recommended default generates PNG downloads/copies with 4096 px artwork
+width: 4752 × 3121 px for Bar + RPI, 4752 × 951 px for Bar only. Smaller file
+retains 1000 px artwork. SVG vectors, official proportions and proportional clear
+space remain unchanged. GIF separately retains 2000/1000 px artwork, existing
+loop/memory limits, and an accurate dimension disclosure before activation.
+
+The PNG dimension line is explicitly labeled, native radio semantics and shared
+choice styling remain, and cache versions update route/shell/runtime together.
+Failed PNG preparation offers the smaller choice; canvas/image/URL cleanup and
+the synchronous promise-based clipboard write are retained. Validation results
+and browser/Safari limits are recorded in [high-resolution export QA](high_resolution_exports.md).
+
 ## November 11 compact Color Theme helper spacing
 
 How to use now sits closer to the Color Theme dropdown. Its transparent button
@@ -19,8 +34,6 @@ copy, startup/About modules, presentation and animation are preserved. Only the
 two CSS scopes and their synchronized cache keys change production behavior.
 All 37 focused checks in seven suites, JavaScript/81 inline-script syntax and
 source/cache checks pass. See [spacing rationale and QA limits](color_help_spacing_qa.md).
-
-
 
 ## November 11 continuous marquee emphasis
 
