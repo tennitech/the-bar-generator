@@ -3,11 +3,12 @@
 ## Scope and current baseline
 
 Reconciles the isolated November 10 audit (`48052e8`) onto published main
-`a85b2b1491bb94ec632104a942d52bb0b7760fbd`. The old candidate and branch remain
-preserved. Only tests and this audit/status documentation change: no application
+`e79050ed2b617426889ae013f0108bc80da1d59a`, after keyboard-shortcut PR #175.
+The old candidate and branch remain preserved. Only tests and this audit/status documentation change: no application
 code, dependency, asset, browser smoke script, workflow or merge requirement is
 changed. Newer actual-audio scope, Ring GIF, input-limit, larger-controls, picker
-lifecycle, theme, export and motion regressions remain intact.
+lifecycle, theme, export and motion regressions remain intact. All 37 keyboard-
+release cases and their complete suite/shell integration stay unchanged.
 
 The earlier lightweight-checks changes removed automatic browser CI execution
 and duplicate post-merge unit runs. They did not remove unit test cases. The
@@ -15,7 +16,7 @@ current required gate remains **Unit tests**, on ready PRs targeting main, using
 Node 22, the public-repository guard, pinned actions, read-only permissions,
 standard runner, five-minute timeout, and no cache or artifact uploads.
 
-Current main has 1,074 tests in 93 suites. The original audit's 830-case candidate
+Current main has 1,111 tests in 94 suites. The original audit's 830-case candidate
 is historical, not the release baseline. A suite is one Jest file; loops inside
 a case do not increase Jest's reported case count.
 
@@ -66,13 +67,18 @@ focus, reduced motion, migrations, export and cancellation coverage remain.
 A complete before/after comparison runs the locked Jest installation with
 `--runInBand --json` in the isolated cloud checkout. The local runtime is
 Node 24.22.1; required CI is separately verified on Node 22 for the exact PR head.
-The baseline run on `a85b2b1` passes **1,074 tests / 93 suites**; the reduced
-suite passes **1,049 tests / 93 suites**, both with no failures, skips or snapshots.
-Observed single-run Jest times were 44.362 s before and 39.778 s after. These are
-not controlled benchmarks or a stable speedup claim: cache and shared-host load
-vary. Final release reconciliation and exact-head CI are recorded in the PR.
+The initial run on `a85b2b1` passed **1,074 → 1,049 tests / 93 suites**.
+After keyboard PR #175, fresh complete serial runs on the final baseline
+`e79050e` and reconciled candidate pass **1,111 → 1,086 tests / 94 suites**.
+There are no failures, skips or snapshots, and all 37 added keyboard-release
+cases remain. Changed-JavaScript syntax and whitespace checks pass.
+
+Observed final single-run Jest times were 45.022 s before and 42.628 s after.
+These are not controlled benchmarks or a stable speedup claim: cache and
+shared-host load vary. Exact-head Node 22 CI, merge and deployment evidence
+are recorded in PR #174.
 
 No rendered-browser check is claimed or needed for unchanged application files.
 This audit does not convert existing browser/device/owner-review limitations
 into passes. Production code and required CI remain byte-identical to the base;
-release reconciliation must retain any newer keyboard work before merging.
+the final release preserves all keyboard-shortcut production files and tests.
