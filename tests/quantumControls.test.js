@@ -36,7 +36,7 @@ test('repeated phase seeks retain LOOP and advance from the new phase without st
     h.controls.tick(1000 + index * 1000);
     expect(h.phase()).toBeCloseTo(phase, 12);
     h.controls.tick(1020 + index * 1000);
-    expect(h.phase()).toBeCloseTo(phase + .02 / 120, 12);
+    expect(h.phase()).toBeCloseTo(phase + .02 / model.PERIOD_SECONDS, 12);
   }
   expect(h.window.updateUrlParameters).toHaveBeenCalledTimes(4);
   expect(h.window.requestUpdate).toHaveBeenCalledTimes(4);
@@ -48,7 +48,7 @@ test('paused seeks stay paused; explicit resume retains speed and reverse', () =
   expect(h.phase()).toBeCloseTo(.371, 12);
   expect(h.elements['quantum-motion-toggle'].checked).toBe(false);
   h.loop(true); h.controls.tick(2000); h.controls.tick(2050);
-  expect(h.phase()).toBeCloseTo(.371 - .2 * .05 / 120, 12);
+  expect(h.phase()).toBeCloseTo(.371 - .2 * .05 / model.PERIOD_SECONDS, 12);
 });
 
 test.each(['pointerup', 'pointercancel'])('pointer seek holds phase and resumes without catch-up after %s', end => {
@@ -58,7 +58,7 @@ test.each(['pointerup', 'pointercancel'])('pointer seek holds phase and resumes 
   expect(h.phase()).toBeCloseTo(.4, 12);
   expect(h.elements['quantum-motion-toggle'].checked).toBe(true);
   h.window.emit(end, { pointerId: 7 }); h.controls.tick(6000); h.controls.tick(6020);
-  expect(h.phase()).toBeCloseTo(.4 + .02 / 120, 12);
+  expect(h.phase()).toBeCloseTo(.4 + .02 / model.PERIOD_SECONDS, 12);
 });
 
 test.each([true, false])('numeric phase editor commit preserves loop=%s and cancel leaves transport intact', looping => {
@@ -67,7 +67,7 @@ test.each([true, false])('numeric phase editor commit preserves loop=%s and canc
   expect(h.phase()).toBe(0);
   h.elements['quantum-phase'].value = h.editor.parseValue('37.1');
   h.editor.editorInput = null; h.editor.commit(); h.controls.tick(6000); h.controls.tick(6020);
-  expect(h.phase()).toBeCloseTo(.371 + (looping ? .02 / 120 : 0), 12);
+  expect(h.phase()).toBeCloseTo(.371 + (looping ? .02 / model.PERIOD_SECONDS : 0), 12);
   h.editor.editorInput = {}; h.controls.tick(7000);
   h.editor.editorInput = null; h.controls.tick(8000);
   expect(h.elements['quantum-motion-toggle'].checked).toBe(looping);

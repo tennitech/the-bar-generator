@@ -79,7 +79,7 @@
   },
   "wave-quantum": {
     "title": "Ring Wavefunction",
-    "text": "Three phase projections show one normalized free-particle wavefunction on an ideal periodic ring, combining modes −4, 3, and 7 with equal weights. The projection angles are 0°, 60°, and 120°. The horizontal axis unwraps one ring circumference; these convention-dependent amplitude curves are not particle paths, probability density, or measured data. Ribbon thickness and display time are drawing choices."
+    "text": "Three phase projections show one normalized free-particle wavefunction on an ideal periodic ring, combining modes −4, 3, and 7 with equal weights. The projection angles are 0°, 60°, and 120°. The horizontal axis unwraps one ring circumference in a scrolling coordinate view, with one exact display cycle in 4.28 seconds at 1×; these convention-dependent amplitude curves are not particle paths, probability density, or measured data. Ribbon thickness and display time are drawing choices."
   },
   "runway": {
     "title": "Runway",

@@ -8,7 +8,7 @@
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient', 'wave-quantum']);
-  // Existing translating families use 50 fps; long ring GIFs retain 30 fps.
+  // Uniform 20 ms GIF frames avoid alternating delays at the default cadence.
   const DEFAULT_CAPTURE_FPS = 50;
   const MIN_CAPTURE_FPS = 12;
   const MAX_CAPTURE_FPS = 50;
@@ -189,11 +189,10 @@
       return null;
     }
 
-    const ring = normalizedStyle === 'wave-quantum';
     const fps = clamp(
-      Math.round(toPositiveNumber(options.fps, ring ? 30 : DEFAULT_CAPTURE_FPS)),
+      Math.round(toPositiveNumber(options.fps, DEFAULT_CAPTURE_FPS)),
       MIN_CAPTURE_FPS,
-      ring ? 30 : MAX_CAPTURE_FPS
+      MAX_CAPTURE_FPS
     );
     const barWidth = toPositiveNumber(options.barWidth, 250);
 
@@ -201,9 +200,9 @@
       const model = getQuantumModel();
       const speed = model.normalizeSpeed(values.quantumSpeed ?? 1);
       const periodSeconds = model.PERIOD_SECONDS / speed;
-      // Do not clamp the natural cycle or silently reduce its 30 fps cadence.
+      // Preserve the display cycle; flooring keeps odd centiseconds above 20 ms/frame.
       // The encoder's independent duration/frame/memory guards still apply.
-      const frameCount = Math.round(Math.round(periodSeconds * 100) * fps / 100);
+      const frameCount = Math.max(2, Math.floor(Math.round(periodSeconds * 100) * fps / 100));
       const phase = model.normalizePhase(values.quantumPhase);
       const direction = normalizeLoopReverse(normalizedStyle, values.quantumReverse) ? -1 : 1;
       return {

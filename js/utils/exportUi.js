@@ -64,7 +64,7 @@
           const policy = root.loopingGifUtils.getRingGifExportPolicy({ quantumSpeed: byId('quantum-speed-slider')?.value ?? 1 }, { size: size(), composition: composition() });
           actionDimensions = root.logoExportOptions.dimensions(policy.size, root.RPI_LOGO_GEOMETRY, composition());
           description = policy.supported
-            ? `${Number(policy.periodSeconds.toFixed(1))} s loop · 30 fps${policy.note ? ` · Standard (${pixelSize(actionDimensions)}) for long loop` : ''}`
+            ? `${Number(policy.periodSeconds.toFixed(1))} s loop · up to 50 fps${policy.note ? ` · Standard (${pixelSize(actionDimensions)}) for long loop` : ''}`
             : 'Set SPEED to 1× or higher for GIF';
         }
         if (!button) continue;

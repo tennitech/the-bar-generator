@@ -6,7 +6,8 @@
   root.quantumModel = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const TAU = 2 * Math.PI;
-  const PERIOD_SECONDS = 120;
+  // Display cycle for the scrolling-coordinate projection, not calibrated seconds.
+  const PERIOD_SECONDS = 4.28;
   function normalizePhase(value) {
     const number = Number(value);
     return Number.isFinite(number) ? ((number % 1) + 1) % 1 : 0;
@@ -25,6 +26,12 @@
     }
     return { re, im, density: re * re + im * im };
   }
+  function sampleDisplay(position, phase = 0) {
+    // psi(u + 3p, p), p = displayPhase/28. Effective frequencies
+    // n² - 3n = {28, 0, 28}, so one display cycle is exact.
+    const p = normalizePhase(phase) / 28;
+    return sample(Number(position) + 3 * p, p);
+  }
   function normalizeSpeed(value) {
     const speed = Number(value);
     return Number.isFinite(speed) ? Math.max(0.2, Math.min(4, speed)) : 1;
@@ -34,5 +41,5 @@
     const delta = Math.max(0, Math.min(50, Number(deltaMs) || 0));
     return normalizePhase(normalizePhase(phase) + (options.reverse ? -1 : 1) * normalizeSpeed(options.speed ?? 1) * delta / (PERIOD_SECONDS * 1000));
   }
-  return { sample, normalizePhase, normalizeSpeed, advancePhase, PERIOD_SECONDS, MODES, AMPLITUDE_BOUND };
+  return { sample, sampleDisplay, normalizePhase, normalizeSpeed, advancePhase, PERIOD_SECONDS, MODES, AMPLITUDE_BOUND };
 });

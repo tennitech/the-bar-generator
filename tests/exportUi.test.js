@@ -257,8 +257,8 @@ test('ring GIF discloses actual default resolution and updates with speed/compos
   elements['quantum-speed-slider'].value = '1'; elements['export-size-select'].value = 'large';
   ui.sync();
   const action = elements['save-loop-gif'];
-  expect(action.querySelector('.option-desc').textContent).toContain('120 s loop · 30 fps · Standard (1160 × 762 px) for long loop');
-  expect(action.attributes['aria-label']).toContain('1160 × 762 px');
+  expect(action.querySelector('.option-desc').textContent).toContain('4.3 s loop · up to 50 fps');
+  expect(action.attributes['aria-label']).toContain('2320 × 1524 px');
   expect(elements['save-png'].attributes['aria-label']).toContain('2320 × 1524 px');
   expect(elements['export-size-select'].value).toBe('large');
   elements['export-composition-bar'].listeners.change({ target: { checked: true } });
@@ -266,7 +266,7 @@ test('ring GIF discloses actual default resolution and updates with speed/compos
   expect(action.attributes['aria-label']).toContain('2320 × 464 px');
   expect(action.querySelector('.option-desc').textContent).not.toContain('Standard');
   elements['quantum-speed-slider'].value = '.5'; elements['quantum-speed-slider'].listeners.input();
-  expect(action.querySelector('.option-desc').textContent).toBe('Set SPEED to 1× or higher for GIF');
+  expect(action.querySelector('.option-desc').textContent).toBe('8.6 s loop · up to 50 fps');
   expect(elements['quantum-speed-slider'].value).toBe('.5');
 });
 

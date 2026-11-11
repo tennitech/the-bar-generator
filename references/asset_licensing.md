@@ -143,3 +143,11 @@ than the reference's heavy filled front. The implementation is project code
 under the existing MIT license. The supplied reference raster is not embedded,
 redistributed, or treated as an external SVG license. Feather sources stay intact.
 
+
+## Ring short-loop comparison
+
+`references/review-images/ring-short-loop/comparison.png` is an original native
+raster of this repository's mathematical ribbon geometry, generated November 11
+by `scripts/ringLoopComparison.js`. It contains no external artwork or official
+logo letters. Generic QA labels are not a replacement product font. Existing
+institutional brand/asset approval questions remain open.

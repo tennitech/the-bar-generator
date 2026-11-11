@@ -66,7 +66,7 @@ test('projection ribbons keep fixed scale, exact endpoints and bounded paint at 
       expect(Math.min(...polygon.map(p => p.y))).toBeGreaterThanOrEqual(9 - 1e-12);
       expect(Math.max(...polygon.map(p => p.y))).toBeLessThanOrEqual(27 + 1e-12);
     }
-    const state = model.sample(0, options.quantumPhase);
+    const state = model.sampleDisplay(0, options.quantumPhase);
     expect(geometry.paths[0][0].y).toBeCloseTo(18 - state.re / Math.sqrt(3) * (18 - geometry.thickness) / 2, 12);
     const svg = createBarPatternSVG({ currentShader: 22, ...options, fgColor: '#000', values: options });
     expect((svg.match(/<polygon/g) || []).length).toBe(3);
@@ -85,10 +85,10 @@ test('speed and reverse change only phase rate, with bounded stalls and determin
   expect(model.normalizePhase(-0.25)).toBe(0.75);
   expect(model.normalizeSpeed(Infinity)).toBe(1);
   expect(model.normalizeSpeed(5)).toBe(4);
-  expect(model.advancePhase(.25, 50, { speed: 2 })).toBeCloseTo(.25 + 2 * .05 / 120, 12);
+  expect(model.advancePhase(.25, 50, { speed: 2 })).toBeCloseTo(.25 + 2 * .05 / model.PERIOD_SECONDS, 12);
   expect(model.normalizeSpeed(0)).toBe(.2);
-  expect(model.advancePhase(.25, 50, { speed: .5 })).toBeCloseTo(.25 + .5 * .05 / 120, 12);
-  expect(model.advancePhase(.25, 50, { speed: .5, reverse: true })).toBeCloseTo(.25 - .5 * .05 / 120, 12);
+  expect(model.advancePhase(.25, 50, { speed: .5 })).toBeCloseTo(.25 + .5 * .05 / model.PERIOD_SECONDS, 12);
+  expect(model.advancePhase(.25, 50, { speed: .5, reverse: true })).toBeCloseTo(.25 - .5 * .05 / model.PERIOD_SECONDS, 12);
   expect(model.advancePhase(.99, 5000)).toBe(model.advancePhase(.99, 50));
   expect(model.advancePhase(.25, -50)).toBe(.25);
   expect(model.sample(.413, .37).re).toBeCloseTo(model.sample(.413, 1.37).re, 12);
@@ -113,7 +113,7 @@ test('all projection endpoints and ribbon edges match independent non-dyadic ana
       for (const [projectionIndex, alpha] of [0, Math.PI / 3, 2 * Math.PI / 3].entries()) {
         const path = geometry.paths[projectionIndex];
         for (const [position, index] of [[0, 0], [1, path.length - 1]]) {
-          const state = unwrappedAnalyticState(position, phase);
+          const state = unwrappedAnalyticState(position + 3 * phase / 28, phase / 28);
           const projection = (state.re * Math.cos(alpha) - state.im * Math.sin(alpha)) / Math.sqrt(3);
           const expectedY = 9 + barHeight / 2 - (barHeight - geometry.thickness) / 2 * projection;
           expect(path[index].x).toBe(3 + position * 250);
@@ -146,6 +146,24 @@ test('full state recurrence agrees with an unwrapped analytic reference rather t
   const partial = unwrappedAnalyticState(.173, .137 + 1 / 49);
   expect(Math.hypot(initial.re - partial.re, initial.im - partial.im)).toBeGreaterThan(.1);
   let phase = 0;
-  for (let frame = 0; frame < 7200; frame++) phase = model.advancePhase(phase, 1000 / 60);
+  for (let frame = 0; frame < 2568; frame++) phase = model.advancePhase(phase, 1000 / 60);
   expect(Math.min(phase, 1 - phase)).toBeLessThan(1e-10);
+});
+
+test('scrolling coordinate display is the same normalized state with exact shortest recurrence', () => {
+  for (const q of [.013, .137, .371, .683]) for (const u of [.037,.173,.431,.887]) {
+    const expected = unwrappedAnalyticState(u + 3*q/28, q/28);
+    const actual = model.sampleDisplay(u,q);
+    expect(actual.re).toBeCloseTo(expected.re,11);
+    expect(actual.im).toBeCloseTo(expected.im,11);
+    const end = unwrappedAnalyticState(u + 3*(q+1)/28, (q+1)/28);
+    expect(end.re).toBeCloseTo(expected.re,11);
+    expect(end.im).toBeCloseTo(expected.im,11);
+  }
+  // Effective frequencies 1,0,1 have fundamental period one, not half a cycle.
+  const a=model.sampleDisplay(.173,.137), b=model.sampleDisplay(.173,.637);
+  expect(Math.hypot(a.re-b.re,a.im-b.im)).toBeGreaterThan(.1);
+  let norm=0;
+  for(let i=0;i<2048;i++) norm+=model.sampleDisplay(i/2048,.371).density/2048;
+  expect(norm).toBeCloseTo(1,12);
 });
