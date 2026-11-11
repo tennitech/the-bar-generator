@@ -3,6 +3,84 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 concise, source-checked UI copy
+
+Audited Home, all 22 selectable About descriptions, control hints, dialogs,
+errors/status, accessibility instructions, route/fallback and animation copy.
+The live RPI Voice & Tone and Color pages inform the edits. About text drops
+from 967 to 609 whitespace-counted words, removing repeated exploration prompts
+while retaining actual encodings, model limits, provenance and approval caveats.
+The shortcut guide, Home prompt and selected helpers are shorter. Exact
+owner-supplied official color guidance stays verbatim.
+Useful error recovery, input limits, accessible names and state announcements,
+report metadata disclosure, scientific detail disclosures and source links stay.
+
+Only copy and delivery cache keys change; no model, filtering, renderer, control
+behavior, dependencies or logo assets change. Export-card cleanup is coordinated
+separately. [Audit record](ui_copy_audit.md) distinguishes code/tests, rendered
+checks and formal approval. Fresh route and fallback keys load the updated shell.
+
+## November 11 clearer left/right dice shake
+
+The owner's follow-up rejected the first subtle tilt. Each die now makes six
+clearly alternating lateral swings, with progressively smaller travel/rotation
+and smooth per-leg cubic easing at each reversal. The back settles over 460ms;
+the front over 520ms, with different amplitudes and opposite angular tilts. The
+small final excursion eases into exact rest. The unchanged 18px icon slot, thin
+SVG, labels and button dimensions remain fixed; no geometry/layout animation.
+
+The existing per-face current-pose replacement, stale-completion guard, natural
+cleanup, immediate Randomize callback and native keyboard/click path remain.
+Reduced motion, page exit and hidden state still cancel both. Undo/Reset keep
+their existing easing and label responses. The refinement changes no menu,
+scientific model, export, palette or accessibility behavior.
+
+Focused tests require repeated left/right reversals, monotonically shrinking
+extrema, smooth turnarounds, exact rest and bounded duration, alongside rapid
+activation/cleanup and reduced-motion coverage. An offline source-keyframe
+preview and 12 chronological 18px button-context samples were rendered in
+light/dark, visually inspected and checked within the existing padding/gap
+envelope. This is reconstructed SVG motion, not native browser animation proof.
+Full-suite, exact-head CI and production evidence are recorded in the PR.
+Actual browser timing, physical keyboard/touch and aesthetic acceptance remain
+unverified; no prior denied browser route is retried. This release is independent of approval-held PRs #184 and #187. Export-copy
+#186 and export-state #188 are preserved; neither held PR is merged here.
+
+## November 11 uniform export choice states
+
+Export composition and image size now share one bordered choice style, native
+radio semantics/glyph, neutral hover, menu-token selected fill and bold selected
+labels. Bold layout footprints are reserved with inaccessible copies; borders
+stay 1px in every state. Choices, Download/Copy and Cancel share an outside
+keyboard focus ring, and pressed action icons inherit the text color. Disabled
+hover is suppressed; forced colors restores system selection and native radios.
+
+The public baseline was visually and keyboard inspected. Candidate rendered QA
+remains unverified because the available browser environment could not open it;
+an optional multi-width/theme/editor-size regression script is included. All 1,130 tests across 96 suites pass, including source,
+contrast and existing export/interaction checks.
+See [QA evidence and limits](export_choice_states_qa.md). Cache keys advance
+through route first paint and fetched shell together. This export-only change
+does not include the pending #184 three-dot menu/dialog work, or any real artwork,
+renderer, export dimensions, palette, scientific model or motion changes.
+
+## November 11 export-composition copy cleanup
+
+The composition choices retain their visible names, Bar + RPI and Bar only, and
+the Export composition legend. The redundant Complete mark and Pattern strip
+captions and the sentence “Your current pattern, with or without the lettering.”
+are removed. The fieldset’s aria-describedby reference to the removed sentence
+is removed too, leaving clear native radio accessible names without a stale ID.
+
+No radio IDs/values/defaults, schematic markup, selection/keyboard behavior,
+export controls/dimensions, CSS or rendering/clipboard/GIF code changes. Routed
+shell/bootstrap/fallback and Home prefetch versions advance together so the
+markup cleanup reaches warm routes. This cleanup is separate from pending #184;
+publication follows release coordination rather than merging that presentation PR.
+All 53 focused export/radio/cache checks pass in four suites. Accessible-name
+inspection confirms exactly the two retained choices and no stale description
+reference; 81 inline scripts and cache/source checks pass.
+
 ## November 11 refined dashed export-composition guides
 
 The owner’s screenshot identifies the decorative Export composition cards.
@@ -2604,7 +2682,7 @@ them into one interaction. Export geometry, official palette, bar generation,
 audio and the custom theme rows are unchanged. See
 [the inventory and QA limits](menu_consistency_audit.md).
 
-Validation: 1,128 tests across 96 suites pass; helper/smoke syntax and whitespace
+Validation: 1,137 tests across 97 suites pass; helper/smoke syntax and whitespace
 checks pass. Rendered browser, native keyboard/touch, zoom and Safari checks remain
 unverified under the existing browser restriction. A reusable four-viewport,
 three-theme smoke check is included for a permitted browser environment.

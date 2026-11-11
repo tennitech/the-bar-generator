@@ -22,7 +22,7 @@
   <script src="js/utils/selectorPreviews.js?v=20261103-nucleotide"></script>
   <script src="js/utils/secondaryColorGuidance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/customDropdowns.js?v=20261110-picker-tab-focus"></script>
-  <script src="js/utils/parameterControls.js?v=20261111-independent-dice-ring"></script>
+  <script src="js/utils/parameterControls.js?v=20261111-dice-shake"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/loopingGif.js?v=20261111-short-ring"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
@@ -106,27 +106,24 @@
         <p id="export-blocked-note" class="export_blocked-note" role="tooltip" hidden></p>
         <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Export asset">
           <div id="export-settings" class="export_settings">
-            <fieldset class="export_composition" aria-describedby="export-composition-note">
+            <fieldset class="export_composition">
               <legend class="export_size-label">Export composition</legend>
               <div class="export_composition-options">
-                <label class="export_composition-option">
+                <label class="export_composition-option export_choice">
                   <input id="export-composition-logo" type="radio" name="export-composition" value="logo" checked>
                   <span class="export_composition-art" aria-hidden="true">
                     <svg id="export-composition-preview-logo" xmlns="http://www.w3.org/2000/svg" focusable="false"></svg>
                   </span>
-                  <span class="export_composition-title">Bar + RPI</span>
-                  <span class="export_composition-caption">Complete mark</span>
+                  <span class="export_composition-title export_choice-label"><span class="export_choice-text">Bar + RPI</span><span class="export_choice-reserve" aria-hidden="true">Bar + RPI</span></span>
                 </label>
-                <label class="export_composition-option">
+                <label class="export_composition-option export_choice">
                   <input id="export-composition-bar" type="radio" name="export-composition" value="bar">
                   <span class="export_composition-art" aria-hidden="true">
                     <svg id="export-composition-preview-bar" xmlns="http://www.w3.org/2000/svg" focusable="false"></svg>
                   </span>
-                  <span class="export_composition-title">Bar only</span>
-                  <span class="export_composition-caption">Pattern strip</span>
+                  <span class="export_composition-title export_choice-label"><span class="export_choice-text">Bar only</span><span class="export_choice-reserve" aria-hidden="true">Bar only</span></span>
                 </label>
               </div>
-              <p id="export-composition-note" class="export_note">Your current pattern, with or without the lettering.</p>
             </fieldset>
             <span id="export-size-label" class="export_size-label">Image size</span>
             <select id="export-size-select" hidden aria-hidden="true" tabindex="-1">
@@ -134,13 +131,13 @@
               <option value="standard">Standard</option>
             </select>
             <div class="export_size-options" role="radiogroup" aria-labelledby="export-size-label" aria-describedby="export-dimensions export-size-note">
-              <label class="export_size-option">
+              <label class="export_size-option export_choice">
                 <input id="export-size-large" type="radio" name="export-size" value="large" checked>
-                <span>Large <small>Recommended</small></span>
+                <span class="export_size-copy"><span class="export_choice-label"><span class="export_choice-text">Large</span><span class="export_choice-reserve" aria-hidden="true">Large</span></span> <small>Recommended</small></span>
               </label>
-              <label class="export_size-option">
+              <label class="export_size-option export_choice">
                 <input id="export-size-standard" type="radio" name="export-size" value="standard">
-                <span>Standard</span>
+                <span class="export_size-copy"><span class="export_choice-label"><span class="export_choice-text">Standard</span><span class="export_choice-reserve" aria-hidden="true">Standard</span></span></span>
               </label>
             </div>
             <p id="export-dimensions" class="export_dimensions">2320 × 1524 px</p>
@@ -303,7 +300,7 @@
               <option value="8">Eighths · 8 per unit</option>
               <option value="16">Sixteenths · 16 per unit</option>
             </select>
-            <p id="ruler-units-hint" class="control-hint">Whole units have the longest marks. Divisions split each unit equally.</p>
+            <p id="ruler-units-hint" class="control-hint">Whole units have the longest marks; divisions split them equally.</p>
           </div>
           <div class="control slider-control">
             <label for="ruler-thickness-slider" class="control-label">THICKNESS <span id="ruler-thickness-display" data-slider-value>1.0</span>×</label>
@@ -330,7 +327,7 @@
               <span class="nucleotide_ready" aria-hidden="true"><svg class="nucleotide_ready-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Ready</span>
             </div>
             <input type="text" id="nucleotide-input" data-url-parameter="nucleotideSequence" value="ATGGCCCTGTGGATGCGCCTCCTGCCCCTGCTGGCGCTGCTGGCCCTCTG" maxlength="50" pattern="[ATCGUatcgu]*" spellcheck="false" autocapitalize="characters" autocomplete="off" class="control-input" minlength="30" aria-describedby="nucleotide-hint nucleotide-status nucleotide-limit-error">
-            <div id="nucleotide-hint" class="control-hint">A, T, C, G and U only. 30 bases minimum; 50 maximum. Read 5′ → 3′.</div>
+            <div id="nucleotide-hint" class="control-hint">30–50 bases: A, T, C, G or U. Read 5′ → 3′.</div>
             <div class="nucleotide_feedback">
               <div class="nucleotide_progress-track">
                 <progress id="nucleotide-progress" class="nucleotide_progress" max="50" value="50" aria-label="Sequence length"></progress>
@@ -454,7 +451,7 @@
             <div class="control slider-control">
               <label for="quantum-phase" class="control-label">PHASE <span id="quantum-phase-display" data-slider-value>0.0%</span></label>
               <input id="quantum-phase" type="range" min="0" max="1" step="any" value="0" class="control-slider" aria-label="Ring Wavefunction phase as fraction of recurrence" aria-describedby="quantum-description">
-              <p id="quantum-description" class="control-hint">Position within one full recurrence.</p>
+              <p id="quantum-description" class="control-hint">Position in the repeating cycle.</p>
             </div>
           </div>
         </div>
@@ -486,7 +483,7 @@
                 <span class="slider round"></span>
               </label>
             </div>
-            <p id="waveform-lfo-hint" class="control_help-tooltip" role="tooltip" hidden>Shows the actual audio signal after LFO amplitude modulation. The time window fits two envelope cycles, or at least four carrier cycles. Offline rendering is silent; Audio switches to a live recording. Loop freezes or replays the scope. GIF starts on the frozen frame and replays captured history, which may reset when it wraps.</p>
+            <p id="waveform-lfo-hint" class="control_help-tooltip" role="tooltip" hidden>Shows the LFO-modulated audio signal over two envelope cycles or at least four carrier cycles. Offline rendering is silent; Audio captures live playback. Loop freezes or replays the scope. GIF replays captured history from the frozen frame and may reset when it wraps.</p>
             <p id="waveform-scope-status" class="control-hint">Rendering audio signal…</p>
             <div id="waveform-lfo-settings" hidden>
               <div class="control slider-control">
@@ -584,7 +581,7 @@
             <label for="numeric-input" class="control-label">VALUE</label>
             <input type="text" inputmode="decimal" id="numeric-input" data-url-parameter="numericValue" placeholder="Enter a decimal value" class="control-input"
               maxlength="100" value="3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706" aria-describedby="numeric-value-hint numeric-input-error" spellcheck="false" autocomplete="off">
-            <p id="numeric-value-hint" class="control-hint">Up to 100 characters: digits, one decimal point, and an optional leading sign. The sign is not encoded.</p>
+            <p id="numeric-value-hint" class="control-hint">Up to 100 characters: digits, one decimal point and an optional leading sign. Signs are not encoded.</p>
             <p id="numeric-input-error" class="control-hint" role="status"></p>
           </div>
           <div id="numeric-formula-control" class="control" hidden>
@@ -1000,7 +997,7 @@
                 role="switch" aria-checked="false" aria-labelledby="editor-size-label" aria-describedby="editor-size-description">
                 <span class="editor_size-copy">
                   <span id="editor-size-label" class="editor_size-label">Larger controls and text</span>
-                  <span id="editor-size-description" class="editor_size-description">Roomier controls and easier-to-read labels.</span>
+                  <span id="editor-size-description" class="editor_size-description">Larger controls and labels.</span>
                 </span>
                 <span class="editor_size-indicator" aria-hidden="true"><span class="editor_size-track"></span><span id="editor-size-state">Off</span></span>
               </button>
@@ -1066,25 +1063,25 @@
         <h2 id="keyboard-shortcuts-title" class="report_dialog-title" tabindex="-1" autofocus>Keyboard shortcuts</h2>
         <button id="keyboard-shortcuts-close" class="report_dialog-secondary" type="button" aria-label="Close keyboard shortcuts">Close</button>
       </div>
-      <p id="keyboard-shortcuts-description" class="report_dialog-copy">Use these keys outside controls, menus and dialogs. Actions follow the selected style; unavailable actions stay inactive.</p>
+      <p id="keyboard-shortcuts-description" class="report_dialog-copy">Shortcuts work outside controls, menus and dialogs, when the selected style supports them.</p>
       <dl class="shortcuts_list">
           <div class="shortcuts_row"><dt>Zoom in (also =)</dt><dd><kbd>+</kbd></dd></div>
           <div class="shortcuts_row"><dt>Zoom out</dt><dd><kbd>−</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Fit the whole mark</dt><dd><kbd>0</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Play / pause motion or supported audio</dt><dd><kbd>Space</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Randomize current parameters</dt><dd><kbd>N</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Undo the last randomize</dt><dd><kbd>U</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Open download options</dt><dd><kbd>E</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Fit whole mark</dt><dd><kbd>0</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Play / pause motion or audio</dt><dd><kbd>Space</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Randomize parameters</dt><dd><kbd>N</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Undo randomize</dt><dd><kbd>U</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Open export menu</dt><dd><kbd>E</kbd></dd></div>
           <div class="shortcuts_row"><dt>Show this guide</dt><dd><kbd>?</kbd></dd></div>
           <div class="shortcuts_row"><dt>Next quick style</dt><dd><kbd>Shift + Space</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Previous / next color mode</dt><dd><kbd>Shift + ↑ / ↓</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Previous / next color theme</dt><dd><kbd>Shift + ↑ / ↓</kbd></dd></div>
       </dl>
       <label class="shortcuts_preference" for="keyboard-shortcuts-enabled">
         <input id="keyboard-shortcuts-enabled" type="checkbox" checked aria-describedby="keyboard-shortcuts-note">
         <span>Enable keyboard shortcuts</span>
       </label>
-      <p id="keyboard-shortcuts-note" class="report_dialog-copy">Turn off all shortcuts above, including single-letter keys. Your choice is saved in this browser when storage is available. This guide stays available in the three-dot menu.</p>
-      <p class="shortcuts_hint">Tab moves between controls. Escape closes this guide. Browser and system key combinations stay available.</p>
+      <p id="keyboard-shortcuts-note" class="report_dialog-copy">Turns all listed shortcuts on or off. Saved in this browser when storage is available. This guide stays in the three-dot menu.</p>
+      <p class="shortcuts_hint">Tab moves between controls; Escape closes this guide. Browser and system shortcuts still work.</p>
     </div>
   </dialog>
 
@@ -1096,7 +1093,7 @@
       </div>
 
       <p class="report_dialog-copy">
-        Tell us what broke. The current style, theme, viewport, browser, and sharable state URL will be attached automatically.
+        Describe the problem. We’ll attach the current style, theme, viewport, browser and shareable state URL.
       </p>
 
       <div id="bug-report-context" class="report_dialog-context" aria-live="polite"></div>
@@ -1110,19 +1107,19 @@
       <label class="report_dialog-field">
         <span class="report_dialog-label">What happened? <span class="report_dialog-required" aria-hidden="true">*</span></span>
         <textarea id="bug-report-details" class="report_dialog-textarea" rows="5"
-          placeholder="Describe what you saw, including any errors or odd behavior." required></textarea>
+          placeholder="Include any errors or unexpected behavior." required></textarea>
       </label>
 
       <label class="report_dialog-field">
         <span class="report_dialog-label">What were you trying to do? <span class="report_dialog-required" aria-hidden="true">*</span></span>
         <textarea id="bug-report-steps" class="report_dialog-textarea" rows="3"
-          placeholder="Example: I switched to Circles, changed overlap, then opened the style dropdown." required></textarea>
+          placeholder="Example: Selected Circles, changed overlap, then opened the style menu." required></textarea>
       </label>
 
       <label class="report_dialog-field">
         <span class="report_dialog-label">Email</span>
         <input id="bug-report-email" class="report_dialog-input" type="email" maxlength="160"
-          placeholder="So we can follow up if needed">
+          placeholder="Optional, for follow-up">
       </label>
 
       <div class="report_dialog-actions">
@@ -1149,7 +1146,7 @@
   <script src="js/utils/transparentGif.js?v=20261110-ring-release"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportUi.js?v=20261111-drafted-export-schematic"></script>
-  <script src="js/utils/barInformation.js?v=20261111-short-ring"></script>
+  <script src="js/utils/barInformation.js?v=20261111-concise-ui-copy"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>

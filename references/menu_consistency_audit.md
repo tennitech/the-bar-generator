@@ -69,3 +69,7 @@ helper keys and documentation are retained. Final local tests: 1,128 / 96 suites
 
 The final reconciliation also preserves #185's dashed export schematics and
 refreshes only this release's shell keys. The same 1,128 tests / 96 suites pass.
+
+Approved release reconciliation onto #187 also preserves #186/#188 export
+cleanup and #189 dice motion. About/help copy and official color guidance stay
+unchanged. Final combined local tests: 1,137 / 97 suites.
