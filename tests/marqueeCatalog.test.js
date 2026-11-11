@@ -8,7 +8,7 @@ const construction = new Set([...constructionGroup.matchAll(/<option\b([^>]*)val
   .filter(match => !/\bdisabled\b/.test(match[1] + match[3])).map(match => match[2]));
 const promoted = new Set([...ROUTABLE_STYLE_VALUES].filter(style => !construction.has(style)));
 test('promoted routes have canonical Home entries; accessible studies wait for category approval', () => {
-  expect([...construction].sort()).toEqual(['music', 'rabi', 'well-modes']);
+  expect([...construction].sort()).toEqual(['music', 'rabi', 'truss', 'well-modes']);
   for (const style of construction) expect(ROUTABLE_STYLE_VALUES.has(style)).toBe(true);
   expect(new Set(entries.map(entry => entry.value))).toEqual(promoted);
   expect(entries).toHaveLength(promoted.size);

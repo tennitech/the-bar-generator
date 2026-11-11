@@ -1,6 +1,10 @@
 // Descriptions explain the implemented pattern; source records live in references/bar_information_cards.md.
 (function (globalScope) {
   const descriptions = {
+  "truss": {
+    "title": "Truss",
+    "text": "Compare four bracing patterns across a fixed span. Warren zigzag alternates diagonals; Pratt slopes down toward the center, Howe slopes up, and X-braced crosses each bay. Adjust panel count, depth and drawing weight. These are schematic connections, not a structural analysis: no loads, supports, materials or member forces are modeled."
+  },
   "nucleotide": {
     "title": "Nucleotide",
     "text": "Encode 30–50 bases to export. Dashed outlines show missing bases. Shapes represent A–T/U and C–G pairing, not standard molecular symbols. Presets are transcript excerpts, not complete genes."

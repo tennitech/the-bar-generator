@@ -8,7 +8,7 @@
   let transitionBound = false;
   // Every available family is intentional: fixed artwork has no parameter actions.
   const capabilities = Object.freeze({
-    music: 'music', nucleotide: 'nucleotide', solid: null, ruler: 'ruler', binary: 'binary', morse: 'morse', ticker: 'ticker',
+    truss: 'truss', music: 'music', nucleotide: 'nucleotide', solid: null, ruler: 'ruler', binary: 'binary', morse: 'morse', ticker: 'ticker',
     waveform: 'waveform', 'wave-quantum': 'quantum', 'well-modes': 'well-modes', rabi: 'rabi', circles: 'circles', numeric: 'numeric',
     'circles-gradient': 'circles-gradient', gradient: 'gradient', grid: 'grid', lines: 'lines',
     'point-connect': 'point-connect', 'neural-network': 'neural-network',

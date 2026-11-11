@@ -111,6 +111,33 @@
       }
       delete sourceControls['triangles-variant-slider'];
     }
+    // Every historical snapshot captured the dormant Truss controls, even for
+    // other styles. Missing depth identifies the old control schema. Validate
+    // its known values before migrating; modern malformed saves still reject.
+    if (manifest['truss-depth-slider'] && !Object.hasOwn(sourceControls, 'truss-depth-slider')) {
+      const oldFamilies = ['flat', 'king-post', 'queen-post', 'howe', 'scissor', 'fink', 'attic',
+        'mono', 'hip', 'gable', 'cathedral', 'fan', 'raised-tie', 'cross', 'warren', 'pratt', 'vierendeel'];
+      const family = sourceControls['truss-family-select'];
+      if (family !== undefined && !oldFamilies.includes(family)) throw new Error('This share link has invalid truss bracing.');
+      const legacyNumber = (id, min, max, step) => {
+        if (!Object.hasOwn(sourceControls, id)) return undefined;
+        const raw = sourceControls[id], value = typeof raw === 'string' && raw.trim() ? Number(raw) : NaN;
+        if (!Number.isFinite(value) || value < min || value > max || Math.abs((value - min) / step - Math.round((value - min) / step)) > 1e-6) {
+          throw new Error('This share link has invalid legacy truss settings.');
+        }
+        return value;
+      };
+      const normalize = scope.normalizeTrussSettings || (typeof require === 'function' ? require('./barPattern').normalizeTrussSettings : null);
+      if (normalize) {
+        const migrated = normalize({ family,
+          segments: legacyNumber('truss-segments-slider', 5, 50, 1),
+          thickness: legacyNumber('truss-thickness-slider', 0.5, 5, 0.5) });
+        sourceControls['truss-family-select'] = migrated.family;
+        sourceControls['truss-segments-slider'] = String(migrated.segments);
+        sourceControls['truss-thickness-slider'] = String(migrated.thickness);
+        sourceControls['truss-depth-slider'] = String(migrated.depth);
+      }
+    }
     const controls = {};
     for (const id of Object.keys(manifest).sort()) {
       if (!Object.hasOwn(sourceControls, id)) continue;

@@ -1074,255 +1074,69 @@ function createWaveQuantumPatternGeometry(options = {}) {
   return { paths, polygons, thickness };
 }
 
+// A schematic topology study, not a structural solver. See references/truss_model.md.
 function normalizeTrussFamily(family) {
-  const normalized = String(family || 'flat').toLowerCase();
-  switch (normalized) {
-    case 'flat':
-    case 'king-post':
-    case 'queen-post':
-    case 'howe':
-    case 'scissor':
-    case 'fink':
-    case 'attic':
-    case 'mono':
-    case 'hip':
-    case 'gable':
-    case 'cathedral':
-    case 'fan':
-    case 'raised-tie':
-      return normalized;
-    case 'cross':
-    case 'warren':
-    case 'vierendeel':
-      return 'flat';
-    case 'pratt':
-      return 'queen-post';
-    default:
-      return 'flat';
-  }
+  const value = String(family || 'warren').toLowerCase();
+  if (['warren', 'pratt', 'howe', 'cross'].includes(value)) return value;
+  if (['flat', 'queen-post'].includes(value)) return 'pratt';
+  if (value === 'lattice') return 'cross';
+  return 'warren';
+}
+
+function normalizeTrussSettings(options = {}) {
+  const bounded = (key, fallback, min, max, step) => {
+    const raw = options[key];
+    const number = raw == null || raw === '' ? NaN : Number(raw);
+    return Number.isFinite(number)
+      ? Math.max(min, Math.min(max, min + Math.round((number - min) / step) * step)) : fallback;
+  };
+  return {
+    family: normalizeTrussFamily(options.family),
+    segments: bounded('segments', 16, 4, 32, 2),
+    depth: bounded('depth', 100, 50, 100, 5),
+    thickness: bounded('thickness', 1.25, 0.5, 2, 0.25)
+  };
 }
 
 function createTrussPatternGeometry(options = {}) {
-  const barStartX = Number(options.barStartX || 0);
-  const barY = Number(options.barY || 0);
-  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
-  const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const thickness = Math.max(0.5, parseFloat(options.thickness || 2));
-  const segments = Math.max(2, parseInt(options.segments || 15, 10));
-  const family = normalizeTrussFamily(options.family);
-
-  const halfThick = thickness / 2;
-  const xLeft = barStartX + halfThick;
-  const yTop = barY + halfThick;
-  const xRight = barStartX + exactBarWidth - halfThick;
-  const yBottom = barY + barHeight - halfThick;
-  const innerWidth = Math.max(0.1, xRight - xLeft);
-  const innerHeight = Math.max(0.1, yBottom - yTop);
-
+  const finite = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+  const barStartX = finite(options.barStartX, 0);
+  const barY = finite(options.barY, 0);
+  const exactBarWidth = Math.max(1, finite(options.exactBarWidth, 250));
+  const barHeight = Math.max(1, finite(options.barHeight, 18));
+  const settings = normalizeTrussSettings(options);
+  const { family, segments, depth } = settings;
+  const height = barHeight * depth / 100;
+  // Weight is measured in the canonical 250-unit vector frame and scales with it.
+  const thickness = Math.min(settings.thickness * exactBarWidth / 250, height, exactBarWidth);
+  const half = thickness / 2;
+  const left = barStartX + half, right = barStartX + exactBarWidth - half;
+  const top = barY + (barHeight - height) / 2 + half;
+  const bottom = barY + (barHeight + height) / 2 - half;
+  const x = i => left + (right - left) * i / segments;
   const lines = [];
-  const toAbsolute = (point) => ({
-    x: xLeft + point.x * innerWidth,
-    y: yTop + point.y * innerHeight
-  });
-  const addLine = (pointA, pointB) => {
-    const a = toAbsolute(pointA);
-    const b = toAbsolute(pointB);
-    lines.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y });
-  };
-  const addPolyline = (points, closed = false) => {
-    for (let i = 0; i < points.length - 1; i++) {
-      addLine(points[i], points[i + 1]);
-    }
-    if (closed && points.length > 2) {
-      addLine(points[points.length - 1], points[0]);
-    }
-  };
-  const point = (x, y) => ({ x, y });
-  const lerp = (a, b, t) => a + (b - a) * t;
-  const lerpPoint = (a, b, t) => point(lerp(a.x, b.x, t), lerp(a.y, b.y, t));
-  const lineYAtX = (a, b, x) => {
-    if (Math.abs(b.x - a.x) < 1e-6) return a.y;
-    const t = (x - a.x) / (b.x - a.x);
-    return lerp(a.y, b.y, t);
-  };
-  const roofPointAt = (x, leftBase, ridge, rightBase) => {
-    if (x <= ridge.x) {
-      return point(x, lineYAtX(leftBase, ridge, x));
-    }
-    return point(x, lineYAtX(ridge, rightBase, x));
-  };
-  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const add = (x1, y1, x2, y2, role) => lines.push({ x1, y1, x2, y2, role });
 
-  const leftBase = point(0.04, 1.0);
-  const ridge = point(0.5, 0.04);
-  const rightBase = point(0.96, 1.0);
-  const bottomCenter = point(0.5, 1.0);
-
-  if (family === 'flat') {
-    const panels = clamp(segments, 4, 16);
-    const corners = [
-      point(0, 0),
-      point(1, 0),
-      point(1, 1),
-      point(0, 1)
-    ];
-    addPolyline(corners, true);
-
-    for (let i = 1; i < panels; i++) {
-      const x = i / panels;
-      addLine(point(x, 0), point(x, 1));
-    }
-
-    const middleIndex = Math.floor(panels / 2);
-    const hasCenterPanel = panels % 2 === 1;
-    for (let i = 0; i < panels; i++) {
-      const x0 = i / panels;
-      const x1 = (i + 1) / panels;
-      if (hasCenterPanel && i === middleIndex) {
-        addLine(point(x0, 0), point(x1, 1));
-        addLine(point(x0, 1), point(x1, 0));
-      } else if (i < middleIndex) {
-        addLine(point(x0, 0), point(x1, 1));
-      } else {
-        addLine(point(x0, 1), point(x1, 0));
-      }
-    }
-  } else if (family === 'king-post') {
-    addPolyline([leftBase, ridge, rightBase]);
-    addLine(leftBase, rightBase);
-    addLine(ridge, bottomCenter);
-  } else if (family === 'queen-post') {
-    const leftWeb = roofPointAt(0.32, leftBase, ridge, rightBase);
-    const rightWeb = roofPointAt(0.68, leftBase, ridge, rightBase);
-    addPolyline([leftBase, ridge, rightBase]);
-    addLine(leftBase, rightBase);
-    addLine(ridge, bottomCenter);
-    addLine(leftWeb, bottomCenter);
-    addLine(bottomCenter, rightWeb);
-  } else if (family === 'howe') {
-    const leftTop = roofPointAt(0.26, leftBase, ridge, rightBase);
-    const rightTop = roofPointAt(0.74, leftBase, ridge, rightBase);
-    addPolyline([leftBase, ridge, rightBase]);
-    addLine(leftBase, rightBase);
-    addLine(leftTop, point(0.26, 1));
-    addLine(ridge, bottomCenter);
-    addLine(rightTop, point(0.74, 1));
-    addLine(leftTop, bottomCenter);
-    addLine(bottomCenter, rightTop);
-  } else if (family === 'scissor') {
-    const lowerApex = point(0.5, 0.5);
-    const leftLower = point(0.28, lineYAtX(leftBase, lowerApex, 0.28));
-    const rightLower = point(0.72, lineYAtX(lowerApex, rightBase, 0.72));
-    addPolyline([leftBase, ridge, rightBase]);
-    addPolyline([leftBase, lowerApex, rightBase]);
-    addLine(ridge, lowerApex);
-    addLine(leftLower, roofPointAt(leftLower.x, leftBase, ridge, rightBase));
-    addLine(rightLower, roofPointAt(rightLower.x, leftBase, ridge, rightBase));
-  } else if (family === 'fink') {
-    const bottomLeft = point(0.3, 1);
-    const bottomRight = point(0.7, 1);
-    const roofLeft = roofPointAt(0.18, leftBase, ridge, rightBase);
-    const roofRight = roofPointAt(0.82, leftBase, ridge, rightBase);
-    addPolyline([leftBase, ridge, rightBase]);
-    addLine(leftBase, rightBase);
-    addLine(bottomCenter, ridge);
-    addLine(ridge, bottomLeft);
-    addLine(ridge, bottomRight);
-    addLine(roofLeft, bottomCenter);
-    addLine(bottomCenter, roofRight);
-  } else if (family === 'attic') {
-    const leftWallTop = roofPointAt(0.24, leftBase, ridge, rightBase);
-    const rightWallTop = roofPointAt(0.76, leftBase, ridge, rightBase);
-    const leftWallBottom = point(0.24, 1);
-    const rightWallBottom = point(0.76, 1);
-    const atticLeft = point(0.39, 0.28);
-    const atticRight = point(0.61, 0.28);
-    const atticMid = point(0.5, 0.28);
-    addPolyline([leftBase, ridge, rightBase]);
-    addLine(leftBase, rightBase);
-    addLine(leftWallTop, leftWallBottom);
-    addLine(rightWallTop, rightWallBottom);
-    addLine(atticLeft, atticRight);
-    addLine(atticLeft, ridge);
-    addLine(ridge, atticRight);
-    addLine(ridge, atticMid);
-    addLine(point(0.12, 1), leftWallTop);
-    addLine(rightWallTop, point(0.88, 1));
-  } else if (family === 'mono') {
-    const monoLeft = point(0.04, 1);
-    const monoTop = point(0.92, 0.08);
-    const monoRight = point(0.92, 1);
-    const centerTop = lerpPoint(monoLeft, monoTop, 0.64);
-    addPolyline([monoLeft, monoTop, monoRight]);
-    addLine(monoLeft, monoRight);
-    addLine(centerTop, point(centerTop.x, 1));
-    addLine(centerTop, monoRight);
-  } else if (family === 'hip') {
-    const leftKnee = point(0.28, 0.22);
-    const rightKnee = point(0.72, 0.22);
-    const centerTop = point(0.5, 0.22);
-    addPolyline([leftBase, leftKnee, rightKnee, rightBase]);
-    addLine(leftBase, rightBase);
-    addLine(leftKnee, point(leftKnee.x, 1));
-    addLine(centerTop, bottomCenter);
-    addLine(rightKnee, point(rightKnee.x, 1));
-    addLine(leftKnee, bottomCenter);
-    addLine(bottomCenter, rightKnee);
-    addLine(point(0.14, 1), point(0.2, 0.62));
-    addLine(point(0.8, 0.62), point(0.86, 1));
-  } else if (family === 'gable') {
-    const postCount = clamp(segments, 6, 18);
-    addPolyline([leftBase, ridge, rightBase]);
-    addLine(leftBase, rightBase);
-    for (let i = 1; i < postCount; i++) {
-      const x = i / postCount;
-      addLine(point(x, 1), roofPointAt(x, leftBase, ridge, rightBase));
-    }
-  } else if (family === 'cathedral') {
-    const cathedralRidge = point(0.48, 0.04);
-    const valley = point(0.56, 1.0);
-    const wingPeak = point(0.74, 0.44);
-    const wingEnd = point(0.96, 0.78);
-    const leftBraceX = 0.24;
-    const leftBraceTop = roofPointAt(leftBraceX, leftBase, cathedralRidge, valley);
-    const rightBraceStart = lerpPoint(valley, wingPeak, 0.62);
-    const rightBraceEnd = lerpPoint(wingPeak, wingEnd, 0.38);
-    addPolyline([leftBase, cathedralRidge, valley]);
-    addLine(leftBase, valley);
-    addPolyline([valley, wingPeak, wingEnd]);
-    addLine(cathedralRidge, valley);
-    addLine(leftBraceTop, point(leftBraceX, 1));
-    addLine(leftBraceTop, valley);
-    addLine(rightBraceStart, rightBraceEnd);
-  } else if (family === 'fan') {
-    const rayCount = clamp(Math.round(segments / 2), 3, 7);
-    addPolyline([leftBase, ridge, rightBase]);
-    addLine(leftBase, rightBase);
-    addLine(bottomCenter, ridge);
-    for (let i = 1; i <= rayCount; i++) {
-      const x = 0.5 - (0.38 * i) / (rayCount + 1);
-      addLine(bottomCenter, roofPointAt(x, leftBase, ridge, rightBase));
-      addLine(bottomCenter, roofPointAt(1 - x, leftBase, ridge, rightBase));
-    }
-  } else if (family === 'raised-tie') {
-    const tieLeft = point(0.28, 0.62);
-    const tieRight = point(0.72, 0.62);
-    const tieMid = point(0.5, 0.62);
-    const roofLeft = roofPointAt(0.34, leftBase, ridge, rightBase);
-    const roofRight = roofPointAt(0.66, leftBase, ridge, rightBase);
-    addPolyline([leftBase, ridge, rightBase]);
-    addLine(tieLeft, tieRight);
-    addLine(ridge, tieMid);
-    addLine(roofLeft, tieMid);
-    addLine(tieMid, roofRight);
+  // Chords and end posts belong to the topology, not a decorative viewport outline.
+  add(left, top, right, top, 'chord');
+  add(left, bottom, right, bottom, 'chord');
+  add(left, top, left, bottom, 'post');
+  add(right, top, right, bottom, 'post');
+  if (family === 'pratt' || family === 'howe') {
+    for (let i = 1; i < segments; i++) add(x(i), top, x(i), bottom, 'post');
   }
-
-  return {
-    family,
-    thickness,
-    segments,
-    lines
-  };
+  for (let i = 0; i < segments; i++) {
+    if (family === 'cross') {
+      add(x(i), top, x(i + 1), bottom, 'diagonal');
+      add(x(i), bottom, x(i + 1), top, 'diagonal');
+    } else {
+      // Pratt descends toward midspan; Howe ascends. Warren alternates.
+      const descends = family === 'warren' ? i % 2 === 1
+        : family === 'pratt' ? i < segments / 2 : i >= segments / 2;
+      add(x(i), descends ? top : bottom, x(i + 1), descends ? bottom : top, 'diagonal');
+    }
+  }
+  return { family, segments, depth, thickness, lines };
 }
 
 const RUNWAY_BAR_REFERENCE_WIDTH = 500;
@@ -1909,7 +1723,8 @@ function createBarPatternSVG(config) {
       barHeight,
       segments: values.trussSegments,
       thickness: values.trussThickness,
-      family: values.trussFamily
+      family: values.trussFamily,
+      depth: values.trussDepth
     });
 
     let pathData = '';
@@ -1919,7 +1734,7 @@ function createBarPatternSVG(config) {
     }
 
     if (pathData) {
-      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${trussGeometry.thickness}" stroke-linecap="square" stroke-linejoin="miter"/>`;
+      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${trussGeometry.thickness}" stroke-linecap="round" stroke-linejoin="round"/>`;
     }
 
     return pattern;
@@ -2260,6 +2075,7 @@ if (typeof window !== 'undefined') {
   window.normalizeTriangleGridSettings = normalizeTriangleGridSettings;
   window.createTriangleGridPatternGeometry = createTriangleGridPatternGeometry;
   window.createTrussPatternGeometry = createTrussPatternGeometry;
+  window.normalizeTrussSettings = normalizeTrussSettings;
   window.createTrianglesPatternGeometry = createTrianglesPatternGeometry;
   window.normalizeTrianglesPatternSettings = normalizeTrianglesPatternSettings;
   window.normalizeTrianglePatternDirection = normalizeTrianglePatternDirection;
@@ -2308,6 +2124,7 @@ if (typeof module !== 'undefined' && module.exports) {
     normalizeWaveformEnvelopeCenter,
     normalizeWaveformEnvelopeWaves,
     normalizeTrussFamily,
+    normalizeTrussSettings,
     normalizeTrianglesPatternSettings,
     normalizeTrianglePatternDirection
   };

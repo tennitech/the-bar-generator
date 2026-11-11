@@ -27,7 +27,7 @@ describe('GitHub Pages fallback routing', () => {
       getPagesFallbackRedirectUrl('/rpi-logo-generator/generator/truss/', '?trussSegments=20', {
         hostname: 'tennitech.github.io'
       })
-    ).toBe('/rpi-logo-generator/generator/solid/?trussSegments=20');
+    ).toBe('/rpi-logo-generator/generator/truss/?trussSegments=20');
   });
 
   test('falls unknown generator routes back to the default solid style under the repo base path', () => {
