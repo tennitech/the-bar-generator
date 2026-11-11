@@ -1049,7 +1049,7 @@ function captureLogoExportSnapshot(options = {}) {
   const viewport = window.logoExportOptions.viewport(geometry, composition);
   const gifPolicy = options.format === 'gif' && family === 'wave-quantum'
     ? window.loopingGifUtils.getRingGifExportPolicy(values, { size: window.logoExportUI.size(), composition }) : null;
-  const dimensions = window.logoExportOptions.dimensions(gifPolicy ? gifPolicy.size : window.logoExportUI.size(), geometry, composition);
+  const dimensions = window.logoExportOptions.dimensions(gifPolicy ? gifPolicy.size : window.logoExportUI.size(), geometry, composition, options.format);
   const inkName = ({ '#ffffff': 'white', '#000000': 'black', '#d6001c': 'red',
     '#0081ce': 'blue', '#cdac38': 'gold', '#e1edf5': 'silver', '#b9ccd8': 'gray' })[foreground.toLowerCase()] || currentColorMode;
   const rgb = [0, 2, 4].map(offset => parseInt(foreground.replace('#', '').slice(offset, offset + 2), 16));
@@ -1093,10 +1093,11 @@ async function createRasterExportBlob(snapshot, signal, onStage = () => {}) {
     throwIfExportCancelled(signal);
     canvas.width = dimensions.width; canvas.height = dimensions.height;
     const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('PNG rendering is unavailable. Choose Smaller file and try again.');
     ctx.drawImage(image, 0, 0);
     onStage('Encoding PNG…');
     return await awaitExportTask(new Promise((resolve, reject) => canvas.toBlob(blob =>
-      blob && blob.type === 'image/png' ? resolve(blob) : reject(new Error('PNG encoding failed. Try again.')), 'image/png')), signal);
+      blob && blob.type === 'image/png' ? resolve(blob) : reject(new Error('PNG encoding failed. Choose Smaller file and try again.')), 'image/png')), signal);
   } finally { URL.revokeObjectURL(url); image.src = ''; canvas.width = 0; canvas.height = 0; }
 }
 

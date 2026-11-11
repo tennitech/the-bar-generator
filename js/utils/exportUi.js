@@ -53,23 +53,23 @@
     if (byId('export-host-note')) byId('export-host-note').hidden = credits || !root.embedSupport?.isEmbedded();
     if (!credits && root.RPI_LOGO_GEOMETRY && root.logoExportOptions) {
       const dimensions = root.logoExportOptions.dimensions(size(), root.RPI_LOGO_GEOMETRY, composition());
-      text('export-dimensions', pixelSize(dimensions));
+      text('export-dimensions', `PNG · ${pixelSize(dimensions)}`);
       for (const format of ['png', 'svg', 'gif']) {
         const button = byId(format === 'gif' ? 'save-loop-gif' : `save-${format}`);
         const label = `Download ${format.toUpperCase()}`;
         let description = format === 'svg' ? 'Scalable vector'
           : format === 'png' ? 'Transparent image' : 'Looping animation';
-        let actionDimensions = dimensions;
+        let actionDimensions = root.logoExportOptions.dimensions(size(), root.RPI_LOGO_GEOMETRY, composition(), format);
         if (format === 'gif' && byId('style-select')?.value === 'wave-quantum' && root.loopingGifUtils?.getRingGifExportPolicy) {
           const policy = root.loopingGifUtils.getRingGifExportPolicy({ quantumSpeed: byId('quantum-speed-slider')?.value ?? 1 }, { size: size(), composition: composition() });
-          actionDimensions = root.logoExportOptions.dimensions(policy.size, root.RPI_LOGO_GEOMETRY, composition());
+          actionDimensions = root.logoExportOptions.dimensions(policy.size, root.RPI_LOGO_GEOMETRY, composition(), 'gif');
           description = policy.supported
-            ? `${Number(policy.periodSeconds.toFixed(1))} s loop · up to 50 fps${policy.note ? ` · Standard (${pixelSize(actionDimensions)}) for long loop` : ''}`
+            ? `${Number(policy.periodSeconds.toFixed(1))} s loop · up to 50 fps${policy.note ? ' · Smaller file for long loop' : ''}`
             : 'Set SPEED to 1× or higher for GIF';
         }
         if (!button) continue;
         button.querySelector('.option-label').textContent = format.toUpperCase();
-        button.querySelector('.option-desc').textContent = description;
+        button.querySelector('.option-desc').textContent = format === 'gif' ? `${pixelSize(actionDimensions)} · ${description}` : description;
         button.setAttribute('aria-label', `${label}: ${root.logoExportOptions.compositionLabel(composition())}, ${description}${format === 'svg' ? '' : `, ${pixelSize(actionDimensions)}`}`);
       }
     }

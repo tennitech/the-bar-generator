@@ -81,7 +81,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
     assert.equal(await page.locator('#export-size-select').inputValue(), 'large');
     const waiting = page.waitForEvent('download'); await page.locator('#save-png').click();
     const png = await fs.readFile(await (await waiting).path());
-    assert.equal(png.readUInt32BE(16), 2320); assert.equal(png.readUInt32BE(20), 1524);
+    assert.equal(png.readUInt32BE(16), 4752); assert.equal(png.readUInt32BE(20), 3121);
     await page.waitForFunction(() => !logoExportUI.isBusy());
     assert.equal(await page.locator('#export-message').textContent(), 'PNG download requested.');
     assert.equal(await page.locator('#save-menu').isVisible(), true);

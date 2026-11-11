@@ -54,7 +54,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:4322';
       await page.locator('#copy-png').click(); await page.waitForFunction(() => !logoExportUI.isBusy());
       const result = await read('png');
       assert.deepEqual(result.types, ['image/png']); assert.equal(result.type, 'image/png');
-      assert.equal(result.width, size === 'large' ? 2320 : 1160); assert.equal(result.height, size === 'large' ? 1524 : 762);
+      assert.equal(result.width, size === 'large' ? 4752 : 1160); assert.equal(result.height, size === 'large' ? 3121 : 762);
       assert.equal(result.corner[3], 0); assert(result.partial > 0); assert(result.ink > 10000); assert.deepEqual(result.firstInk.slice(0, 3), { black: [0, 0, 0], white: [255, 255, 255], red: [214, 0, 28] }[theme]);
       results.push({ size, theme, ...result });
     }

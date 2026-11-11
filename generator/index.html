@@ -24,7 +24,7 @@
   <script src="js/utils/customDropdowns.js?v=20261110-picker-tab-focus"></script>
   <script src="js/utils/parameterControls.js?v=20261111-remove-lfo"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
-  <script src="js/utils/loopingGif.js?v=20261111-short-ring"></script>
+  <script src="js/utils/loopingGif.js?v=20261111-high-resolution"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
   <script src="js/utils/shareState.js?v=20261111-remove-lfo"></script>
@@ -126,21 +126,21 @@
             </fieldset>
             <span id="export-size-label" class="export_size-label">Image size</span>
             <select id="export-size-select" hidden aria-hidden="true" tabindex="-1">
-              <option value="large" selected>Large · Recommended</option>
-              <option value="standard">Standard</option>
+              <option value="large" selected>High resolution · Recommended</option>
+              <option value="standard">Smaller file</option>
             </select>
             <div class="export_size-options" role="radiogroup" aria-labelledby="export-size-label" aria-describedby="export-dimensions export-size-note">
               <label class="export_size-option export_choice">
                 <input id="export-size-large" type="radio" name="export-size" value="large" checked>
-                <span class="export_size-copy"><span class="export_choice-label"><span class="export_choice-text">Large</span><span class="export_choice-reserve" aria-hidden="true">Large</span></span> <small>Recommended</small></span>
+                <span class="export_size-copy"><span class="export_choice-label"><span class="export_choice-text">High resolution</span><span class="export_choice-reserve" aria-hidden="true">High resolution</span></span> <small>Recommended</small></span>
               </label>
               <label class="export_size-option export_choice">
                 <input id="export-size-standard" type="radio" name="export-size" value="standard">
-                <span class="export_size-copy"><span class="export_choice-label"><span class="export_choice-text">Standard</span><span class="export_choice-reserve" aria-hidden="true">Standard</span></span></span>
+                <span class="export_size-copy"><span class="export_choice-label"><span class="export_choice-text">Smaller file</span><span class="export_choice-reserve" aria-hidden="true">Smaller file</span></span></span>
               </label>
             </div>
-            <p id="export-dimensions" class="export_dimensions">2320 × 1524 px</p>
-            <p id="export-size-note" class="export_note">Includes clear space. SVG scales to any size.</p>
+            <p id="export-dimensions" class="export_dimensions">PNG · 4752 × 3121 px</p>
+            <p id="export-size-note" class="export_note">Includes clear space. GIF uses separate size limits. SVG scales to any size.</p>
           </div>
           <div class="export_action-columns">
           <div class="export_download-actions" role="group" aria-labelledby="export-download-label">
@@ -160,7 +160,7 @@
           </div>
           <div id="clipboard-actions" class="export_copy-actions" role="group" aria-labelledby="export-copy-label">
             <h2 id="export-copy-label" class="export_group-label">Copy</h2>
-            <button id="copy-png" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="option-label">PNG</span><span class="option-desc">2320 × 1524 px</span></button>
+            <button id="copy-png" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="option-label">PNG</span><span class="option-desc">Transparent image</span></button>
             <button id="copy-svg" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="option-label">SVG</span><span class="option-desc">Scalable vector</span></button>
           </div>
           </div>
@@ -1112,10 +1112,10 @@
   <script src="js/ui.js?v=20261110-quiet-undo-r3"></script>
   <script src="js/utils/logoGeometry.js?v=20261103-save-removal"></script>
   <script src="js/utils/urlState.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportOptions.js?v=20261110-export-composition-r2"></script>
+  <script src="js/utils/exportOptions.js?v=20261111-high-resolution"></script>
   <script src="js/utils/transparentGif.js?v=20261110-ring-release"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportUi.js?v=20261111-drafted-export-schematic"></script>
+  <script src="js/utils/exportUi.js?v=20261111-high-resolution"></script>
   <script src="js/utils/barInformation.js?v=20261111-remove-lfo"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
@@ -1124,7 +1124,7 @@
   <script src="js/utils/inputLimitFeedback.js?v=20261110-input-limit-feedback"></script>
   <script src="js/main.js?v=20261111-remove-lfo"></script>
   <script src="js/utils/logoClipboard.js?v=20261110-export-composition-r2"></script>
-  <script src="js/drawing.js?v=20261111-remove-lfo"></script>
+  <script src="js/drawing.js?v=20261111-high-resolution"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

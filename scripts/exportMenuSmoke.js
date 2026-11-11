@@ -15,13 +15,13 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
     if (evidence) await fs.mkdir(evidence, { recursive: true });
     const open = async () => { if (!await page.locator('#save-menu').isVisible()) await page.locator('#save-button').click(); };
     assert.equal(await page.locator('#export-size-select').inputValue(), 'large');
-    assert.equal(await page.locator('#export-size-select option:checked').textContent(), 'Large · Recommended');
+    assert.equal(await page.locator('#export-size-select option:checked').textContent(), 'High resolution · Recommended');
     await open();
-    assert.equal(await page.locator('#export-dimensions').textContent(), '2320 × 1524 px');
-    for (const [size, width, height] of [['large', 2320, 1524], ['standard', 1160, 762]]) {
+    assert.equal(await page.locator('#export-dimensions').textContent(), 'PNG · 4752 × 3121 px');
+    for (const [size, width, height] of [['large', 4752, 3121], ['standard', 1160, 762]]) {
       await page.locator(`#export-size-${size}`).check();
-      assert.equal(await page.locator('#export-dimensions').textContent(), `${width} × ${height} px`);
-      assert.match(await page.locator('#copy-png').textContent(), new RegExp(`${width} × ${height}`));
+      assert.equal(await page.locator('#export-dimensions').textContent(), `PNG · ${width} × ${height} px`);
+      assert.match(await page.locator('#copy-png').getAttribute('aria-label'), new RegExp(`${width} × ${height}`));
       const wait = page.waitForEvent('download'); await page.locator('#save-png').click();
       const file = await wait; const png = await fs.readFile(await file.path());
       assert.equal(png.readUInt32BE(16), width); assert.equal(png.readUInt32BE(20), height);

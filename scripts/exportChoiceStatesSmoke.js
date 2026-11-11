@@ -42,7 +42,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       assert.equal(await page.evaluate(() => document.activeElement.id), 'export-size-large');
       await page.keyboard.press('ArrowDown');
       assert.equal(await page.locator('#export-size-standard').isChecked(), true);
-      assert.equal(await page.locator('#export-dimensions').textContent(), '1160 × 232 px');
+      assert.equal(await page.locator('#export-dimensions').textContent(), 'PNG · 1160 × 232 px');
       const after = await appearance();
       for (let i = 0; i < before.length; i += 1) {
         for (const prop of ['x', 'y', 'width', 'height']) assert.equal(after[i][prop], before[i][prop], `layout shifted: ${after[i].id} ${prop}`);
@@ -57,7 +57,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR;
       assert.equal(await page.locator('#save-png').evaluate(el => getComputedStyle(el).outlineOffset), '2px');
       assert.equal(await page.locator('#save-menu').evaluate(el => el.scrollWidth <= el.clientWidth), true);
       assert.equal(await page.getByRole('radio', { name: 'Bar + RPI', exact: true }).count(), 1);
-      assert.equal(await page.getByRole('radio', { name: 'Large Recommended', exact: true }).count(), 1);
+      assert.equal(await page.getByRole('radio', { name: 'High resolution Recommended', exact: true }).count(), 1);
       // Busy jobs retain selection, block changes, and recover on cancel/finish.
       await page.evaluate(() => { window.exportChoiceTestJob = logoExportUI.begin('gif'); });
       for (const id of ['export-composition-logo', 'export-composition-bar', 'export-size-large', 'export-size-standard', 'save-png']) {
