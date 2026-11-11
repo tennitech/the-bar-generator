@@ -21,8 +21,8 @@ test('source and accessibility metadata are explicit; unknown icons fail closed'
 test('static action icons use the same exact Feather child geometry and decorative semantics', () => {
   const html = fs.readFileSync(path.join(__dirname, '../generator/index.html'), 'utf8');
   const matches = Array.from(html.matchAll(/<svg data-feather="([a-z-]+)"[^>]*>([\s\S]*?)<\/svg>/g));
-  // Artemis learning moved out of the header, leaving one consistent download icon.
-  expect(matches).toHaveLength(7);
+  // Dialog headers now share a text Close action; navigation/action icons remain pinned.
+  expect(matches).toHaveLength(6);
   for (const [markup, name, children] of matches) {
     const expected = icons[name].match(/<svg[^>]*>([\s\S]*)<\/svg>/)[1];
     expect(children).toBe(expected);
