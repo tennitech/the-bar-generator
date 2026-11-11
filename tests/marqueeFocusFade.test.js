@@ -105,3 +105,45 @@ test('re-entering a recent bar starts from displayed field brightness, not its s
   expect(Number(f.a.style.values['--marquee-focus-local'])).toBeGreaterThanOrEqual(f.field());
   f.settle(); expect(f.opacity(f.a)).toBe(1);
 });
+
+test('short real gaps brighten immediately with much less whole-field flash', () => {
+  for (const seconds of [.016, .032, .05]) {
+    const start = { value: .2, velocity: 0, target: 1 };
+    const previous = advanceFocusFade(start, seconds);
+    const next = advanceFocusFade(start, seconds, 12);
+    expect(next.value).toBeGreaterThan(.2);
+    expect(next.value - .2).toBeLessThan((previous.value - .2) * .35);
+  }
+});
+
+test('directional lookahead brightens the next bar before entry and expires at rest', () => {
+  const f = fixture();
+  f.fade.setPointer(f.a); f.settle();
+  document.elementFromPoint = jest.fn(() => ({ closest: () => f.b }));
+  const move = x => f.handlers.pointermove({ pointerType: 'mouse', buttons: 0, clientX: x, clientY: 100 });
+  move(100); f.tick(); move(120); f.tick(); f.tick();
+  expect(f.opacity(f.b)).toBeGreaterThan(.2);
+  expect(f.field()).toBe(.2);
+  expect(document.elementFromPoint.mock.calls.length).toBeLessThanOrEqual(3);
+  f.settle();
+  expect(f.opacity(f.b)).toBe(.2);
+  expect(f.frames.size).toBe(0);
+});
+
+test('lookahead never owns gap dimming and does not interfere with focus, touch or drag', () => {
+  const f = fixture();
+  f.fade.setPointer(f.a); f.settle();
+  document.elementFromPoint = jest.fn(() => ({ closest: () => f.b }));
+  const move = (x, extra = {}) => f.handlers.pointermove({ pointerType: 'mouse', buttons: 0, clientX: x, clientY: 100, ...extra });
+  move(100); f.tick(); move(120); f.tick();
+  f.fade.setPointer(null); f.tick();
+  expect(f.field()).toBeGreaterThan(.2);
+  f.keyboard(f.a); f.settle();
+  expect(f.opacity(f.b)).toBe(.2);
+  document.elementFromPoint.mockClear();
+  move(140, { pointerType: 'touch' }); f.tick();
+  move(160, { buttons: 1 }); f.tick();
+  expect(document.elementFromPoint).not.toHaveBeenCalled();
+  f.keyboard(null); f.handlers.pointerleave(); f.settle();
+  expect(f.field()).toBe(1); expect(f.frames.size).toBe(0);
+});

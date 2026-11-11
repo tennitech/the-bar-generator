@@ -3,6 +3,23 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 directional marquee handoff
+
+Pointer travel previews the next native hit-tested bar up to 60ms/72px ahead,
+coalescing input into one frame and at most three hit tests. Only that local bar
+brightens early; it never owns selection or pauses a row. Prediction expires
+80ms after the last sample and is disabled for touch, drag, keyboard focus and
+reduced motion. Native hit testing preserves rotated geometry and overlay bounds.
+
+Real gaps still start brightening immediately, with a rate-12 critically damped
+field release rather than rate 26. A 32ms crossing raises background opacity to
+0.246 rather than 0.362; 50ms raises it to 0.298 rather than 0.499. There is no
+hold or debounce. Actual selection and local highlights retain rate 26, exact
+20% settled background, continuous value/velocity and cleanup. Art and exports
+are unchanged. Unit regressions cover preview expiry, immediate release, focus,
+touch/drag exclusion and bounded hit-testing. Cloud production browser initially
+opened but subsequent input timed out; rendered verification is not yet claimed.
+
 ## November 11 high-resolution PNG exports
 
 The size choices are now **High resolution · Recommended** and **Smaller file**.
