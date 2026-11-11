@@ -44,7 +44,8 @@ const paused = page => page.evaluate(() => document.documentElement.dataset.marq
       await page.reload(); await ready(page); await frozen(page);
       assert.equal(await paused(page),true);
       assert.notEqual(await page.locator('[data-entrance-plane]').getAttribute('data-entry-mode'), 'bypass');
-      assert.match(await page.locator('.bar_asset_wrap').first().evaluate(e => getComputedStyle(e).transition), /opacity 0.24s/);
+      assert.equal(await page.locator('.marquee_stage').getAttribute('data-focus-fade'), 'continuous');
+      assert.equal(await page.locator('.bar_asset_wrap').first().evaluate(e => getComputedStyle(e).transitionDuration), '0s');
       await page.keyboard.press('Space'); await running(page);
       await page.emulateMedia({reducedMotion:'reduce'}); await frozen(page);
       await page.keyboard.press('Space'); await frozen(page);
