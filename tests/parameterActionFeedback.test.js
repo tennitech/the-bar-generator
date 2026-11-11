@@ -3,34 +3,103 @@ const fs = require('node:fs');
 function fixture(reduce = false) {
   const media = { matches: reduce, addEventListener: jest.fn() };
   const document = { hidden: false, addEventListener: jest.fn() };
-  const scope = { matchMedia: () => media, addEventListener: jest.fn() };
+  const scope = { matchMedia: () => media, addEventListener: jest.fn(),
+    getComputedStyle: jest.fn(target => ({ transform: target.liveTransform || 'none' })) };
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/parameterControls'), 'utf8'), { window: scope, document });
   const animations = [];
-  const target = { animate: jest.fn(() => { const animation = { cancel: jest.fn(), finished: new Promise(() => {}) }; animations.push(animation); return animation; }) };
-  const button = { querySelector: jest.fn(() => target) };
-  return { api: scope.ParameterControls, button, target, animations, media, document, scope };
+  function target(name) {
+    const node = { name };
+    node.animate = jest.fn((frames, options) => {
+      const animation = { target: node, frames, options, cancel: jest.fn() };
+      animation.finished = new Promise(resolve => { animation.finish = resolve; });
+      animations.push(animation); return animation;
+    });
+    return node;
+  }
+  const back = target('back'), front = target('front'), label = target('label'), root = target('root');
+  const button = { querySelector: jest.fn(selector => ({ '[data-die-face="back"]': back,
+    '[data-die-face="front"]': front, '.parameter_action-label': label, '.parameter_action-icon': root })[selector]) };
+  return { api: scope.ParameterControls, button, back, front, label, root, animations, media, document, scope };
 }
-test('one bounded response per action; repeated presses replace rather than accumulate', () => {
-  const f = fixture(); f.api.feedback(f.button, 'randomize'); f.api.feedback(f.button, 'randomize');
-  expect(f.animations[0].cancel).toHaveBeenCalledTimes(1);
-  expect(f.target.animate.mock.calls[1][1].duration).toBe(220);
-  f.api.cancelFeedback(); expect(f.animations[1].cancel).toHaveBeenCalledTimes(1);
-});
-test('reduced motion and background pages do not animate', () => {
-  const f = fixture(true); f.api.feedback(f.button, 'randomize'); expect(f.target.animate).not.toHaveBeenCalled();
-  f.media.matches = false; f.document.hidden = true; f.api.feedback(f.button, 'undo'); expect(f.target.animate).not.toHaveBeenCalled();
-});
-test('a live reduction preference cancels active feedback immediately', () => {
-  const f = fixture(); f.api.feedback(f.button, 'reset');
-  f.media.addEventListener.mock.calls[0][1]({ matches: true });
-  expect(f.animations[0].cancel).toHaveBeenCalledTimes(1);
+
+test('Randomize moves each die independently, with different directions and settling times, then returns to rest', () => {
+  const f = fixture(); f.api.feedback(f.button, 'randomize');
+  expect(f.back.animate).toHaveBeenCalledTimes(1); expect(f.front.animate).toHaveBeenCalledTimes(1);
+  expect(f.root.animate).not.toHaveBeenCalled(); expect(f.label.animate).not.toHaveBeenCalled();
+  const [back, front] = f.animations;
+  expect(back.frames).not.toEqual(front.frames);
+  expect(back.options.duration).toBeLessThan(front.options.duration);
+  expect(front.options.duration).toBeLessThanOrEqual(350);
+  expect(back.frames[1].transform).toMatch(/rotate\([1-9]/);
+  expect(front.frames[1].transform).toMatch(/rotate\(-[1-9]/);
+  for (const animation of f.animations) {
+    expect(animation.frames.at(-1)).toEqual(animation.frames[0]);
+    expect(animation.options.fill).toBeUndefined();
+    expect(animation.frames.every(frame => Object.keys(frame).every(key => ['transform', 'offset'].includes(key)))).toBe(true);
+  }
 });
 
-test('page exit and backgrounding cancel active responses', () => {
+test('rapid activations replace both face animations and continue from their individual displayed poses', () => {
   const f = fixture(); f.api.feedback(f.button, 'randomize');
-  f.scope.addEventListener.mock.calls.find(([name]) => name === 'pagehide')[1]();
-  expect(f.animations[0].cancel).toHaveBeenCalledTimes(1);
-  f.api.feedback(f.button, 'undo'); f.document.hidden = true;
-  f.document.addEventListener.mock.calls.find(([name]) => name === 'visibilitychange')[1]();
-  expect(f.animations[1].cancel).toHaveBeenCalledTimes(1);
+  f.back.liveTransform = 'matrix(1, 0.1, -0.1, 1, 0, -0.4)';
+  f.front.liveTransform = 'matrix(1, -0.1, 0.1, 1, 0, 0.3)';
+  for (let i = 0; i < 9; i++) f.api.feedback(f.button, 'randomize');
+  expect(f.animations).toHaveLength(20);
+  for (const old of f.animations.slice(0, -2)) expect(old.cancel).toHaveBeenCalledTimes(1);
+  expect(f.animations[2].frames[0].transform).toBe(f.back.liveTransform);
+  expect(f.animations[3].frames[0].transform).toBe(f.front.liveTransform);
+  f.api.cancelFeedback();
+  for (const latest of f.animations.slice(-2)) expect(latest.cancel).toHaveBeenCalledTimes(1);
+  expect(f.media.addEventListener).toHaveBeenCalledTimes(1);
+});
+
+test('late completion of replaced animations cannot remove the currently active pair', async () => {
+  const f = fixture(); f.api.feedback(f.button, 'randomize');
+  const old = [...f.animations]; f.api.feedback(f.button, 'randomize');
+  old.forEach(animation => animation.finish()); await Promise.resolve();
+  f.api.cancelFeedback();
+  f.animations.slice(-2).forEach(animation => expect(animation.cancel).toHaveBeenCalledTimes(1));
+});
+
+test('naturally finished animations are released without retained transforms or stale cancellation', async () => {
+  const f = fixture(); f.api.feedback(f.button, 'randomize');
+  f.animations.forEach(animation => animation.finish()); await Promise.resolve();
+  f.api.cancelFeedback();
+  f.animations.forEach(animation => expect(animation.cancel).not.toHaveBeenCalled());
+  f.api.feedback(f.button, 'randomize'); expect(f.scope.getComputedStyle).not.toHaveBeenCalled();
+});
+
+test('reduced motion and background pages leave both dice still', () => {
+  const f = fixture(true); f.api.feedback(f.button, 'randomize'); expect(f.animations).toHaveLength(0);
+  f.media.matches = false; f.document.hidden = true; f.api.feedback(f.button, 'randomize');
+  expect(f.animations).toHaveLength(0);
+});
+
+test.each(['reduced-motion', 'pagehide', 'hidden'])('%s cancels both active face responses', cause => {
+  const f = fixture(); f.api.feedback(f.button, 'randomize');
+  if (cause === 'reduced-motion') { f.media.matches = true; f.media.addEventListener.mock.calls[0][1]({ matches: true }); }
+  if (cause === 'pagehide') f.scope.addEventListener.mock.calls.find(([name]) => name === 'pagehide')[1]();
+  if (cause === 'hidden') { f.document.hidden = true; f.document.addEventListener.mock.calls[0][1](); }
+  f.animations.forEach(animation => expect(animation.cancel).toHaveBeenCalledTimes(1));
+});
+
+test('missing or unsupported SVG animation targets degrade to a still icon', () => {
+  const f = fixture(); f.back.animate = undefined; f.front.animate = undefined;
+  expect(() => f.api.feedback(f.button, 'randomize')).not.toThrow(); expect(f.animations).toHaveLength(0);
+  f.button.querySelector = () => null;
+  expect(() => f.api.feedback(f.button, 'randomize')).not.toThrow();
+});
+
+test.each(['undo', 'reset'])('%s retains the existing label response and does not move dice', action => {
+  const f = fixture(); f.api.feedback(f.button, action);
+  expect(f.label.animate).toHaveBeenCalledTimes(1);
+  expect(f.animations[0].options.duration).toBe(160);
+  expect(f.back.animate).not.toHaveBeenCalled(); expect(f.front.animate).not.toHaveBeenCalled();
+});
+
+test('face transforms use their own centers inside a fixed-size, unclipped icon slot', () => {
+  const css = fs.readFileSync(require.resolve('../css/style.css'), 'utf8');
+  expect(css).toMatch(/\.parameter_action-glyph\s*\{[^}]*width: 1.125rem;[^}]*height: 1.125rem/s);
+  expect(css).toMatch(/\.parameter_action-icon\s*\{[^}]*overflow: visible/s);
+  expect(css).toMatch(/\.parameter_action-icon \[data-die-face\]\s*\{ transform-box: fill-box; transform-origin: center;/);
 });
