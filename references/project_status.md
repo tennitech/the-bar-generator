@@ -3,6 +3,13 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 Ring route cache recovery
+
+Post-release inspection caught existing route stubs reusing the older fetched
+generator-shell cache key. All style routes and the bootstrap fallback now
+request the short-ring shell version, ensuring updated scripts and export
+labels reach returning visitors. No model or other behavior changes.
+
 ## November 11 short Ring Wavefunction cycle
 
 The Ring view now plots the same analytic state in scrolling coordinates,
