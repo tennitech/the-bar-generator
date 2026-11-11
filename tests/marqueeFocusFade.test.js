@@ -93,3 +93,15 @@ test('keyboard selection wins; reduced motion and page exit settle without extra
   f.handlers.pagehide();
   expect(f.field()).toBe(1); expect(f.frames.size).toBe(0);
 });
+
+test('re-entering a recent bar starts from displayed field brightness, not its stale local fade', () => {
+  const f = fixture();
+  f.fade.setPointer(f.a); f.settle();
+  f.fade.setPointer(f.b);
+  for (let i = 0; i < 13; i++) f.tick();
+  f.fade.setPointer(null);
+  for (let i = 0; i < 5; i++) f.tick();
+  f.fade.setPointer(f.a); f.tick();
+  expect(Number(f.a.style.values['--marquee-focus-local'])).toBeGreaterThanOrEqual(f.field());
+  f.settle(); expect(f.opacity(f.a)).toBe(1);
+});

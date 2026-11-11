@@ -403,7 +403,9 @@ function createMarqueeFocusFade(stage) {
     active = selected && stage.contains(selected) ? selected : null;
     field.target = active ? 0.2 : 1;
     for (const [asset, motion] of highlights) motion.target = asset === active ? 1 : field.target;
-    if (active && !highlights.has(active)) {
+    if (active && (!highlights.has(active) || highlights.get(active).value < field.value)) {
+      // Re-enter from the actual displayed (max) brightness, not a stale local
+      // highlight hidden below the field during a recent gap.
       highlights.set(active, { value: field.value, velocity: field.velocity, target: 1 });
     }
     // The gap target is 1 immediately. No hold, debounce or delayed release.
