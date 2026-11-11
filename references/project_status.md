@@ -21,6 +21,25 @@ All 31 focused checks in five suites, JavaScript/81 inline-script syntax and
 source/cache checks pass. See [spacing rationale and QA limits](color_help_spacing_qa.md).
 
 
+
+## November 11 continuous marquee emphasis
+
+Rapid hover reversals no longer restart a CSS opacity transition with a shortened
+reverse duration. A critically damped brightness response retains current value
+and velocity when the target changes. Every bar uses the same response, with
+brisk settling and no opacity overshoot or bounce. Gap exit immediately targets
+full brightness; no timer, debounce, or retained dim state is introduced.
+
+One inherited field opacity and only recent highlighted bars are updated, rather
+than writing every repeated bar on each frame. The selected bar stays bright on
+exit into a gap. Keyboard focus still wins over a parked pointer. At rest the
+selected bar is 100% and neighbors are 20%; reduced motion settles immediately.
+Hidden/page-exit handling cancels pending frames. Static artwork, drag spring,
+trackpad input, route behavior and exports remain unchanged. Both Home CSS/JS
+keys advance. Tests cover reversal velocity, prompt gap release, cleanup,
+keyboard precedence, reduced motion and refresh-rate consistency. Release and
+rendered checks are recorded in the PR.
+
 ## November 11 Waveform LFO removal
 
 The owner requested complete removal of Waveform's LFO. The toggle, waveform,

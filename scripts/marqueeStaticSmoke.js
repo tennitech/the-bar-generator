@@ -104,7 +104,7 @@ async function inspectFocus(page, id = 'static-test') {
       const point=await target(page,direction); assert.ok(point);
       const before=await inspectFocus(page);
       for(let repeat=0;repeat<4;repeat++) {
-        await page.mouse.move(point.x,point.y); await page.waitForTimeout(270);
+        await page.mouse.move(point.x,point.y); await page.waitForTimeout(500);
         const focused=await inspectFocus(page);
         assert.equal(focused.selected,'1');
         assert.ok(focused.others.every(opacity=>opacity==='0.2'),'each other complete bar is at 20% opacity');
@@ -112,7 +112,7 @@ async function inspectFocus(page, id = 'static-test') {
         assert.deepEqual(focused.rects,before.rects,'hover never splits, scales or lifts any part of any bar');
         await assertStatic(page);
         await page.screenshot({path:path.join(evidence,`${engine}-${direction}-hover.png`)});
-        await page.mouse.move(1400,880); await page.waitForTimeout(270);
+        await page.mouse.move(1400,880); await page.waitForTimeout(500);
         const cleared=await inspectFocus(page);
         assert.ok([cleared.selected,...cleared.others].every(opacity=>opacity==='1'));
       }
@@ -127,7 +127,7 @@ async function inspectFocus(page, id = 'static-test') {
       a.id='keyboard-test'; a.focus(); return {visible:a.matches(':focus-visible'),outline:getComputedStyle(a).outlineStyle};
     });
     assert.ok(keyboard.visible); assert.notEqual(keyboard.outline,'none');
-    await page.waitForTimeout(270);
+    await page.waitForTimeout(500);
     const focused=await inspectFocus(page,'keyboard-test');
     assert.equal(focused.selected,'1'); assert.ok(focused.others.every(opacity=>opacity==='0.2'),'keyboard selection takes priority over parked pointer');
     await page.screenshot({path:path.join(evidence,`${engine}-keyboard.png`)});
@@ -163,15 +163,16 @@ async function inspectFocus(page, id = 'static-test') {
       const transition = await wide.locator('.bar_asset_wrap').first().evaluate(a => ({
         duration:getComputedStyle(a).transitionDuration, delay:getComputedStyle(a).transitionDelay
       }));
-      assert.equal(transition.duration,'0.24s'); assert.equal(transition.delay,'0s');
+      assert.equal(await wide.locator('.marquee_stage').getAttribute('data-focus-fade'),'continuous');
+      assert.equal(transition.duration,'0s'); assert.equal(transition.delay,'0s');
       await wide.keyboard.press('Space');
       const point = await bottomTarget(wide); assert.ok(point,'native bottom-row hit target');
       if (extra) assert.ok(point.index >= 10,'hit a row created after the initial ten');
-      await wide.mouse.move(point.x,point.y); await wide.waitForTimeout(270);
+      await wide.mouse.move(point.x,point.y); await wide.waitForTimeout(500);
       const focused = await inspectFocus(wide);
       assert.equal(focused.selected,'1');
       assert.ok(focused.others.every(opacity=>opacity==='0.2'),'bottom-row hover dims every other bar');
-      await wide.mouse.move(width-2,height-2); await wide.waitForTimeout(270);
+      await wide.mouse.move(width-2,height-2); await wide.waitForTimeout(500);
       results.push({width,height,dpr,bottomRow:point.index,rowCount:point.rowCount,nativeHitTesting:true,opacity:0.2});
       await wide.close();
     }
@@ -195,7 +196,7 @@ async function inspectFocus(page, id = 'static-test') {
         return {hovered:a.classList.contains('is-hovered'),touchAction:getComputedStyle(a).touchAction};
       });
       assert.equal(touch.hovered,false); assert.ok(touch.touchAction.includes('pan-y')&&touch.touchAction.includes('pinch-zoom'));
-      await phone.waitForTimeout(270);
+      await phone.waitForTimeout(500);
       const untouched=await inspectFocus(phone); assert.ok([untouched.selected,...untouched.others].every(opacity=>opacity==='1'));
       await phone.screenshot({path:path.join(evidence,`${engine}-phone-${width}.png`)});
       // Real tap, rather than a synthetic click, still opens the chosen generator.

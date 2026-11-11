@@ -5,7 +5,9 @@ November 11, 2026. Branch `codex/fix-color-help-spacing`, initial main
 copy audit #187 and approved menu presentation #184; neither PR is merged by
 this task. Reconciled with main `b068d58f10eb9034d0c4afe328b69359abb83679`
 (Waveform LFO removal #193), preserving its complete runtime, copy and delivery
-changes. Prior feature branches are preserved.
+changes. Also reconciled with main `83876279916ccf4bd9b67f1cb570ecba5a33897a`
+(marquee hover reversal #192), preserving its fade implementation and Home cache
+keys. Prior feature branches are preserved.
 
 ## Source diagnosis and minimal correction
 
@@ -40,8 +42,8 @@ and dice logic are unchanged. CSS changes are confined to three helper declarati
 and one large-mode focus exception. Both CSS keys, every route's shell/bootstrap,
 bootstrap fallback and Home prefetch advance together.
 
-All 31 focused secondary-guidance, large-control, theme, shell-cache, About and Waveform retirement
-checks pass in six suites. Changed JavaScript and all 81 inline scripts parse;
+All 37 focused secondary-guidance, large-control, theme, shell-cache, About, Waveform retirement and marquee fade
+checks pass in seven suites. Changed JavaScript and all 81 inline scripts parse;
 exact source and synchronized stylesheet/shell cache checks pass. No
 implementation-mirroring unit-test count expansion is added. The optional
 browser harness now checks standard and large mode on desktop/mobile: 44/48px
