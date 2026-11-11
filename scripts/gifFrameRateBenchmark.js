@@ -32,7 +32,7 @@ async function main() {
   for (const item of cases) {
     if (process.env.RPI_GIF_BENCHMARK_FILTER && process.env.RPI_GIF_BENCHMARK_FILTER !== `${item.family}:${item.size}:${item.composition}`) continue;
     r.select(item.family); Object.assign(r.state, item);
-    Object.assign(r.state.values, { waveformSpeed: 0.2, waveformLfo: false });
+    Object.assign(r.state.values, { waveformSpeed: 0.2 });
     const snapshot = r.captureLogoExportSnapshot();
     const plan = getLoopingGifFramePlan(item.family, snapshot.values, { barWidth: 250, fps: 30 });
     // Reproduce the old shipping cap even when rerunning after the fix.

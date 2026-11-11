@@ -1,5 +1,8 @@
 # Actual audio scope QA — November 10, 2026
 
+Historical evidence: the November 11 LFO removal supersedes the modulation
+behavior and old checks described here. Use [current QA](waveform_lfo_removal_qa.md).
+
 The owner supplied a hand-drawn carrier/envelope example and a VCO → VCA / LFO
 → VCA diagram, then requested a direct scope of actual audio with sensible x
 scaling. Both original images were locally inspected; neither private image is

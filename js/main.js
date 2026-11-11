@@ -41,8 +41,8 @@ let tickerSpeedDisplay;
 let waveformGroup;
 let waveformTypeSlider;
 let waveformTypeDisplay;
-let waveformFrequencySlider;
-let waveformFrequencyDisplay;
+let waveformNoteSlider;
+let waveformNoteDisplay;
 let waveformSpeedSlider;
 let waveformSpeedDisplay;
 let waveformMotionToggle;
@@ -102,7 +102,7 @@ let staffReverbToggle;
 let staffTremoloToggle;
 let staffTempoSlider;
 let staffTempoDisplay;
-let currentStaffNotes = [];
+let currentStaffNotes = window.MusicStyle.normalizeNotes(window.MusicStyle.presets.rise);
 let currentNoteDuration = 1; // quarter note by default
 let pulseGroup;
 let pulseInput;
@@ -204,13 +204,9 @@ window.animationTime = 0;
 // Audio variables
 let audioContext;
 let gainNode;
-let waveformLfoVoice = null;
 let waveformCarrier = null;
-let waveformVisualLfo = null;
-let waveformLfoTime = 0;
 let waveformScopeTime = 0;
-let lastWaveformLfoTimestamp = 0;
-let waveformLfoFrame = { phase: 0, rate: 2, amount: 0, amplitude: 1 };
+let lastWaveformScopeTimestamp = 0;
 let isAudioPlaying = false;
 let activeAudioPreviewType = null;
 let hasShownAudioHintToast = false;
@@ -458,37 +454,6 @@ const SURPRISE_GRAPH_STREAM_SETS = [
   ['DATA', 'MODEL', 'TRAIN', 'DEPLOY'],
   ['TROY', 'STACK', 'SHIFT', 'SCALE']
 ];
-const STAFF_SURPRISE_PATTERNS = [
-  [
-    { note: 'C4', duration: 1 },
-    { note: 'E4', duration: 1 },
-    { note: 'G4', duration: 1 },
-    { note: 'C5', duration: 1 }
-  ],
-  [
-    { note: 'A4', duration: 0.5 },
-    { note: 'G4', duration: 0.5 },
-    { note: 'E4', duration: 1 },
-    { note: 'D4', duration: 1 },
-    { note: 'C4', duration: 1 }
-  ],
-  [
-    { note: 'C4', duration: 0.5 },
-    { note: 'D4', duration: 0.5 },
-    { note: 'E4', duration: 0.5 },
-    { note: 'G4', duration: 0.5 },
-    { note: 'A4', duration: 1 },
-    { note: 'G4', duration: 1 }
-  ],
-  [
-    { note: 'E4', duration: 1 },
-    { note: 'G4', duration: 0.5 },
-    { note: 'A4', duration: 0.5 },
-    { note: 'G4', duration: 1 },
-    { note: 'D4', duration: 1 }
-  ]
-];
-
 const MORSE_DICT = {
   'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
   'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
@@ -638,12 +603,11 @@ const AVAILABLE_STYLE_VALUES = new Set([
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
   'numeric', 'morse', 'nucleotide', 'circles-gradient', 'gradient', 'grid',
   'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles',
-  'fibonacci-sequence', 'union', 'wave-quantum',
+  'fibonacci-sequence', 'union', 'wave-quantum', 'well-modes', 'rabi',
   'runway', 'lunar', 'truss', 'music', 'graph'
 ]);
 
 const UNAVAILABLE_STYLE_VALUES = new Set([
-  'music',
   'graph'
 ]);
 
@@ -658,6 +622,8 @@ function normalizeStyleValue(style) {
 }
 
 const RESETTABLE_GROUP_STYLE_MAP = {
+  'well-modes-group': 'well-modes',
+  'rabi-group': 'rabi',
   'ruler-group': 'ruler',
   'binary-group': 'binary',
   'morse-group': 'morse',
@@ -834,6 +800,7 @@ function cancelSliderValueEditor(config) {
 }
 
 function sliderEditorLimit(config, rawValue) {
+  if (typeof config.limitMessage === 'function') return config.limitMessage(rawValue);
   const value = parseSliderNumericInput(rawValue, { token: config.limitToken || 'first' });
   const min = config.editorMin ?? Number(config.slider.min);
   const max = config.editorMax ?? Number(config.slider.max);
@@ -1045,6 +1012,7 @@ function getMotionControlConfig(style) {
 
 function getLoopRuntimeValues() {
   return {
+    ...window.quantumStudyControls.values(),
     quantumSpeed: window.quantumModel.normalizeSpeed(document.getElementById('quantum-speed-slider')?.value ?? 1),
     quantumReverse: document.getElementById('quantum-reverse-toggle')?.checked === true,
     gradientSpeed: normalizeLoopSpeed('gradient', gradientSpeedSlider ? gradientSpeedSlider.value : undefined),
@@ -1144,8 +1112,8 @@ function setMotionEnabledForStyle(style, enabled, options = {}) {
 }
 
 function generateRandomStaffPattern() {
-  const basePattern = pickRandom(STAFF_SURPRISE_PATTERNS);
-  return basePattern.map(note => ({ ...note }));
+  const previous = window.MusicStyle.serialize(currentStaffNotes);
+  return window.MusicStyle.normalizeNotes(pickRandom(Object.values(window.MusicStyle.presets).filter(phrase => phrase !== previous)));
 }
 
 function updateWaveformScopeControls() {
@@ -1158,8 +1126,7 @@ function updateWaveformScopeControls() {
     onChange: () => { syncStatus(); requestUpdate(); }
   });
   window.waveformScopeController.configure({
-    frequency: waveformFrequencySlider?.value || 24, type: waveformTypeSlider?.value || 0,
-    lfo: getWaveformLfoSettings()
+    note: waveformNoteSlider?.value || 24, type: waveformTypeSlider?.value || 0
   });
   syncStatus();
 }
@@ -1170,67 +1137,26 @@ function getLiveWaveformGeometry(barStartX, barY, exactBarWidth, barHeight, time
     waveformScopeRequired: true, waveformScope: window.waveformScopeController?.frame() });
 }
 
-function getWaveformLfoSettings() {
-  return window.WaveformLfo.normalize({
-    enabled: document.getElementById('waveform-lfo-toggle')?.checked,
-    rate: document.getElementById('waveform-lfo-rate')?.value,
-    depth: document.getElementById('waveform-lfo-depth')?.value,
-    type: document.getElementById('waveform-lfo-type')?.value
-  });
-}
-
 // The existing p5 scheduler owns the visual clock; no marquee timer is added.
-function tickWaveformVisualLfo(timestamp, suspended = false) {
+function tickWaveformScope(timestamp, suspended = false) {
   if (suspended || getCurrentMotionStyle() !== 'waveform') {
-    lastWaveformLfoTimestamp = 0;
+    lastWaveformScopeTimestamp = 0;
     return;
   }
-  if (!waveformVisualLfo) updateWaveformLfoControls();
-  const elapsed = lastWaveformLfoTimestamp ? clampLiveAnimationDeltaMs(timestamp - lastWaveformLfoTimestamp) / 1000 : 0;
-  lastWaveformLfoTimestamp = timestamp;
+  const elapsed = lastWaveformScopeTimestamp ? clampLiveAnimationDeltaMs(timestamp - lastWaveformScopeTimestamp) / 1000 : 0;
+  lastWaveformScopeTimestamp = timestamp;
   const scope = window.waveformScopeController;
   scope?.tick(waveformScopeTime, isMotionEnabledForStyle('waveform'), waveformReverseToggle?.checked === true);
   const scopeStatus = document.getElementById('waveform-scope-status');
   if (scopeStatus && scope) scopeStatus.textContent = scope.status();
   if (!isMotionEnabledForStyle('waveform')) return;
   waveformScopeTime += elapsed * Number(waveformSpeedSlider?.value || .3) / .3 * (waveformReverseToggle?.checked ? -1 : 1);
-  waveformLfoTime += elapsed;
-  waveformLfoFrame = waveformLfoVoice ? waveformLfoVoice.sample() : waveformVisualLfo.sample(waveformLfoTime);
-  if (waveformLfoVoice) waveformVisualLfo.restore(waveformLfoFrame, waveformLfoTime);
 }
 
-function updateWaveformLfoControls() {
-  const state = getWaveformLfoSettings();
-  const settings = document.getElementById('waveform-lfo-settings');
-  if (settings) settings.hidden = !state.enabled;
-  for (const [id, value, label] of [['rate', state.rate, `${state.rate} Hz`], ['depth', state.depth, `${state.depth}%`], ['type', state.type, window.WaveformLfo.waveNames[Math.round(state.type)]]]) {
-    const field = document.getElementById(`waveform-lfo-${id}`);
-    const display = document.getElementById(`waveform-lfo-${id}-display`);
-    if (field) { field.value = value; field.setAttribute('aria-valuetext', label); }
-    if (display) display.textContent = label;
-  }
-  const ratePosition = document.querySelector('[data-lfo-rate-position]');
-  if (ratePosition) {
-    ratePosition.value = window.WaveformLfo.ratePosition(state.rate);
-    ratePosition.setAttribute('aria-valuetext', `${state.rate} Hz`);
-  }
-  if (!waveformVisualLfo) waveformVisualLfo = window.WaveformLfo.createTransport(state, waveformLfoTime);
-  else waveformVisualLfo.update(state, waveformLfoTime, !isMotionEnabledForStyle('waveform'));
-  waveformLfoVoice?.update(state);
-  waveformLfoFrame = waveformVisualLfo.sample(waveformLfoTime);
-  updateWaveformScopeControls();
-}
-
-function resetWaveformLfo() {
-  waveformVisualLfo = null;
-  waveformLfoTime = 0;
+function resetWaveformScope() {
   waveformScopeTime = 0;
-  lastWaveformLfoTimestamp = 0;
-  document.getElementById('waveform-lfo-type').value = 0;
-  document.getElementById('waveform-lfo-toggle').checked = false;
-  document.getElementById('waveform-lfo-rate').value = 2;
-  document.getElementById('waveform-lfo-depth').value = 60;
-  updateWaveformLfoControls();
+  lastWaveformScopeTimestamp = 0;
+  updateWaveformScopeControls();
 }
 
 function getCurrentAudioPreviewType() {
@@ -1290,7 +1216,7 @@ function resetAudioSequencePosition(type) {
     return;
   }
 
-  if (currentType === 'staff' && (!currentStaffNotes || currentStaffNotes.length === 0)) {
+  if (currentType === 'staff' && (!currentStaffNotes?.some(note => note.note !== 'rest'))) {
     showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
     return;
   }
@@ -1305,7 +1231,7 @@ function togglePreviewAudio(type) {
   if (!currentType || currentType !== type) return;
   const activeType = getActiveAudioPreviewType();
 
-  if (type === 'staff' && (!currentStaffNotes || currentStaffNotes.length === 0)) {
+  if (type === 'staff' && (!currentStaffNotes?.some(note => note.note !== 'rest'))) {
     showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
     return;
   }
@@ -1373,16 +1299,20 @@ function resetStyleParameters(style) {
 
       break;
     case 'waveform':
-      resetWaveformLfo();
       if (waveformTypeSlider) waveformTypeSlider.value = 0;
-      if (waveformFrequencySlider) waveformFrequencySlider.value = 24;
+      if (waveformNoteSlider) waveformNoteSlider.value = 24;
       if (waveformSpeedSlider) waveformSpeedSlider.value = getDefaultLoopSpeed('waveform');
       if (waveformReverseToggle) waveformReverseToggle.checked = false;
+      resetWaveformScope();
       updateWaveformTypeDisplay();
-      updateWaveformFrequencyDisplay();
+      updateWaveformNoteDisplay();
       updateWaveformSpeedDisplay();
       updateAudioParameters();
 
+      break;
+    case 'well-modes':
+    case 'rabi':
+      window.quantumStudyControls.reset(style);
       break;
     case 'wave-quantum':
       document.getElementById('quantum-phase').value = 0;
@@ -1434,13 +1364,13 @@ function resetStyleParameters(style) {
       break;
     case 'music':
       if (staffInstrumentSelect) staffInstrumentSelect.value = 'piano';
-      if (staffNoteShapeSelect) staffNoteShapeSelect.value = 'circle';
+      if (staffNoteShapeSelect) staffNoteShapeSelect.value = 'square';
       if (staffReverbToggle) staffReverbToggle.checked = false;
       if (staffTremoloToggle) staffTremoloToggle.checked = false;
       if (staffTempoSlider) staffTempoSlider.value = 120;
       updateStaffTempoDisplay();
       currentNoteDuration = 1;
-      currentStaffNotes = [];
+      currentStaffNotes = window.MusicStyle.normalizeNotes(window.MusicStyle.presets.rise);
       document.querySelectorAll('#staff-duration-selector .duration-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-duration') === '1');
       });
@@ -1556,19 +1486,19 @@ function randomizeStyleParameters(style) {
       updateTickerSpeedDisplay();
       break;
     case 'waveform':
-      document.getElementById('waveform-lfo-type').value = randomStepValue(0, 3, 0.01);
-      document.getElementById('waveform-lfo-toggle').checked = randomChance(0.5);
-      document.getElementById('waveform-lfo-rate').value = randomStepValue(0.5, 5, 0.1);
-      document.getElementById('waveform-lfo-depth').value = randomStepValue(25, 100, 5);
-      updateWaveformLfoControls();
       if (waveformTypeSlider) waveformTypeSlider.value = pickRandom(['0', '1', '2', '3']);
-      if (waveformFrequencySlider) waveformFrequencySlider.value = randomDifferentStep(waveformFrequencySlider, 12, 88);
+      if (waveformNoteSlider) waveformNoteSlider.value = randomDifferentStep(waveformNoteSlider, 24, 84);
       if (waveformSpeedSlider) waveformSpeedSlider.value = window.MotionSpeed.rate('waveform', randomStepValue(0.2, 4, 0.05));
       if (waveformReverseToggle) waveformReverseToggle.checked = randomChance(0.5);
+      updateWaveformScopeControls();
       updateWaveformTypeDisplay();
-      updateWaveformFrequencyDisplay();
+      updateWaveformNoteDisplay();
       updateWaveformSpeedDisplay();
       updateAudioParameters();
+      break;
+    case 'well-modes':
+    case 'rabi':
+      window.quantumStudyControls.randomize(style);
       break;
     case 'wave-quantum': {
       const phase = document.getElementById('quantum-phase');
@@ -1941,44 +1871,7 @@ function getNumericSourceValue() {
 }
 
 function getSelectedMusicNoteShape() {
-  return normalizeMusicNoteShape(staffNoteShapeSelect ? staffNoteShapeSelect.value : 'circle');
-}
-
-function drawMusicHeadP5(shape, x, y, rx, ry, filled, noteColor) {
-  const normalizedShape = normalizeMusicNoteShape(shape);
-
-  if (filled) {
-    fill(noteColor);
-    noStroke();
-  } else {
-    noFill();
-    stroke(noteColor);
-  }
-
-  if (normalizedShape === 'circle') {
-    circle(x, y, rx * 2);
-    return;
-  }
-
-  if (normalizedShape === 'square') {
-    rectMode(CENTER);
-    rect(x, y, rx * 2, ry * 2);
-    rectMode(CORNER);
-    return;
-  }
-
-  beginShape();
-  if (normalizedShape === 'diamond') {
-    vertex(x, y - ry);
-    vertex(x + rx, y);
-    vertex(x, y + ry);
-    vertex(x - rx, y);
-  } else {
-    vertex(x, y - ry);
-    vertex(x + rx, y + ry);
-    vertex(x - rx, y + ry);
-  }
-  endShape(CLOSE);
+  return normalizeMusicNoteShape(staffNoteShapeSelect ? staffNoteShapeSelect.value : 'square');
 }
 
 // Convert numeric string to digit array
@@ -2362,6 +2255,7 @@ function setup() {
   // Get control references
   styleSelect = document.getElementById('style-select');
   window.quantumControls.setup();
+  window.quantumStudyControls.setup();
   colorModeSelect = document.getElementById('color-mode-select');
   binaryInput = document.getElementById('binary-input');
   binaryGroup = document.getElementById('binary-group');
@@ -2390,8 +2284,8 @@ function setup() {
   waveformGroup = document.getElementById('waveform-group');
   waveformTypeSlider = document.getElementById('waveform-type-slider');
   waveformTypeDisplay = document.getElementById('waveform-type-display');
-  waveformFrequencySlider = document.getElementById('waveform-frequency-slider');
-  waveformFrequencyDisplay = document.getElementById('waveform-frequency-display');
+  waveformNoteSlider = document.getElementById('waveform-note-slider');
+  waveformNoteDisplay = document.getElementById('waveform-note-display');
   waveformSpeedSlider = document.getElementById('waveform-speed-slider');
   waveformSpeedDisplay = document.getElementById('waveform-speed-display');
   waveformMotionToggle = document.getElementById('waveform-motion-toggle');
@@ -2627,8 +2521,8 @@ function setup() {
     updateUrlParameters();
     requestUpdate();
   });
-  waveformFrequencySlider.addEventListener('input', function () {
-    updateWaveformFrequencyDisplay();
+  waveformNoteSlider.addEventListener('input', function () {
+    updateWaveformNoteDisplay();
     updateWaveformScopeControls();
     updateAudioParameters();
     updateUrlParameters();
@@ -2651,17 +2545,6 @@ function setup() {
     });
   }
 
-  for (const id of ['waveform-lfo-toggle', 'waveform-lfo-rate', 'waveform-lfo-depth', 'waveform-lfo-type']) {
-    document.getElementById(id).addEventListener('input', () => {
-      updateWaveformLfoControls(); updateUrlParameters(); requestUpdate();
-    });
-  }
-
-  document.querySelector('[data-lfo-rate-position]').addEventListener('input', function () {
-    const rate = document.getElementById('waveform-lfo-rate');
-    rate.value = window.WaveformLfo.positionRate(this.value);
-    rate.dispatchEvent(new Event('input', { bubbles: true }));
-  });
   if (waveformAudioBtn) {
     waveformAudioBtn.addEventListener('click', function (e) {
       e.preventDefault();
@@ -2672,12 +2555,12 @@ function setup() {
   // Set default values only if no URL parameters
   if (!window.location.search) {
     waveformTypeSlider.value = "0"; // SINE
-    waveformFrequencySlider.value = "24"; // Frequency 24
+    waveformNoteSlider.value = "24"; // C1 (MIDI 24)
     waveformSpeedSlider.value = getDefaultLoopSpeed('waveform');
   }
 
   updateWaveformTypeDisplay(); // Set initial value
-  updateWaveformFrequencyDisplay(); // Set initial value
+  updateWaveformNoteDisplay(); // Set initial value
   updateWaveformSpeedDisplay(); // Set initial value
   syncMotionToggleState();
 
@@ -3112,49 +2995,42 @@ function setup() {
     });
   }
 
-  // Setup note duration buttons
-  const durationBtns = document.querySelectorAll('#staff-duration-selector .duration-btn');
-  durationBtns.forEach(btn => {
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      durationBtns.forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      currentNoteDuration = parseFloat(this.getAttribute('data-duration'));
+  const commitMusic = notes => {
+    stopAudio();
+    currentStaffNotes = window.MusicStyle.normalizeNotes(notes);
+    updateAudioControlsUI(); updateUrlParameters(); requestUpdate();
+    syncAllCustomSelects();
+  };
+  document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
+    button.addEventListener('click', () => {
+      currentNoteDuration = Number(button.dataset.duration);
+      window.MusicStyle.syncComposer(document, currentStaffNotes, currentNoteDuration);
     });
   });
-
-  // Setup keyboard
-  const pianoKeys = document.querySelectorAll('.piano-keyboard .key');
-  pianoKeys.forEach(key => {
-    key.addEventListener('mousedown', function (e) {
-      e.preventDefault();
-      this.classList.add('active');
-      const noteName = this.getAttribute('data-note');
-      const totalDuration = currentStaffNotes.reduce((sum, n) => sum + n.duration, 0);
-      if (totalDuration + currentNoteDuration <= 16) {
-        currentStaffNotes.push({ note: noteName, duration: currentNoteDuration });
-        updateAudioControlsUI();
-        updateUrlParameters();
-        requestUpdate();
-      } else {
-        if (typeof Toast !== 'undefined') {
-          Toast.show('Maximum of 4 measures reached.', 'warning');
-        }
+  document.querySelectorAll('#staff-group [data-note]').forEach(button => {
+    button.addEventListener('click', () => {
+      if (window.MusicStyle.totalBeats(currentStaffNotes) + currentNoteDuration > 16) {
+        document.getElementById('music-status').textContent = 'Phrase full: remove an event or clear the phrase to add a note.';
+        return;
       }
+      commitMusic([...currentStaffNotes, { note: button.dataset.note, duration: currentNoteDuration }]);
     });
-    key.addEventListener('mouseup', function () { this.classList.remove('active'); });
-    key.addEventListener('mouseleave', function () { this.classList.remove('active'); });
   });
-
-  if (staffClearBtn) {
-    staffClearBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      currentStaffNotes = [];
-      updateAudioControlsUI();
-      updateUrlParameters();
-      requestUpdate();
-    });
-  }
+  document.getElementById('music-sequence')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-music-remove]');
+    if (!button) return;
+    const index = Number(button.dataset.musicRemove);
+    commitMusic(currentStaffNotes.filter((_, i) => i !== index));
+    const remaining = document.querySelectorAll('[data-music-remove]');
+    (remaining[Math.min(index, remaining.length - 1)] || document.querySelector('#staff-group [data-note]'))?.focus();
+  });
+  document.getElementById('music-preset')?.addEventListener('change', event => {
+    const phrase = window.MusicStyle.presets[event.target.value];
+    if (phrase) commitMusic(phrase);
+  });
+  staffClearBtn?.addEventListener('click', () => {
+    commitMusic([]); document.querySelector('#staff-group [data-note]')?.focus();
+  });
 
   // Setup pulse controls
   if (pulseInput) {
@@ -3258,11 +3134,15 @@ function setup() {
       ariaLabel: 'Set ticker motion speed'
     },
     {
-      slider: waveformFrequencySlider,
-      display: waveformFrequencyDisplay,
-      refreshDisplay: updateWaveformFrequencyDisplay,
-      commit: () => { updateWaveformFrequencyDisplay(); updateAudioParameters(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set waveform frequency'
+      slider: waveformNoteSlider,
+      display: waveformNoteDisplay,
+      refreshDisplay: updateWaveformNoteDisplay,
+      commit: () => { updateWaveformNoteDisplay(); updateAudioParameters(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set waveform note, C1 to C6',
+      inputMode: 'text',
+      limitMessage: value => window.WaveformNotes.parse(value) === null ? 'Enter a note from C1 to C6, such as C#3.' : '',
+      parseValue: value => window.WaveformNotes.parse(value),
+      getEditorValue: () => window.WaveformNotes.get(waveformNoteSlider.value).name
     },
     {
       ...window.MotionSpeed.editor('waveform', waveformSpeedSlider),
@@ -3272,13 +3152,6 @@ function setup() {
       commit: () => { updateWaveformSpeedDisplay(); updateUrlParameters(); requestUpdate(); },
       ariaLabel: 'Set waveform motion speed'
     },
-    ...['rate', 'depth', 'type'].map(id => ({
-      slider: document.getElementById(`waveform-lfo-${id}`),
-      display: document.getElementById(`waveform-lfo-${id}-display`),
-      refreshDisplay: updateWaveformLfoControls,
-      commit: () => { updateWaveformLfoControls(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: `Set LFO ${id}`
-    })),
     {
       slider: circlesDensitySlider,
       display: circlesDensityDisplay,
@@ -3435,6 +3308,13 @@ function setup() {
         if (isAudioPlaying) stopAudio(); else startAudio();
         return true;
       }
+      if (currentShader === 26 || currentShader === 27) {
+        const prefix = currentShader === 26 ? 'well' : 'rabi';
+        const toggle = document.getElementById(`${prefix}-motion-toggle`);
+        toggle.checked = !toggle.checked;
+        toggle.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
       if (currentShader === 22) {
         const toggle = document.getElementById('quantum-motion-toggle');
         toggle.checked = !toggle.checked;
@@ -3462,7 +3342,7 @@ function setup() {
 
   document.addEventListener('visibilitychange', function () {
     invalidateLunarPreviewFrame();
-    lastWaveformLfoTimestamp = 0;
+    lastWaveformScopeTimestamp = 0;
     lastAnimationFrameTimestamp = 0;
     if (document.hidden) {
       handleDocumentAudioDeactivation();
@@ -3758,9 +3638,11 @@ function updateWaveformTypeDisplay() {
   waveformTypeDisplay.textContent = displayText;
 }
 
-function updateWaveformFrequencyDisplay() {
-  const sliderValue = parseInt(waveformFrequencySlider.value);
-  waveformFrequencyDisplay.textContent = sliderValue;
+function updateWaveformNoteDisplay() {
+  const sliderValue = parseInt(waveformNoteSlider.value);
+  const note = window.WaveformNotes.get(sliderValue);
+  waveformNoteDisplay.textContent = note.name;
+  waveformNoteSlider.setAttribute('aria-valuetext', `${note.name}, ${note.frequencyHz.toFixed(3)} hertz`);
 }
 
 function updateWaveformSpeedDisplay() {
@@ -4130,6 +4012,12 @@ function handleStyleChange() {
     case 'union':
       currentShader = 21;
       break;
+    case 'well-modes':
+      currentShader = 26;
+      break;
+    case 'rabi':
+      currentShader = 27;
+      break;
     case 'wave-quantum':
       currentShader = 22;
       break;
@@ -4254,6 +4142,7 @@ function handleStyleChange() {
   }
 
   window.quantumControls.sync();
+  window.quantumStudyControls.sync();
   syncLunarPreviewVisibility(selectedStyle);
   console.log('Style changed to:', selectedStyle, 'currentShader:', currentShader);
   syncSaveMenuCopy();
@@ -4318,7 +4207,6 @@ function applyColorMode(colorMode) {
 
 function getCurrentBarPatternValues(exactBarWidth) {
   const loopAnimationState = getCurrentLoopAnimationState(exactBarWidth);
-  const lfo = getWaveformLfoSettings();
   const timeSeconds = loopAnimationState
     ? loopAnimationState.timeSeconds
     : (typeof window.animationTime !== 'undefined'
@@ -4326,6 +4214,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
       : getAnimationNowMs() / 1000.0);
 
   return {
+    ...window.quantumStudyControls.values(),
     ...window.quantumControls.values(),
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
     rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
@@ -4337,19 +4226,12 @@ function getCurrentBarPatternValues(exactBarWidth) {
     nucleotideSequence: window.NucleotidePattern.normalize(document.getElementById('nucleotide-input').value),
     nucleotideVariant: document.getElementById('nucleotide-variant').value,
     binaryText: binaryInput ? normalizeBinaryText(sanitizeBarText(normalizeBinaryText(binaryInput.value || 'RPI'))) : 'RPI',
-    waveformPoints: getWaveformRenderPointCount(exactBarWidth, waveformFrequencySlider ? Number(waveformFrequencySlider.value) : 24),
+    waveformPoints: getWaveformRenderPointCount(exactBarWidth, window.WaveformNotes.get(waveformNoteSlider?.value).cycles),
     waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
-    waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
+    waveformNote: waveformNoteSlider ? waveformNoteSlider.value : 24,
     waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
     waveformScopeRequired: currentShader === 4,
     waveformScope: currentShader === 4 ? window.waveformScopeController?.frame() : null,
-    waveformLfoPhase: waveformLfoFrame.phase,
-    waveformLfoSampleRate: waveformLfoFrame.rate,
-    waveformLfoAmount: waveformLfoFrame.amount,
-    waveformLfo: lfo.enabled,
-    waveformLfoRate: lfo.rate,
-    waveformLfoDepth: lfo.depth,
-    waveformLfoType: lfo.type,
     timeSeconds,
     circlesFill: circlesFillSelect ? circlesFillSelect.value : 'stroke',
     circlesDensity: circlesDensitySlider ? circlesDensitySlider.value : 50,
@@ -4377,7 +4259,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     staffText: 'RPI',
     staffThickness: 1,
     staffNotes: typeof currentStaffNotes !== 'undefined' ? currentStaffNotes : [],
-    staffNoteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'circle',
+    staffNoteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'square',
     pulseText: pulseInput ? pulseInput.value : 'RPI',
     pulseIntensity: pulseIntensitySlider ? pulseIntensitySlider.value : 5,
     graphText: graphInput ? graphInput.value : 'RPI',
@@ -4515,9 +4397,10 @@ function renderHeaderMotionPreview() {
   const style = getCurrentMotionStyle();
   const state = getCurrentLoopAnimationState();
   const values = getLoopRuntimeValues();
-  if (currentShader === 22) {
-    const geometry = createWaveQuantumPatternGeometry({
+  if ([22, 26, 27].includes(currentShader)) {
+    const geometry = (currentShader === 22 ? createWaveQuantumPatternGeometry : createQuantumStudyPatternGeometry)({ currentShader,
       barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH, barHeight: REFERENCE_BAR_HEIGHT,
+      ...window.quantumStudyControls.values(),
       ...window.quantumControls.values()
     });
     for (const polygon of geometry.polygons) {
@@ -4555,7 +4438,7 @@ function renderHeaderMotionPreview() {
 function updateHeaderBrandPreview(force = false) {
   if (!headerLogoPreview) return;
 
-  if (styleSupportsMotion(getCurrentMotionStyle()) || currentShader === 22) {
+  if (styleSupportsMotion(getCurrentMotionStyle()) || [22, 26, 27].includes(currentShader)) {
     renderHeaderMotionPreview();
     return;
   }
@@ -4712,8 +4595,9 @@ function showAudioToast(message, type = 'info') {
 }
 
 function updateAudioControlsUI() {
+  window.MusicStyle.syncComposer(document, currentStaffNotes, currentNoteDuration);
   const activeType = getActiveAudioPreviewType();
-  const staffPreviewDisabled = !currentStaffNotes || currentStaffNotes.length === 0;
+  const staffPreviewDisabled = !currentStaffNotes?.some(note => note.note !== 'rest');
   const lunarPreviewDisabled = !isMissionControlThemeActive();
 
   getAudioButtonConfig().forEach(({ type, button, currentShader: shaderId }) => {
@@ -5309,9 +5193,6 @@ async function initializeAudio() {
   try {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-    // Load the pulse wave worklet
-    await audioContext.audioWorklet.addModule('js/pulse-worklet.js');
-
     // Create gain node for volume control and smooth fade in/out
     gainNode = audioContext.createGain();
     gainNode.connect(audioContext.destination);
@@ -5410,7 +5291,7 @@ async function startAudio() {
       } else if (requestedType === 'morse') {
         startSequenceAudio('morse');
       } else if (requestedType === 'staff') {
-        if (!currentStaffNotes || currentStaffNotes.length === 0) {
+        if (!currentStaffNotes?.some(note => note.note !== 'rest')) {
           showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
           updateAudioControlsUI();
           return;
@@ -5462,19 +5343,11 @@ async function startWaveformAudio() {
     await audioContext.resume();
   }
 
-  // Get current parameters
-  const frequency = parseInt(waveformFrequencySlider.value);
-
-  // Map frequency from 10-100 to C1-C5 (32.70Hz to 523.25Hz)
-  const minFreq = 32.70; // C1
-  const maxFreq = 523.25; // C5
-  const normalizedFreq = (frequency - 10) / 90; // Normalize 10-100 to 0-1
-  const mappedFrequency = minFreq + (normalizedFreq * (maxFreq - minFreq));
-
+  const note = window.WaveformNotes.normalize(waveformNoteSlider.value);
+  const mappedFrequency = window.WaveformNotes.get(note).frequencyHz;
   waveformCarrier = window.WaveformAudio.create(audioContext, gainNode, {
-    frequency, type: Number(waveformTypeSlider.value), lfo: getWaveformLfoSettings()
-  }, waveformLfoFrame);
-  waveformLfoVoice = waveformCarrier.lfo;
+    note, type: Number(waveformTypeSlider.value)
+  });
   oscillators = waveformCarrier.oscillators;
   oscillatorGains = waveformCarrier.oscillatorGains;
   pulseWorkletNode = waveformCarrier.pulseWorkletNode;
@@ -5541,22 +5414,19 @@ function stopArtemisMissionAudio() {
 
 function stopWaveformAudio() {
   window.waveformScopeController?.detach();
+  const stopTime = waveformCarrier?.nextCycleBoundary(audioContext.currentTime + .05) || audioContext.currentTime + .05;
+  waveformCarrier?.fadeOutAt(stopTime);
   waveformCarrier = null;
   try {
-    if (waveformLfoVoice && waveformVisualLfo) {
-      if (isMotionEnabledForStyle('waveform')) waveformLfoFrame = waveformLfoVoice.sample();
-      waveformVisualLfo.restore(waveformLfoFrame, waveformLfoTime);
-    }
-    waveformLfoVoice?.stop(audioContext.currentTime + 0.05);
-    waveformLfoVoice = null;
     // Clear any previously scheduled values to fix play/pause bug
     gainNode.gain.cancelScheduledValues(audioContext.currentTime);
 
     // Fade out master gain
     gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.05);
+    gainNode.gain.linearRampToValueAtTime(0, stopTime);
 
-    // Stop all oscillators after fade out
+    // End the carrier at a whole-cycle boundary after the finite release.
+    // The release envelope intentionally changes amplitude; it is not periodic.
     Object.keys(oscillators).forEach(type => {
       if (oscillators[type]) {
         if (type === 'pulse' && pulseWorkletNode) {
@@ -5564,7 +5434,7 @@ function stopWaveformAudio() {
           pulseWorkletNode.disconnect();
           pulseWorkletNode = null;
         } else if (oscillators[type].stop) {
-          oscillators[type].stop(audioContext.currentTime + 0.05);
+          oscillators[type].stop(stopTime);
         }
         oscillators[type] = null;
       }
@@ -5744,14 +5614,6 @@ function scheduleMorseNote() {
   sequenceContext.currentNote++;
 }
 
-// Map notes to frequencies
-const NOTE_FREQUENCIES = {
-  'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13,
-  'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'G4': 392.00,
-  'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
-  'C5': 523.25
-};
-
 function registerStaffVoiceCleanup(voice, releaseAt) {
   sequenceContext.activeVoices.push(voice);
   const cleanupDelay = Math.max(0, (releaseAt - audioContext.currentTime) * 1000 + 250);
@@ -5895,13 +5757,13 @@ function scheduleStaffNote() {
   const noteData = data[idx];
   const time = sequenceContext.nextNoteTime;
   const actualDuration = noteData.duration * quarterNoteDuration;
-  const freq = NOTE_FREQUENCIES[noteData.note] || 440;
+  const freq = window.MusicStyle.frequency(noteData.note);
   const instrument = staffInstrumentSelect ? staffInstrumentSelect.value : 'piano';
   updateStaffEffects(time);
 
-  if (instrument === 'piano') {
+  if (freq && instrument === 'piano') {
     triggerPianoVoice(freq, time, actualDuration);
-  } else {
+  } else if (freq) {
     triggerSimpleStaffVoice(freq, time, actualDuration, instrument);
   }
 
@@ -5918,6 +5780,7 @@ function getUrlParameters() {
 }
 
 function updateUrlParameters() {
+  window.MusicStyle.syncComposer(document, currentStaffNotes, currentNoteDuration);
   window.randomizeHistory?.clear();
   window.ParameterControls.refresh();
   if (window.barShareController && window.barShareController.syncUrl()) return;
@@ -6028,14 +5891,14 @@ function updateUrlParameters() {
   }
 
   if (styleSelect && styleSelect.value === 'music') {
-    // staffNotes removed
+    params.set('staffNotes', window.MusicStyle.serialize(currentStaffNotes));
     if (staffTempoSlider && parseInt(staffTempoSlider.value) !== 120) {
       params.set('staffTempo', staffTempoSlider.value);
     }
     if (staffInstrumentSelect && staffInstrumentSelect.value !== 'piano') {
       params.set('staffInstrument', staffInstrumentSelect.value);
     }
-    if (staffNoteShapeSelect && staffNoteShapeSelect.value !== 'circle') {
+    if (staffNoteShapeSelect && staffNoteShapeSelect.value !== 'square') {
       params.set('staffNoteShape', staffNoteShapeSelect.value);
     }
     if (staffReverbToggle && staffReverbToggle.checked) {
@@ -6104,17 +5967,12 @@ function updateUrlParameters() {
     if (waveformTypeSlider && parseFloat(waveformTypeSlider.value) !== 0) {
       params.set('waveformType', waveformTypeSlider.value);
     }
-    if (waveformFrequencySlider && parseInt(waveformFrequencySlider.value) !== 24) {
-      params.set('waveformFrequency', waveformFrequencySlider.value);
+    if (waveformNoteSlider && parseInt(waveformNoteSlider.value) !== 24) {
+      params.set('waveformNote', waveformNoteSlider.value);
     }
     if (waveformSpeedSlider && parseFloat(waveformSpeedSlider.value) !== getDefaultLoopSpeed('waveform')) {
       params.set('waveformSpeed', waveformSpeedSlider.value);
     }
-    const lfo = getWaveformLfoSettings();
-    if (lfo.enabled) params.set('waveformLfo', 'true');
-    if (lfo.rate !== 2) params.set('waveformLfoRate', lfo.rate);
-    if (lfo.depth !== 60) params.set('waveformLfoDepth', lfo.depth);
-    if (lfo.type !== 0) params.set('waveformLfoType', lfo.type);
     if (waveformReverseToggle && waveformReverseToggle.checked) {
       params.set('waveformReverse', 'true');
     }
@@ -6140,6 +5998,16 @@ function updateUrlParameters() {
     const speed = document.getElementById('quantum-speed-slider').value;
     if (Number(speed) !== 1) params.set('quantumSpeed', speed);
     if (document.getElementById('quantum-reverse-toggle').checked) params.set('quantumReverse', 'true');
+  }
+
+  if (['well-modes', 'rabi'].includes(selectedStyle)) {
+    const prefix = selectedStyle === 'well-modes' ? 'well' : 'rabi';
+    for (const field of document.querySelectorAll(`#${selectedStyle}-group [data-url-parameter]`)) {
+      const value = field.type === 'checkbox' ? String(field.checked) : field.id === `${prefix}-phase`
+        ? String(window.quantumStudyControls.settingPhase(prefix)) : field.value;
+      const defaultValue = field.type === 'checkbox' ? String(field.defaultChecked) : field.defaultValue;
+      if (value !== defaultValue) params.set(field.dataset.urlParameter, value);
+    }
   }
 
   // Update URL without reloading the page
@@ -6246,16 +6114,7 @@ function applyUrlParameters() {
   updateTrussThicknessDisplay();
 
   // Apply staff parameters
-  /*
-  if (params.staffNotes) {
-    currentStaffNotes = params.staffNotes.split(',').map(s => {
-      const parts = s.split('_');
-      return { note: parts[0], duration: parseFloat(parts[1]) };
-    });
-  } else {
-    currentStaffNotes = [];
-  }
-  */
+  currentStaffNotes = window.MusicStyle.normalizeNotes(params.staffNotes);
   if (staffTempoSlider) {
     staffTempoSlider.value = params.staffTempo;
   }
@@ -6340,8 +6199,8 @@ function applyUrlParameters() {
   if (waveformTypeSlider) {
     waveformTypeSlider.value = params.waveformType;
   }
-  if (waveformFrequencySlider) {
-    waveformFrequencySlider.value = params.waveformFrequency;
+  if (waveformNoteSlider) {
+    waveformNoteSlider.value = params.waveformNote;
   }
   if (waveformSpeedSlider) {
     waveformSpeedSlider.value = params.waveformSpeed;
@@ -6349,11 +6208,7 @@ function applyUrlParameters() {
   if (waveformReverseToggle) {
     waveformReverseToggle.checked = params.waveformReverse;
   }
-  document.getElementById('waveform-lfo-type').value = params.waveformLfoType;
-  document.getElementById('waveform-lfo-toggle').checked = params.waveformLfo;
-  document.getElementById('waveform-lfo-rate').value = params.waveformLfoRate;
-  document.getElementById('waveform-lfo-depth').value = params.waveformLfoDepth;
-  updateWaveformLfoControls();
+  updateWaveformScopeControls();
 
   // Apply circles parameters
   if (circlesFillSelect) {
@@ -6376,7 +6231,7 @@ function applyUrlParameters() {
 }
 
 function updateAllDisplays() {
-  updateWaveformLfoControls();
+  updateWaveformScopeControls();
   // Update all slider displays
   updateRulerRepeatsDisplay();
   updateRulerUnitsDisplay();
@@ -6386,7 +6241,7 @@ function updateAllDisplays() {
   updateTickerWidthRatioDisplay();
   updateTickerSpeedDisplay();
   updateWaveformTypeDisplay();
-  updateWaveformFrequencyDisplay();
+  updateWaveformNoteDisplay();
   updateWaveformSpeedDisplay();
   updateCirclesDensityDisplay();
   updateCirclesSizeVariationDisplay();
@@ -6408,7 +6263,7 @@ function updateAudioParameters() {
   if (!isAudioPlaying || currentShader !== 4) return;
 
   try {
-    waveformCarrier?.update({ frequency: waveformFrequencySlider.value, type: waveformTypeSlider.value });
+    waveformCarrier?.update({ note: waveformNoteSlider.value, type: waveformTypeSlider.value });
   } catch (error) {
     console.error('Failed to update audio parameters:', error);
   }
@@ -6515,7 +6370,8 @@ function draw() {
   const currentTime = getAnimationNowMs();
   const drawingSuspended = document.hidden || document.body.classList.contains('has-logo-animation') || window.PageEntrance?.isHoldingArtwork?.();
   window.quantumControls.tick(currentTime, drawingSuspended);
-  tickWaveformVisualLfo(currentTime, drawingSuspended);
+  window.quantumStudyControls.tick(currentTime, drawingSuspended);
+  tickWaveformScope(currentTime, drawingSuspended);
   const currentMotionStyle = getCurrentMotionStyle();
   if (drawingSuspended) {
     invalidateLunarPreviewFrame();
@@ -6557,7 +6413,7 @@ function draw() {
   // Commit a complete mark, never a letters-only frame while an SVG decodes.
   // Firefox can finish the image asynchronously after the initial p5 draw. Keep
   // the previous complete canvas during parameter/size changes until ready.
-  const usesCanonicalImage = ![1, 2, 4, 17, 22, 24].includes(currentShader);
+  const usesCanonicalImage = ![1, 2, 4, 17, 22, 24, 26, 27].includes(currentShader);
   const readyBarImage = usesCanonicalImage ? getReadyCanonicalBarImage(window) : null;
   if (usesCanonicalImage && !readyBarImage) return;
   if (currentShader === 24 && typeof window.createLunarBarVectorFragment !== 'function') return;
@@ -6628,7 +6484,7 @@ function draw() {
     lastLunarPreviewRenderer = window._renderer;
   }
 
-  if (currentShader === 22) updateHeaderBrandPreview();
+  if ([22, 26, 27].includes(currentShader)) updateHeaderBrandPreview();
   if (isAnimated && isMotionEnabledForStyle(currentMotionStyle)) {
     updateHeaderBrandPreview();
   }
@@ -6637,7 +6493,7 @@ function draw() {
 function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsiveLogoScale(), readyBarImage = null) {
   // Static preview and raster exports consume the same clipped SVG as the header.
   // Motion keeps its immediate shared geometry, avoiding asynchronous frame lag.
-  if (![1, 2, 4, 17, 22].includes(currentShader)) {
+  if (![1, 2, 4, 17, 22, 26, 27].includes(currentShader)) {
     push();
     if (!liveCanvasUsesWebGL) translate(width / 2, height / 2);
     translate(0, -getPreviewFitLayout().controlSpace / 2);
@@ -6972,12 +6828,9 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       noteShape: getSelectedMusicNoteShape()
     });
 
-    stroke(fgColor);
-    strokeWeight(renderData.lineThickness);
-    renderData.staffLines.forEach(segment => line(segment.x1, segment.y1, segment.x2, segment.y2));
-
-    renderData.notes.forEach(noteRender => {
-      drawMusicHeadP5('circle', noteRender.noteX, noteRender.noteY, noteRender.rx, noteRender.ry, true, fgColor);
+    noStroke(); fill(fgColor);
+    renderData.notes.forEach(note => {
+      beginShape(); note.points.forEach(point => vertex(...point)); endShape(CLOSE);
     });
 
   } else if (currentShader === 13) {
@@ -7191,12 +7044,13 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       }
       endShape(CLOSE);
     }
-  } else if (currentShader === 22) {
+  } else if ([22, 26, 27].includes(currentShader)) {
     resetShader();
     fill(fgColor);
     noStroke();
-    const geometry = createWaveQuantumPatternGeometry({
+    const geometry = (currentShader === 22 ? createWaveQuantumPatternGeometry : createQuantumStudyPatternGeometry)({ currentShader,
       barStartX, barY: 0, exactBarWidth, barHeight: rectHeight,
+      ...window.quantumStudyControls.values(),
       ...window.quantumControls.values()
     });
     for (const polygon of geometry.polygons) {
@@ -7572,12 +7426,11 @@ function setupShareLinks() {
   window.BarShareState.initialize({
     sanitize: sanitizeBarText,
     capture: () => ({ seed: sharePatternSeed, phase: liveMotionPhase, time: window.animationTime,
-      lfoPhase: waveformLfoFrame.phase,
       notes: currentStaffNotes, duration: currentNoteDuration }),
     restore: (state, options = {}) => {
       stopAudio();
       sharePatternSeed = state.seed;
-      currentStaffNotes = state.notes;
+      currentStaffNotes = window.MusicStyle.normalizeNotes(state.notes);
       currentNoteDuration = state.duration;
       resetAnimationClock(state.time);
       liveMotionPhase = styleSupportsMotion(styleSelect.value) ? state.phase : 0;
@@ -7588,19 +7441,22 @@ function setupShareLinks() {
         if (toggle) toggle.checked = MOTION_ENABLED_BY_STYLE[style];
         if (styleSelect.value === style && !MOTION_ENABLED_BY_STYLE[style] && style !== 'gradient') resetAnimationClock();
       }
-      waveformLfoTime = 0;
-      lastWaveformLfoTimestamp = 0;
-      waveformVisualLfo = window.WaveformLfo.createTransport(getWaveformLfoSettings(), 0, { phase: state.lfoPhase || 0 });
-      updateWaveformLfoControls();
+      lastWaveformScopeTimestamp = 0;
+      updateWaveformScopeControls();
       document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
         button.classList.toggle('active', Number(button.dataset.duration) === state.duration);
       });
+      const studyRunning = ['well', 'rabi'].map(prefix => document.getElementById(`${prefix}-motion-toggle`).checked);
+      window.quantumStudyControls.restoreSettingPhase();
+      window.quantumStudyControls.pause();
+      if (options.local && !reduce) ['well', 'rabi'].forEach((prefix, i) => { document.getElementById(`${prefix}-motion-toggle`).checked = studyRunning[i]; });
       const quantumRunning = document.getElementById('quantum-motion-toggle').checked;
       window.quantumControls.restoreSettingPhase?.();
       window.quantumControls.pause();
       // Historical share links open Quantum paused. Local Undo preserves transport.
       if (options.local && quantumRunning && !reduce) document.getElementById('quantum-motion-toggle').checked = true;
       window.quantumControls.sync();
+  window.quantumStudyControls.sync();
       resetCirclePatternCache();
     },
     refresh: () => {
@@ -7626,11 +7482,11 @@ function setupShareLinks() {
         button.classList.toggle('active', Number(button.dataset.duration) === 1);
       });
       resetAnimationClock();
-      waveformVisualLfo = null;
-      waveformLfoTime = 0;
-      lastWaveformLfoTimestamp = 0;
+      lastWaveformScopeTimestamp = 0;
       for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       applyUrlParameters();
+      window.quantumStudyControls.readQuery();
+      window.quantumStudyControls.select();
       const quantumQuery = new URLSearchParams(location.search);
       document.getElementById('quantum-phase').value = quantumModel.normalizePhase(quantumQuery.get('quantumPhase') || 0);
       document.getElementById('quantum-speed-slider').value = quantumModel.normalizeSpeed(quantumQuery.has('quantumSpeed') ? quantumQuery.get('quantumSpeed') : 1);

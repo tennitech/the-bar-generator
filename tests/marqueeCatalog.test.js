@@ -2,18 +2,20 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { entries, samples, selectEntries } = require('../js/utils/marqueeCatalog');
 const { ROUTABLE_STYLE_VALUES, UNAVAILABLE_STYLE_VALUES } = require('../js/utils/generatorRoutes');
-// Live construction routes remain deliberately outside the promoted Home catalog
-// until owner approval. Read the authored category rather than maintaining a list.
-const shell = fs.readFileSync(require.resolve('../generator/index.html'), 'utf8');
-const construction = shell.match(/<optgroup label="Under Construction">([\s\S]*?)<\/optgroup>/)?.[1] || '';
-const constructionStyles = new Set([...construction.matchAll(/<option value="([^"]+)"/g)].map(match => match[1]));
-const homeStyles = new Set([...ROUTABLE_STYLE_VALUES].filter(style => !constructionStyles.has(style)));
-test('every promoted route has one canonical entry and bounded real samples', () => {
-  expect(new Set(entries.map(entry => entry.value))).toEqual(homeStyles);
-  expect(entries).toHaveLength(homeStyles.size);
+const shell = fs.readFileSync(path.join(__dirname, '../generator/index.html'), 'utf8');
+const constructionGroup = shell.match(/<optgroup label="Under Construction">([\s\S]*?)<\/optgroup>/)[1];
+const construction = new Set([...constructionGroup.matchAll(/<option\b([^>]*)value="([^"]+)"([^>]*)>/g)]
+  .filter(match => !/\bdisabled\b/.test(match[1] + match[3])).map(match => match[2]));
+const promoted = new Set([...ROUTABLE_STYLE_VALUES].filter(style => !construction.has(style)));
+test('promoted routes have canonical Home entries; accessible studies wait for category approval', () => {
+  expect([...construction].sort()).toEqual(['music', 'rabi', 'truss', 'well-modes']);
+  for (const style of construction) expect(ROUTABLE_STYLE_VALUES.has(style)).toBe(true);
+  expect(new Set(entries.map(entry => entry.value))).toEqual(promoted);
+  expect(entries).toHaveLength(promoted.size);
   expect(new Set(samples.map(sample => sample.path)).size).toBe(samples.length);
   for (const entry of entries) {
     expect(UNAVAILABLE_STYLE_VALUES.has(entry.value)).toBe(false);
+    expect(construction.has(entry.value)).toBe(false);
     expect(entry.variants.length).toBeGreaterThanOrEqual(1);
     expect(entry.variants.length).toBeLessThanOrEqual(3);
     expect(entry.variants[0].path).toBe(entry.path);
@@ -34,11 +36,11 @@ test('every promoted route has one canonical entry and bounded real samples', ()
     expect(artwork.size).toBe(entry.variants.length);
   }
 });
-test('selection chooses exactly one sample per promoted family', () => {
+test('selection chooses one sample per promoted family without adding iterative studies', () => {
   for (const random of [() => 0, () => 0.5, () => 0.999999]) {
     const selection = selectEntries(random);
     expect(selection).toHaveLength(entries.length);
-    expect(new Set(selection.map(sample => sample.value))).toEqual(homeStyles);
+    expect(new Set(selection.map(sample => sample.value))).toEqual(promoted);
     expect(new Set(selection.map(sample => sample.path)).size).toBe(entries.length);
     for (const sample of selection) expect(samples).toContain(sample);
   }

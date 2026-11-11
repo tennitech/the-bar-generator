@@ -5,7 +5,7 @@ const routes = require('../js/utils/generatorRoutes');
 const theme = require('../js/utils/themeMode');
 const loopingGifUtils = require('../js/utils/loopingGif');
 function read(search, pathname = '/generator/waveform/') {
-  const window = {WaveformLfo:require('../js/utils/waveformLfo'),NucleotidePattern:require('../js/utils/nucleotidePattern'),location:{search,pathname},GeneratorRoutes:routes,loopingGifUtils,RulerScale:require('../js/utils/rulerScale'),NumericControls:require('../js/utils/numericControls')};
+  const window = {WaveformNotes:require('../js/utils/waveformNotes'),NucleotidePattern:require('../js/utils/nucleotidePattern'),location:{search,pathname},GeneratorRoutes:routes,loopingGifUtils,RulerScale:require('../js/utils/rulerScale'),NumericControls:require('../js/utils/numericControls')};
   window.GeneratorInitialState = {resolveTheme: query => theme.normalizeColorModeValue(new URLSearchParams(query).get('colorMode'))};
   const context = vm.createContext({window,URLSearchParams,...pattern});
   vm.runInContext(fs.readFileSync(require.resolve('../js/utils/musicStyle'),'utf8'),context);
@@ -83,8 +83,16 @@ test('Gradient retains historical variants and normalizes motion parameters', ()
   expect(read('?gradientSpeed=bad', '/generator/gradient/').gradientSpeed).toBe(0.1);
 });
 
-test('LFO query restores new waveform folds and the complete Grandmother rate range', () => {
-  expect(read('?waveformLfo=true&waveformLfoRate=.07&waveformLfoType=1.25&waveformLfoDepth=100')).toMatchObject({waveformLfo:true,waveformLfoRate:.07,waveformLfoType:1.25,waveformLfoDepth:100});
-  expect(read('?waveformLfoRate=1300&waveformLfoType=3')).toMatchObject({waveformLfoRate:1300,waveformLfoType:3});
-  expect(read('?waveformLfoRate=9999&waveformLfoType=99')).toMatchObject({waveformLfoRate:1300,waveformLfoType:3});
+test('retired LFO query fields are ignored while carrier and motion settings survive', () => {
+  const state = read('?waveformType=2.5&waveformFrequency=70&waveformSpeed=.6&waveformReverse=true&waveformLfo=true&waveformLfoRate=.07&waveformLfoType=1.25&waveformLfoDepth=100');
+  expect(state).toMatchObject({waveformType:2.5,waveformNote:require('../js/utils/waveformNotes').fromLegacy(70),waveformSpeed:.6,waveformReverse:true});
+  for(const key of ['waveformLfo','waveformLfoRate','waveformLfoDepth','waveformLfoType']) expect(state).not.toHaveProperty(key);
+});
+
+test('Music restores canonical notes, explicit empty phrases and bounded sound controls', () => {
+  expect(read('', '/generator/music/')).toMatchObject({style:'music', staffNoteShape:'square', staffTempo:120, staffInstrument:'piano'});
+  expect(read('', '/generator/music/').staffNotes).toBe(require('../js/utils/musicStyle').presets.rise);
+  expect(read('?staffNotes=', '/generator/music/').staffNotes).toBe('');
+  expect(read('?staffNotes=C%234_0.5,rest_1,D5_1&staffTempo=9999&staffInstrument=constructor&staffNoteShape=invalid','/generator/music/'))
+    .toMatchObject({staffNotes:'C#4_0.5,rest_1',staffTempo:240,staffInstrument:'piano',staffNoteShape:'square'});
 });

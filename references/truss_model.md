@@ -106,8 +106,13 @@ Truss defaults. The new state round-trips without migration.
 - Native action tests exercise Reset/Randomize/Undo through the shared system.
   Legacy migration and modern strict validation have dedicated regressions.
 - `scripts/trussRenderLocal.js` rasterized and decoded 16 real SVG-to-PNG exports:
-  all four families, both compositions, and Standard/Large sizes. Dimensions,
+  all four families, both compositions, and Smaller file/High resolution sizes
+  (internal `standard`/`large` keys). Full-logo dimensions are 1160 × 762 and
+  4752 × 3121; bar-only dimensions are 1160 × 232 and 4752 × 951. Dimensions,
   painted pixels, transparent outer corners and PNG signatures passed.
+- Release integration preserves Music, Well Modes, Rabi, note-based Waveform,
+  recent menu refinements and high-resolution exports from main. The study-route
+  cache test compares with the shared shell version rather than a retired date.
 - The [geometry review](review-images/truss/geometry-review.png) shows four defaults
   on white/black and shallow/dense/weight studies. The
   [default complete mark](review-images/truss/default-logo.png) uses unchanged

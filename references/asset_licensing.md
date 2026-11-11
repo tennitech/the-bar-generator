@@ -151,3 +151,13 @@ raster of this repository's mathematical ribbon geometry, generated November 11
 by `scripts/ringLoopComparison.js`. It contains no external artwork or official
 logo letters. Generic QA labels are not a replacement product font. Existing
 institutional brand/asset approval questions remain open.
+
+## November 11 separated dice and rolling QA
+
+The paired-dice code now uses two complete original rounded squares separated
+within the same 24-unit viewBox, retaining 1.5-unit currentColor outlines and
+filled pips. No source raster or external SVG is embedded. The geometry remains
+project code under the existing MIT license. The review contact sheet at
+`references/review-images/dice-roll/filmstrip.png` is an original offline native
+raster of that code in a reconstructed button context, using the existing UI
+font. It contains project UI only and is not a native browser motion capture.

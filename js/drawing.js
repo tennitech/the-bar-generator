@@ -205,43 +205,6 @@ function drawLunarBarPattern(target, barStartX, barY, exactBarWidth, barHeight, 
   }
 }
 
-function drawMusicHeadOnGraphics(pg, shape, x, y, rx, ry, filled, fgColor) {
-  const normalizedShape = normalizeMusicNoteShape(shape);
-
-  if (filled) {
-    pg.fill(fgColor);
-    pg.noStroke();
-  } else {
-    pg.noFill();
-    pg.stroke(fgColor);
-  }
-
-  if (normalizedShape === 'circle') {
-    pg.circle(x, y, rx * 2);
-    return;
-  }
-
-  if (normalizedShape === 'square') {
-    pg.rectMode(CENTER);
-    pg.rect(x, y, rx * 2, ry * 2);
-    pg.rectMode(CORNER);
-    return;
-  }
-
-  pg.beginShape();
-  if (normalizedShape === 'diamond') {
-    pg.vertex(x, y - ry);
-    pg.vertex(x + rx, y);
-    pg.vertex(x, y + ry);
-    pg.vertex(x - rx, y);
-  } else {
-    pg.vertex(x, y - ry);
-    pg.vertex(x + rx, y + ry);
-    pg.vertex(x - rx, y + ry);
-  }
-  pg.endShape(CLOSE);
-}
-
 const EXPORT_REFERENCE_WIDTH = RPI_LOGO_GEOMETRY.width;
 const EXPORT_REFERENCE_HEIGHT = RPI_LOGO_GEOMETRY.totalHeight;
 const EXPORT_BAR_Y = RPI_LOGO_GEOMETRY.barY;
@@ -321,7 +284,7 @@ function drawExportLogoFrame(pg, options = {}) {
 }
 
 function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, options = {}) {
-  if (![1, 2, 4, 22].includes(currentShader)) {
+  if (![1, 2, 4, 22, 26, 27].includes(currentShader)) {
     if (currentShader === 24 && typeof syncLunarBarVectorPreviewVisibility === 'function') {
       const scheme = colors[currentColorMode];
       drawLunarBarPattern(pg, barStartX, barY, exactBarWidth, rectHeight,
@@ -543,25 +506,12 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       rectTop: barY,
       rectHeight,
       thickness: 1,
-      noteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'circle'
+      noteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'square'
     });
 
-    pg.stroke(fgColor);
-    pg.strokeWeight(renderData.lineThickness);
-    renderData.staffLines.forEach(segment => pg.line(segment.x1, segment.y1, segment.x2, segment.y2));
-    renderData.barLines.forEach(segment => pg.line(segment.x1, segment.y1, segment.x2, segment.y2));
-    renderData.notes.forEach(noteRender => {
-      pg.stroke(fgColor);
-      pg.strokeWeight(renderData.lineThickness);
-      noteRender.ledgerLines.forEach(segment => pg.line(segment.x1, segment.y1, segment.x2, segment.y2));
-      noteRender.accidentalLines.forEach(segment => pg.line(segment.x1, segment.y1, segment.x2, segment.y2));
-      drawMusicHeadOnGraphics(pg, noteRender.noteShape, noteRender.noteX, noteRender.noteY, noteRender.rx, noteRender.ry, noteRender.headFill, fgColor);
-      pg.stroke(fgColor);
-      pg.strokeWeight(renderData.lineThickness);
-      if (noteRender.stem) {
-        pg.line(noteRender.stem.x1, noteRender.stem.y1, noteRender.stem.x2, noteRender.stem.y2);
-      }
-      noteRender.flags.forEach(segment => pg.line(segment.x1, segment.y1, segment.x2, segment.y2));
+    pg.noStroke(); pg.fill(fgColor);
+    renderData.notes.forEach(note => {
+      pg.beginShape(); note.points.forEach(point => pg.vertex(...point)); pg.endShape(CLOSE);
     });
   } else if (currentShader === 11) {
     // Pulse / Centerline pattern
@@ -652,6 +602,15 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
         pg.vertex(x, y);
       }
       pg.endShape();
+    }
+  } else if (currentShader === 26 || currentShader === 27) {
+    const geometry = createQuantumStudyPatternGeometry({ currentShader,
+      barStartX, barY, exactBarWidth, barHeight: rectHeight, ...window.quantumStudyControls.values() });
+    pg.noStroke(); pg.fill(fgColor);
+    for (const polygon of geometry.polygons) {
+      pg.beginShape();
+      for (const point of polygon) pg.vertex(point.x, point.y);
+      pg.endShape(pg.CLOSE);
     }
   } else if (currentShader === 22) {
     const geometry = createWaveQuantumPatternGeometry({
@@ -1032,17 +991,21 @@ function captureLogoExportSnapshot(options = {}) {
   // capture the exact live phase without changing playback or saved settings.
   const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const currentValues = getCurrentBarPatternValues(REFERENCE_WIDTH);
-  const lfoSettings = currentShader === 4 ? getWaveformLfoSettings() : null;
   const scopeCapture = currentShader === 4 ? window.waveformScopeController?.capture(getLoopRuntimeValues().waveformReverse === true) : null;
   const values = JSON.parse(JSON.stringify({ ...currentValues, ...getLoopRuntimeValues(),
     loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: options.format === 'gif' && family === 'wave-quantum'
       ? window.quantumModel.normalizePhase(currentValues.quantumPhase) : 0,
     ...(scopeCapture ? { waveformScope: scopeCapture.frame,
+      // A frozen/previous frame may differ from the controls during an edit.
+      // Filename and exported metadata must describe the captured signal.
+      waveformNote: scopeCapture.frame.note ?? currentValues.waveformNote,
+      waveformType: scopeCapture.frame.type ?? currentValues.waveformType,
       waveformScopePlaybackSeconds: scopeCapture.recording?.playbackSeconds,
-      waveformScopeReplaySeconds: scopeCapture.recording?.replaySeconds } : {}),
-    waveformLfoPhase: 0,
-    waveformLfoSampleRate: lfoSettings ? lfoSettings.rate : 2,
-    waveformLfoAmount: lfoSettings?.enabled ? lfoSettings.depth / 100 : 0 }));
+      waveformScopeReplaySeconds: scopeCapture.recording?.replaySeconds } : {}) }));
+  if (family === 'music') {
+    values.staffNotes = Object.freeze(window.MusicStyle.normalizeNotes(values.staffNotes).map(note => Object.freeze(note)));
+    if (!values.staffNotes.some(note => note.note !== 'rest')) throw new Error('Add at least one note to export Music. Rests preserve silent time but draw no mark.');
+  }
   if (values.waveformScopeRequired && !scopeCapture) throw new Error('The audio scope is not ready. Try exporting again in a moment.');
   const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values, preview: false });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
@@ -1054,7 +1017,7 @@ function captureLogoExportSnapshot(options = {}) {
   const viewport = window.logoExportOptions.viewport(geometry, composition);
   const gifPolicy = options.format === 'gif' && family === 'wave-quantum'
     ? window.loopingGifUtils.getRingGifExportPolicy(values, { size: window.logoExportUI.size(), composition }) : null;
-  const dimensions = window.logoExportOptions.dimensions(gifPolicy ? gifPolicy.size : window.logoExportUI.size(), geometry, composition);
+  const dimensions = window.logoExportOptions.dimensions(gifPolicy ? gifPolicy.size : window.logoExportUI.size(), geometry, composition, options.format);
   const inkName = ({ '#ffffff': 'white', '#000000': 'black', '#d6001c': 'red',
     '#0081ce': 'blue', '#cdac38': 'gold', '#e1edf5': 'silver', '#b9ccd8': 'gray' })[foreground.toLowerCase()] || currentColorMode;
   const rgb = [0, 2, 4].map(offset => parseInt(foreground.replace('#', '').slice(offset, offset + 2), 16));
@@ -1098,10 +1061,11 @@ async function createRasterExportBlob(snapshot, signal, onStage = () => {}) {
     throwIfExportCancelled(signal);
     canvas.width = dimensions.width; canvas.height = dimensions.height;
     const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('PNG rendering is unavailable. Choose Smaller file and try again.');
     ctx.drawImage(image, 0, 0);
     onStage('Encoding PNG…');
     return await awaitExportTask(new Promise((resolve, reject) => canvas.toBlob(blob =>
-      blob && blob.type === 'image/png' ? resolve(blob) : reject(new Error('PNG encoding failed. Try again.')), 'image/png')), signal);
+      blob && blob.type === 'image/png' ? resolve(blob) : reject(new Error('PNG encoding failed. Choose Smaller file and try again.')), 'image/png')), signal);
   } finally { URL.revokeObjectURL(url); image.src = ''; canvas.width = 0; canvas.height = 0; }
 }
 
@@ -1129,6 +1093,17 @@ function createCapturedGifRenderer(snapshot, framePlan) {
       const pattern = createBoundedTickGeometry({ ...values, shader: snapshot.currentShader,
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight });
       pattern.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
+    } else if (snapshot.currentShader === 26 || snapshot.currentShader === 27) {
+      const prefix = snapshot.currentShader === 26 ? 'well' : 'rabi';
+      const pattern = createQuantumStudyPatternGeometry({ ...values, currentShader: snapshot.currentShader,
+        barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,
+        [`${prefix}Phase`]: framePlan.getQuantumStudyPhase(progress) });
+      for (const polygon of pattern.polygons) {
+        if (!polygon.length) continue;
+        ctx.beginPath(); ctx.moveTo(polygon[0].x, polygon[0].y);
+        for (let i = 1; i < polygon.length; i++) ctx.lineTo(polygon[i].x, polygon[i].y);
+        ctx.closePath(); ctx.fill();
+      }
     } else if (snapshot.currentShader === 22) {
       const pattern = createWaveQuantumPatternGeometry({
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,

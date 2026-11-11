@@ -1,6 +1,6 @@
 /* SPEED is a multiplier of each style's original default; stored rates keep their units. */
 (function (scope) {
-  const defaults = Object.freeze({ ticker: 0.4, waveform: 0.3, gradient: 0.1, 'wave-quantum': 1 });
+  const defaults = Object.freeze({ ticker: 0.4, waveform: 0.3, gradient: 0.1, 'wave-quantum': 1, 'well-modes': 1, rabi: 1 });
   const landmarks = Object.freeze([0.5, 1, 2]);
   // A narrow multiplier window is independent of each style's physical units.
   function snap(style, value) {

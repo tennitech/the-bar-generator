@@ -80,13 +80,10 @@ function read() {
 
     // Waveform parameters
     waveformType: parseFloat(params.get('waveformType')) || 0,
-    waveformFrequency: parseInt(params.get('waveformFrequency')) || 24,
+    waveformNote: params.has('waveformNote') ? window.WaveformNotes.normalize(params.get('waveformNote'))
+      : window.WaveformNotes.fromLegacy(params.get('waveformFrequency')),
     waveformSpeed: window.loopingGifUtils.normalizeLoopSpeed('waveform', params.get('waveformSpeed')),
     waveformReverse: params.get('waveformReverse') === 'true',
-    waveformLfoType: window.WaveformLfo.normalize({ type: params.get('waveformLfoType') }).type,
-    waveformLfo: params.get('waveformLfo') === 'true',
-    waveformLfoRate: window.WaveformLfo.normalize({ rate: params.get('waveformLfoRate') }).rate,
-    waveformLfoDepth: window.WaveformLfo.normalize({ depth: params.get('waveformLfoDepth') }).depth,
 
 
     // Circles parameters
@@ -101,10 +98,10 @@ function read() {
     trussDepth: truss.depth,
 
     // Staff parameters
-    staffNotes: params.get('staffNotes') || '',
-    staffTempo: parseInt(params.get('staffTempo')) || 120,
-    staffInstrument: params.get('staffInstrument') || 'piano',
-    staffNoteShape: normalizeMusicNoteShape(params.get('staffNoteShape') || 'circle'),
+    staffNotes: window.MusicStyle.serialize(params.has('staffNotes') ? params.get('staffNotes') : window.MusicStyle.presets.rise),
+    staffTempo: Math.max(60, Math.min(240, Math.round(Number(params.get('staffTempo')) || 120))),
+    staffInstrument: ['piano', 'synth', 'marimba'].includes(params.get('staffInstrument')) ? params.get('staffInstrument') : 'piano',
+    staffNoteShape: normalizeMusicNoteShape(params.get('staffNoteShape') || 'square'),
     staffReverb: params.get('staffReverb') === 'true',
     staffTremolo: params.get('staffTremolo') === 'true',
 

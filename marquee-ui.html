@@ -6,11 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Experimental next-gen marquee interface for the RPI Bar Generator.">
   <title>RPI Bar Generator Marquee Experiment</title>
-  <link href="css/marquee-ui.css?v=20261111-marquee-brisk-hover" rel="stylesheet" type="text/css">
+  <link href="css/marquee-ui.css?v=20261111-tall-hitboxes" rel="stylesheet" type="text/css">
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/pageEntrance.js?v=20261111-marquee-fade-recovery" data-entry-kind="selector"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261111-truss-revamp"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261111-truss-release-r2"></script>
   <script>
     const legacyGeneratorUrl = window.GeneratorRoutes
       ? window.GeneratorRoutes.getLegacyGeneratorRedirectUrl(window.location.pathname, window.location.search)
@@ -25,7 +25,7 @@
 <body>
   <div class="page-wrapper marquee_page">
     <main class="main-wrapper">
-      <a class="marquee_skip-link" href="generator/solid/" aria-describedby="marquee-motion-description">Open the generator and choose a bar style</a>
+      <a class="marquee_skip-link" href="generator/solid/" aria-describedby="marquee-motion-description">Open the generator</a>
       <span class="marquee_visually-hidden" id="marquee-motion-description" role="status">Press Space to pause or resume scrolling. Dragging still works while paused.</span>
       <section class="section_marquee_hero" data-entrance-page="selector" aria-label="Bar designs" aria-keyshortcuts="Space" aria-describedby="marquee-motion-description">
         <div class="marquee_scene" data-entrance-plane="selector">
@@ -35,7 +35,7 @@
         <div id="startup-style-prompt" class="startup_prompt" aria-hidden="true" role="status" aria-live="polite"
           aria-atomic="true">
           <div class="startup_prompt_inner">
-            <p class="startup_prompt_text">Select a bar design below to get started</p>
+            <p class="startup_prompt_text">Choose a bar design</p>
           </div>
         </div>
 
@@ -65,7 +65,7 @@
   </div>
 
   <script src="js/utils/marqueeCatalog.js?v=20261110-ring-wavefunction"></script>
-  <script src="js/marqueeUi.js?v=20261111-trackpad-rows"></script>
+  <script src="js/marqueeUi.js?v=20261111-tall-hitboxes"></script>
   <script src="js/utils/mobileBrowser.js?v=20261105-safari-top-theme"></script>
 </body>
 

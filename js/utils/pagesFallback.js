@@ -3,12 +3,11 @@
     'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
     'numeric', 'morse', 'circles-gradient', 'gradient', 'grid',
     'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles',
-    'fibonacci-sequence', 'union', 'wave-quantum',
+    'fibonacci-sequence', 'union', 'wave-quantum', 'well-modes', 'rabi',
     'runway', 'lunar', 'truss', 'music', 'graph'
   ]);
 
   const UNAVAILABLE_STYLE_VALUES = new Set([
-    'music',
     'graph'
   ]);
 
@@ -19,6 +18,8 @@
   const GENERATOR_QUERY_KEYS = new Set([
     'style',
     'colorMode',
+    'wellN1', 'wellN2', 'wellPopulation', 'wellPhase', 'wellSpeed', 'wellReverse',
+    'rabiDetuning', 'rabiSpan', 'rabiPhase', 'rabiSpeed', 'rabiReverse',
     'binaryText',
     'morseText',
     'numericSource',
@@ -46,13 +47,10 @@
     'tickerSpeed',
     'tickerReverse',
     'waveformType',
-    'waveformFrequency',
+    'waveformFrequency', // Read-only legacy migration.
+    'waveformNote',
     'waveformSpeed',
     'waveformReverse',
-    'waveformLfo',
-    'waveformLfoRate',
-    'waveformLfoDepth',
-    'waveformLfoType',
     'waveformEnvelope',
     'waveformEnvelopeType',
     'waveformEnvelopeWaves',

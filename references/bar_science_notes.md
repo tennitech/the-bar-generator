@@ -1,12 +1,58 @@
 # Bar meaning and source notes
 
+## Current Waveform note model — November 11, 2026
+
+The note redesign supersedes all earlier Waveform frequency/timebase and Pulse
+sections below. MIDI 24–84 selects C1–C6 in twelve-tone equal temperament,
+A4=440 Hz. Derive `f=440*2^((m−69)/12)` without decimal rounding. Choose integer
+`N=round(f/fC1)` and plot the adaptive physical duration `N/f`. C1 is
+30.578051463771438 ms per period; its octave Cs fit 1–32 cycles in that span.
+Other notes change the window rather than detuning the pitch.
+
+The scope retains actual synthesized Float32 PCM with fractional-sample
+endpoints, finite transition settling and truthful live/offline/frozen labels.
+Pulse uses a native band-limited, DC-free finite Fourier PeriodicWave. Native
+oscillators start together and stop at a scheduled whole-carrier-phase boundary
+after a finite release. Sample clocks, Float32 parameters, interpolation and GIF
+centisecond delays remain explicitly disclosed numerical/physical limits.
+The 61 descriptors and bounded recent PCM/PeriodicWave caches avoid eager
+rendering of all configurations. No LFO is restored.
+
+See [equations, phase/pulse conventions, cache policy and primary sources](waveform_notes.md)
+and [tests and native export evidence](waveform_notes_qa.md). These define the
+current scientific contract; historical sections are retained as change history.
+
+## Historical LFO-removal model — superseded by the note redesign
+
+The owner's “remove the LFO completely” direction supersedes the historical
+November 4/10 modulation sections below. Waveform has no LFO controls, graph,
+visual clock or saved modulation fields. The carrier graph connects its
+normalized crossfade gains directly to the existing master fade/output. Sine,
+Sawtooth, Square and Pulse, the C1–C5 mapping, gain scale 0.1, parameter ramps,
+Pulse duty and Square fallback remain unchanged.
+
+The scope continues to display actual generated PCM. The physical X window is
+exactly four carrier periods before sample-grid quantization: `4 / f`, where
+`f = 32.70 + (frequency - 10) / 90 * (523.25 - 32.70)` Hz. Its one-period
+triggered sweep takes `1 / SPEED` display seconds, independently of audio pitch.
+Each view uses ordered PCM with fractional-sample interpolation. The former
+long modulation-envelope view is removed. One second of extrema and ordered
+PCM history safely covers the longest supported window plus replay margin.
+
+Pause holds the exact frame. Live edits retain real sample history; stale offline
+renders cannot replace newer settings. Exports retain immutable captured PCM,
+with the existing wrap/reset disclosure rather than an idealized reconstruction.
+Legacy LFO queries/share fields are ignored. See
+[current validation](waveform_lfo_removal_qa.md). Earlier sections are historical.
+
+
 This file distinguishes encoded data from illustrative patterns. It does not grant brand approval.
 
 ## Shared mark geometry
 
 - The complete supplied `assets/images/RPI Logo.svg` is the geometry source, uniformly scaled by 0.5. Width is 250, letter bottom is 111.4885, bar top is 132.4885, design height is 18, and the fixed gap is 21. Complete painted bounds are 250 × 150.4885. The original solid path retains its rounded source height of 17.9995.
 - The November 3 owner clarification supersedes the earlier strict painted-edge rule. Artwork remains in the fixed bar viewport, but natural whitespace is valid. No artificial boundary paint or painted-bounds fit is added. Scientific domains and nested artwork retain their coordinates.
-- Export clear space is 20 reference units at every scale. Standard PNG/GIF uses a 1000 px mark on a transparent 1160 × 762 canvas with 80 px side padding; Large uses a 2000 px mark on 2320 × 1524 with 160 px padding. SVG retains its 290 × 190.4885 viewBox. Enforce the 0.25-inch print rule at placement size.
+- Export clear space is 20 reference units at every scale. High-resolution PNG uses a 4096 px mark on a transparent 4752 × 3121 canvas (bar-only: 4752 × 951), with 327.68 px side padding and whole-pixel canvas rounding. Smaller file retains 1000 px artwork on 1160 × 762 / 1160 × 232. GIF separately retains its 2000/1000 px artwork limits. SVG retains its 290 × 190.4885 complete-mark or 290 × 58 bar-only viewport. Scientific coordinates, shape proportions and natural whitespace do not change. Enforce the 0.25-inch print rule at placement size.
 - Ruler and Ticker use natural ticks without fixed boundary references. Waveform has no artificial bottom baseline. Numeric preserves empty leading/trailing digit cells without boundary strips; zero-ink data blocks receive export recovery guidance rather than invented paint. Neural endpoint circles retain their natural tangency.
 - Clipboard SVG/PNG uses the same frozen export snapshot and coordinates. PNG retains alpha. Neither changes bar math, phase or geometry. Native SVG clipboard content uses the same standalone vector document as SVG download; unsupported browsers offer the separate download without a text or raster substitute.
 - Main static preview, header, SVG and PNG use one current-control collector. Circle packing uses the shared seed in both generation and cache identity, including same-page share-history restoration. No per-frame spatial normalization is used.
@@ -26,7 +72,7 @@ The owner clarified that the fixed viewport is a containment boundary, not a dem
 | Fibonacci Sequence | Segment widths follow consecutive values `34, 21, 13, 8, 5, 3, 2, 1` in descending order. Gaps separate the values visually. |
 | Ruler | REPEATS counts major intervals across the fixed width; DIVISIONS counts equal subdivisions of each interval. Major ticks are full-height, halves 3/4-height, thirds/quarters/fifths 1/2-height, and finer fractions 1/4-height. It is a dimensionless illustrative scale, not a calibrated physical ruler. |
 | Numeric | Visualizes digits supplied by the user or generated from the selected formula. It does not claim to measure an external quantity. |
-| Waveform | Synthetic waveform based on the selected controls. It is not a recording or measured signal. |
+| Waveform | Note-selected synthesized PCM over an adaptive whole-cycle window; A4=440 Hz, 12-TET, C1–C6. Fractional samples are interpolated; this is not an external measurement. |
 | Ticker | Repeating visual ticks with configurable ratios. It is not tied to a physical time or length unit. |
 | Neural Network | Untrained feedforward model with computed weighted sums, tanh/sigmoid activation and deterministic dense or local connections. Ring centers encode activation area; dashed edges indicate negative weights. See [model, sources and limits](neural_network_model.md). |
 | Artemis II | The splashdown counter uses April 10, 2026, 8:07 p.m. EDT, matching [NASA's splashdown record](https://www.nasa.gov/gallery/artemis-ii-splashdown-and-recovery/). The bar artwork is a supplied project asset, not mission telemetry. |
@@ -566,3 +612,34 @@ load, material, support, force or safety analysis. Preview/header/SVG/PNG use th
 same geometry; no new animation or GIF is added. Valid historical dormant share
 fields migrate without breaking unrelated saved styles. Category promotion and
 formal approvals remain open. See [equations, sources, migrations and QA](truss_model.md).
+
+
+## November 11 Well Modes and Rabi studies
+
+Two working Under Construction families now expose ideal, dimensionless quantum
+models without promoting them into Home's approved categories. Well Modes draws
+normalized two-mode infinite-well probability density with fixed gain and real
+zeros. Rabi draws complementary populations from the initial-ground-state RWA
+solution over a pulse-duration scan. Its apparent translation is parameter
+scanning, not motion in physical space. Both use an illustrative eight-second
+default cycle. See [complete formulas, restrictions, sources and export QA](quantum_studies.md).
+
+## Music piano roll — November 11, 2026
+
+The dormant notation is superseded by a chromatic piano-roll model. A bounded
+monophonic phrase contains notes C4–C5 or rests, with durations in quarter-note
+beats (0.25, 0.5, 1, 2), at most 16 beats. C4 and C5 occupy distinct fixed end
+lanes, with all intervening sharps represented individually. Position is onset;
+shape bounding width is duration divided by total phrase duration. Rests leave
+gaps. Pitch centers remain fixed when notes are added or removed. Shape choice
+has no effect on pitch or duration; geometric shapes are not notation symbols.
+
+Audio uses `440 * 2^((MIDI - 69)/12)` with A4 = 440 Hz, and beat duration is
+60/BPM seconds. Synthesized voices/effects affect sound only. Artwork is static,
+with no tempo-derived movement. SVG/PNG remain silent. Preview, graphics, SVG,
+audio and persistence share validation and score geometry. No staff baseline,
+ledger lines, added side strips, or forced painted-edge scaling remain.
+
+Authoritative coordinate/tuning sources and exact drawing conventions are in
+[music_bar.md](music_bar.md). These are original short exercise patterns, not
+borrowed compositions, recordings or measured musical data.

@@ -12,14 +12,13 @@
     const data = isRecord(value) ? value : {};
     const bounded = (key, fallback, max) => Number.isFinite(data[key]) && data[key] >= 0 && data[key] <= max ? data[key] : fallback;
     const notes = Array.isArray(data.notes) ? data.notes.slice(0, 64).filter(note => isRecord(note)
-      && /^[A-G](?:#|b)?[0-8]$/.test(note.note) && [0.25, 0.5, 1, 2].includes(note.duration))
+      && /^(?:C#?4|D#?4|E4|F#?4|G#?4|A#?4|B4|C5|rest)$/.test(note.note) && [0.25, 0.5, 1, 2].includes(note.duration))
       .map(note => ({ note: note.note, duration: note.duration })) : [];
     let duration = 0;
     const boundedNotes = notes.filter(note => { duration += note.duration; return duration <= 16; });
     return {
       seed: Math.floor(bounded('seed', 1, 4294967295)),
       phase: bounded('phase', 0, 1),
-      ...(Number.isFinite(data.lfoPhase) ? { lfoPhase: bounded('lfoPhase', 0, 1) } : {}),
       time: bounded('time', 0, 1e9),
       duration: [0.25, 0.5, 1, 2].includes(data.duration) ? data.duration : 1,
       notes: boundedNotes
@@ -32,6 +31,17 @@
     const sourceControls = scope.loopingGifUtils && typeof scope.loopingGifUtils.normalizeMotionSpeedControls === 'function'
       ? scope.loopingGifUtils.normalizeMotionSpeedControls(value.controls)
       : { ...value.controls };
+    // A new field distinguishes MIDI notes from the retired linear index.
+    if (manifest['waveform-note-slider'] && scope.WaveformNotes) {
+      const legacy = sourceControls['waveform-frequency-slider'];
+      if (!Object.hasOwn(sourceControls, 'waveform-note-slider')) {
+        if (legacy !== undefined && (!Number.isFinite(Number(legacy)) || Number(legacy) < 10 || Number(legacy) > 100)) {
+          throw new Error('This share link has an invalid legacy waveform frequency.');
+        }
+        sourceControls['waveform-note-slider'] = String(scope.WaveformNotes.fromLegacy(legacy));
+      }
+      delete sourceControls['waveform-frequency-slider'];
+    }
     // Retired Red on White saves retain their other controls and use the
     // documented neutral fallback before native-option validation.
     if (['red', 'red-on-white'].includes(sourceControls['color-mode-select'])

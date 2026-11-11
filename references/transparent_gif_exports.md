@@ -1,5 +1,41 @@
 # Transparent exports
 
+## Current resolution choices — November 11, 2026
+
+**High resolution · Recommended** is the default; **Smaller file** retains the
+existing lower-resolution option. Internal size keys stay `large` / `standard`.
+PNG downloads and clipboard images use 4096 / 1000 px artwork width. Their
+complete-mark canvases are 4752 × 3121 / 1160 × 762 px; bar-only canvases are
+4752 × 951 / 1160 × 232 px. High-resolution clear space is 327.68 px per side,
+with only the canvas dimensions rounded up. The official geometry is unchanged.
+
+GIF independently retains 2000 / 1000 px artwork width and its existing frame,
+output and memory limits. Its actual dimensions are visible in the GIF action;
+the common dimensions line is explicitly labeled PNG. Any long-loop resolution
+policy applies only to GIF and does not alter the selected PNG size. SVG retains
+its exact vector source/viewBox independently of both raster sizes.
+
+The larger PNG supports artwork up to 4096 px wide at 1:1 pixel placement, not an
+unlimited zoom or all-purpose print guarantee. Print at 300 ppi provides about
+13.65 inches of artwork width; use SVG for arbitrary-scale static design and
+check clear space/legibility at the final placement size. Larger PNG preparation
+uses more memory, so temporary canvases/images/URLs are released after success,
+failure or cancellation. Failed canvas/PNG encoding offers Smaller file as a
+recovery choice without silently reducing requested resolution. The existing
+promise-based synchronous clipboard call remains intact for Safari activation.
+See [validation and limits](high_resolution_exports.md).
+
+The dated records below describe earlier releases; this section supersedes
+past labels, shared PNG/GIF sizing and default-size claims.
+
+## Current Waveform export policy — November 11, 2026
+
+Waveform's LFO is removed. Historical LFO and joint-cycle policies below no
+longer apply. SVG/PNG/clipboard keep the captured unmodulated carrier frame;
+GIF replays its actual recorded one-period sweep with existing Speed/Reverse,
+finite capture and wrap behavior. No audio is included. See
+[removal and export verification](waveform_lfo_removal_qa.md).
+
 ## Current composition choices — November 10, 2026
 
 The illustrated **Bar + RPI** / **Bar only** selector applies to all downloads

@@ -2,16 +2,16 @@
    Samples describe the family; they do not mutate or animate the current mark. */
 (function (scope) {
   const shaders = { ruler: 1, ticker: 2, binary: 3, waveform: 4, circles: 5,
-    numeric: 6, morse: 7, runway: 8, truss: 9, lines: 13, 'point-connect': 14,
+    numeric: 6, morse: 7, runway: 8, truss: 9, music: 10, lines: 13, 'point-connect': 14,
     'triangle-grid': 15, 'circles-gradient': 16, gradient: 17, grid: 18,
     triangles: 19, 'fibonacci-sequence': 20, union: 21, 'wave-quantum': 22,
-    'neural-network': 23, lunar: 24, nucleotide: 25 };
+    'neural-network': 23, lunar: 24, nucleotide: 25, 'well-modes': 26, rabi: 27 };
   function sample(style) {
     if (style === 'solid') return '<rect width="250" height="18" fill="currentColor"/>';
     if (!Object.hasOwn(shaders, style)) return '';
-    const values = { timeSeconds: 0, loopOffsetX: 0, quantumPhase: 0,
+    const values = { staffNotes: scope.MusicStyle?.normalizeNotes(scope.MusicStyle.presets.rise) || [], staffNoteShape: 'square', timeSeconds: 0, loopOffsetX: 0, quantumPhase: 0,
       rulerRepeats: 10, rulerUnits: 10, tickerRepeats: 34, tickerRatio: 2, tickerWidthRatio: 2,
-      waveformType: 0, waveformFrequency: 24, waveformSpeed: .3, waveformPoints: 750,
+      waveformType: 0, waveformNote: 24, waveformSpeed: .3, waveformPoints: 750,
       circlesDensity: 50, circlesSizeVariation: 0, circlesFill: 'stroke',
       binaryText: 'RPI', morseText: 'RPI', numericMode: 'dotmatrix',
       linesVariant: 2, triangleGridVariant: 2, trianglesCount: 14, trianglesDirection: 'down-right' };

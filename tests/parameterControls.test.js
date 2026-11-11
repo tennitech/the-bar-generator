@@ -49,7 +49,7 @@ function fixture(random = 0) {
         : selector === '[data-parameter-actions]' ? Object.values(groups) : [];
     }
   };
-  const context = { MotionSpeed: require('../js/utils/motionSpeed'), document, URLSearchParams, Event: class { constructor(type) { this.type = type; } },
+  const context = { MusicStyle: require('../js/utils/musicStyle'), currentStaffNotes: [], currentNoteDuration: 1, setStaffDurationSelection: () => {}, generateRandomStaffPattern: () => [{note: 'C#4', duration: 1}], MotionSpeed: require('../js/utils/motionSpeed'), document, URLSearchParams, Event: class { constructor(type) { this.type = type; } },
     Math: Object.assign(Object.create(Math), { random: () => random }),
     TRUSS_FAMILY_OPTIONS: ['warren', 'pratt', 'howe', 'cross'], sharePatternSeed: 1, SURPRISE_TEXT_OPTIONS: ['RPI', 'BUILD', 'NEW'],
     pickRandom: choices => choices[Math.floor(random * choices.length)],
@@ -64,24 +64,26 @@ function fixture(random = 0) {
 
     normalizeCirclesGradientSettings: require('../js/utils/barPattern').normalizeCirclesGradientSettings,
     quantumModel: require('../js/utils/quantumModel'),
+    updateWaveformScopeControls: jest.fn(),
     applyTickerWidthRatioBounds: () => {}, stopAudio: jest.fn() };
   context.window = context;
   for (const field of Object.values(fields)) context[field.id.replace(/-([a-z])/g, (_, char) => char.toUpperCase())] = field;
   context.envelopeSettingsGroup = { style: {} };
   context.neuralNetworkHiddenLayersDisplay = { textContent: '' };
   context.gradientSpeedDisplay = { textContent: '' };
-  context.updateUrlParameters = () => context.ParameterControls.refresh();
+  context.updateUrlParameters = () => { if (context.currentStaffNotes.length) fields['staff-notes-input'].value = context.MusicStyle.serialize(context.currentStaffNotes); context.ParameterControls.refresh(); };
   for (const name of source.slice(source.indexOf('function resetStyleParameters'), source.indexOf('function getBugReportContextLabel'))
     .matchAll(/\b(update\w+|syncMotionToggleState|syncAllCustomSelects|resetCirclePatternCache|resetSequencePreviewState|handleBinaryInput|requestUpdate)\(/g)) {
     context[name[1]] ||= jest.fn();
   }
   vm.createContext(context);
+  vm.runInContext(source.slice(source.indexOf('function generateRandomStaffPattern()'), source.indexOf('function updateWaveformScopeControls()')), context);
   vm.runInContext(fs.readFileSync(require.resolve('../js/utils/parameterControls'), 'utf8'), context);
   vm.runInContext(source.slice(source.indexOf('function getTriangleGridControlValues'), source.indexOf('function updateTrianglesCountDisplay')), context);
 
   vm.runInContext(source.slice(source.indexOf('function getCirclesGradientControlValues'), source.indexOf('function updateGradientVariantDisplay')), context);
   vm.runInContext(source.slice(source.indexOf('const NEURAL_CONTROL_DEFAULTS'), source.indexOf('function updateTriangleGridVariantDisplay')), context);
-  vm.runInContext(source.slice(source.indexOf('function resetWaveformLfo()'), source.indexOf('function getCurrentAudioPreviewType()')), context);
+  vm.runInContext(source.slice(source.indexOf('function resetWaveformScope()'), source.indexOf('function getCurrentAudioPreviewType()')), context);
   vm.runInContext(source.slice(source.indexOf('function resetStyleParameters'), source.indexOf('function getBugReportContextLabel')), context);
   context.ParameterControls.bindActions({ reset: context.resetStyleParameters, randomize: context.randomizeStyleParameters,
     isDefaultSeed: () => context.sharePatternSeed === 1 });
@@ -90,17 +92,18 @@ function fixture(random = 0) {
   return { context, fields, groups, buttons, snapshot };
 }
 
-const active = ['truss', 'nucleotide', 'ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
+const active = ['truss', 'music', 'nucleotide', 'ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
   'circles-gradient', 'gradient', 'grid', 'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles'];
+const studies = ['well-modes', 'rabi'];
 const fixed = ['solid', 'fibonacci-sequence', 'union', 'runway', 'lunar'];
 
-test('explicit capabilities cover exactly all selectable styles and reject construction/prototype names', () => {
+test('explicit capabilities cover exactly all 26 selectable styles and reject unavailable names', () => {
   const h = fixture();
-  expect(Object.keys(h.context.ParameterControls.capabilities).sort()).toEqual([...active, ...fixed].sort());
+  expect(Object.keys(h.context.ParameterControls.capabilities).sort()).toEqual([...active, ...studies, ...fixed].sort());
   expect(h.fields['style-select'].options.filter(option => !option.disabled).map(option => option.value).sort())
-    .toEqual([...active, ...fixed].sort());
-  for (const style of active) expect(h.context.ParameterControls.supportsActions(style)).toBe(true);
-  for (const style of [...fixed, 'music', 'graph', 'constructor', '__proto__']) {
+    .toEqual([...active, ...studies, ...fixed].sort());
+  for (const style of [...active, ...studies]) expect(h.context.ParameterControls.supportsActions(style)).toBe(true);
+  for (const style of [...fixed, 'graph', 'constructor', '__proto__']) {
     expect(h.context.ParameterControls.supportsActions(style)).toBe(false);
     h.context.resetStyleParameters(style); h.context.randomizeStyleParameters(style);
   }
@@ -216,14 +219,13 @@ test('same-page shared and legacy restoration refresh action state after the com
   let bridge;
   Object.assign(h.context, {
     BarShareState: { initialize: next => { bridge = next; } },
-    WaveformLfo: require('../js/utils/waveformLfo'),
-    getWaveformLfoSettings: () => ({enabled:false,rate:2,depth:60,type:0}),
-    updateWaveformLfoControls: jest.fn(),
+    updateWaveformScopeControls: jest.fn(),
     sanitizeBarText: value => value, liveMotionPhase: 0, currentStaffNotes: [], currentNoteDuration: 1,
     animationTime: 0, DEFAULT_MOTION_ENABLED: false, MOTION_ENABLED_BY_STYLE: { ticker: false, waveform: false },
     styleSupportsMotion: style => ['ticker', 'waveform'].includes(style),
     matchMedia: () => ({ matches: false }), location: { search: '' },
     resetAnimationClock: jest.fn(), quantumModel: require('../js/utils/quantumModel'),
+    quantumStudyControls: { settingPhase: prefix => Number(h.fields[`${prefix}-phase`].value), restoreSettingPhase: jest.fn(), pause: jest.fn(), sync: jest.fn(), select: jest.fn(), readQuery: jest.fn() },
     quantumControls: { select: () => {}, pause: jest.fn(), sync: jest.fn() },
     applyUrlParameters() {
       for (const field of Object.values(h.fields)) {

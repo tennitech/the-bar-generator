@@ -11,37 +11,38 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261111-independent-dice-ring" rel="stylesheet" type="text/css" />
-  <link href="css/editor-accessibility.css?v=20261110-larger-controls-release" rel="stylesheet" type="text/css">
+  <link href="css/style.css?v=20261111-music-score-r2" rel="stylesheet" type="text/css" />
+  <link href="css/editor-accessibility.css?v=20261111-color-help-gap" rel="stylesheet" type="text/css">
   <script src="js/utils/editorAccessibility.js?v=20261110-larger-controls-release"></script>
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/pageEntrance.js?v=20261110-combined-brand-refinement"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261111-truss-revamp"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261111-truss-release-r2"></script>
   <script src="js/utils/themeMode.js?v=20261110-exact-theme-text"></script>
-  <script src="js/utils/selectorPreviews.js?v=20261111-truss-revamp"></script>
+  <script src="js/utils/selectorPreviews.js?v=20261111-truss-release-r2"></script>
   <script src="js/utils/secondaryColorGuidance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/customDropdowns.js?v=20261110-picker-tab-focus"></script>
-  <script src="js/utils/parameterControls.js?v=20261111-truss-revamp"></script>
+  <script src="js/utils/parameterControls.js?v=20261111-truss-release-r2"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
-  <script src="js/utils/loopingGif.js?v=20261111-short-ring"></script>
+  <script src="js/utils/loopingGif.js?v=20261111-quantum-studies-r2"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261111-truss-revamp"></script>
+  <script src="js/utils/shareState.js?v=20261111-truss-release-r2"></script>
   <script src="js/utils/randomizeHistory.js?v=20261104-parameter-action-recovery"></script>
-  <script src="js/utils/musicStyle.js"></script>
+  <script src="js/utils/musicStyle.js?v=20261111-music-score-r2"></script>
   <script src="js/utils/nucleotidePattern.js?v=20261110-input-limit-feedback"></script>
-  <script src="js/utils/barPattern.js?v=20261111-truss-revamp"></script>
+  <script src="js/utils/waveformNotes.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/barPattern.js?v=20261111-truss-release-r2"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
-  <script src="js/utils/motionSpeed.js?v=20261110-input-limit-feedback"></script>
-  <script src="js/utils/sidebarSections.js?v=20261110-control-presentation"></script>
+  <script src="js/utils/motionSpeed.js?v=20261111-quantum-studies-r2"></script>
+  <script src="js/utils/sidebarSections.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/quantumStudyModel.js?v=20261111-quantum-studies-r2"></script>
   <script src="js/utils/quantumModel.js?v=20261111-short-ring"></script>
-  <script src="js/utils/waveformLfo.js?v=20261110-waveform-scope"></script>
-  <script src="js/utils/waveformAudio.js?v=20261110-waveform-scope"></script>
-  <script src="js/utils/waveformScope.js?v=20261110-scope-contours"></script>
-  <script src="js/utils/generatorParameters.js?v=20261111-truss-revamp"></script>
-  <script src="js/utils/generatorInitialState.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/waveformAudio.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/waveformScope.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/generatorParameters.js?v=20261111-truss-release-r2"></script>
+  <script src="js/utils/generatorInitialState.js?v=20261111-waveform-notes-r2"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
 </head>
@@ -106,45 +107,42 @@
         <p id="export-blocked-note" class="export_blocked-note" role="tooltip" hidden></p>
         <div id="save-menu" class="save-menu export_menu hidden" role="dialog" aria-label="Export asset">
           <div id="export-settings" class="export_settings">
-            <fieldset class="export_composition" aria-describedby="export-composition-note">
+            <fieldset class="export_composition">
               <legend class="export_size-label">Export composition</legend>
               <div class="export_composition-options">
-                <label class="export_composition-option">
+                <label class="export_composition-option export_choice">
                   <input id="export-composition-logo" type="radio" name="export-composition" value="logo" checked>
                   <span class="export_composition-art" aria-hidden="true">
                     <svg id="export-composition-preview-logo" xmlns="http://www.w3.org/2000/svg" focusable="false"></svg>
                   </span>
-                  <span class="export_composition-title">Bar + RPI</span>
-                  <span class="export_composition-caption">Complete mark</span>
+                  <span class="export_composition-title export_choice-label"><span class="export_choice-text">Bar + RPI</span><span class="export_choice-reserve" aria-hidden="true">Bar + RPI</span></span>
                 </label>
-                <label class="export_composition-option">
+                <label class="export_composition-option export_choice">
                   <input id="export-composition-bar" type="radio" name="export-composition" value="bar">
                   <span class="export_composition-art" aria-hidden="true">
                     <svg id="export-composition-preview-bar" xmlns="http://www.w3.org/2000/svg" focusable="false"></svg>
                   </span>
-                  <span class="export_composition-title">Bar only</span>
-                  <span class="export_composition-caption">Pattern strip</span>
+                  <span class="export_composition-title export_choice-label"><span class="export_choice-text">Bar only</span><span class="export_choice-reserve" aria-hidden="true">Bar only</span></span>
                 </label>
               </div>
-              <p id="export-composition-note" class="export_note">Your current pattern, with or without the lettering.</p>
             </fieldset>
             <span id="export-size-label" class="export_size-label">Image size</span>
             <select id="export-size-select" hidden aria-hidden="true" tabindex="-1">
-              <option value="large" selected>Large · Recommended</option>
-              <option value="standard">Standard</option>
+              <option value="large" selected>High resolution · Recommended</option>
+              <option value="standard">Smaller file</option>
             </select>
             <div class="export_size-options" role="radiogroup" aria-labelledby="export-size-label" aria-describedby="export-dimensions export-size-note">
-              <label class="export_size-option">
+              <label class="export_size-option export_choice">
                 <input id="export-size-large" type="radio" name="export-size" value="large" checked>
-                <span>Large <small>Recommended</small></span>
+                <span class="export_size-copy"><span class="export_choice-label"><span class="export_choice-text">High resolution</span><span class="export_choice-reserve" aria-hidden="true">High resolution</span></span> <small>Recommended</small></span>
               </label>
-              <label class="export_size-option">
+              <label class="export_size-option export_choice">
                 <input id="export-size-standard" type="radio" name="export-size" value="standard">
-                <span>Standard</span>
+                <span class="export_size-copy"><span class="export_choice-label"><span class="export_choice-text">Smaller file</span><span class="export_choice-reserve" aria-hidden="true">Smaller file</span></span></span>
               </label>
             </div>
-            <p id="export-dimensions" class="export_dimensions">2320 × 1524 px</p>
-            <p id="export-size-note" class="export_note">Includes clear space. SVG scales to any size.</p>
+            <p id="export-dimensions" class="export_dimensions">PNG · 4752 × 3121 px</p>
+            <p id="export-size-note" class="export_note">Includes clear space. GIF uses separate size limits. SVG scales to any size.</p>
           </div>
           <div class="export_action-columns">
           <div class="export_download-actions" role="group" aria-labelledby="export-download-label">
@@ -164,7 +162,7 @@
           </div>
           <div id="clipboard-actions" class="export_copy-actions" role="group" aria-labelledby="export-copy-label">
             <h2 id="export-copy-label" class="export_group-label">Copy</h2>
-            <button id="copy-png" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="option-label">PNG</span><span class="option-desc">2320 × 1524 px</span></button>
+            <button id="copy-png" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="option-label">PNG</span><span class="option-desc">Transparent image</span></button>
             <button id="copy-svg" class="save-option" type="button"><svg class="export_action-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="option-label">SVG</span><span class="option-desc">Scalable vector</span></button>
           </div>
           </div>
@@ -237,7 +235,9 @@
                   <option value="lunar">Artemis II</option>
                 </optgroup>
                 <optgroup label="Under Construction">
-                  <option value="music" data-coming-soon disabled>Music</option>
+                <option value="well-modes">Well Modes</option>
+                <option value="rabi">Rabi</option>
+                  <option value="music">Music</option>
                   <option value="graph" data-coming-soon disabled>Data Graph</option>
                   <option value="truss">Truss</option>
                 </optgroup>
@@ -303,7 +303,7 @@
               <option value="8">Eighths · 8 per unit</option>
               <option value="16">Sixteenths · 16 per unit</option>
             </select>
-            <p id="ruler-units-hint" class="control-hint">Whole units have the longest marks. Divisions split each unit equally.</p>
+            <p id="ruler-units-hint" class="control-hint">Whole units have the longest marks; divisions split them equally.</p>
           </div>
           <div class="control slider-control">
             <label for="ruler-thickness-slider" class="control-label">THICKNESS <span id="ruler-thickness-display" data-slider-value>1.0</span>×</label>
@@ -330,7 +330,7 @@
               <span class="nucleotide_ready" aria-hidden="true"><svg class="nucleotide_ready-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Ready</span>
             </div>
             <input type="text" id="nucleotide-input" data-url-parameter="nucleotideSequence" value="ATGGCCCTGTGGATGCGCCTCCTGCCCCTGCTGGCGCTGCTGGCCCTCTG" maxlength="50" pattern="[ATCGUatcgu]*" spellcheck="false" autocapitalize="characters" autocomplete="off" class="control-input" minlength="30" aria-describedby="nucleotide-hint nucleotide-status nucleotide-limit-error">
-            <div id="nucleotide-hint" class="control-hint">A, T, C, G and U only. 30 bases minimum; 50 maximum. Read 5′ → 3′.</div>
+            <div id="nucleotide-hint" class="control-hint">30–50 bases: A, T, C, G or U. Read 5′ → 3′.</div>
             <div class="nucleotide_feedback">
               <div class="nucleotide_progress-track">
                 <progress id="nucleotide-progress" class="nucleotide_progress" max="50" value="50" aria-label="Sequence length"></progress>
@@ -454,10 +454,46 @@
             <div class="control slider-control">
               <label for="quantum-phase" class="control-label">PHASE <span id="quantum-phase-display" data-slider-value>0.0%</span></label>
               <input id="quantum-phase" type="range" min="0" max="1" step="any" value="0" class="control-slider" aria-label="Ring Wavefunction phase as fraction of recurrence" aria-describedby="quantum-description">
-              <p id="quantum-description" class="control-hint">Position within one full recurrence.</p>
+              <p id="quantum-description" class="control-hint">Position in the repeating cycle.</p>
             </div>
           </div>
         </div>
+
+        <div id="well-modes-group" data-parameter-actions="well-modes" class="control-group" style="display: none;">
+<div class="control-header">PARAMETERS</div>
+<div class="control slider-control"><label for="well-n1" class="control-label">MODE A <span id="well-n1-display" data-slider-value>2</span></label>
+<input id="well-n1" data-url-parameter="wellN1" type="range" min="1" max="6" step="1" value="2" class="control-slider" aria-describedby="well-description"></div>
+<div class="control slider-control"><label for="well-n2" class="control-label">MODE B <span id="well-n2-display" data-slider-value>3</span></label>
+<input id="well-n2" data-url-parameter="wellN2" type="range" min="1" max="6" step="1" value="3" class="control-slider" aria-describedby="well-description"></div>
+<div class="control slider-control"><label for="well-population" class="control-label">MODE B WEIGHT <span id="well-population-display" data-slider-value>0.5</span></label>
+<input id="well-population" data-url-parameter="wellPopulation" type="range" min="0" max="1" step="0.01" value="0.5" class="control-slider" aria-describedby="well-description"></div>
+<p id="well-description" class="control-hint">Two distinct infinite-well modes. Thickness is probability density at a fixed scale, mirrored for drawing. Endpoints and true nodes stay empty. Equal mode selections move the other mode.</p>
+<p id="well-notice" class="u-sr-only" aria-live="polite"></p>
+<div class="runtime_section motion_section"><div class="control-header">MOTION</div>
+<div class="control control_row control_row-toggle"><label for="well-motion-toggle" class="control-label control_row-label">LOOP</label><label class="switch"><input type="checkbox" id="well-motion-toggle" checked aria-label="Loop Well Modes animation"><span class="slider round"></span></label></div>
+<div class="control control_row control_row-toggle"><label for="well-reverse-toggle" class="control-label control_row-label">REVERSE</label><label class="switch"><input type="checkbox" id="well-reverse-toggle" data-url-parameter="wellReverse" aria-label="Reverse Well Modes playback"><span class="slider round"></span></label></div>
+<div class="control slider-control"><label for="well-speed-slider" class="control-label">SPEED <span id="well-speed-slider-display" data-slider-value>1</span></label>
+<input id="well-speed-slider" data-url-parameter="wellSpeed" type="range" min="0.2" max="4" step="0.001" value="1" class="control-slider" aria-describedby="well-description"></div>
+<div class="control slider-control"><label for="well-phase" class="control-label">CYCLE <span id="well-phase-display" data-slider-value>0.15</span></label>
+<input id="well-phase" data-url-parameter="wellPhase" type="range" min="0" max="1" step="any" value="0.15" class="control-slider" aria-describedby="well-description"></div>
+<p class="control-hint">One cycle takes 8 seconds at 1×. Pause to keep the current frame. Cycle seeks within the relative-phase beat.</p></div></div>
+
+<div id="rabi-group" data-parameter-actions="rabi" class="control-group" style="display: none;">
+<div class="control-header">PARAMETERS</div>
+<div class="control slider-control"><label for="rabi-detuning" class="control-label">DETUNING Δ/Ω <span id="rabi-detuning-display" data-slider-value>0.45</span></label>
+<input id="rabi-detuning" data-url-parameter="rabiDetuning" type="range" min="0" max="3" step="0.01" value="0.45" class="control-slider" aria-describedby="rabi-description"></div>
+<div class="control slider-control"><label for="rabi-span" class="control-label">DURATION SPAN / π <span id="rabi-span-display" data-slider-value>4</span></label>
+<input id="rabi-span" data-url-parameter="rabiSpan" type="range" min="2" max="8" step="0.1" value="4" class="control-slider" aria-describedby="rabi-description"></div>
+<p id="rabi-description" class="control-hint">Solid height is excited-state probability; the hatched complement is ground-state probability. Left to right means pulse duration, not position. Motion scans repeated pulse settings.</p>
+<p id="rabi-notice" class="u-sr-only" aria-live="polite"></p>
+<div class="runtime_section motion_section"><div class="control-header">MOTION</div>
+<div class="control control_row control_row-toggle"><label for="rabi-motion-toggle" class="control-label control_row-label">LOOP</label><label class="switch"><input type="checkbox" id="rabi-motion-toggle" checked aria-label="Loop Rabi animation"><span class="slider round"></span></label></div>
+<div class="control control_row control_row-toggle"><label for="rabi-reverse-toggle" class="control-label control_row-label">REVERSE</label><label class="switch"><input type="checkbox" id="rabi-reverse-toggle" data-url-parameter="rabiReverse" aria-label="Reverse Rabi playback"><span class="slider round"></span></label></div>
+<div class="control slider-control"><label for="rabi-speed-slider" class="control-label">SPEED <span id="rabi-speed-slider-display" data-slider-value>1</span></label>
+<input id="rabi-speed-slider" data-url-parameter="rabiSpeed" type="range" min="0.2" max="4" step="0.001" value="1" class="control-slider" aria-describedby="rabi-description"></div>
+<div class="control slider-control"><label for="rabi-phase" class="control-label">CYCLE <span id="rabi-phase-display" data-slider-value>0.12</span></label>
+<input id="rabi-phase" data-url-parameter="rabiPhase" type="range" min="0" max="1" step="any" value="0.12" class="control-slider" aria-describedby="rabi-description"></div>
+<p class="control-hint">One cycle takes 8 seconds at 1×. Pause to keep the current frame. Cycle seeks within the pulse-duration scan.</p></div></div>
 
         <div id="waveform-group" data-parameter-actions="waveform" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
@@ -469,42 +505,14 @@
           </div>
 
           <div class="control slider-control">
-            <label for="waveform-frequency-slider" class="control-label">FREQUENCY <span
-                id="waveform-frequency-display" data-slider-value>24</span></label>
-            <input type="range" id="waveform-frequency-slider" data-url-parameter="waveformFrequency" min="10" max="100" value="24" class="control-slider"
-              aria-label="Waveform Frequency">
+            <label for="waveform-note-slider" class="control-label">NOTE <span
+                id="waveform-note-display" data-slider-value>C1</span></label>
+            <input type="range" id="waveform-note-slider" data-url-parameter="waveformNote" min="24" max="84" step="1" value="24" class="control-slider"
+              aria-label="Waveform note" aria-valuetext="C1, 32.703 hertz">
           </div>
 
-          <div class="control waveform_lfo">
-            <div class="control_row control_row-toggle">
-              <div class="control_help-label">
-                <label for="waveform-lfo-toggle" class="control-label control_row-label">LFO</label>
-                <button type="button" class="control_help-button" data-control-help="waveform-lfo-hint" aria-label="About LFO" aria-describedby="waveform-lfo-hint" aria-expanded="false" aria-controls="waveform-lfo-hint"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="waveform-lfo-toggle" data-url-parameter="waveformLfo" aria-controls="waveform-lfo-settings" aria-describedby="waveform-lfo-hint">
-                <span class="slider round"></span>
-              </label>
-            </div>
-            <p id="waveform-lfo-hint" class="control_help-tooltip" role="tooltip" hidden>Shows the actual audio signal after LFO amplitude modulation. The time window fits two envelope cycles, or at least four carrier cycles. Offline rendering is silent; Audio switches to a live recording. Loop freezes or replays the scope. GIF starts on the frozen frame and replays captured history, which may reset when it wraps.</p>
-            <p id="waveform-scope-status" class="control-hint">Rendering audio signal…</p>
-            <div id="waveform-lfo-settings" hidden>
-              <div class="control slider-control">
-                <label for="waveform-lfo-type" class="control-label">LFO WAVEFORM <span id="waveform-lfo-type-display" data-slider-value>SINE</span></label>
-                <input type="range" id="waveform-lfo-type" data-url-parameter="waveformLfoType" min="0" max="3" step="0.01" value="0" class="control-slider" aria-label="LFO waveform: sine, sawtooth, square, pulse">
-              </div>
-              <div class="control slider-control">
-                <label for="waveform-lfo-rate-position" class="control-label">LFO RATE <span id="waveform-lfo-rate-display" data-slider-value>2 Hz</span></label>
-                <input type="range" id="waveform-lfo-rate" data-url-parameter="waveformLfoRate" min="0.07" max="1300" step="0.01" value="2" hidden class="control-slider" aria-label="LFO rate in hertz">
-                <input type="range" id="waveform-lfo-rate-position" data-lfo-rate-position min="0" max="1" step="0.005" value="0.3408" class="control-slider" aria-label="LFO rate" aria-describedby="waveform-lfo-rate-unit">
-                <p id="waveform-lfo-rate-unit" class="control-hint">0.07–1300 Hz · logarithmic</p>
-              </div>
-              <div class="control slider-control">
-                <label for="waveform-lfo-depth" class="control-label">LFO DEPTH <span id="waveform-lfo-depth-display" data-slider-value>60%</span></label>
-                <input type="range" id="waveform-lfo-depth" data-url-parameter="waveformLfoDepth" min="0" max="100" step="1" value="60" class="control-slider" aria-label="LFO depth in percent">
-              </div>
-            </div>
-          </div>
+          <p class="control-hint">C1–C6 · equal temperament · A4 = 440 Hz. Whole-cycle window; duration adapts to the note.</p>
+          <p id="waveform-scope-status" class="control-hint">Rendering audio signal…</p>
 
           <div class="runtime_section motion_section">
             <div class="control-header">MOTION</div>
@@ -584,7 +592,7 @@
             <label for="numeric-input" class="control-label">VALUE</label>
             <input type="text" inputmode="decimal" id="numeric-input" data-url-parameter="numericValue" placeholder="Enter a decimal value" class="control-input"
               maxlength="100" value="3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706" aria-describedby="numeric-value-hint numeric-input-error" spellcheck="false" autocomplete="off">
-            <p id="numeric-value-hint" class="control-hint">Up to 100 characters: digits, one decimal point, and an optional leading sign. The sign is not encoded.</p>
+            <p id="numeric-value-hint" class="control-hint">Up to 100 characters: digits, one decimal point and an optional leading sign. Signs are not encoded.</p>
             <p id="numeric-input-error" class="control-hint" role="status"></p>
           </div>
           <div id="numeric-formula-control" class="control" hidden>
@@ -650,23 +658,52 @@
         <div id="staff-group" data-parameter-actions="music" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control">
-            <label for="staff-instrument-select" class="control-label">INSTRUMENT</label>
-            <div class="select-wrapper">
-              <select id="staff-instrument-select" data-url-parameter="staffInstrument" class="control-select">
-                <option value="piano">Piano</option>
-                <option value="synth">Synth</option>
-                <option value="marimba">Marimba / Pluck</option>
-              </select>
-            </div>
+            <label for="music-preset" class="control-label">PHRASE</label>
+            <div class="select-wrapper"><select id="music-preset" class="control-select">
+              <option value="rise">Rise &amp; return</option><option value="arpeggio">Arpeggio</option>
+              <option value="syncopation">Syncopation</option><option value="custom" disabled>Custom phrase</option>
+            </select></div>
+            <div class="control-hint">Pitch rises from C4 to C5. Shape length is note duration. The complete phrase spans the bar.</div>
           </div>
+          <input id="staff-notes-input" type="hidden" data-url-parameter="staffNotes" value="C4_1,D4_1,E4_1,G4_1,A4_2,G4_1,E4_1,F4_1,A4_1,C5_2,B4_1,G4_1,E4_1,C4_1">
           <div class="control">
             <label for="staff-note-shape-select" class="control-label">NOTE SHAPE</label>
             <div class="select-wrapper">
               <select id="staff-note-shape-select" data-url-parameter="staffNoteShape" class="control-select">
-                <option value="circle">Circles</option>
-                <option value="square">Squares</option>
+                <option value="square">Bars</option>
+                <option value="circle">Capsules</option>
                 <option value="diamond">Diamonds</option>
                 <option value="triangle">Triangles</option>
+              </select>
+            </div>
+          </div>
+          <div class="control">
+            <div class="control-label" id="music-duration-label">NEXT NOTE · BEATS</div>
+            <div class="duration-selector" id="staff-duration-selector" role="group" aria-labelledby="music-duration-label">
+              <button class="duration-btn" data-duration="2" type="button" aria-pressed="false">2</button>
+              <button class="duration-btn active" data-duration="1" type="button" aria-pressed="true">1</button>
+              <button class="duration-btn" data-duration="0.5" type="button" aria-pressed="false">½</button>
+              <button class="duration-btn" data-duration="0.25" type="button" aria-pressed="false">¼</button>
+            </div>
+          </div>
+          <div class="control">
+            <div class="control-label" id="music-keyboard-label">ADD A NOTE</div>
+            <div class="music_keyboard" role="group" aria-labelledby="music-keyboard-label"><button type="button" class="music_key" data-note="C4" aria-label="Add C4">C4</button><button type="button" class="music_key" data-note="C#4" aria-label="Add C sharp 4">C♯4</button><button type="button" class="music_key" data-note="D4" aria-label="Add D4">D4</button><button type="button" class="music_key" data-note="D#4" aria-label="Add D sharp 4">D♯4</button><button type="button" class="music_key" data-note="E4" aria-label="Add E4">E4</button><button type="button" class="music_key" data-note="F4" aria-label="Add F4">F4</button><button type="button" class="music_key" data-note="F#4" aria-label="Add F sharp 4">F♯4</button><button type="button" class="music_key" data-note="G4" aria-label="Add G4">G4</button><button type="button" class="music_key" data-note="G#4" aria-label="Add G sharp 4">G♯4</button><button type="button" class="music_key" data-note="A4" aria-label="Add A4">A4</button><button type="button" class="music_key" data-note="A#4" aria-label="Add A sharp 4">A♯4</button><button type="button" class="music_key" data-note="B4" aria-label="Add B4">B4</button><button type="button" class="music_key" data-note="C5" aria-label="Add C5">C5</button><button type="button" class="music_key" data-note="rest" aria-label="Add a rest">Rest</button></div>
+          </div>
+          <div class="control">
+            <div class="music_sequence-heading"><span class="control-label">YOUR PHRASE</span><button id="staff-clear-btn" type="button" class="workspace-btn">Clear</button></div>
+            <div id="music-sequence" class="music_sequence" role="group" aria-label="Phrase events, select to remove"></div>
+            <div id="music-status" class="control-hint" role="status" aria-live="polite"></div>
+          </div>
+          <div class="runtime_section audio_section">
+            <div class="control-header">PREVIEW</div>
+          <div class="control">
+            <label for="staff-instrument-select" class="control-label">AUDIO VOICE</label>
+            <div class="select-wrapper">
+              <select id="staff-instrument-select" data-url-parameter="staffInstrument" class="control-select">
+                <option value="piano">Piano-like synth</option>
+                <option value="synth">Synth</option>
+                <option value="marimba">Plucked synth</option>
               </select>
             </div>
           </div>
@@ -688,44 +725,9 @@
             <label for="staff-tempo-slider" class="control-label">TEMPO <span id="staff-tempo-display" data-slider-value>120</span>
               BPM</label>
             <input type="range" id="staff-tempo-slider" data-url-parameter="staffTempo" min="60" max="240" step="1" value="120" class="control-slider"
-              aria-label="Staff Tempo">
+              aria-label="Music tempo in quarter-note beats per minute">
           </div>
-          <div class="control">
-            <label class="control-label">NOTE DURATION</label>
-            <div class="duration-selector" id="staff-duration-selector">
-              <button class="duration-btn" data-duration="2">1/2</button>
-              <button class="duration-btn active" data-duration="1">1/4</button>
-              <button class="duration-btn" data-duration="0.5">1/8</button>
-              <button class="duration-btn" data-duration="0.25">1/16</button>
-            </div>
-          </div>
-          <div class="control">
-            <label class="control-label" style="display:flex; justify-content:space-between; align-items:center;">
-              KEYBOARD
-              <button id="staff-clear-btn" class="workspace-btn" style="padding: 2px 6px; height: auto;"
-                aria-label="Clear Notes">CLEAR</button>
-            </label>
-            <div class="piano-keyboard">
-              <div class="keys">
-                <div class="key white" data-note="C4"></div>
-                <div class="key black" data-note="C#4"></div>
-                <div class="key white" data-note="D4"></div>
-                <div class="key black" data-note="D#4"></div>
-                <div class="key white" data-note="E4"></div>
-                <div class="key white" data-note="F4"></div>
-                <div class="key black" data-note="F#4"></div>
-                <div class="key white" data-note="G4"></div>
-                <div class="key black" data-note="G#4"></div>
-                <div class="key white" data-note="A4"></div>
-                <div class="key black" data-note="A#4"></div>
-                <div class="key white" data-note="B4"></div>
-                <div class="key white" data-note="C5"></div>
-              </div>
-            </div>
-            <div class="control-hint">Click keys to add notes (max 4 measures)</div>
-          </div>
-          <div class="runtime_section audio_section">
-            <div class="control-header">PREVIEW</div>
+            <p class="control-hint">Audio loops your phrase. Tempo, voice and effects change sound only; SVG and PNG are silent, static scores.</p>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
               <div class="preview-controls">
@@ -994,7 +996,7 @@
                 role="switch" aria-checked="false" aria-labelledby="editor-size-label" aria-describedby="editor-size-description">
                 <span class="editor_size-copy">
                   <span id="editor-size-label" class="editor_size-label">Larger controls and text</span>
-                  <span id="editor-size-description" class="editor_size-description">Roomier controls and easier-to-read labels.</span>
+                  <span id="editor-size-description" class="editor_size-description">Larger controls and labels.</span>
                 </span>
                 <span class="editor_size-indicator" aria-hidden="true"><span class="editor_size-track"></span><span id="editor-size-state">Off</span></span>
               </button>
@@ -1057,48 +1059,40 @@
   <dialog id="keyboard-shortcuts-dialog" class="report_dialog shortcuts_dialog" aria-labelledby="keyboard-shortcuts-title" aria-describedby="keyboard-shortcuts-description">
     <div class="report_dialog-panel">
       <div class="report_dialog-header">
-        <div>
-          <div class="report_dialog-kicker">At your fingertips</div>
-          <h2 id="keyboard-shortcuts-title" class="report_dialog-title">Keyboard shortcuts</h2>
-        </div>
-        <button id="keyboard-shortcuts-close" class="report_dialog-close" type="button" aria-label="Close keyboard shortcuts" autofocus>×</button>
+        <h2 id="keyboard-shortcuts-title" class="report_dialog-title" tabindex="-1" autofocus>Keyboard shortcuts</h2>
+        <button id="keyboard-shortcuts-close" class="report_dialog-secondary" type="button" aria-label="Close keyboard shortcuts">Close</button>
       </div>
-      <p id="keyboard-shortcuts-description" class="report_dialog-copy">Use these keys outside controls, menus and dialogs. Actions follow the selected style; unavailable actions stay inactive.</p>
+      <p id="keyboard-shortcuts-description" class="report_dialog-copy">Shortcuts work outside controls, menus and dialogs, when the selected style supports them.</p>
       <dl class="shortcuts_list">
           <div class="shortcuts_row"><dt>Zoom in (also =)</dt><dd><kbd>+</kbd></dd></div>
           <div class="shortcuts_row"><dt>Zoom out</dt><dd><kbd>−</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Fit the whole mark</dt><dd><kbd>0</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Play / pause motion or supported audio</dt><dd><kbd>Space</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Randomize current parameters</dt><dd><kbd>N</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Undo the last randomize</dt><dd><kbd>U</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Open download options</dt><dd><kbd>E</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Fit whole mark</dt><dd><kbd>0</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Play / pause motion or audio</dt><dd><kbd>Space</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Randomize parameters</dt><dd><kbd>N</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Undo randomize</dt><dd><kbd>U</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Open export menu</dt><dd><kbd>E</kbd></dd></div>
           <div class="shortcuts_row"><dt>Show this guide</dt><dd><kbd>?</kbd></dd></div>
           <div class="shortcuts_row"><dt>Next quick style</dt><dd><kbd>Shift + Space</kbd></dd></div>
-          <div class="shortcuts_row"><dt>Previous / next color mode</dt><dd><kbd>Shift + ↑ / ↓</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Previous / next color theme</dt><dd><kbd>Shift + ↑ / ↓</kbd></dd></div>
       </dl>
       <label class="shortcuts_preference" for="keyboard-shortcuts-enabled">
         <input id="keyboard-shortcuts-enabled" type="checkbox" checked aria-describedby="keyboard-shortcuts-note">
         <span>Enable keyboard shortcuts</span>
       </label>
-      <p id="keyboard-shortcuts-note" class="report_dialog-copy">Turn off all shortcuts above, including single-letter keys. Your choice is saved in this browser when storage is available. This guide stays available in the three-dot menu.</p>
-      <p class="shortcuts_hint">Tab moves between controls. Escape closes this guide. Browser and system key combinations stay available.</p>
+      <p id="keyboard-shortcuts-note" class="report_dialog-copy">Turns all listed shortcuts on or off. Saved in this browser when storage is available. This guide stays in the three-dot menu.</p>
+      <p class="shortcuts_hint">Tab moves between controls; Escape closes this guide. Browser and system shortcuts still work.</p>
     </div>
   </dialog>
 
   <dialog id="bug-report-dialog" class="report_dialog" aria-labelledby="bug-report-title">
     <form id="bug-report-form" class="report_dialog-panel" method="dialog">
       <div class="report_dialog-header">
-        <div>
-          <div class="report_dialog-kicker">Support</div>
-          <h2 id="bug-report-title" class="report_dialog-title">Report a Problem</h2>
-        </div>
-        <button id="bug-report-close" class="report_dialog-close" type="button" aria-label="Close report dialog">
-          <svg data-feather="x" class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+        <h2 id="bug-report-title" class="report_dialog-title">Report a Problem</h2>
+        <button id="bug-report-close" class="report_dialog-secondary" type="button" aria-label="Close report dialog">Close</button>
       </div>
 
       <p class="report_dialog-copy">
-        Tell us what broke. The current style, theme, viewport, browser, and sharable state URL will be attached automatically.
+        Describe the problem. We’ll attach the current style, theme, viewport, browser and shareable state URL.
       </p>
 
       <div id="bug-report-context" class="report_dialog-context" aria-live="polite"></div>
@@ -1112,19 +1106,19 @@
       <label class="report_dialog-field">
         <span class="report_dialog-label">What happened? <span class="report_dialog-required" aria-hidden="true">*</span></span>
         <textarea id="bug-report-details" class="report_dialog-textarea" rows="5"
-          placeholder="Describe what you saw, including any errors or odd behavior." required></textarea>
+          placeholder="Include any errors or unexpected behavior." required></textarea>
       </label>
 
       <label class="report_dialog-field">
         <span class="report_dialog-label">What were you trying to do? <span class="report_dialog-required" aria-hidden="true">*</span></span>
         <textarea id="bug-report-steps" class="report_dialog-textarea" rows="3"
-          placeholder="Example: I switched to Circles, changed overlap, then opened the style dropdown." required></textarea>
+          placeholder="Example: Selected Circles, changed overlap, then opened the style menu." required></textarea>
       </label>
 
       <label class="report_dialog-field">
         <span class="report_dialog-label">Email</span>
         <input id="bug-report-email" class="report_dialog-input" type="email" maxlength="160"
-          placeholder="So we can follow up if needed">
+          placeholder="Optional, for follow-up">
       </label>
 
       <div class="report_dialog-actions">
@@ -1137,6 +1131,7 @@
   <div id="toast-container"></div>
   <script>GeneratorInitialState.apply(document.body); setupCustomDropdowns(); ParameterControls.prepare(document);</script>
   <script src="third_party/gif.js/gif.js"></script>
+  <script src="js/utils/quantumStudyControls.js?v=20261111-quantum-studies-r2"></script>
   <script src="js/utils/quantumControls.js?v=20261110-ring-wavefunction"></script>
   <script src="js/utils/previewControls.js?v=20261103-save-removal"></script>
   <script src="js/utils/viewportZoom.js?v=20261103-save-removal"></script>
@@ -1147,19 +1142,19 @@
   <script src="js/ui.js?v=20261110-quiet-undo-r3"></script>
   <script src="js/utils/logoGeometry.js?v=20261103-save-removal"></script>
   <script src="js/utils/urlState.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportOptions.js?v=20261110-export-composition-r2"></script>
+  <script src="js/utils/exportOptions.js?v=20261111-waveform-notes-r2"></script>
   <script src="js/utils/transparentGif.js?v=20261110-ring-release"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
-  <script src="js/utils/exportUi.js?v=20261111-drafted-export-schematic"></script>
-  <script src="js/utils/barInformation.js?v=20261111-truss-revamp"></script>
+  <script src="js/utils/exportUi.js?v=20261111-quantum-studies-r2"></script>
+  <script src="js/utils/barInformation.js?v=20261111-truss-release-r2"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
-  <script src="js/utils/keyboardShortcuts.js?v=20261110-keyboard-shortcuts"></script>
+  <script src="js/utils/keyboardShortcuts.js?v=20261111-menu-consistency"></script>
   <script src="js/utils/inputLimitFeedback.js?v=20261110-input-limit-feedback"></script>
-  <script src="js/main.js?v=20261111-truss-revamp"></script>
+  <script src="js/main.js?v=20261111-truss-release-r2"></script>
   <script src="js/utils/logoClipboard.js?v=20261110-export-composition-r2"></script>
-  <script src="js/drawing.js?v=20261111-truss-revamp"></script>
+  <script src="js/drawing.js?v=20261111-truss-release-r2"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

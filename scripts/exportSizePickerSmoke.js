@@ -17,10 +17,10 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
       await page.locator('#export-size-large').focus();
       await page.keyboard.press('ArrowDown');
       assert.equal(await page.locator('#export-size-standard').isChecked(), true);
-      assert.equal(await page.locator('#export-dimensions').textContent(), '1160 × 762 px');
+      assert.equal(await page.locator('#export-dimensions').textContent(), 'PNG · 1160 × 762 px');
       await page.keyboard.press('Tab');
       assert.equal(await page.evaluate(() => document.activeElement.id), 'save-png');
-      for (const [size, width, height] of [['standard', 1160, 762], ['large', 2320, 1524]]) {
+      for (const [size, width, height] of [['standard', 1160, 762], ['large', 4752, 3121]]) {
         const label = page.locator(`.export_size-option:has(#export-size-${size})`);
         assert((await label.boundingBox()).height >= 44);
         if (viewport.width < 500) await label.tap(); else await label.click();

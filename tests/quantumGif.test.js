@@ -18,6 +18,7 @@ function setup() {
   const main = read('js/main.js');
   // Exercise the real speed/direction collector with neighboring controls absent.
   for (const name of ['gradientSpeedSlider', 'gradientReverseToggle', 'rulerRepeatsSlider', 'rulerDivisionsSelect', 'rulerThicknessSlider', 'tickerSlider', 'tickerRatioSlider', 'tickerWidthRatioSlider', 'tickerSpeedSlider', 'tickerReverseToggle', 'waveformSpeedSlider', 'waveformReverseToggle']) r[name] = null;
+  r.quantumStudyControls = { values: () => ({}) };
   r.normalizeLoopSpeed = loops.normalizeLoopSpeed;
   vm.runInContext(main.slice(main.indexOf('function getLoopRuntimeValues('), main.indexOf('function isMotionEnabledForStyle(')), r);
   r.loopingGifUtils = loops;
@@ -136,7 +137,7 @@ test.each(['logo', 'bar'])('default 1× GIF preserves %s composition, actual pha
   expect(snapshot.gifPolicy).toMatchObject({ supported: true, requestedSize: 'large', size: 'large' });
   expect(Object.isFrozen(snapshot.gifPolicy)).toBe(true);
   expect(r.state.size).toBe('large'); expect(elements['quantum-speed-slider'].value).toBe('1');
-  expect(r.captureLogoExportSnapshot().dimensions.width).toBe(2320); // PNG/SVG selection stays Large.
+  expect(r.captureLogoExportSnapshot().dimensions.width).toBe(4752); // PNG uses the independent high-resolution choice.
 });
 
 test('ring retains requested resolution and supports every speed', () => {

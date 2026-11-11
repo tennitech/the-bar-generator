@@ -1,5 +1,15 @@
 # Bar information cards
 
+## November 11 concise-copy update
+
+The current inventory has 22 selectable styles. Copy now ranges from 14 to 58
+words per card, with scientific explanations deliberately longer than simple
+geometric motifs. This supersedes the original two-sentence/40-word target below.
+See [the app-wide audit](ui_copy_audit.md) for source verification and retained
+meaning. Titles, disclosure behavior, source links and artwork remain unchanged.
+
+## Original implementation record
+
 October 28, 2026. One shared sidebar card sits immediately above Report a Problem (Report Anomaly in Mission Control), covering all 21 available bar styles. Each description has two sentences and approximately 40 words. Disabled Music, Data Graph and Truss entries remain unavailable and do not gain cards for unimplemented behavior.
 
 ## Copy and sources
@@ -53,3 +63,20 @@ Numeric's card now names decimal entry and formula selection as separate sources
 The live Under Construction card describes four bracing rules, meaningful panel/
 depth/stroke controls and the explicit absence of structural analysis. Its sources,
 implementation and limits are recorded in [Truss model](truss_model.md).
+
+
+## November 11 working quantum studies
+
+Well Modes and Rabi now have separate explanatory cards. Each explicitly states
+its idealization and the visual/physical distinction: mirrored density is not a
+second dimension; a sliding pulse-duration scan is not a particle path. Cards
+identify Under Construction status and do not imply RPI experimental results or
+brand-library approval. Model sources and limits: [quantum studies](quantum_studies.md).
+
+## November 11 Music availability
+
+Music now has an implemented piano-roll composer and a truthful About entry.
+It stays under Under Construction until owner approval; this supersedes only
+the earlier Music-unavailable statement. The card explains semitone lanes,
+onset/duration, rests, equal temperament and silent static exports. Sources and
+validation limits are recorded in [music_bar.md](music_bar.md).

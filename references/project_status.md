@@ -1,5 +1,30 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
+## November 11 note-based whole-cycle Waveform redesign
+
+The new note model selects C1–C6 (MIDI 24–84), derives unrounded 12-TET A440
+pitch/period values, and plots the nearest whole-cycle span to the C1 reference.
+The time window adapts by note; exact pitch is never rounded to fit a fixed
+30.5 ms interval. The UI names notes, exposes physical window/cycle metadata,
+and migrates old linear-index URLs/shares to their nearest tuned note.
+
+Actual generated PCM remains the source of editor/header/static/GIF geometry.
+Fractional endpoint reconstruction replaces block-truncated periods. Live
+transitions hold settled views; exports retain the displayed note/type even
+when controls are newer. Native DC-free Fourier Pulse replaces the aliasing
+threshold worklet. Shared future starts, phase-continuous note steps, finite
+shape ramps and scheduled cycle-boundary stops have explicit sample-precision
+limits. No LFO, framework, colors or institutional assets are added.
+
+A 61-entry descriptor table, eight-entry offline PCM LRU and 16-entry per-graph
+PeriodicWave cache reduce repeated work without rendering all combinations.
+Model/source comments and [contributor guidance](waveform_notes.md) describe the
+assumptions, equations, phase conventions, tradeoffs and numerical limits.
+[QA](waveform_notes_qa.md) records all-note native synthesis, exact exported
+geometry/pixels, tests and unverified browser/hardware acceptance. The branch
+is retained pending explicit user testing; automated checks are not acceptance.
+
+
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
@@ -18,11 +43,261 @@ No loads/materials/supports/forces are modeled and no animation is invented. A
 narrow historical-share migration protects other styles whose snapshots captured
 the old hidden Truss controls. It does not silently accept invalid modern saves.
 
-Native raster/codec checks pass for 16 family/composition/size combinations;
-model/export/action/route and migration regressions cover the new behavior. Cloud
+Release integration on main `70716f57` passes 1,245 tests in 105 suites and
+16 native raster/codec family/composition/size combinations, including current
+high-resolution exports. Model/export/action/route and migration regressions
+cover the new behavior. Music, quantum studies and note-based Waveform are kept. Cloud
 CUA could not reach the local preview (connection refused), so local rendered UI
 and physical-device acceptance are not claimed. Exact suite/CI/production evidence
 is in the release PR. See [model, source and review images](truss_model.md).
+
+## November 11 working quantum studies
+
+Well Modes and Rabi are enabled under Under Construction with direct routes,
+model controls, local parameter actions, reduced-motion-safe transport and
+PNG/SVG/GIF exports. They remain outside Home's promoted catalog pending the
+owner's category approval. Existing placeholders and Ring Wavefunction remain
+unchanged. Future iterative bars should be accessible in this category first.
+
+The studies use normalized ideal models, fixed vertical scales and shared
+polygon renderers for live canvas, header and exported frames. Well's full-well
+probability density retains actual nodes; Rabi shows complementary excited and
+ground populations over a duration scan, not spatial particle motion. See the
+[model assumptions, controls, source links and QA scope](quantum_studies.md).
+No new fonts or assets, official lettering edits, or formal brand-approval claims
+are introduced. Full local/required-CI results are recorded in the PR. Cloud
+browser access timed out, so live UI/download/mobile smoke remains unverified;
+offline light/dark/red proofs and controller/export regressions were inspected.
+
+## November 11 Music piano-roll rebuild
+
+Music is selectable at `/generator/music/` while remaining under **Under
+Construction**, pending owner review. It is not added to the Home catalog or
+promoted to another category. The old clipped pseudo-staff is replaced with a
+shared chromatic score: C4–C5 occupy 13 fixed semitone lanes, onset and duration
+map to horizontal position and length, and the complete phrase fills the time
+domain. Rests consume time without paint. Original Rise & return, Arpeggio and
+Syncopation presets, four geometric treatments, labeled native note/rest buttons,
+removable events and 16-beat capacity provide an accessible composer.
+
+The same validated score drives preview, header/selector samples, SVG/PNG, URL
+state, Reset/Randomize/Undo and synthesized audio. Sharps no longer collide with
+naturals. The dormant graphics-export crash is removed. Audio uses equal
+temperament at A4 = 440 Hz, with tempo, voice and effects explicitly sound-only.
+No autoplay, new animation, dependencies or logo geometry changes. Empty/all-rest
+scores receive export recovery guidance. Snapshot notes are copied and frozen.
+
+See [model and QA record](music_bar.md) for sources, native export review images,
+automated coverage and browser limitations. This is an experimental application
+of piano-roll coordinates, not staff notation or a claim of formal RPI approval.
+
+## November 11 taller physical marquee targets
+
+Directional prediction is removed following user testing. Each native bar link
+now has a 4.9rem-high target instead of 3.9rem, while artwork remains 3rem high
+and unchanged in width. Centered transparent padding adds 8px above and below
+at base scale. The same real anchor receives hover, click, focus and drag.
+
+Lane pitch accounts for the actual rotation and leaves 2px between targets in
+perpendicular coordinates, preventing overlapping links or ambiguous selection.
+This deliberately spaces lanes a little farther apart; fitting still keeps the
+hero clear. Horizontal link widths and gaps are unchanged. Entering any true
+gap immediately starts background restoration. Continuous fades, 20% settled
+dimming, reduced motion and keyboard priority remain. No prediction or extra
+pointer hit-testing remains. Rendering and release checks are recorded in PR.
+The directional entry below describes the superseded release.
+
+## November 11 directional marquee handoff
+
+Pointer travel previews the next native hit-tested bar up to 60ms/72px ahead,
+coalescing input into one frame and at most three hit tests. Only that local bar
+brightens early; it never owns selection or pauses a row. Prediction expires
+80ms after the last sample and is disabled for touch, drag, keyboard focus and
+reduced motion. Native hit testing preserves rotated geometry and overlay bounds.
+
+Real gaps still start brightening immediately, with a rate-12 critically damped
+field release rather than rate 26. A 32ms crossing raises background opacity to
+0.246 rather than 0.362; 50ms raises it to 0.298 rather than 0.499. There is no
+hold or debounce. Actual selection and local highlights retain rate 26, exact
+20% settled background, continuous value/velocity and cleanup. Art and exports
+are unchanged. Unit regressions cover preview expiry, immediate release, focus,
+touch/drag exclusion and bounded hit-testing. Cloud production browser initially
+opened but subsequent input timed out; rendered verification is not yet claimed.
+
+## November 11 high-resolution PNG exports
+
+The size choices are now **High resolution · Recommended** and **Smaller file**.
+The recommended default generates PNG downloads/copies with 4096 px artwork
+width: 4752 × 3121 px for Bar + RPI, 4752 × 951 px for Bar only. Smaller file
+retains 1000 px artwork. SVG vectors, official proportions and proportional clear
+space remain unchanged. GIF separately retains 2000/1000 px artwork, existing
+loop/memory limits, and an accurate dimension disclosure before activation.
+
+The PNG dimension line is explicitly labeled, native radio semantics and shared
+choice styling remain, and cache versions update route/shell/runtime together.
+Failed PNG preparation offers the smaller choice; canvas/image/URL cleanup and
+the synchronous promise-based clipboard write are retained. Validation results
+and browser/Safari limits are recorded in [high-resolution export QA](high_resolution_exports.md).
+
+## November 11 compact Color Theme helper spacing
+
+How to use now sits closer to the Color Theme dropdown. Its transparent button
+keeps the 44px minimum hit area (48px in large-controls mode), but aligns its
+label at the top with the existing 6px hint-gap padding rather than centering it
+below an additional label-sized margin. No negative margin, transform, absolute
+hit-area extension or overlap is used. Large-controls mode also retains the
+existing tight red label focus outline instead of the generic full-button outline.
+
+Secondary-only visibility, text/copy, exact theme palette, modal/keyboard/touch
+controllers, selection and all other editor states remain unchanged. Current
+main already includes copy audit #187, menu release #184 and dice #191; their
+copy, startup/About modules, presentation and animation are preserved. Only the
+two CSS scopes and their synchronized cache keys change production behavior.
+All 37 focused checks in seven suites, JavaScript/81 inline-script syntax and
+source/cache checks pass. See [spacing rationale and QA limits](color_help_spacing_qa.md).
+
+## November 11 continuous marquee emphasis
+
+Rapid hover reversals no longer restart a CSS opacity transition with a shortened
+reverse duration. A critically damped brightness response retains current value
+and velocity when the target changes. Every bar uses the same response, with
+brisk settling and no opacity overshoot or bounce. Gap exit immediately targets
+full brightness; no timer, debounce, or retained dim state is introduced.
+
+One inherited field opacity and only recent highlighted bars are updated, rather
+than writing every repeated bar on each frame. The selected bar stays bright on
+exit into a gap. Keyboard focus still wins over a parked pointer. At rest the
+selected bar is 100% and neighbors are 20%; reduced motion settles immediately.
+Hidden/page-exit handling cancels pending frames. Static artwork, drag spring,
+trackpad input, route behavior and exports remain unchanged. Both Home CSS/JS
+keys advance. Tests cover reversal velocity, prompt gap release, cleanup,
+keyboard precedence, reduced motion and refresh-rate consistency. Release and
+rendered checks are recorded in the PR.
+
+## November 11 Waveform LFO removal
+
+The owner requested complete removal of Waveform's LFO. The toggle, waveform,
+rate and depth controls, tooltip, modulation audio graph, visual transport,
+export metadata and URL/share runtime fields are removed. Old queries and v1
+share links retain their valid carrier/motion settings and ignore retired fields.
+The carrier's Sine–Sawtooth–Square–Pulse morph, pitch mapping, normalized gains,
+pulse duty, native fallback and audio start/stop fade remain intact. Music's
+separate instrument effects are outside this Waveform change.
+
+The actual PCM scope remains, with a four-carrier-period window and one-carrier-
+period sweep. Loop, Reverse, Speed, freeze, Audio, source/error status and
+SVG/PNG/clipboard/GIF snapshots remain. One second of bounded live history now
+covers every supported carrier setting; there is no modulation-envelope mode.
+Warm-route, shell, first-paint and affected dependency cache keys advance together.
+
+Native DSP/raster/codec checks pass: 15 carrier comparisons have zero PCM error,
+Pulse retains 80% duty, the live tap is silent and exact, nine PNGs render and
+996 frames from six GIFs decode exactly. These are not browser or hardware-audio
+acceptance. Browser checks were not rerun through an alternate route after the
+prior access denial. See [current evidence and limits](waveform_lfo_removal_qa.md).
+Earlier LFO/scope records below are historical and superseded by this entry.
+
+## November 11 separated dice with varied rolls
+
+The owner's latest refinement separates Randomize's two complete thin die faces.
+Each makes one full independent roll with a restrained 3–7 degree recoil, then
+returns to its unchanged resting orientation. Every activation samples its own
+direction, 0.6–1.2 viewBox-unit outward travel and duration (rear 560–660ms,
+front 600–700ms). Sampled smooth acceleration/deceleration avoids pauses between
+poses. These bounded decorative choices do not enter control values or exports.
+
+The fixed 18px slot, labels, hover/focus and immediate native Randomize callback
+remain. Rapid activation starts from each face's computed displayed pose and
+cancels the previous pair; stale completion, reduced motion, hidden state and
+page-exit cleanup remain. The CSS, menu, bar models, audio and exports are
+unchanged. Cache keys advance through the routes, fetched shell and fallback.
+
+Focused tests cover full rotation/recoil and travel/duration bounds at random
+extrema, independent variation, minimum separation under rotation, transform-only
+motion, continuity, cleanup, labels and keyboard-generated clicks. Source-driven
+18px light/dark previews were inspected and padding checked offline. Native
+browser motion/input remains unverified under the existing restriction. See
+[the evidence and limits](dice_roll_qa.md); final full-suite/CI/live evidence is
+recorded in the PR. Current main's copy/menu and export changes are preserved;
+the concurrent Truss release is kept separate and reconciled before shipping.
+
+## November 11 concise, source-checked UI copy
+
+Audited Home, all 22 selectable About descriptions, control hints, dialogs,
+errors/status, accessibility instructions, route/fallback and animation copy.
+The live RPI Voice & Tone and Color pages inform the edits. About text drops
+from 967 to 609 whitespace-counted words, removing repeated exploration prompts
+while retaining actual encodings, model limits, provenance and approval caveats.
+The shortcut guide, Home prompt and selected helpers are shorter. Exact
+owner-supplied official color guidance stays verbatim.
+Useful error recovery, input limits, accessible names and state announcements,
+report metadata disclosure, scientific detail disclosures and source links stay.
+
+Only copy and delivery cache keys change; no model, filtering, renderer, control
+behavior, dependencies or logo assets change. Export-card cleanup is coordinated
+separately. [Audit record](ui_copy_audit.md) distinguishes code/tests, rendered
+checks and formal approval. Fresh route and fallback keys load the updated shell.
+
+## November 11 clearer left/right dice shake
+
+The owner's follow-up rejected the first subtle tilt. Each die now makes six
+clearly alternating lateral swings, with progressively smaller travel/rotation
+and smooth per-leg cubic easing at each reversal. The back settles over 460ms;
+the front over 520ms, with different amplitudes and opposite angular tilts. The
+small final excursion eases into exact rest. The unchanged 18px icon slot, thin
+SVG, labels and button dimensions remain fixed; no geometry/layout animation.
+
+The existing per-face current-pose replacement, stale-completion guard, natural
+cleanup, immediate Randomize callback and native keyboard/click path remain.
+Reduced motion, page exit and hidden state still cancel both. Undo/Reset keep
+their existing easing and label responses. The refinement changes no menu,
+scientific model, export, palette or accessibility behavior.
+
+Focused tests require repeated left/right reversals, monotonically shrinking
+extrema, smooth turnarounds, exact rest and bounded duration, alongside rapid
+activation/cleanup and reduced-motion coverage. An offline source-keyframe
+preview and 12 chronological 18px button-context samples were rendered in
+light/dark, visually inspected and checked within the existing padding/gap
+envelope. This is reconstructed SVG motion, not native browser animation proof.
+Full-suite, exact-head CI and production evidence are recorded in the PR.
+Actual browser timing, physical keyboard/touch and aesthetic acceptance remain
+unverified; no prior denied browser route is retried. This release is independent of approval-held PRs #184 and #187. Export-copy
+#186 and export-state #188 are preserved; neither held PR is merged here.
+
+## November 11 uniform export choice states
+
+Export composition and image size now share one bordered choice style, native
+radio semantics/glyph, neutral hover, menu-token selected fill and bold selected
+labels. Bold layout footprints are reserved with inaccessible copies; borders
+stay 1px in every state. Choices, Download/Copy and Cancel share an outside
+keyboard focus ring, and pressed action icons inherit the text color. Disabled
+hover is suppressed; forced colors restores system selection and native radios.
+
+The public baseline was visually and keyboard inspected. Candidate rendered QA
+remains unverified because the available browser environment could not open it;
+an optional multi-width/theme/editor-size regression script is included. All 1,130 tests across 96 suites pass, including source,
+contrast and existing export/interaction checks.
+See [QA evidence and limits](export_choice_states_qa.md). Cache keys advance
+through route first paint and fetched shell together. This export-only change
+does not include the pending #184 three-dot menu/dialog work, or any real artwork,
+renderer, export dimensions, palette, scientific model or motion changes.
+
+## November 11 export-composition copy cleanup
+
+The composition choices retain their visible names, Bar + RPI and Bar only, and
+the Export composition legend. The redundant Complete mark and Pattern strip
+captions and the sentence “Your current pattern, with or without the lettering.”
+are removed. The fieldset’s aria-describedby reference to the removed sentence
+is removed too, leaving clear native radio accessible names without a stale ID.
+
+No radio IDs/values/defaults, schematic markup, selection/keyboard behavior,
+export controls/dimensions, CSS or rendering/clipboard/GIF code changes. Routed
+shell/bootstrap/fallback and Home prefetch versions advance together so the
+markup cleanup reaches warm routes. This cleanup is separate from pending #184;
+publication follows release coordination rather than merging that presentation PR.
+All 53 focused export/radio/cache checks pass in four suites. Accessible-name
+inspection confirms exactly the two retained choices and no stale description
+reference; 81 inline scripts and cache/source checks pass.
 
 ## November 11 refined dashed export-composition guides
 
@@ -2608,3 +2883,24 @@ unverified; secondary themes were exercised only for legacy-state compatibility.
 Numeric now accepts at most 100 total characters in its field, decimal validation and query/share restore. This is the exact Dot Matrix circle threshold: `250 / 100 - 1 = 1.5` units wide, matching the existing 1.5-unit dot height. Shorter entries retain their horizontal stretching; 101 encoded columns would be narrower than a circle. The sign is unencoded but counts toward the input limit. The π default and export fallback now retain its first 100 characters, and Reset uses the shared default. Historical over-limit decimals are not rounded into shorter replacement values. Rendering geometry, the two encoding modes, formula presets and official logo geometry are unchanged.
 
 Integrated-release verification passed all 536 unit tests in 47 suites and `scripts/numericLimitSmoke.js` in Chromium and WebKit. Browser coverage includes 24/99/100-column geometry, typing/inserted-text limits, synthetic-input rejection, exact 100-character historical snapshot restoration, over-limit current/legacy URLs, Reset, actual downloaded SVG/PNG pixel parity and a 390px touch layout. Desktop and touch screenshots were inspected. Route shells and changed runtime files use a new cache version. Broader browser aggregate suites were not rerun for this narrow change; physical devices, owner acceptance and formal RPI approval remain separate. See [Numeric threshold details](numeric_modes.md#circle-threshold--november-3-2026).
+
+## November 11 menu and dialog consistency audit
+
+Secondary Color Usage and Keyboard shortcuts now inherit one modal shell:
+shared theme surface/border/corners, width, padding, heading size, dark unblurred
+backdrop and text Close action. The shortcut guide opens at its heading, resets
+scroll position and guards backdrop drags and stale close events. Three-dot
+menus share selector surface tokens; larger-control text and reduced-motion
+coverage include both guides. The retained report form shares the header/chrome
+while keeping its narrower form layout; the live GitHub reporting flow is unchanged.
+
+The audit distinguishes native modal guides, anchored export/listbox menus,
+inline disclosures, tooltips and the full-screen Easter egg instead of flattening
+them into one interaction. Export geometry, official palette, bar generation,
+audio and the custom theme rows are unchanged. See
+[the inventory and QA limits](menu_consistency_audit.md).
+
+Validation: 1,137 tests across 97 suites pass; helper/smoke syntax and whitespace
+checks pass. Rendered browser, native keyboard/touch, zoom and Safari checks remain
+unverified under the existing browser restriction. A reusable four-viewport,
+three-theme smoke check is included for a permitted browser environment.

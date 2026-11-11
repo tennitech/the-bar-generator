@@ -50,12 +50,11 @@ const ready = page => page.waitForFunction(() => window.logoExportUI && window.b
       }
       await page.selectOption('#style-select', 'waveform', { force: true });
       if (mobile && !await page.locator('#app-sidebar').evaluate(el => el.classList.contains('active'))) await page.locator('#mobile-menu-toggle').click();
-      await page.locator('#waveform-envelope-toggle').locator('..').click();
       await page.locator('.sidebar-scroll').evaluate(el => { el.scrollTop = 0; });
       await page.screenshot({ path: `${evidence}/${mobile ? 'mobile' : 'desktop'}-waveform.png` });
+      assert.equal(await page.locator('[id^="waveform-lfo"]').count(), 0);
       const label = page.locator('#waveform-type-slider'); await label.focus(); await page.keyboard.press('ArrowRight');
       assert.equal(await label.inputValue(), '.01'.replace(/^\./, '0.'));
-      await page.locator('#waveform-envelope-toggle').locator('..').click();
       await page.locator('[data-parameter-style="waveform"][data-parameter-action="reset"]').click();
       assert.equal(await label.inputValue(), '0');
       await page.close();
@@ -77,6 +76,7 @@ const ready = page => page.waitForFunction(() => window.logoExportUI && window.b
           waveformTypeSlider.value = type; waveformTypeSlider.dispatchEvent(new Event('input', { bubbles: true }));
           const samples = [];
           for (let frame = 0; frame < 20; frame++) { await new Promise(requestAnimationFrame); samples.push(liveMotionPhase); }
+          await window.waveformScopeController.ready();
           setMotionEnabledForStyle('waveform', false);
           const state = getCurrentLoopAnimationState();
           const live = getLiveWaveformGeometry(0, 0, 250, 18, state.timeSeconds);

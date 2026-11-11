@@ -1,5 +1,17 @@
 # Source record and contributor checks
 
+## November 11, 2026 voice and color copy audit
+
+The live official [Voice & Tone](https://brand.rpi.edu/d/pfJS6BKVKBeq/brand-guidelines#/-/voice-tone)
+and [Secondary Color Usage](https://brand.rpi.edu/d/pfJS6BKVKBeq/brand-guidelines#/-/color/secondary-colors)
+sections were read in the cloud browser. Both show October 29, 2026 at 10:29 AM
+as their modification time. The six voice traits, evidence-first principles and
+medium-specific tone remain consistent with the reference below. Concise UI
+summaries apply those principles; the source sets no universal word count.
+The color dialog retains the exact owner-supplied official guidance. It is
+intentionally exempt from shortening; its source link and all caveats remain.
+See [copy inventory, decisions and verification](ui_copy_audit.md).
+
 ## November 10, 2026 secondary-composition correction
 
 The current [official Secondary Colors section](https://brand.rpi.edu/d/pfJS6BKVKBeq/brand-guidelines#/-/color/secondary-colors)

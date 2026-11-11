@@ -10,7 +10,7 @@ const {
 describe('generator route utils', () => {
   test('normalizes legacy and unknown style values safely', () => {
     expect(normalizeStyleValue('staff')).toBe('solid');
-    expect(normalizeStyleValue('music')).toBe('solid');
+    expect(normalizeStyleValue('music')).toBe('music');
     expect(normalizeStyleValue('graph')).toBe('solid');
     expect(normalizeStyleValue('truss')).toBe('truss');
     expect(normalizeStyleValue('matrix')).toBe('solid');
@@ -50,7 +50,7 @@ describe('generator route utils', () => {
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/index.html', '?style=staff')).toBe('/repo/generator/solid/');
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/index.html', '?style=unknown&colorMode=white')).toBe('/repo/generator/solid/?colorMode=white');
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/ticker/index.html', '?style=waveform&colorMode=red')).toBe('/repo/generator/ticker/?colorMode=red');
-    expect(getLegacyGeneratorRedirectUrl('/repo/generator/music/', '?style=staff')).toBe('/repo/generator/solid/');
+    expect(getLegacyGeneratorRedirectUrl('/repo/generator/music/', '?style=staff')).toBe('/repo/generator/music/');
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/graph/', '?graphText=RPI')).toBe('/repo/generator/solid/?graphText=RPI');
   });
   test('retains imported motion speed and direction through legacy routes', () => {

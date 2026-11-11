@@ -1,5 +1,5 @@
 const BAR_ASSET_WIDTH = '28rem';
-const ROW_HEIGHT = '3.9rem';
+const ROW_HEIGHT = '4.9rem';
 const ROW_GAP = '1.45rem';
 const ROW_COUNT = 10;
 const ROW_START_PERCENT = -7.5;
@@ -270,11 +270,14 @@ function getNarrowPortraitHeroScaleCap(viewportWidth, viewportHeight) {
   return 1 - ((1 - NARROW_PORTRAIT_SCALE_MIN) * easedFactor);
 }
 
-function getRowStepPx(stageHeight, rowHeight = resolveCssLengthToPx(ROW_HEIGHT)) {
+function getRowStepPx(stageHeight, rowHeight = resolveCssLengthToPx(ROW_HEIGHT), tiltRadians = 17 * Math.PI / 180) {
   const referenceRowStep = (ROW_STEP_PERCENT / 100) * ROW_REFERENCE_VIEWPORT_HEIGHT;
   const responsiveRowStep = (ROW_STEP_PERCENT / 100) * stageHeight;
   // Tall screens get more lanes, not ever-growing gaps between fixed-size bars.
-  return Math.min(rowHeight * 1.32, Math.max(referenceRowStep, responsiveRowStep));
+  // Keep the full native link targets separate after rotation. Extra height
+  // belongs to the hitbox, never the artwork. Two screen pixels remain clear.
+  return Math.max((rowHeight + 2) / Math.cos(tiltRadians),
+    Math.min(rowHeight * 1.32, Math.max(referenceRowStep, responsiveRowStep)));
 }
 
 function wrap(value, length) {
@@ -342,10 +345,90 @@ function setHoveredAsset(state, asset) {
   state.onHoverChange?.(state, asset);
 }
 
+// A critically damped brightness response preserves value AND velocity when
+// targets reverse. Unlike CSS transitions, a short reversal is not compressed
+// into an even shorter new fade. No overshoot beyond the contrast endpoints.
+function advanceFocusFade(motion, seconds, rate = 26) {
+  seconds = Math.max(0, seconds);
+  const offset = motion.value - motion.target;
+  const coefficient = motion.velocity + rate * offset;
+  const decay = Math.exp(-rate * Math.max(0, seconds));
+  let value = motion.target + (offset + coefficient * seconds) * decay;
+  let velocity = (motion.velocity - rate * coefficient * seconds) * decay;
+  if (value < 0.2 || value > 1) { value = clamp(value, 0.2, 1); velocity = 0; }
+  if (Math.abs(value - motion.target) < 0.0005 && Math.abs(velocity) < 0.01) {
+    value = motion.target; velocity = 0;
+  }
+  return { value, velocity, target: motion.target };
+}
+
+function createMarqueeFocusFade(stage) {
+  if (!stage.style?.setProperty || !window.requestAnimationFrame) return null;
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  const hover = window.matchMedia?.('(hover: hover) and (pointer: fine)');
+  let field = { value: 1, velocity: 0, target: 1 };
+  const highlights = new Map();
+  let pointer = null, active = null, frame = 0, lastTime = 0;
+  stage.dataset.focusFade = 'continuous';
+
+  function render() {
+    stage.style.setProperty('--marquee-focus-field', String(field.value));
+    for (const [asset, motion] of highlights) {
+      if (asset !== active && motion.value === field.value && motion.velocity === field.velocity) {
+        asset.style.removeProperty('--marquee-focus-local');
+        highlights.delete(asset);
+      } else asset.style.setProperty('--marquee-focus-local', String(motion.value));
+    }
+  }
+  function settle() {
+    if (frame) window.cancelAnimationFrame(frame);
+    frame = 0;
+    field = { value: field.target, velocity: 0, target: field.target };
+    for (const [asset, motion] of highlights) highlights.set(asset, { value: motion.target, velocity: 0, target: motion.target });
+    render();
+  }
+  function tick(now) {
+    frame = 0;
+    if (document.hidden || reduced?.matches) { settle(); return; }
+    const dt = Math.min(0.064, Math.max(0, (now - lastTime) / 1000));
+    lastTime = now;
+    field = advanceFocusFade(field, dt, active ? 26 : 12);
+    for (const [asset, motion] of highlights) highlights.set(asset, advanceFocusFade(motion, dt));
+    render();
+    if (field.value !== field.target || field.velocity || [...highlights.values()].some(m => m.value !== m.target || m.velocity)) {
+      frame = window.requestAnimationFrame(tick);
+    }
+  }
+  function sync() {
+    const selected = stage.querySelector('.bar_asset_wrap:focus-visible')
+      || (hover?.matches === false ? null : pointer);
+    active = selected && stage.contains(selected) ? selected : null;
+    field.target = active ? 0.2 : 1;
+    for (const [asset, motion] of highlights) motion.target = asset === active ? 1 : field.target;
+    if (active && (!highlights.has(active) || highlights.get(active).value < field.value)) {
+      // Re-enter from the actual displayed (max) brightness, not a stale local
+      // highlight hidden below the field during a recent gap.
+      highlights.set(active, { value: field.value, velocity: field.velocity, target: 1 });
+    }
+    // The gap target is 1 immediately. No hold, debounce or delayed release.
+    if (reduced?.matches || document.hidden) { settle(); return; }
+    if (!frame) { lastTime = performance.now(); frame = window.requestAnimationFrame(tick); }
+  }
+  stage.addEventListener('focusin', sync);
+  stage.addEventListener('focusout', sync);
+  reduced?.addEventListener?.('change', sync);
+  hover?.addEventListener?.('change', sync);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) settle(); });
+  window.addEventListener('pagehide', settle);
+  render();
+  return { setPointer(asset) { pointer = asset; sync(); } };
+}
+
 // One focus owner keeps boundary events from an old row from clearing a newer
 // hover. Opacity is applied to each complete link, never a clipped row.
 function bindStageFocus(stage, rowStates) {
   let focusedRow = null;
+  const fade = createMarqueeFocusFade(stage);
   const bindRow = state => {
     state.onHoverChange = (_, asset) => {
       if (asset) {
@@ -358,6 +441,7 @@ function bindStageFocus(stage, rowStates) {
         stage.classList.remove('has-bar-focus');
         focusedRow = null;
       }
+      fade?.setPointer(focusedRow?.hoveredAsset || null);
     };
   };
   rowStates.forEach(bindRow);
@@ -770,7 +854,8 @@ function syncRowVerticalLayout(rowStates, stage, bindRowFocus) {
   const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
   const rowLift = getEdgeCaseRowLiftPx(viewportWidth, viewportHeight);
   let rowStart = ((ROW_START_PERCENT / 100) * stageHeight) - rowLift;
-  const rowStep = getRowStepPx(stageHeight, rowStates[0].element.offsetHeight);
+  const tiltRadians = parseFloat(getComputedStyle(stage).getPropertyValue('--marquee-tilt')) * Math.PI / 180;
+  const rowStep = getRowStepPx(stageHeight, rowStates[0].element.offsetHeight, tiltRadians);
   const coveredSpan = (ROW_COUNT - 1) * (ROW_STEP_PERCENT / 100) * stageHeight;
   let neededRows = Math.max(ROW_COUNT, 1 + Math.floor(coveredSpan / rowStep));
   // Fit every viewport to the actual title and unscaled controls. This keeps
@@ -781,7 +866,7 @@ function syncRowVerticalLayout(rowStates, stage, bindRowFocus) {
     const fitted = fitRowsAboveHero({
       rowStart, rowStep, rowHeight: first.offsetHeight,
       firstBounds: first.getBoundingClientRect(),
-      tiltRadians: parseFloat(getComputedStyle(stage).getPropertyValue('--marquee-tilt')) * Math.PI / 180,
+      tiltRadians,
       heroRects: [...document.querySelectorAll('.hero_brand, .hero_title-line, .hero_credit')]
         .map(element => element.getBoundingClientRect())
     });
@@ -1057,6 +1142,8 @@ if (typeof module !== 'undefined' && module.exports) {
     getHorizontalWheelDelta,
     bindRowWheel,
     bindStageFocus,
+    advanceFocusFade,
+    createMarqueeFocusFade,
     resetRowInteraction,
     createRowPatterns,
     syncRowTargetFactor,

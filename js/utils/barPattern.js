@@ -1,3 +1,6 @@
+const waveformNoteModel = typeof module !== 'undefined' && module.exports
+  ? require('./waveformNotes') : window.WaveformNotes;
+
 const rulerScaleModel = typeof module !== 'undefined' && module.exports
   ? require('./rulerScale') : window.RulerScale;
 
@@ -231,7 +234,11 @@ function createWaveformPatternGeometry(options = {}) {
   const height = Math.max(1, finite(options.barHeight, 18));
   const startX = finite(options.barStartX, 0);
   const startY = finite(options.barY, 0);
-  const frequency = Math.max(1, Math.min(100, Math.round(finite(options.waveformFrequency, 24))));
+  // Decorative selector fallback uses the same integer-cycle layout. The
+  // editor/export require real PCM and never label this ideal shape as audio.
+  const note = options.waveformNote ?? waveformNoteModel.fromLegacy(options.waveformFrequency);
+  const frequency = options.waveformNote !== undefined ? waveformNoteModel.get(note).cycles
+    : Math.max(1, Math.min(100, Math.round(finite(options.waveformFrequency, 24))));
   const type = clampWaveformValue(finite(options.waveformType, 0), 0, 3);
   const speed = finite(options.waveformSpeed, 0.3);
   const time = finite(options.timeSeconds, 0);
@@ -281,25 +288,6 @@ function createWaveformPatternGeometry(options = {}) {
     { x: startX, y: startY + height }, ...curve,
     { x: startX + width, y: startY + height }
   ] };
-}
-
-function createMusicHeadSVG(shape, x, y, rx, ry, filled, fgColor, lineThickness) {
-  const normalizedShape = normalizeMusicNoteShape(shape);
-  const fill = filled ? fgColor : 'none';
-  const strokeAttr = filled ? '' : ` stroke="${fgColor}" stroke-width="${lineThickness}"`;
-
-  if (normalizedShape === 'circle') {
-    return `<circle cx="${x}" cy="${y}" r="${rx}" fill="${fill}"${strokeAttr}/>`;
-  }
-
-  if (normalizedShape === 'square') {
-    return `<rect x="${x - rx}" y="${y - ry}" width="${rx * 2}" height="${ry * 2}" fill="${fill}"${strokeAttr}/>`;
-  }
-
-  const points = normalizedShape === 'diamond'
-    ? `${x},${y - ry} ${x + rx},${y} ${x},${y + ry} ${x - rx},${y}`
-    : `${x},${y - ry} ${x + rx},${y + ry} ${x - rx},${y + ry}`;
-  return `<polygon points="${points}" fill="${fill}"${strokeAttr}/>`;
 }
 
 function clampPatternVariant(value, max) {
@@ -1055,6 +1043,12 @@ function createUnionPatternGeometry(options = {}) {
   };
 }
 
+function createQuantumStudyPatternGeometry(options = {}) {
+  const model = typeof module !== 'undefined' && module.exports
+    ? require('./quantumStudyModel') : window.quantumStudyModel;
+  return model.createGeometry(options);
+}
+
 function createWaveQuantumPatternGeometry(options = {}) {
   const model = typeof quantumModel !== 'undefined' ? quantumModel : require('./quantumModel');
   const barStartX = Number(options.barStartX || 0);
@@ -1533,6 +1527,16 @@ function createBarPatternSVG(config) {
     values
   } = config;
 
+  if (currentShader === 26 || currentShader === 27) {
+    const geometry = createQuantumStudyPatternGeometry({
+      ...values, currentShader, barStartX, barY, exactBarWidth, barHeight
+    });
+    const description = JSON.stringify(geometry.metadata).replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<desc>${description}</desc>` + geometry.polygons.map(polygon =>
+      `\n    <polygon points="${polygon.map(point => `${point.x},${point.y}`).join(' ')}" fill="${fgColor}"/>`).join('');
+  }
+
   if (currentShader === 25) {
     const model = typeof module !== 'undefined' && module.exports ? require('./nucleotidePattern') : window.NucleotidePattern;
     return model.svg({ preview: values.nucleotidePreview === true, sequence: values.nucleotideSequence, variant: values.nucleotideVariant, x: barStartX, y: barY, width: exactBarWidth, height: barHeight, fill: fgColor });
@@ -1744,14 +1748,11 @@ function createBarPatternSVG(config) {
       rectTop: barY,
       rectHeight: barHeight,
       thickness: parseFloat(values.staffThickness || 1),
-      noteShape: values.staffNoteShape || 'circle'
+      noteShape: values.staffNoteShape || 'square'
     });
 
-    renderData.staffLines.forEach(segment => {
-      pattern += `\n    <line x1="${segment.x1}" y1="${segment.y1}" x2="${segment.x2}" y2="${segment.y2}" stroke="${fgColor}" stroke-width="${renderData.lineThickness}"/>`;
-    });
-    renderData.notes.forEach(noteRender => {
-      pattern += `\n    ${createMusicHeadSVG('circle', noteRender.noteX, noteRender.noteY, noteRender.rx, noteRender.ry, true, fgColor, renderData.lineThickness)}`;
+    renderData.notes.forEach(note => {
+      pattern += `\n    <polygon points="${note.points.map(point => point.join(',')).join(' ')}" fill="${fgColor}"/>`;
     });
     return pattern;
   }
@@ -2082,6 +2083,7 @@ if (typeof window !== 'undefined') {
   window.createNumericHeightPolygons = createNumericHeightPolygons;
   window.createBarPatternSVG = createBarPatternSVG;
   window.createBinaryPatternGeometry = createBinaryPatternGeometry;
+  window.createQuantumStudyPatternGeometry = createQuantumStudyPatternGeometry;
   window.createWaveQuantumPatternGeometry = createWaveQuantumPatternGeometry;
   window.createWaveformPatternGeometry = createWaveformPatternGeometry;
   window.mapWaveformToBarYFraction = mapWaveformToBarYFraction;
@@ -2115,6 +2117,7 @@ if (typeof module !== 'undefined' && module.exports) {
     createTrussPatternGeometry,
     createTrianglesPatternGeometry,
     createUnionPatternGeometry,
+    createQuantumStudyPatternGeometry,
     createWaveQuantumPatternGeometry,
     createWaveformPatternGeometry,
     mapWaveformToBarYFraction,

@@ -121,7 +121,7 @@ test('normalized query values include every new control and are safe to rehydrat
   const context = { window: { location: { pathname: '/generator/truss/', search: '?trussFamily=howe&trussSegments=31&trussDepth=63&trussThickness=2.15' },
     GeneratorRoutes: require('../js/utils/generatorRoutes'), GeneratorInitialState: { resolveTheme: () => 'black' },
     NucleotidePattern: require('../js/utils/nucleotidePattern'), NumericControls: require('../js/utils/numericControls'), RulerScale: require('../js/utils/rulerScale'),
-    loopingGifUtils: require('../js/utils/loopingGif'), WaveformLfo: require('../js/utils/waveformLfo') }, URLSearchParams, ...pattern, normalizeMusicNoteShape: () => 'circle' };
+    loopingGifUtils: require('../js/utils/loopingGif'), WaveformNotes: require('../js/utils/waveformNotes'), MusicStyle: require('../js/utils/musicStyle') }, URLSearchParams, ...pattern, normalizeMusicNoteShape: () => 'circle' };
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/generatorParameters'), 'utf8'), context);
   expect(context.window.GeneratorParameters.read()).toMatchObject({ style: 'truss', trussFamily: 'howe', trussSegments: 32, trussDepth: 65, trussThickness: 2 });
 });

@@ -7,91 +7,103 @@
   },
   "nucleotide": {
     "title": "Nucleotide",
-    "text": "Enter at least 30 bases to export, with up to 50 allowed. Dashed outlines mark missing bases below the minimum. Extra bases make the pattern denser. Shapes reflect A–T/U and C–G pairing as a design convention, not standard molecular symbols. Presets are transcript excerpts, not complete genes."
+    "text": "Encode 30–50 bases to export. Dashed outlines show missing bases. Shapes represent A–T/U and C–G pairing, not standard molecular symbols. Presets are transcript excerpts, not complete genes."
+  },
+  "music": {
+    "title": "Music",
+    "text": "A piano-roll score: height encodes pitch and length encodes duration, with gaps for rests. Build a phrase from C4 to C5, change its shapes or preview synthesized audio. Tempo and effects affect sound only; exports stay static and silent."
   },
   "solid": {
     "title": "Solid",
-    "text": "One continuous shape fills the bar, keeping the focus on the official mark’s proportions. Use it as a quiet starting point, or compare it with the other styles to see how a small design area can carry very different systems."
+    "text": "One continuous shape fills the bar. A quiet starting point for the official mark."
   },
   "ruler": {
     "title": "Ruler",
-    "text": "A stationary ruler with whole, half and smaller marks. Adjust units, divisions and thickness. This dimensionless scale does not measure physical screen length."
+    "text": "Whole units have the longest marks; divisions split them equally. Adjust units, divisions and thickness. This stationary, dimensionless scale does not measure physical screen length."
   },
   "ticker": {
     "title": "Ticker",
-    "text": "Two rows of repeating ticks use adjustable spacing and width ratios to create a shifting rhythm. Change those relationships to explore how patterns line up; the ticks are a visual system rather than a calibrated measure of time or distance."
+    "text": "Two rows of repeating ticks shift against each other. Adjust spacing and width ratios to change their alignment. The pattern does not measure time or distance."
   },
   "binary": {
     "title": "Binary",
-    "text": "Up to 10 characters become UTF-8 bytes, drawn as a sequence of binary bits from most significant to least significant. Try a different word or character to compare the resulting pattern; the content filter hides the bar until rejected text is corrected."
+    "text": "Encode up to 10 characters as UTF-8 bytes, most-significant bit first. Rejected text hides the bar until corrected."
   },
   "morse": {
     "title": "Morse Code",
-    "text": "Up to 10 characters become International Morse code, with dots, dashes, and gaps following their relative timing units. Compare short and long messages to explore their rhythm; accented letters are simplified, unsupported characters are omitted, and rejected text hides the bar until corrected."
+    "text": "Encode up to 10 characters as International Morse code with standard relative timing. Accents are simplified; unsupported characters are omitted. Rejected text hides the bar until corrected."
   },
   "waveform": {
     "title": "Waveform",
-    "text": "A synthetic signal traces a repeating shape across the bar, using the waveform and frequency you choose. Explore its motion, or fold between LFO waveforms to modulate bar height and audio volume; this is a generated signal rather than an audio recording or measured observation."
+    "text": "Choose a note from C1 to C6. The scope shows whole periods of the synthesized signal with an adaptive time window. Notes use equal temperament at A4 = 440 Hz."
   },
   "circles": {
     "title": "Circles",
-    "text": "A packing process places circles of different sizes within the bar, building a pattern from their spatial relationships. Adjust density, size variation, or fill to explore the balance of circles and open space; the arrangement does not encode an external dataset."
+    "text": "A packing process arranges circles within the bar. Adjust density, size variation and fill to change the balance of circles and open space. No external data is encoded."
   },
   "numeric": {
     "title": "Numeric",
-    "text": "Enter a decimal value or select a formula to turn its digits into a pattern. Compare dot matrix and height encoding to explore the same digits; the bar encodes the displayed decimal approximation, without a sign, rather than measuring an external quantity. Zero cells can remain empty in Dot Matrix."
+    "text": "Encode a decimal value or formula approximation as dots or heights. The sign is omitted; zero cells stay empty in Dot Matrix. This encodes digits, not an external measurement."
   },
   "neural-network": {
     "title": "Neural Network",
-    "text": "What changes when a network gets wider or deeper? Explore an untrained feedforward model: three inputs feed the hidden layers and two outputs. Nodes apply tanh or sigmoid to weighted sums, filled centers encode activation, and dashed links mark negative weights; changing the input recomputes every layer, without training."
+    "text": "What changes when a network gets wider or deeper? Three inputs feed an untrained feedforward model with two outputs. Nodes apply tanh or sigmoid to weighted sums; filled centers show activation and dashed links mark negative weights. Changing inputs recomputes each layer."
   },
   "circles-gradient": {
     "title": "Circles Gradient",
-    "text": "Rows of circles change size to create an apparent shift in tone using a single foreground color. Start from reference rows, a directional ramp or a center peak, then change dot count, rows, size, contrast and offset. The effect comes from circle area and spacing, not color blending or measured data."
+    "text": "Circle area and spacing create an apparent shift in tone in one color. Choose reference rows, a ramp or a center peak, then adjust the geometry. No color blending or measured data is used."
   },
   "gradient": {
     "title": "Gradient",
-    "text": "Stripe widths vary across the bar to create an apparent shift in tone using a single foreground color. Compare the tapered and centered variants, then loop a slow sweep of their coverage. Pause, reverse or change its speed. The design uses geometric spacing rather than interpolated colors or measured data."
+    "text": "Stripe widths create an apparent shift in tone in one color. Choose a tapered or centered pattern, then animate its coverage. No color blending or measured data is used."
   },
   "lines": {
     "title": "Lines",
-    "text": "Evenly spaced vertical strokes follow a fixed, repeating height envelope across the bar. Change the variant to compare line densities and the spaces between them; the wave-like silhouette is a geometric construction rather than a recording of sound or motion."
+    "text": "Evenly spaced strokes follow a repeating height envelope. Switch variants to change line density. The wave-like silhouette is geometry, not recorded sound or motion."
   },
   "point-connect": {
     "title": "Point Connect",
-    "text": "Repeated cells connect corners and midpoints with crossing lines, forming a continuous geometric framework. Compare the variants to explore how a denser set of connections changes the bar; the structure is a visual motif rather than a tested engineering model."
+    "text": "Crossing lines connect the corners and midpoints of repeated cells. Variants change connection density. This geometric motif is not a tested engineering model."
   },
   "grid": {
     "title": "Grid",
-    "text": "A repeating geometric grid divides the bar into a structured arrangement of cells and open spaces. Switch variants to compare how the pattern changes within the same boundary; the grid organizes the artwork rather than representing geographic coordinates or measured data."
+    "text": "A repeating grid divides the bar into cells and open spaces. Variants change the geometry; the grid represents no geographic coordinates or measured data."
   },
   "triangle-grid": {
     "title": "Triangle Grid",
-    "text": "Repeating triangular geometry builds a grid across the bar, creating different balances of edges and open space. Start from a wide, balanced or fine preset, then adjust rows, density, stroke weight and row offset. This triangulated lattice is a geometric study, not a measured physical material or structure."
+    "text": "A triangular lattice fills the bar. Choose a wide, balanced or fine preset, then adjust rows, density, stroke and offset. This is geometry, not a measured material or structure."
   },
   "triangles": {
     "title": "Triangles",
-    "text": "Each equal-width cell is split along a diagonal, with one half filled to create a repeated triangular pattern. Change the count or direction to explore its rhythm and orientation; those controls reshape the geometry rather than encode a measured quantity."
+    "text": "Each equal-width cell has one filled triangular half. Change the count or direction to vary the geometry. No measured quantity is encoded."
   },
   "fibonacci-sequence": {
     "title": "Fibonacci Sequence",
-    "text": "Segment widths follow the consecutive Fibonacci values 34, 21, 13, 8, 5, 3, 2, and 1 in descending order. Gaps make the proportions easier to compare; this is a chosen arrangement of the sequence rather than a measurement from nature."
+    "text": "Segment widths follow Fibonacci values 34, 21, 13, 8, 5, 3, 2 and 1, separated by gaps. This arrangement illustrates the sequence, not a measurement from nature."
   },
   "union": {
     "title": "Union",
-    "text": "Five repeated modules pair a horizontal band with a lower shape formed by arches. Look at how repetition connects the separate pieces across the bar; the name describes this visual motif, without assigning it an organizational affiliation or a measured meaning."
+    "text": "Five repeated modules pair a horizontal band with arches below. The name describes the motif, not an organizational affiliation or measurement."
+  },
+  "well-modes": {
+    "title": "Well Modes",
+    "text": "Under construction, ready to explore. Two distinct stationary modes of an ideal infinite square well interfere as their relative phase changes. Mode B weight is its population; 0% and 100% give stationary eigenstates. Mirrored thickness encodes probability density at a fixed scale across the entire well. Empty endpoints and nodes are real zeros, not missing data. The mirror and 8-second beat are drawing choices, not a second spatial dimension or laboratory time."
+  },
+  "rabi": {
+    "title": "Rabi",
+    "text": "Under construction, ready to explore. An ideal driven two-level system starts in its ground state. Solid height shows excited-state probability; the hatched complement shows ground-state probability. Horizontal position represents pulse duration, not physical space. Motion slides that duration window across repeated experiments, not one particle traveling. Detuning changes both peak transfer and oscillation rate. The model uses the rotating-wave approximation and excludes relaxation and decoherence; the 8-second scan is a drawing choice."
   },
   "wave-quantum": {
     "title": "Ring Wavefunction",
-    "text": "Three phase projections show one normalized free-particle wavefunction on an ideal periodic ring, combining modes −4, 3, and 7 with equal weights. The projection angles are 0°, 60°, and 120°. The horizontal axis unwraps one ring circumference in a scrolling coordinate view, with one exact display cycle in 4.28 seconds at 1×; these convention-dependent amplitude curves are not particle paths, probability density, or measured data. Ribbon thickness and display time are drawing choices."
+    "text": "One normalized free-particle wavefunction on an ideal periodic ring combines equal-weight modes −4, 3 and 7. Three phase projections use 0°, 60° and 120°. A scrolling coordinate view unwraps one circumference and repeats in 4.28 seconds at 1×. These phase-convention-dependent amplitudes are not particle paths, probability density or measured data. Ribbon thickness and display time are drawing choices."
   },
   "runway": {
     "title": "Runway",
-    "text": "Runway markings form a supplied geometric motif listed here for the RPI Flying Club. Explore how the repeated blocks occupy the bar; this artwork is not a navigation aid, and its presence in the tool does not establish an approved organizational lockup."
+    "text": "Supplied runway artwork for the RPI Flying Club. This geometric motif is not a navigation aid; inclusion here does not establish an approved organizational lockup."
   },
   "lunar": {
     "title": "Artemis II",
-    "text": "Supplied artwork marks Artemis II, whose crew splashed down on April 10, 2026, at 8:07 p.m. EDT. Explore the bar alongside the mission audio or Mission Control theme; the illustration is a visual tribute rather than a display of mission telemetry."
+    "text": "Supplied artwork marks Artemis II’s splashdown on April 10, 2026, at 8:07 p.m. EDT. Pair it with mission audio or the Mission Control theme. The illustration is not telemetry."
   }
 };
 

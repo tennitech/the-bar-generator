@@ -1,11 +1,11 @@
 const vm = require('node:vm');
 const fs = require('node:fs');
-function fixture(reduce = false) {
+function fixture(reduce = false, random = () => 0.5) {
   const media = { matches: reduce, addEventListener: jest.fn() };
   const document = { hidden: false, addEventListener: jest.fn() };
   const scope = { matchMedia: () => media, addEventListener: jest.fn(),
     getComputedStyle: jest.fn(target => ({ transform: target.liveTransform || 'none' })) };
-  vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/parameterControls'), 'utf8'), { window: scope, document });
+  vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/parameterControls'), 'utf8'), { window: scope, document, Math: Object.assign(Object.create(Math), { random }) });
   const animations = [];
   function target(name) {
     const node = { name };
@@ -22,21 +22,61 @@ function fixture(reduce = false) {
   return { api: scope.ParameterControls, button, back, front, label, root, animations, media, document, scope };
 }
 
-test('Randomize moves each die independently, with different directions and settling times, then returns to rest', () => {
-  const f = fixture(); f.api.feedback(f.button, 'randomize');
+function pose(frame) {
+  const [, x, y, angle] = frame.transform.match(/translate\(([-.\d]+)px, ([-.\d]+)px\) rotate\(([-.\d]+)deg\)/);
+  return { x: Number(x), y: Number(y), angle: Number(angle) };
+}
+
+test('Randomize rolls both separated dice independently without moving the slot or label', () => {
+  const values = [0, 0.25, 0.5, 0.4, 0.99, 0.8, 0.2, 0.9];
+  const f = fixture(false, () => values.shift()); f.api.feedback(f.button, 'randomize');
   expect(f.back.animate).toHaveBeenCalledTimes(1); expect(f.front.animate).toHaveBeenCalledTimes(1);
   expect(f.root.animate).not.toHaveBeenCalled(); expect(f.label.animate).not.toHaveBeenCalled();
   const [back, front] = f.animations;
   expect(back.frames).not.toEqual(front.frames);
-  expect(back.options.duration).toBeLessThan(front.options.duration);
-  expect(front.options.duration).toBeLessThanOrEqual(350);
-  expect(back.frames[1].transform).toMatch(/rotate\([1-9]/);
-  expect(front.frames[1].transform).toMatch(/rotate\(-[1-9]/);
-  for (const animation of f.animations) {
-    expect(animation.frames.at(-1)).toEqual(animation.frames[0]);
-    expect(animation.options.fill).toBeUndefined();
-    expect(animation.frames.every(frame => Object.keys(frame).every(key => ['transform', 'offset'].includes(key)))).toBe(true);
+  expect(back.options.duration).not.toEqual(front.options.duration);
+  expect(pose(back.frames[8]).angle).toBeLessThan(0);
+  expect(pose(front.frames[8]).angle).toBeGreaterThan(0);
+  expect(pose(back.frames[12]).x).toBeGreaterThan(0);
+  expect(pose(back.frames[12]).y).toBeLessThan(0);
+  expect(pose(front.frames[12]).x).toBeLessThan(0);
+  expect(pose(front.frames[12]).y).toBeGreaterThan(0);
+});
+
+test.each([0, 0.25, 0.5, 0.999999])('random sample %s keeps full rolls, outward travel and small recoil bounded', sample => {
+  const f = fixture(false, () => sample); f.api.feedback(f.button, 'randomize');
+  for (const { frames, options } of f.animations) {
+    const poses = frames.map(pose), start = poses[0], end = poses.at(-1);
+    expect(start.x).toBe(0); expect(start.y).toBe(0); expect(Math.abs(start.angle)).toBe(0);
+    expect(end.x).toBe(0); expect(end.y).toBe(0); expect(Math.abs(end.angle)).toBe(360);
+    const angles = poses.map(p => Math.abs(p.angle));
+    // One recognizable full roll with a restrained overshoot, followed by rest.
+    expect(Math.max(...angles)).toBeGreaterThan(360);
+    expect(Math.max(...angles)).toBeLessThanOrEqual(367);
+    expect(angles.at(-2)).toBeGreaterThan(angles.at(-1));
+    expect(Math.max(...poses.map(p => Math.abs(p.x)))).toBeLessThanOrEqual(1.2);
+    expect(Math.max(...poses.map(p => Math.abs(p.y)))).toBeLessThanOrEqual(0.66);
+    expect(options.duration).toBeGreaterThanOrEqual(560);
+    expect(options.duration).toBeLessThanOrEqual(700);
+    expect(options.fill).toBeUndefined(); expect(options.easing).toBe('linear');
+    expect(frames.every(frame => Object.keys(frame).every(key => ['transform', 'offset'].includes(key)))).toBe(true);
+    for (let i = 1; i < frames.length; i++) expect(frames[i].offset).toBeGreaterThan(frames[i - 1].offset);
+    // Smooth sampled motion cannot jump more than a small part of a turn per segment.
+    for (let i = 1; i < poses.length; i++) expect(Math.abs(poses[i].angle - poses[i - 1].angle)).toBeLessThan(30);
   }
+});
+
+test('each activation samples a fresh bounded response for each face', () => {
+  let index = 0;
+  const random = jest.fn(() => ((index++ * 7) % 19) / 19);
+  const f = fixture(false, random);
+  f.api.feedback(f.button, 'randomize'); f.api.feedback(f.button, 'randomize');
+  expect(f.animations[0].frames).not.toEqual(f.animations[2].frames);
+  expect(f.animations[1].frames).not.toEqual(f.animations[3].frames);
+  expect(f.animations[0].options.duration).not.toBe(f.animations[2].options.duration);
+  const before = random.mock.calls.length;
+  f.media.matches = true; f.api.feedback(f.button, 'randomize');
+  expect(random).toHaveBeenCalledTimes(before);
 });
 
 test('rapid activations replace both face animations and continue from their individual displayed poses', () => {

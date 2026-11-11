@@ -4,7 +4,7 @@
 
 A browser tool for Rensselaer Polytechnic Institute (RPI) bar designs. Choose a pattern, adjust its controls, and export an SVG or PNG. The asset menu also copies SVG and PNG images where supported. Ticker, Waveform, and Gradient also support looping GIF exports.
 
-Choose **Bar + RPI** (the default complete mark) or **Bar only** in the export menu. The illustrated choice applies to SVG/PNG downloads, image copying and supported GIFs. PNG and GIF share Standard (1000 px artwork) and Large (2000 px artwork, the default). Complete-mark canvases are 1160 × 762 and 2320 × 1524 px; bar-only canvases are 1160 × 232 and 2320 × 464 px. All include proportional clear space and a transparent background. SVG remains vector. GIF uses binary transparency; PNG preserves smooth partial alpha. See [export sizes, timing, and measured cost](references/transparent_gif_exports.md).
+Choose **Bar + RPI** (the default complete mark) or **Bar only** in the export menu. **High resolution · Recommended** is selected by default. PNG exports and copies contain 4096 px of artwork width, on a 4752 × 3121 px complete-mark canvas or 4752 × 951 px bar-only canvas. **Smaller file** retains 1000 px artwork width on 1160 × 762 / 1160 × 232 px canvases. GIF keeps its separate 2000/1000 px artwork limits; its actual dimensions appear before download. All include proportional clear space and a transparent background. SVG remains vector at either size. GIF uses binary transparency; PNG preserves smooth partial alpha. See [export sizes, timing, and measured cost](references/transparent_gif_exports.md) and [high-resolution verification](references/high_resolution_exports.md).
 
 **[Open the site](https://tennitech.github.io/the-bar-generator/)** · **[Report a bug](https://github.com/tennitech/the-bar-generator/issues/new/choose)** · **[Contribute](contributing.md)**
 
@@ -181,30 +181,16 @@ share restore, rendered header/raster bounds, and same-document packing seeds.
 These remain optional local checks; the fast unit suite is the only CI merge check.
 
 
-For Waveform audio/visual LFO checks, including waveform folding, logarithmic
-rate controls, lifecycle, exports and responsive layouts:
-
-```sh
-RPI_SITE_URL=http://127.0.0.1:8000 node scripts/waveformVisualLfoSmoke.js
-RPI_SITE_URL=http://127.0.0.1:8000 node scripts/waveformLfoSmoke.js
-RPI_SITE_URL=http://127.0.0.1:8000 RPI_BROWSER=webkit node scripts/waveformVisualLfoSmoke.js
-```
-
-`RPI_CHROMIUM_PATH` optionally selects a system Chromium executable and
-`RPI_EVIDENCE_DIR` selects the visual LFO screenshot/result directory. The
-server and browser must share a reachable network namespace.
-
-
 Actual Waveform scope verification without a browser is available via
 `scripts/waveformSignalLocal.js`. It uses optional test-only `node-web-audio-api`
 and `@napi-rs/canvas` from the execution environment (not application dependencies)
-to compare pre-refactor/shared graph PCM, verify the silent live capture tap,
+to compare the unchanged carrier PCM with modulation bypassed, verify the silent live capture tap,
 and encode/decode actual SVG/PNG/GIF output. For example:
 
 ```sh
-NODE_PATH=/tmp/rpi-lfo-qa/node_modules node scripts/waveformSignalLocal.js /tmp/rpi-waveform-scope-evidence
+NODE_PATH=/path/to/qa/node_modules node scripts/waveformSignalLocal.js /tmp/rpi-waveform-scope-evidence
 ```
 
 This is native offline DSP/raster/codec evidence, not a browser, hardware-audio,
 responsive-layout, native download or clipboard acceptance test. See
-[scope model and QA](references/waveform_signal_qa.md).
+[current scope model and QA](references/waveform_lfo_removal_qa.md).

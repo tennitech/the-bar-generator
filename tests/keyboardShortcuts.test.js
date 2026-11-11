@@ -15,7 +15,7 @@ function element() {
 }
 function fixture(storage = { getItem: () => null, setItem: jest.fn() }) {
   const elements = Object.fromEntries(['keyboard-shortcuts-trigger', 'keyboard-shortcuts-dialog',
-    'keyboard-shortcuts-close', 'keyboard-shortcuts-enabled', 'zoom-in-btn'].map(id => [id, element()]));
+    'keyboard-shortcuts-close', 'keyboard-shortcuts-title', 'keyboard-shortcuts-enabled', 'zoom-in-btn'].map(id => [id, element()]));
   elements['zoom-in-btn'].attributes['aria-keyshortcuts'] = '+';
   const doc = element();
   doc.getElementById = id => elements[id];
@@ -131,7 +131,7 @@ test('guide closes its menu and returns focus to summary on close', () => {
   f.elements['keyboard-shortcuts-trigger'].closest = () => menu;
   f.elements['keyboard-shortcuts-trigger'].handlers.click();
   expect(menu.open).toBe(false);
-  expect(f.elements['keyboard-shortcuts-close'].focus).toHaveBeenCalled();
+  expect(f.elements['keyboard-shortcuts-title'].focus).toHaveBeenCalledWith({ preventScroll: true });
   expect(f.elements['keyboard-shortcuts-trigger'].attributes['aria-expanded']).toBe('true');
   f.elements['keyboard-shortcuts-close'].handlers.click();
   expect(summary.focus).toHaveBeenCalled();
@@ -144,6 +144,10 @@ test('guide only dismisses a click outside its bounds', () => {
   f.controller.openGuide();
   dialog.handlers.click({ target: dialog, clientX: 50, clientY: 50 });
   expect(dialog.open).toBe(true);
+  dialog.handlers.pointerdown({ target: dialog, clientX: 50, clientY: 50 });
+  dialog.handlers.click({ target: dialog, clientX: 0, clientY: 0 });
+  expect(dialog.open).toBe(true);
+  dialog.handlers.pointerdown({ target: dialog, clientX: 0, clientY: 0 });
   dialog.handlers.click({ target: dialog, clientX: 0, clientY: 0 });
   expect(dialog.open).toBe(false);
 });
@@ -220,4 +224,24 @@ test('parameter shortcuts preserve workspace focus after native Undo moves it', 
   expect(context.clickSelectedParameterAction('undo')).toBe(true);
   expect(after.blur).toHaveBeenCalled();
   expect(original.focus).toHaveBeenCalledWith({ preventScroll: true });
+});
+
+
+test('guide reopens at its heading and ignores an earlier queued close', () => {
+  const f = fixture();
+  const dialog = f.elements['keyboard-shortcuts-dialog'];
+  const panel = { scrollTop: 500 };
+  dialog.querySelector = () => panel;
+  f.controller.openGuide();
+  expect(panel.scrollTop).toBe(0);
+  const preventDefault = jest.fn();
+  dialog.handlers.cancel({ preventDefault });
+  expect(preventDefault).toHaveBeenCalled();
+  expect(dialog.open).toBe(false);
+  f.doc.activeElement.focus.mockClear();
+  f.controller.openGuide();
+  dialog.handlers.close();
+  expect(dialog.open).toBe(true);
+  expect(f.doc.activeElement.focus).not.toHaveBeenCalled();
+  expect(f.elements['keyboard-shortcuts-trigger'].attributes['aria-expanded']).toBe('true');
 });
