@@ -1,0 +1,78 @@
+[
+  {
+    "speed": 1,
+    "fps": 25,
+    "frames": 107,
+    "durationMs": 4280,
+    "delays": [
+      40
+    ],
+    "maxRmsStepPx": 0.6525255339123038,
+    "seamRmsStepPx": 0.6525255339117828,
+    "meanRmsStepPx": 0.6525255339120298
+  },
+  {
+    "speed": 1,
+    "fps": 30,
+    "frames": 128,
+    "durationMs": 4280,
+    "delays": [
+      30,
+      40
+    ],
+    "maxRmsStepPx": 0.6525255339123022,
+    "seamRmsStepPx": 0.4894249150093097,
+    "meanRmsStepPx": 0.5454907527569894
+  },
+  {
+    "speed": 1,
+    "fps": 50,
+    "frames": 214,
+    "durationMs": 4280,
+    "delays": [
+      20
+    ],
+    "maxRmsStepPx": 0.32629792694439846,
+    "seamRmsStepPx": 0.32629792694413345,
+    "meanRmsStepPx": 0.326297926943998
+  },
+  {
+    "speed": 4,
+    "fps": 25,
+    "frames": 26,
+    "durationMs": 1070,
+    "delays": [
+      40,
+      50
+    ],
+    "maxRmsStepPx": 3.2513884702079023,
+    "seamRmsStepPx": 2.604480355440455,
+    "meanRmsStepPx": 2.6791235994520712
+  },
+  {
+    "speed": 4,
+    "fps": 30,
+    "frames": 32,
+    "durationMs": 1070,
+    "delays": [
+      30,
+      40
+    ],
+    "maxRmsStepPx": 2.6044803554404568,
+    "seamRmsStepPx": 1.9553272110423154,
+    "meanRmsStepPx": 2.1784736044293083
+  },
+  {
+    "speed": 4,
+    "fps": 50,
+    "frames": 53,
+    "durationMs": 1070,
+    "delays": [
+      20,
+      30
+    ],
+    "maxRmsStepPx": 1.9553272110428033,
+    "seamRmsStepPx": 1.3044885989403987,
+    "meanRmsStepPx": 1.3167685727536267
+  }
+]
