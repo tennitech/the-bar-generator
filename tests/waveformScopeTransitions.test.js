@@ -1,7 +1,7 @@
 global.WaveformAudio=require('../js/utils/waveformAudio');
 const scope=require('../js/utils/waveformScope');
 const {createWaveformPatternGeometry:geometry}=require('../js/utils/barPattern');
-const base={frequency:24,type:0};
+const base={note:24,type:0};
 const pairRate=1000;
 async function live(initial=base,extra={}) {
   let node;
@@ -48,48 +48,41 @@ test('min/max display resolution stays proportional to the fixed time window dur
   }
 });
 
-test('repeated shape/carrier edits retain actual live history without refill or X-scale growth',async()=>{
+test('repeated edits hold settled frames rather than presenting transition history as whole cycles',async()=>{
   const {controller:c,push}=await live();
   try {
     push(4);c.tick(0);const original=c.capture();
-    for(const [frequency,type] of [[10,.5],[100,3],[24,0]]) {
-      const held=c.frame();c.configure({frequency,type});
-      expect(c.frame()).toBe(held);c.tick(0);
-      const seconds=Math.floor(scope.duration({frequency,type})*pairRate)/pairRate;
-      expect(c.frame()).toMatchObject({source:'live',seconds,availableSeconds:seconds,startFraction:0,filling:false,parameterChanges:true});
-      expect([...new Set(c.frame().extrema)]).toEqual([...new Set(original.frame.extrema)]);
-      expect(c.status()).toContain('includes parameter changes');
+    for(const [note,type] of [[49,.5],[84,3],[24,0]]) {
+      const held=c.frame();c.configure({note,type});c.tick(0);
+      expect(c.frame()).toBe(held);expect(c.status()).toContain('previous settings');
+      push(.05,-.01,.01);c.tick(0);expect(c.frame()).toBe(held);
+      push(.7,-.01,.01);c.tick(0);
+      expect(c.frame()).toMatchObject({source:'live',seconds:scope.duration({note}),startFraction:0,filling:false,parameterChanges:false});
+      expect(c.frame().extrema.every(x=>Math.abs(x)<.02)).toBe(true);
     }
-    push(.005,-.01,.01);c.tick(0);
-    expect(c.frame().extrema.some(x=>Math.abs(x)>.07)).toBe(true);
-    expect(c.frame().parameterChanges).toBe(true);
-    push(2.1,-.01,.01);c.tick(0);
-    expect(c.frame().parameterChanges).toBe(false);
-    expect(c.frame().extrema.every(x=>Math.abs(x)<.02)).toBe(true);
     expect(original.recording.frame(0)).toBe(original.frame);
     expect(original.frame.extrema.some(x=>Math.abs(x)>.07)).toBe(true);
   } finally {c.dispose();}
 });
 
-test('carrier pitch changes reframe once and keep partial history on the chosen scale',async()=>{
-  const {controller:c,push}=await live({frequency:100,type:0});
+test('a short initial capture stays unavailable until a complete settled note window exists',async()=>{
+  const {controller:c,push}=await live({note:84,type:0});
   try {
-    push(.004);c.tick(0);expect(c.frame()).toMatchObject({seconds:.007,availableSeconds:.004,filling:true});
-    c.configure({frequency:10,type:0});c.tick(0);
-    expect(c.frame()).toMatchObject({seconds:.122,availableSeconds:.004,filling:true});
-    push(.01);c.tick(0);expect(c.frame().seconds).toBe(.122);expect(c.frame().startFraction).toBeCloseTo(1-.014/.122,12);
-    push(.3);c.tick(0);expect(c.frame()).toMatchObject({seconds:.122,startFraction:0,filling:false});
-    c.configure({frequency:100,type:0});c.tick(0);expect(c.frame()).toMatchObject({seconds:.007,startFraction:0,filling:false});
+    push(.004);c.tick(0);expect(c.frame()).toBeNull();
+    c.configure({note:24,type:0});push(.1);c.tick(0);expect(c.frame()).toBeNull();
+    push(.7);c.tick(0);expect(c.frame()).toMatchObject({seconds:scope.duration({note:24}),startFraction:0,filling:false});
+    const held=c.frame();c.configure({note:84,type:0});c.tick(0);expect(c.frame()).toBe(held);
+    push(.7);c.tick(0);expect(c.frame()).toMatchObject({seconds:scope.duration({note:84}),startFraction:0,filling:false});
   } finally {c.dispose();}
 });
 
-test('bounded history survives ring wraps and all supported carrier timebases',async()=>{
-  const {controller:c,push}=await live({frequency:100,type:0});
+test('bounded history survives ring wraps and all note timebases',async()=>{
+  const {controller:c,push}=await live({note:84,type:0});
   try {
     push(4);c.tick(0);
-    for(const frequency of [10,100,24,10]) {
-      c.configure({frequency,type:0});c.tick(0);
-      expect(c.frame()).toMatchObject({seconds:Math.floor(scope.duration({frequency})*pairRate)/pairRate,startFraction:0,filling:false});
+    for(const note of [24,84,49,24]) {
+      c.configure({note,type:0});push(1.1);c.tick(0);
+      expect(c.frame()).toMatchObject({seconds:scope.duration({note}),startFraction:0,filling:false,parameterChanges:false});
     }
   } finally {c.dispose();}
 });
@@ -98,8 +91,8 @@ test('freeze holds exact data, recording and timebase through edits, incoming sa
   const {controller:c,push}=await live();
   try {
     push(3);c.tick(0);const held=c.frame(),captured=c.capture();c.tick(0,false);
-    for(const frequency of [10,73,100]) {
-      c.configure({...base,frequency});push(.1,-.01,.01);c.tick(0,false);
+    for(const note of [49,73,84]) {
+      c.configure({...base,note});push(.1,-.01,.01);c.tick(0,false);
       expect(c.frame()).toBe(held);expect(c.capture().recording).toBe(captured.recording);
       expect(c.status()).toContain('frozen');expect(c.status()).toContain('previous settings');
     }
@@ -116,11 +109,11 @@ test('silent edits hold a labeled previous frame until one complete latest rende
     c.tick(.3);const held=c.frame(),original=c.capture();
     c.configure({...base,type:1},true);await jest.advanceTimersByTimeAsync(0);
     expect(c.frame()).toBe(held);expect(c.status()).toContain('previous settings (rendering update)');
-    c.configure({...base,type:2,frequency:10},true);
+    c.configure({...base,type:2,note:24},true);
     jobs[1].finish(.04);await jest.advanceTimersByTimeAsync(0);
     expect(c.frame()).toBe(held);expect(jobs).toHaveLength(3);
     jobs[2].finish(.08);await c.ready();
-    expect(c.frame()).toMatchObject({source:'offline',seconds:Math.floor(scope.duration({frequency:10})*6000)/6000,startFraction:0,endFraction:1});
+    expect(c.frame()).toMatchObject({source:'offline',seconds:scope.duration({note:24}),startFraction:0,endFraction:1});
     expect(c.frame().extrema.every(x=>x>.07)).toBe(true);expect(c.status()).not.toContain('previous settings');
     expect(original.recording.frame(0)).toBe(original.frame);
     expect(original.frame.extrema.every(x=>x<.02)).toBe(true);
@@ -143,21 +136,22 @@ test('frozen offline data survives replacement renders and failures until playba
   } finally {c.dispose();create.mockRestore();jest.useRealTimers();}
 });
 
-test('offline/live/mute handoffs retain source labels and fill a fixed target without substituting old data as live',async()=>{
+test('offline/live/mute handoffs never relabel cached or transitional data as live',async()=>{
   jest.useFakeTimers();const {environment,jobs}=offlineEngine();
-  const create=jest.spyOn(WaveformAudio,'create').mockReturnValue({update(){},pulseWorkletNode:{}});
+  const create=jest.spyOn(WaveformAudio,'create').mockReturnValue({update(){},pulseWorkletNode:null});
   const {controller:c,push}=await live(base,environment);
   try {
     await jest.advanceTimersByTimeAsync(100);jobs[0].finish(.01);await c.ready();
-    const offline=c.frame();expect(offline.source).toBe('offline');c.tick(1);
-    expect(c.frame()).toBe(offline);expect(c.status()).toContain('waiting for live audio');
-    push(.005);c.tick(1);const seconds=Math.floor(scope.duration(base)*pairRate)/pairRate;
-    expect(c.frame()).toMatchObject({source:'live',seconds,availableSeconds:.005,filling:true,startFraction:1-.005/seconds});
-    c.configure({...base,frequency:10},true);c.tick(1);
-    const liveFrame=c.frame();await jest.advanceTimersByTimeAsync(0);jobs[1].finish(.08);await c.ready();
-    expect(c.frame()).toBe(liveFrame);expect(liveFrame.seconds).toBe(.122);
+    expect(c.frame().source).toBe('offline');c.tick(1);
+    expect(c.status()).toContain('waiting for settled live audio');
+    push(.005);c.tick(1);expect(c.frame().source).toBe('offline');
+    push(.7);c.tick(1);expect(c.frame()).toMatchObject({source:'live',filling:false,parameterChanges:false});
+    c.configure({...base,note:49},true);c.tick(1);const held=c.frame();
+    await jest.advanceTimersByTimeAsync(0);jobs[1].finish(.08);await c.ready();
+    expect(c.frame()).toBe(held);c.tick(1);expect(c.frame().source).toBe('offline');
+    push(.7);c.tick(1);const liveFrame=c.frame();expect(liveFrame.source).toBe('live');
     c.tick(1,false);c.detach();c.tick(2,false);expect(c.frame()).toBe(liveFrame);
     c.tick(2,true);expect(c.frame()).toMatchObject({source:'offline',startFraction:0,endFraction:1});
-    expect(c.frame().seconds).toBeCloseTo(4/32.7,3);
+    expect(c.frame().seconds).toBe(scope.duration({note:49}));
   } finally {c.dispose();create.mockRestore();jest.useRealTimers();}
 });

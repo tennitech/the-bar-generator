@@ -1036,6 +1036,10 @@ function captureLogoExportSnapshot(options = {}) {
     loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: options.format === 'gif' && family === 'wave-quantum'
       ? window.quantumModel.normalizePhase(currentValues.quantumPhase) : 0,
     ...(scopeCapture ? { waveformScope: scopeCapture.frame,
+      // A frozen/previous frame may differ from the controls during an edit.
+      // Filename and exported metadata must describe the captured signal.
+      waveformNote: scopeCapture.frame.note ?? currentValues.waveformNote,
+      waveformType: scopeCapture.frame.type ?? currentValues.waveformType,
       waveformScopePlaybackSeconds: scopeCapture.recording?.playbackSeconds,
       waveformScopeReplaySeconds: scopeCapture.recording?.replaySeconds } : {}) }));
   if (values.waveformScopeRequired && !scopeCapture) throw new Error('The audio scope is not ready. Try exporting again in a moment.');

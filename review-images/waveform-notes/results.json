@@ -1,0 +1,2089 @@
+{
+  "kind": "Native offline Web Audio/export QA; no browser or hardware claims",
+  "audio": [
+    {
+      "note": "C1",
+      "type": 0,
+      "cycles": 1,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 1,
+      "endpointError": 3.861369758271713e-8
+    },
+    {
+      "note": "C1",
+      "type": 1,
+      "cycles": 1,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 1,
+      "endpointError": 1.1079538334750685e-8
+    },
+    {
+      "note": "C1",
+      "type": 2,
+      "cycles": 1,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 1,
+      "endpointError": 0
+    },
+    {
+      "note": "C1",
+      "type": 3,
+      "cycles": 1,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 1,
+      "endpointError": 0.00023205254503473258
+    },
+    {
+      "note": "C#1",
+      "type": 0,
+      "cycles": 1,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 1,
+      "endpointError": 3.536563408443327e-8
+    },
+    {
+      "note": "C#1",
+      "type": 1,
+      "cycles": 1,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 1,
+      "endpointError": 9.944423775437063e-9
+    },
+    {
+      "note": "C#1",
+      "type": 2,
+      "cycles": 1,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 1,
+      "endpointError": 0
+    },
+    {
+      "note": "C#1",
+      "type": 3,
+      "cycles": 1,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 1,
+      "endpointError": 0.000016632455959026543
+    },
+    {
+      "note": "D1",
+      "type": 0,
+      "cycles": 1,
+      "seconds": 0.027241946852303304,
+      "risingCrossings": 1,
+      "endpointError": 9.580250408518926e-9
+    },
+    {
+      "note": "D1",
+      "type": 1,
+      "cycles": 1,
+      "seconds": 0.027241946852303304,
+      "risingCrossings": 1,
+      "endpointError": 2.382328360517154e-9
+    },
+    {
+      "note": "D1",
+      "type": 2,
+      "cycles": 1,
+      "seconds": 0.027241946852303304,
+      "risingCrossings": 1,
+      "endpointError": 0
+    },
+    {
+      "note": "D1",
+      "type": 3,
+      "cycles": 1,
+      "seconds": 0.027241946852303304,
+      "risingCrossings": 1,
+      "endpointError": 0.00001883645135816736
+    },
+    {
+      "note": "D#1",
+      "type": 0,
+      "cycles": 1,
+      "seconds": 0.025712973861329,
+      "risingCrossings": 1,
+      "endpointError": 4.29356944182252e-9
+    },
+    {
+      "note": "D#1",
+      "type": 1,
+      "cycles": 1,
+      "seconds": 0.025712973861329,
+      "risingCrossings": 1,
+      "endpointError": 8.444453209605074e-11
+    },
+    {
+      "note": "D#1",
+      "type": 2,
+      "cycles": 1,
+      "seconds": 0.025712973861329,
+      "risingCrossings": 1,
+      "endpointError": 0
+    },
+    {
+      "note": "D#1",
+      "type": 3,
+      "cycles": 1,
+      "seconds": 0.025712973861329,
+      "risingCrossings": 1,
+      "endpointError": 0.0004286408727259827
+    },
+    {
+      "note": "E1",
+      "type": 0,
+      "cycles": 1,
+      "seconds": 0.024269815530364256,
+      "risingCrossings": 1,
+      "endpointError": 1.1971312390609418e-8
+    },
+    {
+      "note": "E1",
+      "type": 1,
+      "cycles": 1,
+      "seconds": 0.024269815530364256,
+      "risingCrossings": 1,
+      "endpointError": 4.0371991476880614e-9
+    },
+    {
+      "note": "E1",
+      "type": 2,
+      "cycles": 1,
+      "seconds": 0.024269815530364256,
+      "risingCrossings": 1,
+      "endpointError": 0
+    },
+    {
+      "note": "E1",
+      "type": 3,
+      "cycles": 1,
+      "seconds": 0.024269815530364256,
+      "risingCrossings": 1,
+      "endpointError": 0.00010894032793933028
+    },
+    {
+      "note": "F1",
+      "type": 0,
+      "cycles": 1,
+      "seconds": 0.022907655452634058,
+      "risingCrossings": 1,
+      "endpointError": 2.497714857814179e-8
+    },
+    {
+      "note": "F1",
+      "type": 1,
+      "cycles": 1,
+      "seconds": 0.022907655452634058,
+      "risingCrossings": 1,
+      "endpointError": 5.485266145379558e-9
+    },
+    {
+      "note": "F1",
+      "type": 2,
+      "cycles": 1,
+      "seconds": 0.022907655452634058,
+      "risingCrossings": 1,
+      "endpointError": 0
+    },
+    {
+      "note": "F1",
+      "type": 3,
+      "cycles": 1,
+      "seconds": 0.022907655452634058,
+      "risingCrossings": 1,
+      "endpointError": 0.00023918348800315917
+    },
+    {
+      "note": "F#1",
+      "type": 0,
+      "cycles": 1,
+      "seconds": 0.02162194754550402,
+      "risingCrossings": 1,
+      "endpointError": 8.535705929395287e-9
+    },
+    {
+      "note": "F#1",
+      "type": 1,
+      "cycles": 1,
+      "seconds": 0.02162194754550402,
+      "risingCrossings": 1,
+      "endpointError": 4.054411310372777e-9
+    },
+    {
+      "note": "F#1",
+      "type": 2,
+      "cycles": 1,
+      "seconds": 0.02162194754550402,
+      "risingCrossings": 1,
+      "endpointError": 0
+    },
+    {
+      "note": "F#1",
+      "type": 3,
+      "cycles": 1,
+      "seconds": 0.02162194754550402,
+      "risingCrossings": 1,
+      "endpointError": 0.00034876887753433963
+    },
+    {
+      "note": "G1",
+      "type": 0,
+      "cycles": 1,
+      "seconds": 0.020408400878352235,
+      "risingCrossings": 1,
+      "endpointError": 2.3876810217350608e-8
+    },
+    {
+      "note": "G1",
+      "type": 1,
+      "cycles": 1,
+      "seconds": 0.020408400878352235,
+      "risingCrossings": 1,
+      "endpointError": 6.988419988963185e-9
+    },
+    {
+      "note": "G1",
+      "type": 2,
+      "cycles": 1,
+      "seconds": 0.020408400878352235,
+      "risingCrossings": 1,
+      "endpointError": 0
+    },
+    {
+      "note": "G1",
+      "type": 3,
+      "cycles": 1,
+      "seconds": 0.020408400878352235,
+      "risingCrossings": 1,
+      "endpointError": 0.00027126525920052533
+    },
+    {
+      "note": "G#1",
+      "type": 0,
+      "cycles": 2,
+      "seconds": 0.03852593070397437,
+      "risingCrossings": 2,
+      "endpointError": 4.3138231783576564e-8
+    },
+    {
+      "note": "G#1",
+      "type": 1,
+      "cycles": 2,
+      "seconds": 0.03852593070397437,
+      "risingCrossings": 2,
+      "endpointError": 9.75798470628439e-9
+    },
+    {
+      "note": "G#1",
+      "type": 2,
+      "cycles": 2,
+      "seconds": 0.03852593070397437,
+      "risingCrossings": 2,
+      "endpointError": 0
+    },
+    {
+      "note": "G#1",
+      "type": 3,
+      "cycles": 2,
+      "seconds": 0.03852593070397437,
+      "risingCrossings": 2,
+      "endpointError": 0.00022916620415504643
+    },
+    {
+      "note": "A1",
+      "type": 0,
+      "cycles": 2,
+      "seconds": 0.03636363636363636,
+      "risingCrossings": 2,
+      "endpointError": 1.9370449547313762e-8
+    },
+    {
+      "note": "A1",
+      "type": 1,
+      "cycles": 2,
+      "seconds": 0.03636363636363636,
+      "risingCrossings": 2,
+      "endpointError": 5.2916045894038644e-11
+    },
+    {
+      "note": "A1",
+      "type": 2,
+      "cycles": 2,
+      "seconds": 0.03636363636363636,
+      "risingCrossings": 2,
+      "endpointError": 0
+    },
+    {
+      "note": "A1",
+      "type": 3,
+      "cycles": 2,
+      "seconds": 0.03636363636363636,
+      "risingCrossings": 2,
+      "endpointError": 0.00003852715669888651
+    },
+    {
+      "note": "A#1",
+      "type": 0,
+      "cycles": 2,
+      "seconds": 0.03432270227933431,
+      "risingCrossings": 2,
+      "endpointError": 1.720237552405024e-8
+    },
+    {
+      "note": "A#1",
+      "type": 1,
+      "cycles": 2,
+      "seconds": 0.03432270227933431,
+      "risingCrossings": 2,
+      "endpointError": 3.594130676886839e-9
+    },
+    {
+      "note": "A#1",
+      "type": 2,
+      "cycles": 2,
+      "seconds": 0.03432270227933431,
+      "risingCrossings": 2,
+      "endpointError": 0
+    },
+    {
+      "note": "A#1",
+      "type": 3,
+      "cycles": 2,
+      "seconds": 0.03432270227933431,
+      "risingCrossings": 2,
+      "endpointError": 0.00012083260108467289
+    },
+    {
+      "note": "B1",
+      "type": 0,
+      "cycles": 2,
+      "seconds": 0.03239631702328507,
+      "risingCrossings": 2,
+      "endpointError": 1.654687678542821e-9
+    },
+    {
+      "note": "B1",
+      "type": 1,
+      "cycles": 2,
+      "seconds": 0.03239631702328507,
+      "risingCrossings": 2,
+      "endpointError": 4.1052906256736077e-10
+    },
+    {
+      "note": "B1",
+      "type": 2,
+      "cycles": 2,
+      "seconds": 0.03239631702328507,
+      "risingCrossings": 2,
+      "endpointError": 0
+    },
+    {
+      "note": "B1",
+      "type": 3,
+      "cycles": 2,
+      "seconds": 0.03239631702328507,
+      "risingCrossings": 2,
+      "endpointError": 0.00008450098113507373
+    },
+    {
+      "note": "C2",
+      "type": 0,
+      "cycles": 2,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 2,
+      "endpointError": 9.237787715245943e-8
+    },
+    {
+      "note": "C2",
+      "type": 1,
+      "cycles": 2,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 2,
+      "endpointError": 2.2280629292286205e-8
+    },
+    {
+      "note": "C2",
+      "type": 2,
+      "cycles": 2,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 2,
+      "endpointError": 0
+    },
+    {
+      "note": "C2",
+      "type": 3,
+      "cycles": 2,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 2,
+      "endpointError": 0.0001919929736149406
+    },
+    {
+      "note": "C#2",
+      "type": 0,
+      "cycles": 2,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 2,
+      "endpointError": 1.958919424154687e-8
+    },
+    {
+      "note": "C#2",
+      "type": 1,
+      "cycles": 2,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 2,
+      "endpointError": 1.9789406704691717e-8
+    },
+    {
+      "note": "C#2",
+      "type": 2,
+      "cycles": 2,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 2,
+      "endpointError": 0
+    },
+    {
+      "note": "C#2",
+      "type": 3,
+      "cycles": 2,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 2,
+      "endpointError": 0.0001448725574743591
+    },
+    {
+      "note": "D2",
+      "type": 0,
+      "cycles": 2,
+      "seconds": 0.027241946852303304,
+      "risingCrossings": 2,
+      "endpointError": 3.7683132845037215e-8
+    },
+    {
+      "note": "D2",
+      "type": 1,
+      "cycles": 2,
+      "seconds": 0.027241946852303304,
+      "risingCrossings": 2,
+      "endpointError": 4.764656860245867e-9
+    },
+    {
+      "note": "D2",
+      "type": 2,
+      "cycles": 2,
+      "seconds": 0.027241946852303304,
+      "risingCrossings": 2,
+      "endpointError": 0
+    },
+    {
+      "note": "D2",
+      "type": 3,
+      "cycles": 2,
+      "seconds": 0.027241946852303304,
+      "risingCrossings": 2,
+      "endpointError": 0.00021093491670598138
+    },
+    {
+      "note": "D#2",
+      "type": 0,
+      "cycles": 2,
+      "seconds": 0.025712973861329,
+      "risingCrossings": 2,
+      "endpointError": 3.568918286508266e-8
+    },
+    {
+      "note": "D#2",
+      "type": 1,
+      "cycles": 2,
+      "seconds": 0.025712973861329,
+      "risingCrossings": 2,
+      "endpointError": 4.615257048062871e-11
+    },
+    {
+      "note": "D#2",
+      "type": 2,
+      "cycles": 2,
+      "seconds": 0.025712973861329,
+      "risingCrossings": 2,
+      "endpointError": 0
+    },
+    {
+      "note": "D#2",
+      "type": 3,
+      "cycles": 2,
+      "seconds": 0.025712973861329,
+      "risingCrossings": 2,
+      "endpointError": 0.00032911937240776706
+    },
+    {
+      "note": "E2",
+      "type": 0,
+      "cycles": 3,
+      "seconds": 0.036404723295546386,
+      "risingCrossings": 3,
+      "endpointError": 3.11409752888972e-8
+    },
+    {
+      "note": "E2",
+      "type": 1,
+      "cycles": 3,
+      "seconds": 0.036404723295546386,
+      "risingCrossings": 3,
+      "endpointError": 1.1837810571634771e-8
+    },
+    {
+      "note": "E2",
+      "type": 2,
+      "cycles": 3,
+      "seconds": 0.036404723295546386,
+      "risingCrossings": 3,
+      "endpointError": 0
+    },
+    {
+      "note": "E2",
+      "type": 3,
+      "cycles": 3,
+      "seconds": 0.036404723295546386,
+      "risingCrossings": 3,
+      "endpointError": 0.00016014707751840426
+    },
+    {
+      "note": "F2",
+      "type": 0,
+      "cycles": 3,
+      "seconds": 0.03436148317895109,
+      "risingCrossings": 3,
+      "endpointError": 1.782647176054586e-8
+    },
+    {
+      "note": "F2",
+      "type": 1,
+      "cycles": 3,
+      "seconds": 0.03436148317895109,
+      "risingCrossings": 3,
+      "endpointError": 1.6455798684637812e-8
+    },
+    {
+      "note": "F2",
+      "type": 2,
+      "cycles": 3,
+      "seconds": 0.03436148317895109,
+      "risingCrossings": 3,
+      "endpointError": 0
+    },
+    {
+      "note": "F2",
+      "type": 3,
+      "cycles": 3,
+      "seconds": 0.03436148317895109,
+      "risingCrossings": 3,
+      "endpointError": 0.00027277464806766197
+    },
+    {
+      "note": "F#2",
+      "type": 0,
+      "cycles": 3,
+      "seconds": 0.03243292131825603,
+      "risingCrossings": 3,
+      "endpointError": 1.0305560797958802e-7
+    },
+    {
+      "note": "F#2",
+      "type": 1,
+      "cycles": 3,
+      "seconds": 0.03243292131825603,
+      "risingCrossings": 3,
+      "endpointError": 1.195462635177405e-8
+    },
+    {
+      "note": "F#2",
+      "type": 2,
+      "cycles": 3,
+      "seconds": 0.03243292131825603,
+      "risingCrossings": 3,
+      "endpointError": 0
+    },
+    {
+      "note": "F#2",
+      "type": 3,
+      "cycles": 3,
+      "seconds": 0.03243292131825603,
+      "risingCrossings": 3,
+      "endpointError": 0.00011835810506369629
+    },
+    {
+      "note": "G2",
+      "type": 0,
+      "cycles": 3,
+      "seconds": 0.03061260131752835,
+      "risingCrossings": 3,
+      "endpointError": 6.58754580086518e-8
+    },
+    {
+      "note": "G2",
+      "type": 1,
+      "cycles": 3,
+      "seconds": 0.03061260131752835,
+      "risingCrossings": 3,
+      "endpointError": 2.0734924960179313e-8
+    },
+    {
+      "note": "G2",
+      "type": 2,
+      "cycles": 3,
+      "seconds": 0.03061260131752835,
+      "risingCrossings": 3,
+      "endpointError": 0
+    },
+    {
+      "note": "G2",
+      "type": 3,
+      "cycles": 3,
+      "seconds": 0.03061260131752835,
+      "risingCrossings": 3,
+      "endpointError": 0.00027838600025784435
+    },
+    {
+      "note": "G#2",
+      "type": 0,
+      "cycles": 3,
+      "seconds": 0.02889444802798078,
+      "risingCrossings": 3,
+      "endpointError": 5.350121516992101e-8
+    },
+    {
+      "note": "G#2",
+      "type": 1,
+      "cycles": 3,
+      "seconds": 0.02889444802798078,
+      "risingCrossings": 3,
+      "endpointError": 1.4636976911758248e-8
+    },
+    {
+      "note": "G#2",
+      "type": 2,
+      "cycles": 3,
+      "seconds": 0.02889444802798078,
+      "risingCrossings": 3,
+      "endpointError": 0
+    },
+    {
+      "note": "G#2",
+      "type": 3,
+      "cycles": 3,
+      "seconds": 0.02889444802798078,
+      "risingCrossings": 3,
+      "endpointError": 0.0000651920035688626
+    },
+    {
+      "note": "A2",
+      "type": 0,
+      "cycles": 3,
+      "seconds": 0.02727272727272727,
+      "risingCrossings": 3,
+      "endpointError": 5.9550625824619785e-8
+    },
+    {
+      "note": "A2",
+      "type": 1,
+      "cycles": 3,
+      "seconds": 0.02727272727272727,
+      "risingCrossings": 3,
+      "endpointError": 2.1166459644034186e-11
+    },
+    {
+      "note": "A2",
+      "type": 2,
+      "cycles": 3,
+      "seconds": 0.02727272727272727,
+      "risingCrossings": 3,
+      "endpointError": 0
+    },
+    {
+      "note": "A2",
+      "type": 3,
+      "cycles": 3,
+      "seconds": 0.02727272727272727,
+      "risingCrossings": 3,
+      "endpointError": 0.000030327498361036598
+    },
+    {
+      "note": "A#2",
+      "type": 0,
+      "cycles": 4,
+      "seconds": 0.03432270227933431,
+      "risingCrossings": 4,
+      "endpointError": 9.601776490737735e-8
+    },
+    {
+      "note": "A#2",
+      "type": 1,
+      "cycles": 4,
+      "seconds": 0.03432270227933431,
+      "risingCrossings": 4,
+      "endpointError": 7.069450066576194e-9
+    },
+    {
+      "note": "A#2",
+      "type": 2,
+      "cycles": 4,
+      "seconds": 0.03432270227933431,
+      "risingCrossings": 4,
+      "endpointError": 0
+    },
+    {
+      "note": "A#2",
+      "type": 3,
+      "cycles": 4,
+      "seconds": 0.03432270227933431,
+      "risingCrossings": 4,
+      "endpointError": 0.0002262594128467528
+    },
+    {
+      "note": "B2",
+      "type": 0,
+      "cycles": 4,
+      "seconds": 0.03239631702328506,
+      "risingCrossings": 4,
+      "endpointError": 5.4096150267635146e-9
+    },
+    {
+      "note": "B2",
+      "type": 1,
+      "cycles": 4,
+      "seconds": 0.03239631702328506,
+      "risingCrossings": 4,
+      "endpointError": 7.254456375893614e-10
+    },
+    {
+      "note": "B2",
+      "type": 2,
+      "cycles": 4,
+      "seconds": 0.03239631702328506,
+      "risingCrossings": 4,
+      "endpointError": 0
+    },
+    {
+      "note": "B2",
+      "type": 3,
+      "cycles": 4,
+      "seconds": 0.03239631702328506,
+      "risingCrossings": 4,
+      "endpointError": 0.00007888864299408424
+    },
+    {
+      "note": "C3",
+      "type": 0,
+      "cycles": 4,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 4,
+      "endpointError": 6.68194413671469e-8
+    },
+    {
+      "note": "C3",
+      "type": 1,
+      "cycles": 4,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 4,
+      "endpointError": 4.435793319419387e-8
+    },
+    {
+      "note": "C3",
+      "type": 2,
+      "cycles": 4,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 4,
+      "endpointError": 0
+    },
+    {
+      "note": "C3",
+      "type": 3,
+      "cycles": 4,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 4,
+      "endpointError": 0.000024958688566806275
+    },
+    {
+      "note": "C#3",
+      "type": 0,
+      "cycles": 4,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 4,
+      "endpointError": 1.6272271830160279e-7
+    },
+    {
+      "note": "C#3",
+      "type": 1,
+      "cycles": 4,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 4,
+      "endpointError": 4.003359088807987e-8
+    },
+    {
+      "note": "C#3",
+      "type": 2,
+      "cycles": 4,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 4,
+      "endpointError": 0
+    },
+    {
+      "note": "C#3",
+      "type": 3,
+      "cycles": 4,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 4,
+      "endpointError": 0.00014388065151112184
+    },
+    {
+      "note": "D3",
+      "type": 0,
+      "cycles": 4,
+      "seconds": 0.0272419468523033,
+      "risingCrossings": 4,
+      "endpointError": 4.572418758203023e-8
+    },
+    {
+      "note": "D3",
+      "type": 1,
+      "cycles": 4,
+      "seconds": 0.0272419468523033,
+      "risingCrossings": 4,
+      "endpointError": 9.672143703575581e-9
+    },
+    {
+      "note": "D3",
+      "type": 2,
+      "cycles": 4,
+      "seconds": 0.0272419468523033,
+      "risingCrossings": 4,
+      "endpointError": 0
+    },
+    {
+      "note": "D3",
+      "type": 3,
+      "cycles": 4,
+      "seconds": 0.0272419468523033,
+      "risingCrossings": 4,
+      "endpointError": 0.000015222500380003556
+    },
+    {
+      "note": "D#3",
+      "type": 0,
+      "cycles": 5,
+      "seconds": 0.03214121732666125,
+      "risingCrossings": 5,
+      "endpointError": 3.357119040935802e-7
+    },
+    {
+      "note": "D#3",
+      "type": 1,
+      "cycles": 5,
+      "seconds": 0.03214121732666125,
+      "risingCrossings": 5,
+      "endpointError": 1.3780390153636524e-10
+    },
+    {
+      "note": "D#3",
+      "type": 2,
+      "cycles": 5,
+      "seconds": 0.03214121732666125,
+      "risingCrossings": 5,
+      "endpointError": 0
+    },
+    {
+      "note": "D#3",
+      "type": 3,
+      "cycles": 5,
+      "seconds": 0.03214121732666125,
+      "risingCrossings": 5,
+      "endpointError": 0.00006018971441142454
+    },
+    {
+      "note": "E3",
+      "type": 0,
+      "cycles": 5,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 5,
+      "endpointError": 4.308446098274382e-7
+    },
+    {
+      "note": "E3",
+      "type": 1,
+      "cycles": 5,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 5,
+      "endpointError": 1.9668002195633028e-8
+    },
+    {
+      "note": "E3",
+      "type": 2,
+      "cycles": 5,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 5,
+      "endpointError": 0
+    },
+    {
+      "note": "E3",
+      "type": 3,
+      "cycles": 5,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 5,
+      "endpointError": 0.00018391378199220793
+    },
+    {
+      "note": "F3",
+      "type": 0,
+      "cycles": 5,
+      "seconds": 0.02863456931579257,
+      "risingCrossings": 5,
+      "endpointError": 7.326112577161342e-7
+    },
+    {
+      "note": "F3",
+      "type": 1,
+      "cycles": 5,
+      "seconds": 0.02863456931579257,
+      "risingCrossings": 5,
+      "endpointError": 2.719350033174306e-8
+    },
+    {
+      "note": "F3",
+      "type": 2,
+      "cycles": 5,
+      "seconds": 0.02863456931579257,
+      "risingCrossings": 5,
+      "endpointError": 0
+    },
+    {
+      "note": "F3",
+      "type": 3,
+      "cycles": 5,
+      "seconds": 0.02863456931579257,
+      "risingCrossings": 5,
+      "endpointError": 0.00005653979233027906
+    },
+    {
+      "note": "F#3",
+      "type": 0,
+      "cycles": 6,
+      "seconds": 0.03243292131825603,
+      "risingCrossings": 6,
+      "endpointError": 6.969941318754613e-7
+    },
+    {
+      "note": "F#3",
+      "type": 1,
+      "cycles": 6,
+      "seconds": 0.03243292131825603,
+      "risingCrossings": 6,
+      "endpointError": 2.4236657125698002e-8
+    },
+    {
+      "note": "F#3",
+      "type": 2,
+      "cycles": 6,
+      "seconds": 0.03243292131825603,
+      "risingCrossings": 6,
+      "endpointError": 0
+    },
+    {
+      "note": "F#3",
+      "type": 3,
+      "cycles": 6,
+      "seconds": 0.03243292131825603,
+      "risingCrossings": 6,
+      "endpointError": 0.00009532914885854518
+    },
+    {
+      "note": "G3",
+      "type": 0,
+      "cycles": 6,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 6,
+      "endpointError": 0.000001038507811100542
+    },
+    {
+      "note": "G3",
+      "type": 1,
+      "cycles": 6,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 6,
+      "endpointError": 4.1563259279599196e-8
+    },
+    {
+      "note": "G3",
+      "type": 2,
+      "cycles": 6,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 6,
+      "endpointError": 0
+    },
+    {
+      "note": "G3",
+      "type": 3,
+      "cycles": 6,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 6,
+      "endpointError": 0.00004227774376421023
+    },
+    {
+      "note": "G#3",
+      "type": 0,
+      "cycles": 6,
+      "seconds": 0.02889444802798078,
+      "risingCrossings": 6,
+      "endpointError": 2.538946021583832e-7
+    },
+    {
+      "note": "G#3",
+      "type": 1,
+      "cycles": 6,
+      "seconds": 0.02889444802798078,
+      "risingCrossings": 6,
+      "endpointError": 2.9273953823516496e-8
+    },
+    {
+      "note": "G#3",
+      "type": 2,
+      "cycles": 6,
+      "seconds": 0.02889444802798078,
+      "risingCrossings": 6,
+      "endpointError": 0
+    },
+    {
+      "note": "G#3",
+      "type": 3,
+      "cycles": 6,
+      "seconds": 0.02889444802798078,
+      "risingCrossings": 6,
+      "endpointError": 0.00007181049732296954
+    },
+    {
+      "note": "A3",
+      "type": 0,
+      "cycles": 7,
+      "seconds": 0.031818181818181815,
+      "risingCrossings": 7,
+      "endpointError": 6.886738185760133e-7
+    },
+    {
+      "note": "A3",
+      "type": 1,
+      "cycles": 7,
+      "seconds": 0.031818181818181815,
+      "risingCrossings": 7,
+      "endpointError": 2.563674801961402e-10
+    },
+    {
+      "note": "A3",
+      "type": 2,
+      "cycles": 7,
+      "seconds": 0.031818181818181815,
+      "risingCrossings": 7,
+      "endpointError": 0
+    },
+    {
+      "note": "A3",
+      "type": 3,
+      "cycles": 7,
+      "seconds": 0.031818181818181815,
+      "risingCrossings": 7,
+      "endpointError": 0.00008026030380471269
+    },
+    {
+      "note": "A#3",
+      "type": 0,
+      "cycles": 7,
+      "seconds": 0.03003236449441752,
+      "risingCrossings": 7,
+      "endpointError": 1.1915703571063752e-7
+    },
+    {
+      "note": "A#3",
+      "type": 1,
+      "cycles": 7,
+      "seconds": 0.03003236449441752,
+      "risingCrossings": 7,
+      "endpointError": 1.2589091177503398e-8
+    },
+    {
+      "note": "A#3",
+      "type": 2,
+      "cycles": 7,
+      "seconds": 0.03003236449441752,
+      "risingCrossings": 7,
+      "endpointError": 0
+    },
+    {
+      "note": "A#3",
+      "type": 3,
+      "cycles": 7,
+      "seconds": 0.03003236449441752,
+      "risingCrossings": 7,
+      "endpointError": 0.00011673250945109376
+    },
+    {
+      "note": "B3",
+      "type": 0,
+      "cycles": 8,
+      "seconds": 0.03239631702328506,
+      "risingCrossings": 8,
+      "endpointError": 7.869916410219169e-8
+    },
+    {
+      "note": "B3",
+      "type": 1,
+      "cycles": 8,
+      "seconds": 0.03239631702328506,
+      "risingCrossings": 8,
+      "endpointError": 1.6529280314273032e-9
+    },
+    {
+      "note": "B3",
+      "type": 2,
+      "cycles": 8,
+      "seconds": 0.03239631702328506,
+      "risingCrossings": 8,
+      "endpointError": 0
+    },
+    {
+      "note": "B3",
+      "type": 3,
+      "cycles": 8,
+      "seconds": 0.03239631702328506,
+      "risingCrossings": 8,
+      "endpointError": 0.000032513810846585695
+    },
+    {
+      "note": "C4",
+      "type": 0,
+      "cycles": 8,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 8,
+      "endpointError": 6.29783059900163e-7
+    },
+    {
+      "note": "C4",
+      "type": 1,
+      "cycles": 8,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 8,
+      "endpointError": 8.893393490996132e-8
+    },
+    {
+      "note": "C4",
+      "type": 2,
+      "cycles": 8,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 8,
+      "endpointError": 0
+    },
+    {
+      "note": "C4",
+      "type": 3,
+      "cycles": 8,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 8,
+      "endpointError": 0.00007492312816325536
+    },
+    {
+      "note": "C#4",
+      "type": 0,
+      "cycles": 8,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 8,
+      "endpointError": 0.0000027905412328423085
+    },
+    {
+      "note": "C#4",
+      "type": 1,
+      "cycles": 8,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 8,
+      "endpointError": 7.91454283950721e-8
+    },
+    {
+      "note": "C#4",
+      "type": 2,
+      "cycles": 8,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 8,
+      "endpointError": 0
+    },
+    {
+      "note": "C#4",
+      "type": 3,
+      "cycles": 8,
+      "seconds": 0.02886183730851272,
+      "risingCrossings": 8,
+      "endpointError": 0.00011314117248696284
+    },
+    {
+      "note": "D4",
+      "type": 0,
+      "cycles": 9,
+      "seconds": 0.03064719020884121,
+      "risingCrossings": 9,
+      "endpointError": 2.2570599236132471e-7
+    },
+    {
+      "note": "D4",
+      "type": 1,
+      "cycles": 9,
+      "seconds": 0.03064719020884121,
+      "risingCrossings": 9,
+      "endpointError": 2.173101378271508e-8
+    },
+    {
+      "note": "D4",
+      "type": 2,
+      "cycles": 9,
+      "seconds": 0.03064719020884121,
+      "risingCrossings": 9,
+      "endpointError": 0
+    },
+    {
+      "note": "D4",
+      "type": 3,
+      "cycles": 9,
+      "seconds": 0.03064719020884121,
+      "risingCrossings": 9,
+      "endpointError": 0.00002826150076267256
+    },
+    {
+      "note": "D#4",
+      "type": 0,
+      "cycles": 10,
+      "seconds": 0.03214121732666125,
+      "risingCrossings": 10,
+      "endpointError": 0.0000011386987194828002
+    },
+    {
+      "note": "D#4",
+      "type": 1,
+      "cycles": 10,
+      "seconds": 0.03214121732666125,
+      "risingCrossings": 10,
+      "endpointError": 6.117116422774127e-10
+    },
+    {
+      "note": "D#4",
+      "type": 2,
+      "cycles": 10,
+      "seconds": 0.03214121732666125,
+      "risingCrossings": 10,
+      "endpointError": 0
+    },
+    {
+      "note": "D#4",
+      "type": 3,
+      "cycles": 10,
+      "seconds": 0.03214121732666125,
+      "risingCrossings": 10,
+      "endpointError": 0.000035037218645849605
+    },
+    {
+      "note": "E4",
+      "type": 0,
+      "cycles": 10,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 10,
+      "endpointError": 2.722957171859275e-7
+    },
+    {
+      "note": "E4",
+      "type": 1,
+      "cycles": 10,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 10,
+      "endpointError": 3.974978210821711e-8
+    },
+    {
+      "note": "E4",
+      "type": 2,
+      "cycles": 10,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 10,
+      "endpointError": 0
+    },
+    {
+      "note": "E4",
+      "type": 3,
+      "cycles": 10,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 10,
+      "endpointError": 0.00007033928618041876
+    },
+    {
+      "note": "F4",
+      "type": 0,
+      "cycles": 11,
+      "seconds": 0.03149802624737183,
+      "risingCrossings": 11,
+      "endpointError": 0.0000013464271667422423
+    },
+    {
+      "note": "F4",
+      "type": 1,
+      "cycles": 11,
+      "seconds": 0.03149802624737183,
+      "risingCrossings": 11,
+      "endpointError": 6.036149355695408e-8
+    },
+    {
+      "note": "F4",
+      "type": 2,
+      "cycles": 11,
+      "seconds": 0.03149802624737183,
+      "risingCrossings": 11,
+      "endpointError": 0
+    },
+    {
+      "note": "F4",
+      "type": 3,
+      "cycles": 11,
+      "seconds": 0.03149802624737183,
+      "risingCrossings": 11,
+      "endpointError": 0.000054748663618309906
+    },
+    {
+      "note": "F#4",
+      "type": 0,
+      "cycles": 11,
+      "seconds": 0.029730177875068025,
+      "risingCrossings": 11,
+      "endpointError": 5.43830047907562e-7
+    },
+    {
+      "note": "F#4",
+      "type": 1,
+      "cycles": 11,
+      "seconds": 0.029730177875068025,
+      "risingCrossings": 11,
+      "endpointError": 4.449971691307397e-8
+    },
+    {
+      "note": "F#4",
+      "type": 2,
+      "cycles": 11,
+      "seconds": 0.029730177875068025,
+      "risingCrossings": 11,
+      "endpointError": 0
+    },
+    {
+      "note": "F#4",
+      "type": 3,
+      "cycles": 11,
+      "seconds": 0.029730177875068025,
+      "risingCrossings": 11,
+      "endpointError": 0.000008188633869143924
+    },
+    {
+      "note": "G4",
+      "type": 0,
+      "cycles": 12,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 12,
+      "endpointError": 0.000006275184431879521
+    },
+    {
+      "note": "G4",
+      "type": 1,
+      "cycles": 12,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 12,
+      "endpointError": 8.368078285685143e-8
+    },
+    {
+      "note": "G4",
+      "type": 2,
+      "cycles": 12,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 12,
+      "endpointError": 0
+    },
+    {
+      "note": "G4",
+      "type": 3,
+      "cycles": 12,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 12,
+      "endpointError": 0.000025834360317871646
+    },
+    {
+      "note": "G#4",
+      "type": 0,
+      "cycles": 13,
+      "seconds": 0.03130231869697918,
+      "risingCrossings": 13,
+      "endpointError": 0.000003306176016189266
+    },
+    {
+      "note": "G#4",
+      "type": 1,
+      "cycles": 13,
+      "seconds": 0.03130231869697918,
+      "risingCrossings": 13,
+      "endpointError": 6.319406891351631e-8
+    },
+    {
+      "note": "G#4",
+      "type": 2,
+      "cycles": 13,
+      "seconds": 0.03130231869697918,
+      "risingCrossings": 13,
+      "endpointError": 0
+    },
+    {
+      "note": "G#4",
+      "type": 3,
+      "cycles": 13,
+      "seconds": 0.03130231869697918,
+      "risingCrossings": 13,
+      "endpointError": 0.00001202859898857822
+    },
+    {
+      "note": "A4",
+      "type": 0,
+      "cycles": 13,
+      "seconds": 0.029545454545454545,
+      "risingCrossings": 13,
+      "endpointError": 7.814780049950065e-7
+    },
+    {
+      "note": "A4",
+      "type": 1,
+      "cycles": 13,
+      "seconds": 0.029545454545454545,
+      "risingCrossings": 13,
+      "endpointError": 4.280694080455172e-10
+    },
+    {
+      "note": "A4",
+      "type": 2,
+      "cycles": 13,
+      "seconds": 0.029545454545454545,
+      "risingCrossings": 13,
+      "endpointError": 0
+    },
+    {
+      "note": "A4",
+      "type": 3,
+      "cycles": 13,
+      "seconds": 0.029545454545454545,
+      "risingCrossings": 13,
+      "endpointError": 0.00007071775746061298
+    },
+    {
+      "note": "A#4",
+      "type": 0,
+      "cycles": 14,
+      "seconds": 0.03003236449441752,
+      "risingCrossings": 14,
+      "endpointError": 0.0000012775825192073986
+    },
+    {
+      "note": "A#4",
+      "type": 1,
+      "cycles": 14,
+      "seconds": 0.03003236449441752,
+      "risingCrossings": 14,
+      "endpointError": 2.5675250670334493e-8
+    },
+    {
+      "note": "A#4",
+      "type": 2,
+      "cycles": 14,
+      "seconds": 0.03003236449441752,
+      "risingCrossings": 14,
+      "endpointError": 0
+    },
+    {
+      "note": "A#4",
+      "type": 3,
+      "cycles": 14,
+      "seconds": 0.03003236449441752,
+      "risingCrossings": 14,
+      "endpointError": 0.000007043619268211343
+    },
+    {
+      "note": "B4",
+      "type": 0,
+      "cycles": 15,
+      "seconds": 0.030371547209329747,
+      "risingCrossings": 15,
+      "endpointError": 0.0000032975623324368875
+    },
+    {
+      "note": "B4",
+      "type": 1,
+      "cycles": 15,
+      "seconds": 0.030371547209329747,
+      "risingCrossings": 15,
+      "endpointError": 2.5868620977947954e-9
+    },
+    {
+      "note": "B4",
+      "type": 2,
+      "cycles": 15,
+      "seconds": 0.030371547209329747,
+      "risingCrossings": 15,
+      "endpointError": 0
+    },
+    {
+      "note": "B4",
+      "type": 3,
+      "cycles": 15,
+      "seconds": 0.030371547209329747,
+      "risingCrossings": 15,
+      "endpointError": 0.000015556973474644548
+    },
+    {
+      "note": "C5",
+      "type": 0,
+      "cycles": 16,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 16,
+      "endpointError": 0.00001667861322615649
+    },
+    {
+      "note": "C5",
+      "type": 1,
+      "cycles": 16,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 16,
+      "endpointError": 1.770841449987709e-7
+    },
+    {
+      "note": "C5",
+      "type": 2,
+      "cycles": 16,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 16,
+      "endpointError": 0
+    },
+    {
+      "note": "C5",
+      "type": 3,
+      "cycles": 16,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 16,
+      "endpointError": 0.000007797427978892268
+    },
+    {
+      "note": "C#5",
+      "type": 0,
+      "cycles": 17,
+      "seconds": 0.030665702140294765,
+      "risingCrossings": 17,
+      "endpointError": 0.0000031245583178782232
+    },
+    {
+      "note": "C#5",
+      "type": 1,
+      "cycles": 17,
+      "seconds": 0.030665702140294765,
+      "risingCrossings": 17,
+      "endpointError": 1.6874373247842411e-7
+    },
+    {
+      "note": "C#5",
+      "type": 2,
+      "cycles": 17,
+      "seconds": 0.030665702140294765,
+      "risingCrossings": 17,
+      "endpointError": 0
+    },
+    {
+      "note": "C#5",
+      "type": 3,
+      "cycles": 17,
+      "seconds": 0.030665702140294765,
+      "risingCrossings": 17,
+      "endpointError": 0.000004623112495424908
+    },
+    {
+      "note": "D5",
+      "type": 0,
+      "cycles": 18,
+      "seconds": 0.03064719020884121,
+      "risingCrossings": 18,
+      "endpointError": 0.000002497009710132614
+    },
+    {
+      "note": "D5",
+      "type": 1,
+      "cycles": 18,
+      "seconds": 0.03064719020884121,
+      "risingCrossings": 18,
+      "endpointError": 4.1536775529510406e-8
+    },
+    {
+      "note": "D5",
+      "type": 2,
+      "cycles": 18,
+      "seconds": 0.03064719020884121,
+      "risingCrossings": 18,
+      "endpointError": 0
+    },
+    {
+      "note": "D5",
+      "type": 3,
+      "cycles": 18,
+      "seconds": 0.03064719020884121,
+      "risingCrossings": 18,
+      "endpointError": 0.00006106009390234243
+    },
+    {
+      "note": "D#5",
+      "type": 0,
+      "cycles": 19,
+      "seconds": 0.03053415646032819,
+      "risingCrossings": 19,
+      "endpointError": 0.000008783824714933552
+    },
+    {
+      "note": "D#5",
+      "type": 1,
+      "cycles": 19,
+      "seconds": 0.03053415646032819,
+      "risingCrossings": 19,
+      "endpointError": 1.8372787440740224e-9
+    },
+    {
+      "note": "D#5",
+      "type": 2,
+      "cycles": 19,
+      "seconds": 0.03053415646032819,
+      "risingCrossings": 19,
+      "endpointError": 0
+    },
+    {
+      "note": "D#5",
+      "type": 3,
+      "cycles": 19,
+      "seconds": 0.03053415646032819,
+      "risingCrossings": 19,
+      "endpointError": 0.0000012923263680159058
+    },
+    {
+      "note": "E5",
+      "type": 0,
+      "cycles": 20,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 20,
+      "endpointError": 0.000016460480440627645
+    },
+    {
+      "note": "E5",
+      "type": 1,
+      "cycles": 20,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 20,
+      "endpointError": 7.927904344812164e-8
+    },
+    {
+      "note": "E5",
+      "type": 2,
+      "cycles": 20,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 20,
+      "endpointError": 0
+    },
+    {
+      "note": "E5",
+      "type": 3,
+      "cycles": 20,
+      "seconds": 0.030337269412955326,
+      "risingCrossings": 20,
+      "endpointError": 0.00003059800823059303
+    },
+    {
+      "note": "F5",
+      "type": 0,
+      "cycles": 21,
+      "seconds": 0.0300662977815822,
+      "risingCrossings": 21,
+      "endpointError": 0.000005791703904349521
+    },
+    {
+      "note": "F5",
+      "type": 1,
+      "cycles": 21,
+      "seconds": 0.0300662977815822,
+      "risingCrossings": 21,
+      "endpointError": 1.1495453698662228e-7
+    },
+    {
+      "note": "F5",
+      "type": 2,
+      "cycles": 21,
+      "seconds": 0.0300662977815822,
+      "risingCrossings": 21,
+      "endpointError": 0
+    },
+    {
+      "note": "F5",
+      "type": 3,
+      "cycles": 21,
+      "seconds": 0.0300662977815822,
+      "risingCrossings": 21,
+      "endpointError": 0.00004217520224305063
+    },
+    {
+      "note": "F#5",
+      "type": 0,
+      "cycles": 23,
+      "seconds": 0.03108154959666203,
+      "risingCrossings": 23,
+      "endpointError": 9.275832277208518e-7
+    },
+    {
+      "note": "F#5",
+      "type": 1,
+      "cycles": 23,
+      "seconds": 0.03108154959666203,
+      "risingCrossings": 23,
+      "endpointError": 9.320433895509961e-8
+    },
+    {
+      "note": "F#5",
+      "type": 2,
+      "cycles": 23,
+      "seconds": 0.03108154959666203,
+      "risingCrossings": 23,
+      "endpointError": 0
+    },
+    {
+      "note": "F#5",
+      "type": 3,
+      "cycles": 23,
+      "seconds": 0.03108154959666203,
+      "risingCrossings": 23,
+      "endpointError": 0.000017218437373036494
+    },
+    {
+      "note": "G5",
+      "type": 0,
+      "cycles": 24,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 24,
+      "endpointError": 0.00002355354033387741
+    },
+    {
+      "note": "G5",
+      "type": 1,
+      "cycles": 24,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 24,
+      "endpointError": 1.6625303711492734e-7
+    },
+    {
+      "note": "G5",
+      "type": 2,
+      "cycles": 24,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 24,
+      "endpointError": 0
+    },
+    {
+      "note": "G5",
+      "type": 3,
+      "cycles": 24,
+      "seconds": 0.030612601317528357,
+      "risingCrossings": 24,
+      "endpointError": 0.000014821639192471453
+    },
+    {
+      "note": "G#5",
+      "type": 0,
+      "cycles": 25,
+      "seconds": 0.03009838336247998,
+      "risingCrossings": 25,
+      "endpointError": 0.000049299925349986784
+    },
+    {
+      "note": "G#5",
+      "type": 1,
+      "cycles": 25,
+      "seconds": 0.03009838336247998,
+      "risingCrossings": 25,
+      "endpointError": 1.2081065555932802e-7
+    },
+    {
+      "note": "G#5",
+      "type": 2,
+      "cycles": 25,
+      "seconds": 0.03009838336247998,
+      "risingCrossings": 25,
+      "endpointError": 0
+    },
+    {
+      "note": "G#5",
+      "type": 3,
+      "cycles": 25,
+      "seconds": 0.03009838336247998,
+      "risingCrossings": 25,
+      "endpointError": 0.00000998625858686722
+    },
+    {
+      "note": "A5",
+      "type": 0,
+      "cycles": 27,
+      "seconds": 0.03068181818181818,
+      "risingCrossings": 27,
+      "endpointError": 0.00004121640244791891
+    },
+    {
+      "note": "A5",
+      "type": 1,
+      "cycles": 27,
+      "seconds": 0.03068181818181818,
+      "risingCrossings": 27,
+      "endpointError": 1.0254699346623486e-9
+    },
+    {
+      "note": "A5",
+      "type": 2,
+      "cycles": 27,
+      "seconds": 0.03068181818181818,
+      "risingCrossings": 27,
+      "endpointError": 0
+    },
+    {
+      "note": "A5",
+      "type": 3,
+      "cycles": 27,
+      "seconds": 0.03068181818181818,
+      "risingCrossings": 27,
+      "endpointError": 0.000015376193100602453
+    },
+    {
+      "note": "A#5",
+      "type": 0,
+      "cycles": 29,
+      "seconds": 0.031104948940646717,
+      "risingCrossings": 29,
+      "endpointError": 0.000011853726686897326
+    },
+    {
+      "note": "A#5",
+      "type": 1,
+      "cycles": 29,
+      "seconds": 0.031104948940646717,
+      "risingCrossings": 29,
+      "endpointError": 5.2155821959887216e-8
+    },
+    {
+      "note": "A#5",
+      "type": 2,
+      "cycles": 29,
+      "seconds": 0.031104948940646717,
+      "risingCrossings": 29,
+      "endpointError": 0
+    },
+    {
+      "note": "A#5",
+      "type": 3,
+      "cycles": 29,
+      "seconds": 0.031104948940646717,
+      "risingCrossings": 29,
+      "endpointError": 0.000004671915080581984
+    },
+    {
+      "note": "B5",
+      "type": 0,
+      "cycles": 30,
+      "seconds": 0.030371547209329747,
+      "risingCrossings": 30,
+      "endpointError": 0.000055283283750928724
+    },
+    {
+      "note": "B5",
+      "type": 1,
+      "cycles": 30,
+      "seconds": 0.030371547209329747,
+      "risingCrossings": 30,
+      "endpointError": 5.4933199135354105e-9
+    },
+    {
+      "note": "B5",
+      "type": 2,
+      "cycles": 30,
+      "seconds": 0.030371547209329747,
+      "risingCrossings": 30,
+      "endpointError": 0
+    },
+    {
+      "note": "B5",
+      "type": 3,
+      "cycles": 30,
+      "seconds": 0.030371547209329747,
+      "risingCrossings": 30,
+      "endpointError": 0.0000027050739807472912
+    },
+    {
+      "note": "C6",
+      "type": 0,
+      "cycles": 32,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 32,
+      "endpointError": 0.0001016128935237004
+    },
+    {
+      "note": "C6",
+      "type": 1,
+      "cycles": 32,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 32,
+      "endpointError": 3.565670672299459e-7
+    },
+    {
+      "note": "C6",
+      "type": 2,
+      "cycles": 32,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 32,
+      "endpointError": 0
+    },
+    {
+      "note": "C6",
+      "type": 3,
+      "cycles": 32,
+      "seconds": 0.03057805146377144,
+      "risingCrossings": 32,
+      "endpointError": 0.000022407969471532896
+    }
+  ],
+  "png": [
+    {
+      "note": 24,
+      "type": 0,
+      "seconds": 0.03057805146377144,
+      "width": 1160,
+      "height": 232,
+      "ink": 23340
+    },
+    {
+      "note": 24,
+      "type": 1.5,
+      "seconds": 0.03057805146377144,
+      "width": 1160,
+      "height": 232,
+      "ink": 27386
+    },
+    {
+      "note": 24,
+      "type": 3,
+      "seconds": 0.03057805146377144,
+      "width": 1160,
+      "height": 232,
+      "ink": 13042
+    },
+    {
+      "note": 49,
+      "type": 0,
+      "seconds": 0.02886183730851272,
+      "width": 1160,
+      "height": 232,
+      "ink": 23505
+    },
+    {
+      "note": 49,
+      "type": 1.5,
+      "seconds": 0.02886183730851272,
+      "width": 1160,
+      "height": 232,
+      "ink": 27422
+    },
+    {
+      "note": 49,
+      "type": 3,
+      "seconds": 0.02886183730851272,
+      "width": 1160,
+      "height": 232,
+      "ink": 13112
+    },
+    {
+      "note": 84,
+      "type": 0,
+      "seconds": 0.03057805146377144,
+      "width": 1160,
+      "height": 232,
+      "ink": 25111
+    },
+    {
+      "note": 84,
+      "type": 1.5,
+      "seconds": 0.03057805146377144,
+      "width": 1160,
+      "height": 232,
+      "ink": 28170
+    },
+    {
+      "note": 84,
+      "type": 3,
+      "seconds": 0.03057805146377144,
+      "width": 1160,
+      "height": 232,
+      "ink": 13677
+    }
+  ],
+  "gif": [
+    {
+      "note": 24,
+      "type": 0,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 53546
+    },
+    {
+      "note": 24,
+      "type": 3,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 48472
+    },
+    {
+      "note": 49,
+      "type": 0,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 69234
+    },
+    {
+      "note": 49,
+      "type": 3,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 56976
+    },
+    {
+      "note": 84,
+      "type": 0,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 123458
+    },
+    {
+      "note": 84,
+      "type": 3,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 93484
+    }
+  ],
+  "validationMs": 38978.590126999996,
+  "maxSineEndpointError": 0.0001016128935237004,
+  "maxAnyEndpointError": 0.0004286408727259827,
+  "cacheBenchmarkMs": {
+    "cold": 155.693425999998,
+    "other": 160.58677800000441,
+    "warm": 1.3227269999988494
+  }
+}

@@ -96,6 +96,7 @@
       return option?.textContent?.trim() || option?.value || '';
     }
     const value = field.defaultValue;
+    if (field.id === 'waveform-note-slider') return window.WaveformNotes.get(value).name;
     if (field.id === 'waveform-type-slider') return ['Sine', 'Sawtooth', 'Square', 'Pulse'][Math.round(Number(value))];
     if (field.id === 'lines-variant-slider') return Number(value) === 1 ? 'LG' : 'MD';
     if (field.id === 'quantum-phase') return `${(Number(value) * 100).toFixed(1)}%`;

@@ -1,19 +1,19 @@
 global.WaveformAudio=require('../js/utils/waveformAudio');
 const scope=require('../js/utils/waveformScope');
 const {getLoopingGifFramePlan:plan}=require('../js/utils/loopingGif');
-const base={frequency:24,type:0};
+const base={note:24,type:0};
 const rate=6000;
 function samples(v,seconds=4) {
-  const hz=WaveformAudio.frequency(v.frequency);
+  const hz=WaveformAudio.frequency(v.note);
   return Float32Array.from({length:Math.ceil(seconds*rate)*2},(_,i)=> {
     const t=Math.floor(i/2)/rate;
     return .1*Math.sin(2*Math.PI*hz*t);
   });
 }
 test('default sweep follows one carrier cycle and ignores legacy modulation',()=>{
-  for(const frequency of [10,24,100])for(const enabled of [false,true])for(const lfoRate of [.07,2,1300])for(const depth of [0,25,100]) {
-    const v={...base,frequency,lfo:{...base.lfo,enabled,rate:lfoRate,depth}};
-    const visibleRate=WaveformAudio.frequency(frequency);
+  for(const note of [24,49,84])for(const enabled of [false,true])for(const lfoRate of [.07,2,1300])for(const depth of [0,25,100]) {
+    const v={...base,note,lfo:{...base.lfo,enabled,rate:lfoRate,depth}};
+    const visibleRate=WaveformAudio.frequency(note);
     expect(scope.sweepSpan(v)*visibleRate).toBeCloseTo(1,12);
     const display=scope.displaySettings(v);
     const captured=scope.recording(samples(v,Math.max(4,.1+display.replayLimit)),rate,.1,'offline',display);
@@ -46,9 +46,9 @@ test('live playback honors motion time without incoming packets, ignores packet 
     node.port.onmessage({data:new Float32Array(512).fill(.099)});c.tick(1);
     expect(c.frame()).toEqual(first.recording.frame(first.recording.replaySeconds*.3));
     c.tick(1,false);const frozen=c.capture();c.tick(99,false,true);expect(c.frame()).toBe(frozen.frame);
-    c.tick(4,true);expect(c.status()).toContain('sample playback');
+    c.tick(4,true);expect(c.status()).toContain('interpolated PCM');
     expect(first.recording.frame(0)).toBe(first.frame);
     c.configure({...base,type:2,lfo:{...base.lfo,depth:25}});c.tick(4);
-    expect(c.frame().seconds).toBeCloseTo(scope.duration(base),3);expect(c.frame().parameterChanges).toBe(true);
+    expect(c.frame().seconds).toBeCloseTo(scope.duration(base),3);expect(c.frame().parameterChanges).toBe(false);expect(c.status()).toContain('previous settings');
   } finally {c.dispose();}
 });

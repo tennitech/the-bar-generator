@@ -32,6 +32,7 @@ function createRuntime(overrides = {}) {
     barShareController: { getName: () => state.title },
     BarShareState: require('../../js/utils/shareState'),
     RulerScale: require('../../js/utils/rulerScale'),
+    WaveformNotes: require('../../js/utils/waveformNotes'),
     NumericControls: require('../../js/utils/numericControls'),
     NucleotidePattern: require('../../js/utils/nucleotidePattern'),
     quantumModel: require('../../js/utils/quantumModel'),

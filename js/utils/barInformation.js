@@ -27,7 +27,7 @@
   },
   "waveform": {
     "title": "Waveform",
-    "text": "Generate a repeating signal from the selected waveform and frequency. The scope shows the generated audio signal, not an external recording."
+    "text": "Choose a note from C1 to C6. The scope shows whole periods of the synthesized signal with an adaptive time window. Notes use equal temperament at A4 = 440 Hz."
   },
   "circles": {
     "title": "Circles",

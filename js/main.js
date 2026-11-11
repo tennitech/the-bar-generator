@@ -41,8 +41,8 @@ let tickerSpeedDisplay;
 let waveformGroup;
 let waveformTypeSlider;
 let waveformTypeDisplay;
-let waveformFrequencySlider;
-let waveformFrequencyDisplay;
+let waveformNoteSlider;
+let waveformNoteDisplay;
 let waveformSpeedSlider;
 let waveformSpeedDisplay;
 let waveformMotionToggle;
@@ -857,6 +857,7 @@ function cancelSliderValueEditor(config) {
 }
 
 function sliderEditorLimit(config, rawValue) {
+  if (typeof config.limitMessage === 'function') return config.limitMessage(rawValue);
   const value = parseSliderNumericInput(rawValue, { token: config.limitToken || 'first' });
   const min = config.editorMin ?? Number(config.slider.min);
   const max = config.editorMax ?? Number(config.slider.max);
@@ -1181,7 +1182,7 @@ function updateWaveformScopeControls() {
     onChange: () => { syncStatus(); requestUpdate(); }
   });
   window.waveformScopeController.configure({
-    frequency: waveformFrequencySlider?.value || 24, type: waveformTypeSlider?.value || 0
+    note: waveformNoteSlider?.value || 24, type: waveformTypeSlider?.value || 0
   });
   syncStatus();
 }
@@ -1355,12 +1356,12 @@ function resetStyleParameters(style) {
       break;
     case 'waveform':
       if (waveformTypeSlider) waveformTypeSlider.value = 0;
-      if (waveformFrequencySlider) waveformFrequencySlider.value = 24;
+      if (waveformNoteSlider) waveformNoteSlider.value = 24;
       if (waveformSpeedSlider) waveformSpeedSlider.value = getDefaultLoopSpeed('waveform');
       if (waveformReverseToggle) waveformReverseToggle.checked = false;
       resetWaveformScope();
       updateWaveformTypeDisplay();
-      updateWaveformFrequencyDisplay();
+      updateWaveformNoteDisplay();
       updateWaveformSpeedDisplay();
       updateAudioParameters();
 
@@ -1536,12 +1537,12 @@ function randomizeStyleParameters(style) {
       break;
     case 'waveform':
       if (waveformTypeSlider) waveformTypeSlider.value = pickRandom(['0', '1', '2', '3']);
-      if (waveformFrequencySlider) waveformFrequencySlider.value = randomDifferentStep(waveformFrequencySlider, 12, 88);
+      if (waveformNoteSlider) waveformNoteSlider.value = randomDifferentStep(waveformNoteSlider, 24, 84);
       if (waveformSpeedSlider) waveformSpeedSlider.value = window.MotionSpeed.rate('waveform', randomStepValue(0.2, 4, 0.05));
       if (waveformReverseToggle) waveformReverseToggle.checked = randomChance(0.5);
       updateWaveformScopeControls();
       updateWaveformTypeDisplay();
-      updateWaveformFrequencyDisplay();
+      updateWaveformNoteDisplay();
       updateWaveformSpeedDisplay();
       updateAudioParameters();
       break;
@@ -2363,8 +2364,8 @@ function setup() {
   waveformGroup = document.getElementById('waveform-group');
   waveformTypeSlider = document.getElementById('waveform-type-slider');
   waveformTypeDisplay = document.getElementById('waveform-type-display');
-  waveformFrequencySlider = document.getElementById('waveform-frequency-slider');
-  waveformFrequencyDisplay = document.getElementById('waveform-frequency-display');
+  waveformNoteSlider = document.getElementById('waveform-note-slider');
+  waveformNoteDisplay = document.getElementById('waveform-note-display');
   waveformSpeedSlider = document.getElementById('waveform-speed-slider');
   waveformSpeedDisplay = document.getElementById('waveform-speed-display');
   waveformMotionToggle = document.getElementById('waveform-motion-toggle');
@@ -2598,8 +2599,8 @@ function setup() {
     updateUrlParameters();
     requestUpdate();
   });
-  waveformFrequencySlider.addEventListener('input', function () {
-    updateWaveformFrequencyDisplay();
+  waveformNoteSlider.addEventListener('input', function () {
+    updateWaveformNoteDisplay();
     updateWaveformScopeControls();
     updateAudioParameters();
     updateUrlParameters();
@@ -2632,12 +2633,12 @@ function setup() {
   // Set default values only if no URL parameters
   if (!window.location.search) {
     waveformTypeSlider.value = "0"; // SINE
-    waveformFrequencySlider.value = "24"; // Frequency 24
+    waveformNoteSlider.value = "24"; // C1 (MIDI 24)
     waveformSpeedSlider.value = getDefaultLoopSpeed('waveform');
   }
 
   updateWaveformTypeDisplay(); // Set initial value
-  updateWaveformFrequencyDisplay(); // Set initial value
+  updateWaveformNoteDisplay(); // Set initial value
   updateWaveformSpeedDisplay(); // Set initial value
   syncMotionToggleState();
 
@@ -3211,11 +3212,15 @@ function setup() {
       ariaLabel: 'Set ticker motion speed'
     },
     {
-      slider: waveformFrequencySlider,
-      display: waveformFrequencyDisplay,
-      refreshDisplay: updateWaveformFrequencyDisplay,
-      commit: () => { updateWaveformFrequencyDisplay(); updateAudioParameters(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set waveform frequency'
+      slider: waveformNoteSlider,
+      display: waveformNoteDisplay,
+      refreshDisplay: updateWaveformNoteDisplay,
+      commit: () => { updateWaveformNoteDisplay(); updateAudioParameters(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set waveform note, C1 to C6',
+      inputMode: 'text',
+      limitMessage: value => window.WaveformNotes.parse(value) === null ? 'Enter a note from C1 to C6, such as C#3.' : '',
+      parseValue: value => window.WaveformNotes.parse(value),
+      getEditorValue: () => window.WaveformNotes.get(waveformNoteSlider.value).name
     },
     {
       ...window.MotionSpeed.editor('waveform', waveformSpeedSlider),
@@ -3697,9 +3702,11 @@ function updateWaveformTypeDisplay() {
   waveformTypeDisplay.textContent = displayText;
 }
 
-function updateWaveformFrequencyDisplay() {
-  const sliderValue = parseInt(waveformFrequencySlider.value);
-  waveformFrequencyDisplay.textContent = sliderValue;
+function updateWaveformNoteDisplay() {
+  const sliderValue = parseInt(waveformNoteSlider.value);
+  const note = window.WaveformNotes.get(sliderValue);
+  waveformNoteDisplay.textContent = note.name;
+  waveformNoteSlider.setAttribute('aria-valuetext', `${note.name}, ${note.frequencyHz.toFixed(3)} hertz`);
 }
 
 function updateWaveformSpeedDisplay() {
@@ -4270,9 +4277,9 @@ function getCurrentBarPatternValues(exactBarWidth) {
     nucleotideSequence: window.NucleotidePattern.normalize(document.getElementById('nucleotide-input').value),
     nucleotideVariant: document.getElementById('nucleotide-variant').value,
     binaryText: binaryInput ? normalizeBinaryText(sanitizeBarText(normalizeBinaryText(binaryInput.value || 'RPI'))) : 'RPI',
-    waveformPoints: getWaveformRenderPointCount(exactBarWidth, waveformFrequencySlider ? Number(waveformFrequencySlider.value) : 24),
+    waveformPoints: getWaveformRenderPointCount(exactBarWidth, window.WaveformNotes.get(waveformNoteSlider?.value).cycles),
     waveformType: waveformTypeSlider ? waveformTypeSlider.value : 0,
-    waveformFrequency: waveformFrequencySlider ? waveformFrequencySlider.value : 24,
+    waveformNote: waveformNoteSlider ? waveformNoteSlider.value : 24,
     waveformSpeed: normalizeLoopSpeed('waveform', waveformSpeedSlider ? waveformSpeedSlider.value : undefined),
     waveformScopeRequired: currentShader === 4,
     waveformScope: currentShader === 4 ? window.waveformScopeController?.frame() : null,
@@ -5234,9 +5241,6 @@ async function initializeAudio() {
   try {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-    // Load the pulse wave worklet
-    await audioContext.audioWorklet.addModule('js/pulse-worklet.js');
-
     // Create gain node for volume control and smooth fade in/out
     gainNode = audioContext.createGain();
     gainNode.connect(audioContext.destination);
@@ -5387,17 +5391,10 @@ async function startWaveformAudio() {
     await audioContext.resume();
   }
 
-  // Get current parameters
-  const frequency = parseInt(waveformFrequencySlider.value);
-
-  // Map frequency from 10-100 to C1-C5 (32.70Hz to 523.25Hz)
-  const minFreq = 32.70; // C1
-  const maxFreq = 523.25; // C5
-  const normalizedFreq = (frequency - 10) / 90; // Normalize 10-100 to 0-1
-  const mappedFrequency = minFreq + (normalizedFreq * (maxFreq - minFreq));
-
+  const note = window.WaveformNotes.normalize(waveformNoteSlider.value);
+  const mappedFrequency = window.WaveformNotes.get(note).frequencyHz;
   waveformCarrier = window.WaveformAudio.create(audioContext, gainNode, {
-    frequency, type: Number(waveformTypeSlider.value)
+    note, type: Number(waveformTypeSlider.value)
   });
   oscillators = waveformCarrier.oscillators;
   oscillatorGains = waveformCarrier.oscillatorGains;
@@ -5465,6 +5462,8 @@ function stopArtemisMissionAudio() {
 
 function stopWaveformAudio() {
   window.waveformScopeController?.detach();
+  const stopTime = waveformCarrier?.nextCycleBoundary(audioContext.currentTime + .05) || audioContext.currentTime + .05;
+  waveformCarrier?.fadeOutAt(stopTime);
   waveformCarrier = null;
   try {
     // Clear any previously scheduled values to fix play/pause bug
@@ -5472,9 +5471,10 @@ function stopWaveformAudio() {
 
     // Fade out master gain
     gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.05);
+    gainNode.gain.linearRampToValueAtTime(0, stopTime);
 
-    // Stop all oscillators after fade out
+    // End the carrier at a whole-cycle boundary after the finite release.
+    // The release envelope intentionally changes amplitude; it is not periodic.
     Object.keys(oscillators).forEach(type => {
       if (oscillators[type]) {
         if (type === 'pulse' && pulseWorkletNode) {
@@ -5482,7 +5482,7 @@ function stopWaveformAudio() {
           pulseWorkletNode.disconnect();
           pulseWorkletNode = null;
         } else if (oscillators[type].stop) {
-          oscillators[type].stop(audioContext.currentTime + 0.05);
+          oscillators[type].stop(stopTime);
         }
         oscillators[type] = null;
       }
@@ -6019,8 +6019,8 @@ function updateUrlParameters() {
     if (waveformTypeSlider && parseFloat(waveformTypeSlider.value) !== 0) {
       params.set('waveformType', waveformTypeSlider.value);
     }
-    if (waveformFrequencySlider && parseInt(waveformFrequencySlider.value) !== 24) {
-      params.set('waveformFrequency', waveformFrequencySlider.value);
+    if (waveformNoteSlider && parseInt(waveformNoteSlider.value) !== 24) {
+      params.set('waveformNote', waveformNoteSlider.value);
     }
     if (waveformSpeedSlider && parseFloat(waveformSpeedSlider.value) !== getDefaultLoopSpeed('waveform')) {
       params.set('waveformSpeed', waveformSpeedSlider.value);
@@ -6248,8 +6248,8 @@ function applyUrlParameters() {
   if (waveformTypeSlider) {
     waveformTypeSlider.value = params.waveformType;
   }
-  if (waveformFrequencySlider) {
-    waveformFrequencySlider.value = params.waveformFrequency;
+  if (waveformNoteSlider) {
+    waveformNoteSlider.value = params.waveformNote;
   }
   if (waveformSpeedSlider) {
     waveformSpeedSlider.value = params.waveformSpeed;
@@ -6290,7 +6290,7 @@ function updateAllDisplays() {
   updateTickerWidthRatioDisplay();
   updateTickerSpeedDisplay();
   updateWaveformTypeDisplay();
-  updateWaveformFrequencyDisplay();
+  updateWaveformNoteDisplay();
   updateWaveformSpeedDisplay();
   updateCirclesDensityDisplay();
   updateCirclesSizeVariationDisplay();
@@ -6311,7 +6311,7 @@ function updateAudioParameters() {
   if (!isAudioPlaying || currentShader !== 4) return;
 
   try {
-    waveformCarrier?.update({ frequency: waveformFrequencySlider.value, type: waveformTypeSlider.value });
+    waveformCarrier?.update({ note: waveformNoteSlider.value, type: waveformTypeSlider.value });
   } catch (error) {
     console.error('Failed to update audio parameters:', error);
   }

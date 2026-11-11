@@ -1,3 +1,6 @@
+const waveformNoteModel = typeof module !== 'undefined' && module.exports
+  ? require('./waveformNotes') : window.WaveformNotes;
+
 const rulerScaleModel = typeof module !== 'undefined' && module.exports
   ? require('./rulerScale') : window.RulerScale;
 
@@ -231,7 +234,11 @@ function createWaveformPatternGeometry(options = {}) {
   const height = Math.max(1, finite(options.barHeight, 18));
   const startX = finite(options.barStartX, 0);
   const startY = finite(options.barY, 0);
-  const frequency = Math.max(1, Math.min(100, Math.round(finite(options.waveformFrequency, 24))));
+  // Decorative selector fallback uses the same integer-cycle layout. The
+  // editor/export require real PCM and never label this ideal shape as audio.
+  const note = options.waveformNote ?? waveformNoteModel.fromLegacy(options.waveformFrequency);
+  const frequency = options.waveformNote !== undefined ? waveformNoteModel.get(note).cycles
+    : Math.max(1, Math.min(100, Math.round(finite(options.waveformFrequency, 24))));
   const type = clampWaveformValue(finite(options.waveformType, 0), 0, 3);
   const speed = finite(options.waveformSpeed, 0.3);
   const time = finite(options.timeSeconds, 0);

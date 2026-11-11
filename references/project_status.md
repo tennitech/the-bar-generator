@@ -1,5 +1,30 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
+## November 11 note-based whole-cycle Waveform redesign
+
+The new note model selects C1–C6 (MIDI 24–84), derives unrounded 12-TET A440
+pitch/period values, and plots the nearest whole-cycle span to the C1 reference.
+The time window adapts by note; exact pitch is never rounded to fit a fixed
+30.5 ms interval. The UI names notes, exposes physical window/cycle metadata,
+and migrates old linear-index URLs/shares to their nearest tuned note.
+
+Actual generated PCM remains the source of editor/header/static/GIF geometry.
+Fractional endpoint reconstruction replaces block-truncated periods. Live
+transitions hold settled views; exports retain the displayed note/type even
+when controls are newer. Native DC-free Fourier Pulse replaces the aliasing
+threshold worklet. Shared future starts, phase-continuous note steps, finite
+shape ramps and scheduled cycle-boundary stops have explicit sample-precision
+limits. No LFO, framework, colors or institutional assets are added.
+
+A 61-entry descriptor table, eight-entry offline PCM LRU and 16-entry per-graph
+PeriodicWave cache reduce repeated work without rendering all combinations.
+Model/source comments and [contributor guidance](waveform_notes.md) describe the
+assumptions, equations, phase conventions, tradeoffs and numerical limits.
+[QA](waveform_notes_qa.md) records all-note native synthesis, exact exported
+geometry/pixels, tests and unverified browser/hardware acceptance. The branch
+is retained pending explicit user testing; automated checks are not acceptance.
+
+
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
