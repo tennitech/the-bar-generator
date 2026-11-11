@@ -13,11 +13,15 @@ const PRESS_SPEED_FACTOR = 0;
 const EASE_RATE = 5.2;
 const BRAKE_RATE = 28;
 const DRAG_THRESHOLD = 8;
-// An exponential glide keeps quick flicks lively without unbounded travel.
+// Sample smoothing is independent of the bounded release spring.
 const INERTIA_FRICTION = 2.8;
 const INERTIA_CATCH_GRACE_MS = 180;
 const INERTIA_CATCH_DISTANCE = 18;
 const INERTIA_STOP_SPEED = 8;
+const RELEASE_PROJECTION_SECONDS = 0.28;
+const RELEASE_SPRING_FREQUENCY = 10;
+const RELEASE_SPRING_DAMPING = 0.6;
+const RELEASE_STOP_DISTANCE = 0.5;
 const STARTUP_STYLE_PROMPT_DELAY = 450;
 const BASE_SPEEDS = [24, 28, 26, 30, 27, 29, 25, 28, 26, 30];
 const HERO_CLUSTER_WIDTH = 960;
@@ -396,14 +400,22 @@ function getReleaseVelocity(velocity, idleMilliseconds) {
   return velocity * Math.exp(-Math.max(0, idle - 35) / 45);
 }
 
-function advanceRowInertia(velocity, seconds) {
-  if (!velocity || !(seconds > 0)) return { velocity: velocity || 0, distance: 0 };
-  const decay = Math.exp(-INERTIA_FRICTION * seconds);
-  const next = velocity * decay;
-  return {
-    velocity: Math.abs(next) < INERTIA_STOP_SPEED ? 0 : next,
-    distance: velocity * (1 - decay) / INERTIA_FRICTION
-  };
+// Exact underdamped spring integration: launch at the measured hand velocity,
+// overshoot a bounded projected resting point, then settle with a small recoil.
+// Keeping offset across frames prevents frame-rate-dependent Euler wobble.
+function advanceRowInertia(velocity, seconds, offset = -velocity * RELEASE_PROJECTION_SECONDS) {
+  if (!(seconds > 0)) return { velocity, offset, distance: 0 };
+  const decayRate = RELEASE_SPRING_FREQUENCY * RELEASE_SPRING_DAMPING;
+  const frequency = RELEASE_SPRING_FREQUENCY * Math.sqrt(1 - RELEASE_SPRING_DAMPING ** 2);
+  const decay = Math.exp(-decayRate * seconds);
+  const cosine = Math.cos(frequency * seconds), sine = Math.sin(frequency * seconds);
+  const nextOffset = decay * (offset * cosine + (velocity + decayRate * offset) / frequency * sine);
+  const nextVelocity = decay * (velocity * cosine
+    - (decayRate * velocity + RELEASE_SPRING_FREQUENCY ** 2 * offset) / frequency * sine);
+  if (Math.abs(nextVelocity) < INERTIA_STOP_SPEED && Math.abs(nextOffset) < RELEASE_STOP_DISTANCE) {
+    return { velocity: 0, offset: 0, distance: -offset };
+  }
+  return { velocity: nextVelocity, offset: nextOffset, distance: nextOffset - offset };
 }
 
 function resetRowInteraction(state) {
@@ -411,6 +423,7 @@ function resetRowInteraction(state) {
   if (drag) state.suppressClick = true;
   state.drag = null;
   state.inertiaVelocity = 0;
+  state.inertiaOffset = 0;
   state.inertiaOrigin = null;
   state.isPressed = false;
   state.isHovered = false;
@@ -427,10 +440,11 @@ function bindAssetInteractions(asset, state) {
   function catchMovingLane(event) {
     // Let a deliberate flick leave the hand. Release jitter and synthetic
     // boundary events must not cancel it; later movement to inspect a bar does.
-    if (state.inertiaVelocity && state.inertiaOrigin && event.pointerType !== 'touch'
+    if ((state.inertiaVelocity || state.inertiaOffset) && state.inertiaOrigin && event.pointerType !== 'touch'
       && event.timeStamp - state.inertiaOrigin.time >= INERTIA_CATCH_GRACE_MS
       && Math.hypot(event.clientX - state.inertiaOrigin.x, event.clientY - state.inertiaOrigin.y) > INERTIA_CATCH_DISTANCE) {
       state.inertiaVelocity = 0;
+      state.inertiaOffset = 0;
       state.inertiaOrigin = null;
     }
   }
@@ -445,6 +459,7 @@ function bindAssetInteractions(asset, state) {
   asset.addEventListener('focus', () => {
     state.focusedAsset = asset;
     state.inertiaVelocity = 0;
+    state.inertiaOffset = 0;
     syncRowTargetFactor(state);
   });
   asset.addEventListener('blur', () => {
@@ -468,6 +483,7 @@ function bindAssetInteractions(asset, state) {
     if (event.button !== 0 || event.ctrlKey
       || event.metaKey || event.shiftKey || event.altKey || state.drag) return;
     state.inertiaVelocity = 0;
+    state.inertiaOffset = 0;
     state.isHovered = event.pointerType !== 'touch';
     state.isPressed = true;
     setHoveredAsset(state, state.isHovered ? asset : null);
@@ -536,6 +552,7 @@ function bindAssetInteractions(asset, state) {
     // A held release, cancellation, or any motion pause never throws.
     state.inertiaVelocity = released && drag.moved && !reduced && !paused
       ? getReleaseVelocity(drag.velocity, event.timeStamp - drag.time) : 0;
+    state.inertiaOffset = -state.inertiaVelocity * RELEASE_PROJECTION_SECONDS;
     state.inertiaOrigin = { x: event.clientX, y: event.clientY, time: event.timeStamp };
     state.drag = null;
     state.isPressed = false;
@@ -605,6 +622,7 @@ function createRow(index) {
     pressedAsset: null,
     drag: null,
     inertiaVelocity: 0,
+    inertiaOffset: 0,
     inertiaOrigin: null,
     suppressClick: false,
     rowWidth: 0,
@@ -919,8 +937,9 @@ function initMarqueeScene() {
       }
 
       if (state.drag) return;
-      if (state.inertiaVelocity) {
-        const inertia = advanceRowInertia(state.inertiaVelocity, dt);
+      if (state.inertiaVelocity || state.inertiaOffset) {
+        const inertia = advanceRowInertia(state.inertiaVelocity, dt, state.inertiaOffset);
+        state.inertiaOffset = inertia.offset;
         state.inertiaVelocity = inertia.velocity;
         state.travel += inertia.distance * state.direction;
       } else {
@@ -948,6 +967,7 @@ function initMarqueeScene() {
       if (document.hidden) cancelInteractions();
       else rowStates.forEach(state => {
         state.inertiaVelocity = 0;
+        state.inertiaOffset = 0;
         state.currentFactor = 0;
       });
       if (animationFrame) window.cancelAnimationFrame(animationFrame);

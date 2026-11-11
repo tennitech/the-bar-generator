@@ -3,6 +3,24 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 elastic marquee drag release
+
+Dragging remains directly attached to the pointer. On a deliberate throw, each
+lane now launches into a bounded underdamped spring rather than a friction-only
+glide. The resting point is projected 0.28 seconds from sampled hand velocity;
+a 10 rad/s spring at damping ratio 0.6 gives a visible controlled overshoot and
+small recoil before settling. Exact closed-form integration keeps the trajectory
+consistent across frame rates without an additional scheduler or DOM nodes.
+
+A new press, keyboard focus, deliberate hover catch, cancellation, hidden page,
+scroll pause, or reduced motion clears both velocity and spring offset. Held
+drags still settle without a throw; touch scrolling, click suppression, lane
+projection, layout and bar artwork are unchanged. Subpixel rest thresholds stop
+the tail. Tests cover both directions, bounded overshoot/recoil, exact rest,
+30–240 Hz agreement and interaction interruption. Both Home JS keys advance.
+Final suite, CI and production evidence are recorded in the PR; no export or
+logo geometry changes are included.
+
 ## November 11 brisk, soft-start Home focus fade
 
 Follow-up feedback asked for faster entry and exit without the flash when the

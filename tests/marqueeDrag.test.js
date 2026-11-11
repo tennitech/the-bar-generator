@@ -19,24 +19,30 @@ describe('lane drag physics', () => {
     expect(sampleDragVelocity(0, 1, 0.01, 1800)).toBeLessThan(100);
   });
 
-  test.each([1800, -1800])('inertia has bounded travel and reaches rest for velocity %i', initial => {
-    let velocity = initial, distance = 0, steps = 0;
-    while (velocity && steps++ < 1000) {
-      const next = advanceRowInertia(velocity, 1 / 120);
-      expect(Math.abs(next.velocity)).toBeLessThan(Math.abs(velocity));
-      velocity = next.velocity; distance += next.distance;
+  test.each([1800, -1800])('spring release overshoots and settles with bounded travel for %i', initial => {
+    let velocity = initial, offset = -initial * 0.28, distance = 0, peak = 0, steps = 0, recoiled = false;
+    while ((velocity || offset) && steps++ < 1000) {
+      const next = advanceRowInertia(velocity, 1 / 120, offset);
+      if (next.velocity * initial < 0) recoiled = true;
+      velocity = next.velocity; offset = next.offset; distance += next.distance;
+      peak = Math.max(peak, Math.abs(distance));
     }
     expect(velocity).toBe(0);
-    expect(steps).toBeLessThan(250);
-    expect(Math.abs(distance)).toBeLessThan(Math.abs(initial) / 2.8);
-    expect(Math.sign(distance)).toBe(Math.sign(initial));
+    expect(offset).toBe(0);
+    expect(steps).toBeLessThan(180);
+    expect(recoiled).toBe(true);
+    expect(peak).toBeGreaterThan(Math.abs(initial) * 0.28);
+    expect(peak).toBeLessThan(Math.abs(initial) * 0.33);
+    expect(distance).toBeCloseTo(initial * 0.28, 8);
   });
 
-  test('a flick keeps a useful glide instead of braking almost immediately', () => {
+  test('a flick carries forward then has a small elastic recoil instead of a friction-only stop', () => {
     const next = advanceRowInertia(1000, 0.5);
-    expect(next.distance).toBeGreaterThan(250);
-    expect(next.distance).toBeLessThan(300);
-    expect(next.velocity).toBeGreaterThan(200);
+    expect(next.distance).toBeGreaterThan(280);
+    expect(next.distance).toBeLessThan(310);
+    expect(next.velocity).toBeLessThan(0);
+    expect(advanceRowInertia(1000, 0).distance).toBe(0);
+    expect(advanceRowInertia(0, 1)).toEqual({ velocity: 0, offset: 0, distance: 0 });
   });
 
   test('release timing tapers old samples and a held drag settles completely', () => {
@@ -51,10 +57,11 @@ describe('lane drag physics', () => {
   });
 
   test('inertia integrates the same distance at different frame rates', () => {
-    const simulate = hz => Array.from({ length: hz / 2 }).reduce(({ velocity, distance }) => {
-      const next = advanceRowInertia(velocity, 1 / hz);
-      return { velocity: next.velocity, distance: distance + next.distance };
-    }, { velocity: 1800, distance: 0 });
+    const simulate = hz => Array.from({ length: hz / 2 }).reduce(({ velocity, offset, distance }) => {
+      const next = advanceRowInertia(velocity, 1 / hz, offset);
+      return { velocity: next.velocity, offset: next.offset, distance: distance + next.distance };
+    }, { velocity: 1800, offset: -1800 * 0.28, distance: 0 });
+    expect(simulate(30).distance).toBeCloseTo(simulate(60).distance, 10);
     expect(simulate(60).distance).toBeCloseTo(simulate(120).distance, 10);
     expect(simulate(120).distance).toBeCloseTo(simulate(240).distance, 10);
   });
@@ -123,6 +130,7 @@ describe('native-link and gesture lifecycle', () => {
       send('pointermove', { clientX: 200 - 60 * axis.y, clientY: 100 + 60 * axis.x, timeStamp: 90 });
       send(type, { timeStamp: 300 });
       expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0);
     }
   });
 
@@ -186,6 +194,7 @@ describe('native-link and gesture lifecycle', () => {
     send('pointerup', { clientX: 103, clientY: 102, timeStamp: 30 });
     expect(state.travel).toBe(400);
     expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0);
     expect(state.drag).toBe(null);
     expect(send('click').preventDefault).not.toHaveBeenCalled();
     expect(state.currentFactor).toBe(0);
@@ -199,11 +208,13 @@ describe('native-link and gesture lifecycle', () => {
     expect(state.element.classList.contains('is-dragging')).toBe(true);
     send('pointerup', { timeStamp: 80 });
     expect(state.inertiaVelocity).toBeGreaterThan(100);
+    expect(state.inertiaOffset).toBeCloseTo(-state.inertiaVelocity * 0.28);
     expect(asset.hasPointerCapture(1)).toBe(false);
     expect(state.element.classList.contains('is-dragging')).toBe(false);
     expect(send('click').preventDefault).toHaveBeenCalledTimes(1);
     send('pointerdown', { timeStamp: 100 });
     expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0);
     send('pointerup', { timeStamp: 120 });
     expect(send('click').preventDefault).not.toHaveBeenCalled();
   });
@@ -213,6 +224,7 @@ describe('native-link and gesture lifecycle', () => {
     send('pointerdown'); send('pointermove', { clientX: 180, timeStamp: 40 });
     send(type, { timeStamp: 50 });
     expect(state.drag).toBe(null); expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0);
     expect(state.isPressed).toBe(false); expect(asset.hasPointerCapture(1)).toBe(false);
     expect(send('click').preventDefault).toHaveBeenCalledTimes(1);
   });
@@ -234,7 +246,19 @@ describe('native-link and gesture lifecycle', () => {
     expect(state.inertiaVelocity).toBe(velocity);
     send('pointermove', { clientX: 210, buttons: 0, timeStamp: 420 });
     expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0);
     expect(state.currentFactor).toBe(0);
+  });
+
+  test('hover can catch the spring at its zero-velocity turning point', () => {
+    const { state, send } = fixture();
+    state.inertiaVelocity = 0;
+    state.inertiaOffset = 12;
+    state.inertiaOrigin = { x: 100, y: 100, time: 0 };
+    send('pointermove', { clientX: 130, buttons: 0, timeStamp: 400 });
+    expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset).toBe(0);
+    expect(state.inertiaOrigin).toBe(null);
   });
 
   test('holding after dragging releases without a throw', () => {
@@ -242,6 +266,7 @@ describe('native-link and gesture lifecycle', () => {
     send('pointerdown'); send('pointermove', { clientX: 180, timeStamp: 40 });
     send('pointerup', { timeStamp: 300 });
     expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0);
   });
 
   test('reduced motion permits direct manipulation but never inertia', () => {
@@ -250,6 +275,7 @@ describe('native-link and gesture lifecycle', () => {
     send('pointerdown'); send('pointermove', { clientX: 180, timeStamp: 40 });
     expect(state.travel).not.toBe(400);
     send('pointerup', { timeStamp: 50 }); expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0);
   });
 
   test('an explicit motion pause permits direct dragging but never inertia', () => {
@@ -258,6 +284,7 @@ describe('native-link and gesture lifecycle', () => {
     send('pointerdown'); send('pointermove', { clientX: 180, timeStamp: 40 });
     expect(state.travel).not.toBe(400);
     send('pointerup', { timeStamp: 50 }); expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0);
   });
 
   test('vertical touch intent cancels without blocking native pan or pinch', () => {
@@ -284,6 +311,7 @@ describe('native-link and gesture lifecycle', () => {
     send('pointerdown'); send('pointermove', { clientX: 180, timeStamp: 40 });
     resetRowInteraction(state);
     expect(state.drag).toBe(null); expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0);
     expect(state.isPressed).toBe(false); expect(state.isHovered).toBe(false);
     expect(asset.hasPointerCapture(1)).toBe(false);
     expect(send('click', { detail: 0 }).preventDefault).not.toHaveBeenCalled();
@@ -303,6 +331,7 @@ describe('native-link and gesture lifecycle', () => {
     expect(state.currentFactor).toBe(0);
     expect(state.targetFactor).toBe(0);
     expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0);
   });
 
   test('uncaptured touch movement does not restore mouse hover after an interruption', () => {
@@ -327,7 +356,8 @@ describe('native-link and gesture lifecycle', () => {
     const { state, send } = fixture();
     send('pointerdown'); send('pointermove', { buttons: 0, clientX: 180, timeStamp: 40 });
     expect(state.drag).toBe(null); expect(state.isPressed).toBe(false);
-    expect(state.inertiaVelocity).toBe(0); expect(state.travel).toBe(400);
+    expect(state.inertiaVelocity).toBe(0);
+    expect(state.inertiaOffset || 0).toBe(0); expect(state.travel).toBe(400);
   });
 
   test('native link ghost dragging is disabled', () => {
