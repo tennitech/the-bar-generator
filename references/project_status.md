@@ -28,6 +28,24 @@ is retained pending explicit user testing; automated checks are not acceptance.
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 working quantum studies
+
+Well Modes and Rabi are enabled under Under Construction with direct routes,
+model controls, local parameter actions, reduced-motion-safe transport and
+PNG/SVG/GIF exports. They remain outside Home's promoted catalog pending the
+owner's category approval. Existing placeholders and Ring Wavefunction remain
+unchanged. Future iterative bars should be accessible in this category first.
+
+The studies use normalized ideal models, fixed vertical scales and shared
+polygon renderers for live canvas, header and exported frames. Well's full-well
+probability density retains actual nodes; Rabi shows complementary excited and
+ground populations over a duration scan, not spatial particle motion. See the
+[model assumptions, controls, source links and QA scope](quantum_studies.md).
+No new fonts or assets, official lettering edits, or formal brand-approval claims
+are introduced. Full local/required-CI results are recorded in the PR. Cloud
+browser access timed out, so live UI/download/mobile smoke remains unverified;
+offline light/dark/red proofs and controller/export regressions were inspected.
+
 ## November 11 taller physical marquee targets
 
 Directional prediction is removed following user testing. Each native bar link

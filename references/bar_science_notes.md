@@ -600,3 +600,14 @@ a Galilean-transformed quantum state. Preview and export share it. Display
 phase q now traverses a 4.28-second cycle at 1×; nonzero old phase links migrate
 to that new view, while phase-zero still images are unchanged. See
 [model and limits](quantum_model.md) and [measured GIF QA](ring_short_loop_qa.md).
+
+
+## November 11 Well Modes and Rabi studies
+
+Two working Under Construction families now expose ideal, dimensionless quantum
+models without promoting them into Home's approved categories. Well Modes draws
+normalized two-mode infinite-well probability density with fixed gain and real
+zeros. Rabi draws complementary populations from the initial-ground-state RWA
+solution over a pulse-duration scan. Its apparent translation is parameter
+scanning, not motion in physical space. Both use an illustrative eight-second
+default cycle. See [complete formulas, restrictions, sources and export QA](quantum_studies.md).

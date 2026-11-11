@@ -1062,6 +1062,12 @@ function createUnionPatternGeometry(options = {}) {
   };
 }
 
+function createQuantumStudyPatternGeometry(options = {}) {
+  const model = typeof module !== 'undefined' && module.exports
+    ? require('./quantumStudyModel') : window.quantumStudyModel;
+  return model.createGeometry(options);
+}
+
 function createWaveQuantumPatternGeometry(options = {}) {
   const model = typeof quantumModel !== 'undefined' ? quantumModel : require('./quantumModel');
   const barStartX = Number(options.barStartX || 0);
@@ -1726,6 +1732,16 @@ function createBarPatternSVG(config) {
     values
   } = config;
 
+  if (currentShader === 26 || currentShader === 27) {
+    const geometry = createQuantumStudyPatternGeometry({
+      ...values, currentShader, barStartX, barY, exactBarWidth, barHeight
+    });
+    const description = JSON.stringify(geometry.metadata).replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<desc>${description}</desc>` + geometry.polygons.map(polygon =>
+      `\n    <polygon points="${polygon.map(point => `${point.x},${point.y}`).join(' ')}" fill="${fgColor}"/>`).join('');
+  }
+
   if (currentShader === 25) {
     const model = typeof module !== 'undefined' && module.exports ? require('./nucleotidePattern') : window.NucleotidePattern;
     return model.svg({ preview: values.nucleotidePreview === true, sequence: values.nucleotideSequence, variant: values.nucleotideVariant, x: barStartX, y: barY, width: exactBarWidth, height: barHeight, fill: fgColor });
@@ -2273,6 +2289,7 @@ if (typeof window !== 'undefined') {
   window.createNumericHeightPolygons = createNumericHeightPolygons;
   window.createBarPatternSVG = createBarPatternSVG;
   window.createBinaryPatternGeometry = createBinaryPatternGeometry;
+  window.createQuantumStudyPatternGeometry = createQuantumStudyPatternGeometry;
   window.createWaveQuantumPatternGeometry = createWaveQuantumPatternGeometry;
   window.createWaveformPatternGeometry = createWaveformPatternGeometry;
   window.mapWaveformToBarYFraction = mapWaveformToBarYFraction;
@@ -2306,6 +2323,7 @@ if (typeof module !== 'undefined' && module.exports) {
     createTrussPatternGeometry,
     createTrianglesPatternGeometry,
     createUnionPatternGeometry,
+    createQuantumStudyPatternGeometry,
     createWaveQuantumPatternGeometry,
     createWaveformPatternGeometry,
     mapWaveformToBarYFraction,

@@ -12,7 +12,7 @@ function drawRuntime() {
     REFERENCE_WIDTH: 250, REFERENCE_LOGO_HEIGHT: 111.4885, LOGO_VERTICAL_OFFSET: -75.24425,
     paths: { r: 'r', p: 'p', i: 'i' }, colors: { lunar: { fg: '#f4f7fb' }, white: { fg: '#ffffff' } },
     document: { hidden: false, body: { classList: { contains: value => classes.has(value) } } },
-    quantumControls: { tick: jest.fn() }, PageEntrance: { isHoldingArtwork: () => false },
+    quantumStudyControls: { tick: jest.fn() }, quantumControls: { tick: jest.fn() }, PageEntrance: { isHoldingArtwork: () => false },
     _renderer: { canvas: { width: 2000, height: 1400 } },
     createLunarBarVectorFragment: () => '',
     tickWaveformScope: jest.fn(), getAnimationNowMs: () => 1234, getCurrentMotionStyle: () => null,

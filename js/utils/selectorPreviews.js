@@ -5,7 +5,7 @@
     numeric: 6, morse: 7, runway: 8, lines: 13, 'point-connect': 14,
     'triangle-grid': 15, 'circles-gradient': 16, gradient: 17, grid: 18,
     triangles: 19, 'fibonacci-sequence': 20, union: 21, 'wave-quantum': 22,
-    'neural-network': 23, lunar: 24, nucleotide: 25 };
+    'neural-network': 23, lunar: 24, nucleotide: 25, 'well-modes': 26, rabi: 27 };
   function sample(style) {
     if (style === 'solid') return '<rect width="250" height="18" fill="currentColor"/>';
     if (!Object.hasOwn(shaders, style)) return '';

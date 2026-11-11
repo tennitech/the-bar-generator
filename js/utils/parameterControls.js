@@ -9,7 +9,7 @@
   // Every available family is intentional: fixed artwork has no parameter actions.
   const capabilities = Object.freeze({
     nucleotide: 'nucleotide', solid: null, ruler: 'ruler', binary: 'binary', morse: 'morse', ticker: 'ticker',
-    waveform: 'waveform', 'wave-quantum': 'quantum', circles: 'circles', numeric: 'numeric',
+    waveform: 'waveform', 'wave-quantum': 'quantum', 'well-modes': 'well-modes', rabi: 'rabi', circles: 'circles', numeric: 'numeric',
     'circles-gradient': 'circles-gradient', gradient: 'gradient', grid: 'grid', lines: 'lines',
     'point-connect': 'point-connect', 'neural-network': 'neural-network',
     'triangle-grid': 'triangle-grid', triangles: 'triangles',
@@ -81,6 +81,9 @@
     if (field.id === 'quantum-phase' && scope.quantumModel) {
       const phase = scope.quantumControls?.settingPhase?.() ?? field.value;
       return scope.quantumModel.normalizePhase(phase) === scope.quantumModel.normalizePhase(field.defaultValue);
+    }
+    if (['well-phase', 'rabi-phase'].includes(field.id) && scope.quantumStudyControls) {
+      return Math.abs(scope.quantumStudyControls.settingPhase(field.id.split('-')[0]) - Number(field.defaultValue)) < 1e-12;
     }
     if (field.type === 'range') return Number(field.value) === Number(field.defaultValue);
     if (field.tagName === 'SELECT') {

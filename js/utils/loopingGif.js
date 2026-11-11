@@ -7,7 +7,7 @@
 
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient', 'wave-quantum']);
+  const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient', 'wave-quantum', 'well-modes', 'rabi']);
   // Uniform 20 ms GIF frames avoid alternating delays at the default cadence.
   const DEFAULT_CAPTURE_FPS = 50;
   const MIN_CAPTURE_FPS = 12;
@@ -105,8 +105,15 @@
     return typeof quantumModel !== 'undefined' ? quantumModel : require('./quantumModel');
   }
 
+  const isQuantumStudy = style => style === 'well-modes' || style === 'rabi';
+  const studyPrefix = style => style === 'well-modes' ? 'well' : 'rabi';
+  function getQuantumStudyModel() {
+    return typeof quantumStudyModel !== 'undefined' ? quantumStudyModel : require('./quantumStudyModel');
+  }
+
   function getLoopSpeed(style, values = {}) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
+    if (isQuantumStudy(normalizedStyle)) return getQuantumStudyModel().normalizeSpeed(values[`${studyPrefix(normalizedStyle)}Speed`] ?? 1) / getQuantumStudyModel().PERIOD_SECONDS;
     if (normalizedStyle === 'wave-quantum') return getQuantumModel().normalizeSpeed(values.quantumSpeed ?? 1) / getQuantumModel().PERIOD_SECONDS;
     if (normalizedStyle === 'ticker') {
       return normalizeLoopSpeed(normalizedStyle, values.tickerSpeed);
@@ -124,7 +131,7 @@
     if (!LOOPING_GIF_STYLE_SET.has(normalizedStyle)) return false;
     // Both translating patterns move toward increasing screen x by default.
     // Ticker subtracts its offset; Waveform subtracts temporal phase.
-    const checked = normalizeLoopReverse(normalizedStyle, normalizedStyle === 'wave-quantum' ? values.quantumReverse : values[`${normalizedStyle}Reverse`]);
+    const checked = normalizeLoopReverse(normalizedStyle, normalizedStyle === 'wave-quantum' ? values.quantumReverse : values[`${isQuantumStudy(normalizedStyle) ? studyPrefix(normalizedStyle) : normalizedStyle}Reverse`]);
     return normalizedStyle === 'ticker' ? !checked : checked;
   }
 
@@ -166,6 +173,9 @@
   function advanceLiveLoopPhase(phase, style, values = {}, deltaMs = 0) {
     const normalizedStyle = normalizeLoopingGifStyle(style);
     if (!isLoopingGifEligibleStyle(normalizedStyle)) return 0;
+    if (isQuantumStudy(normalizedStyle)) return getQuantumStudyModel().advancePhase(phase, deltaMs, {
+      speed: values[`${studyPrefix(normalizedStyle)}Speed`] ?? 1, reverse: getLoopReverse(normalizedStyle, values)
+    });
     if (normalizedStyle === 'wave-quantum') return getQuantumModel().advancePhase(phase, deltaMs, {
       speed: values.quantumSpeed ?? 1, reverse: getLoopReverse(normalizedStyle, values)
     });
@@ -195,6 +205,19 @@
       MAX_CAPTURE_FPS
     );
     const barWidth = toPositiveNumber(options.barWidth, 250);
+
+    if (isQuantumStudy(normalizedStyle)) {
+      const model = getQuantumStudyModel(), prefix = studyPrefix(normalizedStyle);
+      const periodSeconds = model.PERIOD_SECONDS / model.normalizeSpeed(values[`${prefix}Speed`] ?? 1);
+      const frameCount = Math.max(2, Math.floor(Math.round(periodSeconds * 100) * fps / 100));
+      const phase = model.normalizePhase(values[`${prefix}Phase`]);
+      const direction = getLoopReverse(normalizedStyle, values) ? -1 : 1;
+      return { style: normalizedStyle, frameCount, periodSeconds,
+        frameDelayMs: Math.round(periodSeconds * 1000 / frameCount), repeatWidth: 0,
+        getLoopOffsetX() { return 0; },
+        getQuantumStudyPhase(progress) { return model.normalizePhase(phase + direction * progress); }
+      };
+    }
 
     if (normalizedStyle === 'wave-quantum') {
       const model = getQuantumModel();
@@ -285,6 +308,10 @@
     }
 
     const elapsedSeconds = Math.max(0, Number(options.elapsedSeconds) || 0);
+    if (isQuantumStudy(normalizedStyle)) return { ...framePlan,
+      [`${studyPrefix(normalizedStyle)}Phase`]: Number.isFinite(options.phase)
+        ? getQuantumStudyModel().normalizePhase(options.phase) : framePlan.getQuantumStudyPhase(elapsedSeconds / framePlan.periodSeconds)
+    };
     if (normalizedStyle === 'wave-quantum') return {
       ...framePlan, quantumPhase: Number.isFinite(options.phase)
         ? getQuantumModel().normalizePhase(options.phase) : framePlan.getQuantumPhase(elapsedSeconds / framePlan.periodSeconds)

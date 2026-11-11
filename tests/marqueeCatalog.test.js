@@ -2,9 +2,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { entries, samples, selectEntries } = require('../js/utils/marqueeCatalog');
 const { ROUTABLE_STYLE_VALUES, UNAVAILABLE_STYLE_VALUES } = require('../js/utils/generatorRoutes');
-test('every implemented route has one canonical entry and bounded real samples', () => {
-  expect(new Set(entries.map(entry => entry.value))).toEqual(ROUTABLE_STYLE_VALUES);
-  expect(entries).toHaveLength(ROUTABLE_STYLE_VALUES.size);
+const shell = fs.readFileSync(path.join(__dirname, '../generator/index.html'), 'utf8');
+const constructionGroup = shell.match(/<optgroup label="Under Construction">([\s\S]*?)<\/optgroup>/)[1];
+const construction = new Set([...constructionGroup.matchAll(/<option\b([^>]*)value="([^"]+)"([^>]*)>/g)]
+  .filter(match => !/\bdisabled\b/.test(match[1] + match[3])).map(match => match[2]));
+const promoted = new Set([...ROUTABLE_STYLE_VALUES].filter(style => !construction.has(style)));
+test('promoted routes have canonical Home entries; accessible studies wait for category approval', () => {
+  expect([...construction].sort()).toEqual(['rabi', 'well-modes']);
+  for (const style of construction) expect(ROUTABLE_STYLE_VALUES.has(style)).toBe(true);
+  expect(new Set(entries.map(entry => entry.value))).toEqual(promoted);
+  expect(entries).toHaveLength(promoted.size);
   expect(new Set(samples.map(sample => sample.path)).size).toBe(samples.length);
   for (const entry of entries) {
     expect(UNAVAILABLE_STYLE_VALUES.has(entry.value)).toBe(false);
@@ -28,11 +35,11 @@ test('every implemented route has one canonical entry and bounded real samples',
     expect(artwork.size).toBe(entry.variants.length);
   }
 });
-test('selection chooses exactly one sample per family with only 21 unique asset URLs', () => {
+test('selection chooses one sample per promoted family without adding iterative studies', () => {
   for (const random of [() => 0, () => 0.5, () => 0.999999]) {
     const selection = selectEntries(random);
     expect(selection).toHaveLength(entries.length);
-    expect(new Set(selection.map(sample => sample.value))).toEqual(ROUTABLE_STYLE_VALUES);
+    expect(new Set(selection.map(sample => sample.value))).toEqual(promoted);
     expect(new Set(selection.map(sample => sample.path)).size).toBe(entries.length);
     for (const sample of selection) expect(samples).toContain(sample);
   }
