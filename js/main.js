@@ -2457,15 +2457,6 @@ function setup() {
       }
     });
   }
-  document.addEventListener('keydown', event => {
-    if (event.metaKey || event.ctrlKey || event.altKey || event.target.closest(
-      'input,textarea,select,dialog,[contenteditable="true"],[role="combobox"]')) return;
-    if (['+', '=', '-', '0'].includes(event.key)) {
-      event.preventDefault();
-      if (event.key === '0') fitPreview();
-      else stepPreviewZoom(event.key === '-' ? -1 : 1);
-    }
-  });
   updateZoomControls();
 
   circlesSizeVariationSlider = document.getElementById('circles-size-variation-slider');
@@ -3432,105 +3423,44 @@ function setup() {
   });
   window.addEventListener('urlstateerror', () => Toast.show('The address could not update. Keep this page open to preserve your current bar.', 'error'));
 
-  // Add global keyboard event listener for more reliable shift detection
-  document.addEventListener('keydown', function (event) {
-    // Only handle keyboard events on non-mobile devices
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-      return; // Skip keyboard shortcuts on mobile
-    }
-
-    const targetTag = event.target && event.target.tagName ? event.target.tagName : '';
-    const isTypingContext = (
-      event.target &&
-      (
-        event.target.isContentEditable ||
-        targetTag === 'INPUT' ||
-        targetTag === 'TEXTAREA' ||
-        targetTag === 'SELECT' ||
-        targetTag === 'BUTTON' ||
-        targetTag === 'SUMMARY'
-      )
-    );
-
-    if (isTypingContext) {
-      return;
-    }
-
-    // Handle spacebar for motion and audio preview shortcuts.
-    if (event.code === 'Space' && !event.shiftKey) {
-      // Morse, Artemis II mission audio, and music use spacebar for audio transport.
+  // Keep p5's existing global runtime behind a small, independently tested keyboard controller.
+  window.KeyboardShortcuts.initialize({ actions: {
+    zoomIn: () => stepPreviewZoom(1),
+    zoomOut: () => stepPreviewZoom(-1),
+    fit: () => fitPreview(),
+    randomize: () => clickSelectedParameterAction('randomize'),
+    undo: () => clickSelectedParameterAction('undo'),
+    export: () => {
+      if (!saveButton || saveButton.disabled) return false;
+      saveButton.click();
+      if (saveMenu?.classList.contains('hidden')) return false;
+      saveMenu.querySelector('button:not([disabled]):not([hidden]), input:not([disabled])')?.focus();
+      return true;
+    },
+    playback: () => {
       if (currentShader === 7 || currentShader === 10 || (currentShader === 24 && isMissionControlThemeActive())) {
-        event.preventDefault();
-        if (isAudioPlaying) {
-          stopAudio();
-        } else {
-          startAudio();
-        }
-        return;
+        if (isAudioPlaying) stopAudio(); else startAudio();
+        return true;
       }
-
       if (currentShader === 22) {
-        event.preventDefault();
         const toggle = document.getElementById('quantum-motion-toggle');
         toggle.checked = !toggle.checked;
         toggle.dispatchEvent(new Event('change', { bubbles: true }));
-        return;
+        return true;
       }
-
-      // Motion-enabled styles use spacebar to toggle loop preview on and off.
-      if (isAnimated) {
-        event.preventDefault();
-        togglePlayback();
-      }
-      return;
-    }
-
-    if (event.code === 'Space' && event.shiftKey) {
-      event.preventDefault();
-
-      // Cycle through all seven modes: solid -> ruler -> ticker -> binary -> waveform -> circles -> numeric -> solid
-      // Get current style from dropdown to ensure sync
-      const currentStyle = styleSelect ? styleSelect.value : 'solid';
-      const styleValues = ['solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles', 'numeric'];
-      const currentIndex = styleValues.indexOf(currentStyle);
-      const nextIndex = (currentIndex + 1) % 7;
-      const nextStyle = styleValues[nextIndex];
-
-      // Safely update the dropdown if it exists
-      if (styleSelect) {
-        styleSelect.value = nextStyle;
-        // Dispatch change event to update UI elements and trigger handleStyleChange
-        styleSelect.dispatchEvent(new Event('change'));
-      }
-
-      console.log('Keyboard toggle - style:', nextStyle);
-    }
-
-    // Handle color mode shortcuts: Shift + Up/Down arrows
-    if (event.shiftKey && (event.code === 'ArrowUp' || event.code === 'ArrowDown')) {
-      event.preventDefault();
-
-      const colorModes = getSelectableColorModes();
-      const currentIndex = Math.max(0, colorModes.indexOf(currentColorMode));
-
-      let nextIndex;
-      if (event.code === 'ArrowUp') {
-        nextIndex = (currentIndex - 1 + colorModes.length) % colorModes.length;
-      } else {
-        nextIndex = (currentIndex + 1) % colorModes.length;
-      }
-
-      const nextColorMode = colorModes[nextIndex];
-
-      // Update dropdown and trigger change event for UI sync
-      if (colorModeSelect) {
-        colorModeSelect.value = nextColorMode;
-        colorModeSelect.dispatchEvent(new Event('change'));
-      }
-
-      console.log('Keyboard toggle - color mode:', nextColorMode);
-    }
-  });
+      if (!isAnimated) return false;
+      togglePlayback();
+      return true;
+    },
+    nextStyle: () => {
+      // Preserve the existing quick-style sequence.
+      const styles = ['solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles', 'numeric'];
+      styleSelect.value = styles[(styles.indexOf(styleSelect.value) + 1) % styles.length];
+      styleSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    },
+    previousColor: () => cycleKeyboardColor(-1),
+    nextColor: () => cycleKeyboardColor(1)
+  } });
 
   const handleDocumentAudioDeactivation = function () {
     if (!audioContext) return;
@@ -3555,6 +3485,32 @@ function setup() {
   // letting its queued measurement change the fitted mark during the entrance.
   cancelAnimationFrame(responsiveWorkspaceSyncFrame);
   syncResponsiveWorkspaceSizing();
+}
+
+function clickSelectedParameterAction(action) {
+  const style = styleSelect.value;
+  const selector = action === 'undo'
+    ? `[data-randomize-undo="${style}"]`
+    : `[data-parameter-action="${action}"][data-parameter-style="${style}"]`;
+  const button = document.querySelector(selector);
+  if (!button || button.disabled || button.hidden) return false;
+  const previousFocus = document.activeElement;
+  button.click();
+  // Pointer Undo focuses Randomize. A workspace shortcut keeps its original
+  // focus so another variation can be tried immediately with the keyboard.
+  if (document.activeElement !== previousFocus) {
+    document.activeElement?.blur();
+    previousFocus?.focus({ preventScroll: true });
+  }
+  return true;
+}
+
+function cycleKeyboardColor(direction) {
+  const colors = getSelectableColorModes();
+  if (!colors.length) return false;
+  const index = Math.max(0, colors.indexOf(currentColorMode));
+  colorModeSelect.value = colors[(index + direction + colors.length) % colors.length];
+  colorModeSelect.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
 function handleBinaryInput() {
@@ -3912,7 +3868,8 @@ function toggleMobileMenu() {
 
 function handleClickOutside(event) {
   // Modal chrome is not an outside click on the inert background controls.
-  if (document.body.classList.contains('has-logo-animation')) return;
+  if (document.body.classList.contains('has-logo-animation')
+    || document.getElementById('keyboard-shortcuts-dialog')?.open) return;
   if (event.target?.closest?.('dialog[open]')) return;
   // Only apply in compact overlay layout where the sidebar covers the workspace.
   if (!isCompactLayoutViewport()) return;

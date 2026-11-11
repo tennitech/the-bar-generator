@@ -59,4 +59,5 @@ test('a warm routed page fetches the new shell and loads its current runtime hel
   expect(loaded).toContain('js/utils/inputLimitFeedback.js?v=20261110-input-limit-feedback');
   expect(loaded).not.toContain('js/ui.js?v=20261104-scroll-cue-minimum');
   expect(loaded).not.toContain('js/main.js?v=20261110-waveform-scope');
+  expect(loaded).toContain(currentShell.match(/js\/utils\/keyboardShortcuts\.js\?v=[\w-]+/)[0]);
 });

@@ -11,7 +11,7 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261110-picker-serialized-release" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261111-optional-shortcuts" rel="stylesheet" type="text/css" />
   <link href="css/editor-accessibility.css?v=20261110-larger-controls-release" rel="stylesheet" type="text/css">
   <script src="js/utils/editorAccessibility.js?v=20261110-larger-controls-release"></script>
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
@@ -994,6 +994,8 @@
               <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
             </summary>
             <div class="sidebar_more-panel">
+              <button id="keyboard-shortcuts-trigger" class="sidebar_more-option" type="button"
+                aria-haspopup="dialog" aria-expanded="false" aria-controls="keyboard-shortcuts-dialog">Keyboard shortcuts</button>
               <button id="editor-size-toggle" class="sidebar_more-option editor_size-toggle" type="button"
                 role="switch" aria-checked="false" aria-labelledby="editor-size-label" aria-describedby="editor-size-description">
                 <span class="editor_size-copy">
@@ -1055,6 +1057,37 @@
       </ul>
       <a class="color_guidance-link" href="https://brand.rpi.edu/d/pfJS6BKVKBeq/brand-guidelines#/-/color/secondary-colors"
         target="_blank" rel="noopener noreferrer">Explore RPI color guidelines<span class="u-sr-only"> (opens in a new tab)</span></a>
+    </div>
+  </dialog>
+
+  <dialog id="keyboard-shortcuts-dialog" class="report_dialog shortcuts_dialog" aria-labelledby="keyboard-shortcuts-title" aria-describedby="keyboard-shortcuts-description">
+    <div class="report_dialog-panel">
+      <div class="report_dialog-header">
+        <div>
+          <div class="report_dialog-kicker">At your fingertips</div>
+          <h2 id="keyboard-shortcuts-title" class="report_dialog-title">Keyboard shortcuts</h2>
+        </div>
+        <button id="keyboard-shortcuts-close" class="report_dialog-close" type="button" aria-label="Close keyboard shortcuts" autofocus>×</button>
+      </div>
+      <p id="keyboard-shortcuts-description" class="report_dialog-copy">Use these keys outside controls, menus and dialogs. Actions follow the selected style; unavailable actions stay inactive.</p>
+      <dl class="shortcuts_list">
+          <div class="shortcuts_row"><dt>Zoom in (also =)</dt><dd><kbd>+</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Zoom out</dt><dd><kbd>−</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Fit the whole mark</dt><dd><kbd>0</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Play / pause motion or supported audio</dt><dd><kbd>Space</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Randomize current parameters</dt><dd><kbd>N</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Undo the last randomize</dt><dd><kbd>U</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Open download options</dt><dd><kbd>E</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Show this guide</dt><dd><kbd>?</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Next quick style</dt><dd><kbd>Shift + Space</kbd></dd></div>
+          <div class="shortcuts_row"><dt>Previous / next color mode</dt><dd><kbd>Shift + ↑ / ↓</kbd></dd></div>
+      </dl>
+      <label class="shortcuts_preference" for="keyboard-shortcuts-enabled">
+        <input id="keyboard-shortcuts-enabled" type="checkbox" checked aria-describedby="keyboard-shortcuts-note">
+        <span>Enable keyboard shortcuts</span>
+      </label>
+      <p id="keyboard-shortcuts-note" class="report_dialog-copy">Turn off all shortcuts above, including single-letter keys. Your choice is saved in this browser when storage is available. This guide stays available in the three-dot menu.</p>
+      <p class="shortcuts_hint">Tab moves between controls. Escape closes this guide. Browser and system key combinations stay available.</p>
     </div>
   </dialog>
 
@@ -1128,8 +1161,9 @@
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
+  <script src="js/utils/keyboardShortcuts.js?v=20261110-keyboard-shortcuts"></script>
   <script src="js/utils/inputLimitFeedback.js?v=20261110-input-limit-feedback"></script>
-  <script src="js/main.js?v=20261110-ring-release"></script>
+  <script src="js/main.js?v=20261111-optional-shortcuts"></script>
   <script src="js/utils/logoClipboard.js?v=20261110-export-composition-r2"></script>
   <script src="js/drawing.js?v=20261110-ring-release"></script>
   <script>

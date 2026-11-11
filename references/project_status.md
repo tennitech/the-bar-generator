@@ -758,6 +758,29 @@ and reduced-motion/pause/navigation bypass. Final checks and the tested tree
 are recorded in the release PR. Rendered browser QA remains unverified under the
 existing browser permission restrictions; no browser retry or bypass is attempted.
 
+## November 10 optional generator keyboard shortcuts
+
+The three-dot menu now includes a Keyboard shortcuts guide beside Why not… .
+The native modal uses the current theme and contains focus, supports Escape,
+and restores focus to the menu summary. N randomizes current parameters, U
+undoes the last randomize, E opens download options, and ? opens the guide.
+Existing Space playback, +/= and − zoom, 0 Fit, Shift+Space quick styles and
+Shift+Up/Down color modes use one shared guard. Unsupported actions do nothing.
+
+Shortcuts ignore text entry, selects, editable content and interactive widgets;
+open menus/dialogs, composition, held-key repeat and Ctrl/Command/Alt/AltGraph
+combinations are excluded. External keyboards on touch devices work as well.
+The guide offers a saved switch disabling every listed shortcut; its menu
+button and native control navigation remain available. Restricted storage uses
+an in-page preference. The hidden rpi1824 sequence remains separate; N avoids
+changing parameters while entering it. Rendering, exports and brand colors
+are unchanged.
+
+Validation and manual checks are recorded in [keyboard shortcut QA](keyboard_shortcuts_qa.md).
+No browser
+launch is retried after the existing permission denial; rendered desktop/mobile,
+light/dark, focus and reduced-motion review remains pending manual verification.
+
 ## November 10 optional intro retry repair
 
 The three-dot menu's Why not... action retains its selected-bar ASCII overlay,
