@@ -30,6 +30,12 @@
     let enabled = true;
     let composing = false;
     let returnFocus;
+    let backdropPress = false;
+    const isOutside = event => {
+      const box = dialog.getBoundingClientRect();
+      return event.clientX < box.left || event.clientX > box.right
+        || event.clientY < box.top || event.clientY > box.bottom;
+    };
     try { storage ??= scope.localStorage; enabled = storage?.getItem(preferenceKey) !== 'off'; } catch (_) { /* Storage is optional in embeds. */ }
     const zoomIds = ['zoom-in-btn', 'zoom-out-btn', 'zoom-reset-btn'];
     const hints = zoomIds.map(id => {
@@ -52,25 +58,38 @@
         menu.open = false;
         returnFocus = menu.querySelector('summary');
       }
+      backdropPress = false;
       dialog.showModal();
+      const panel = dialog.querySelector?.('.report_dialog-panel');
+      if (panel) panel.scrollTop = 0;
       trigger.setAttribute('aria-expanded', 'true');
-      close.focus();
+      (doc.getElementById('keyboard-shortcuts-title') || close).focus({ preventScroll: true });
       return true;
     }
     trigger.addEventListener('click', openGuide);
     close.addEventListener('click', () => dialog.close());
     dialog.addEventListener('close', () => {
+      if (dialog.open) return; // A queued close must not steal focus after reopening.
+      backdropPress = false;
       trigger.setAttribute('aria-expanded', 'false');
       const target = [returnFocus, doc.getElementById('mobile-menu-toggle'), doc.getElementById('brand-title')]
         .find(element => element?.isConnected && !element.disabled
           && element.checkVisibility?.({ visibilityProperty: true }) !== false);
       target?.focus({ preventScroll: true });
     });
-    // Native modal dialog supplies inert background, Tab containment and Escape.
+    // Native modal semantics retain Tab containment and Escape. A drag from the
+    // content onto the backdrop is not an intentional dismissal.
+    dialog.addEventListener('keydown', event => event.stopPropagation());
+    dialog.addEventListener('cancel', event => {
+      event.preventDefault();
+      dialog.close();
+    });
+    dialog.addEventListener('pointerdown', event => {
+      backdropPress = event.target === dialog && isOutside(event);
+    });
     dialog.addEventListener('click', event => {
-      if (event.target !== dialog) return;
-      const box = dialog.getBoundingClientRect();
-      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
+      if (backdropPress && event.target === dialog && isOutside(event)) dialog.close();
+      backdropPress = false;
     });
     preference.addEventListener('change', () => {
       enabled = preference.checked;

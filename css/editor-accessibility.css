@@ -93,7 +93,8 @@ html[data-editor-size="large"] :is(.export_menu, .report_dialog) :is(.option-lab
 html[data-editor-size="large"] :is(.export_note, .export_dimensions, .export_detail, .export_menu .option-desc,
   .export_size-label, .export_size-option, .export_size-option small,
   .export_composition-title, .export_composition-caption, .report_dialog-label,
-  .report_dialog-copy, .report_dialog-context) { font-size: var(--editor-large-label); line-height: 1.5; }
+  .report_dialog-copy, .report_dialog-context, .color_guidance-list,
+  .color_guidance-link, .shortcuts_row, .shortcuts_hint) { font-size: var(--editor-large-label); line-height: 1.5; }
 html[data-editor-size="large"] .export_size-option { min-height: var(--editor-large-target); }
 html[data-editor-size="large"] :is(.export_menu button, .report_dialog button) { font-size: var(--editor-large-label); }
 html[data-editor-size="large"] .export_action-columns { grid-template-columns: 1fr; }
@@ -114,3 +115,5 @@ html[data-editor-size="large"] #app-sidebar :is(button, summary, a, .custom-sele
 @media (forced-colors: active) {
   .editor_size-track { forced-color-adjust: auto; }
 }
+
+html[data-editor-size="large"] .shortcuts_row kbd { font-size: var(--editor-large-label); }
