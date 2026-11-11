@@ -3,6 +3,23 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 export-composition copy cleanup
+
+The composition choices retain their visible names, Bar + RPI and Bar only, and
+the Export composition legend. The redundant Complete mark and Pattern strip
+captions and the sentence “Your current pattern, with or without the lettering.”
+are removed. The fieldset’s aria-describedby reference to the removed sentence
+is removed too, leaving clear native radio accessible names without a stale ID.
+
+No radio IDs/values/defaults, schematic markup, selection/keyboard behavior,
+export controls/dimensions, CSS or rendering/clipboard/GIF code changes. Routed
+shell/bootstrap/fallback and Home prefetch versions advance together so the
+markup cleanup reaches warm routes. This cleanup is separate from pending #184;
+publication follows release coordination rather than merging that presentation PR.
+All 53 focused export/radio/cache checks pass in four suites. Accessible-name
+inspection confirms exactly the two retained choices and no stale description
+reference; 81 inline scripts and cache/source checks pass.
+
 ## November 11 refined dashed export-composition guides
 
 The owner’s screenshot identifies the decorative Export composition cards.
