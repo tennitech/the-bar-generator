@@ -6052,7 +6052,7 @@ function updateAllDisplays() {
   updateTrussDepthDisplay();
   updateTrussThicknessDisplay();
   updateStaffTempoDisplay();
-  updateGraphScaleDisplay();
+  window.DataGraphControls.sync();
 }
 
 function updateAudioParameters() {

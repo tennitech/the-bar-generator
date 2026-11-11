@@ -33,12 +33,18 @@ is retained pending explicit user testing; automated checks are not acceptance.
 The Data Graph release exposed a shared bootstrap omission: its two head-only
 modules were absent from the routed loader, so initial query parsing failed on
 all styles, including Runway. The routed bootstrap now loads the graph model
-and controls before the pattern renderer and parameter parser. Route/bootstrap/
+and controls before the pattern renderer and parameter parser. A second stale
+call in `updateAllDisplays` still referenced the retired graph-scale helper; it
+now synchronizes the current graph controls so p5 setup and style changes finish.
+Route/bootstrap/
 shell cache identities advance together so returning clients receive the repair.
 
 Regression tests execute the actual bootstrap with the browser-mode model and
 parser on Runway and Data Graph, verify rendered graph SVG, and require every
-shell script to be loaded by the route or bootstrap. These fail against the old
+shell script to be loaded by the route or bootstrap. Display synchronization
+also executes against the current helper names, rejecting retired calls. A
+full-DOM source harness reproduced both failures and completed setup after the
+repairs; graphics/audio hardware are not simulated by that check. Tests fail against the old
 loader and pass against the repair. No bar geometry, data, exports or API change.
 Physical iOS Safari acceptance remains separate from automated validation.
 
