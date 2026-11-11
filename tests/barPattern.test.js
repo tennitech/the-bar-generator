@@ -401,21 +401,7 @@ describe('createBarPatternSVG', () => {
 
 
   test('builds geometry for every truss option in the selector', () => {
-    const families = [
-      'flat',
-      'king-post',
-      'queen-post',
-      'howe',
-      'scissor',
-      'fink',
-      'attic',
-      'mono',
-      'hip',
-      'gable',
-      'cathedral',
-      'fan',
-      'raised-tie'
-    ];
+    const families = ['warren', 'pratt', 'howe', 'cross'];
 
     families.forEach((family) => {
       const geometry = createTrussPatternGeometry({
@@ -438,14 +424,14 @@ describe('createBarPatternSVG', () => {
       currentShader: 9,
       values: {
         ...makeBaseConfig().values,
-        trussFamily: 'raised-tie',
-        trussSegments: 5,
+        trussFamily: 'howe',
+        trussSegments: 6,
         trussThickness: 2
       }
     }));
 
     expect(result).toContain('<path d="');
-    expect((result.match(/ M /g) || []).length).toBe(6);
+    expect((result.match(/ M /g) || []).length).toBe(15);
   });
 
   test('builds lines geometry for both density variants', () => {

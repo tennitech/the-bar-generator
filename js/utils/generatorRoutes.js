@@ -11,7 +11,6 @@
   const UNDER_CONSTRUCTION_STYLE_VALUES = new Set(['music', 'graph', 'truss', 'well-modes', 'rabi']);
 
   const UNAVAILABLE_STYLE_VALUES = new Set([
-    'truss'
   ]);
 
   const ROUTABLE_STYLE_VALUES = new Set(
@@ -67,6 +66,7 @@
     'trussFamily',
     'trussSegments',
     'trussThickness',
+    'trussDepth',
     'staffNotes',
     'staffTempo',
     'staffInstrument',

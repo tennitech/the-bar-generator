@@ -481,16 +481,17 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       barY,
       exactBarWidth,
       barHeight: rectHeight,
-      segments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
-      thickness: trussThicknessSlider ? trussThicknessSlider.value : 2,
-      family: trussFamilySelect ? trussFamilySelect.value : 'flat'
+      segments: trussSegmentsSlider ? trussSegmentsSlider.value : 16,
+      thickness: trussThicknessSlider ? trussThicknessSlider.value : 1.25,
+      family: trussFamilySelect ? trussFamilySelect.value : 'warren',
+      depth: trussDepthSlider ? trussDepthSlider.value : 100
     });
 
     pg.noFill();
     pg.stroke(fgColor);
     pg.strokeWeight(trussGeometry.thickness);
-    pg.strokeCap(pg.SQUARE);
-    pg.strokeJoin(pg.MITER);
+    pg.strokeCap(pg.ROUND);
+    pg.strokeJoin(pg.ROUND);
 
     for (let i = 0; i < trussGeometry.lines.length; i++) {
       const lineSegment = trussGeometry.lines[i];

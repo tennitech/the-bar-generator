@@ -46,6 +46,29 @@ recorded in [Data Graph model and verification](data_graph_model.md). Local
 browser QA is blocked by cloud-browser localhost reachability; no unverified
 browser or formal brand/science acceptance is claimed.
 
+## November 11 live Truss geometry study
+
+Truss is selectable under Under Construction and at its existing direct route,
+without Home marquee or category promotion. Four explicit full-span bracing
+rules replace the thirteen dormant roof silhouettes: Warren zigzag, Pratt,
+Howe and X-braced. Panel count, centered depth and stroke weight all affect every
+family. Native parameter actions, numeric editing, changed-state feedback,
+matching style sample, themes, SVG/PNG and both export compositions are retained.
+
+The shared model uses fixed official geometry and contained round strokes. Its
+About copy and sources distinguish geometric connections from structural analysis.
+No loads/materials/supports/forces are modeled and no animation is invented. A
+narrow historical-share migration protects other styles whose snapshots captured
+the old hidden Truss controls. It does not silently accept invalid modern saves.
+
+Release integration on main `70716f57` passes 1,245 tests in 105 suites and
+16 native raster/codec family/composition/size combinations, including current
+high-resolution exports. Model/export/action/route and migration regressions
+cover the new behavior. Music, quantum studies and note-based Waveform are kept. Cloud
+CUA could not reach the local preview (connection refused), so local rendered UI
+and physical-device acceptance are not claimed. Exact suite/CI/production evidence
+is in the release PR. See [model, source and review images](truss_model.md).
+
 ## November 11 working quantum studies
 
 Well Modes and Rabi are enabled under Under Construction with direct routes,

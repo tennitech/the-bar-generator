@@ -90,6 +90,8 @@ let trussGroup;
 let trussFamilySelect;
 let trussSegmentsSlider;
 let trussSegmentsDisplay;
+let trussDepthSlider;
+let trussDepthDisplay;
 let trussThicknessSlider;
 let trussThicknessDisplay;
 let staffGroup;
@@ -110,35 +112,7 @@ let graphGroup;
 const sliderValueEditorConfigs = [];
 const externalScriptLoadPromises = new Map();
 
-const TRUSS_FAMILY_OPTIONS = [
-  'flat',
-  'king-post',
-  'queen-post',
-  'howe',
-  'scissor',
-  'fink',
-  'attic',
-  'mono',
-  'hip',
-  'gable',
-  'cathedral',
-  'fan',
-  'raised-tie'
-];
-const TRUSS_FAMILY_ALIASES = {
-  cross: 'flat',
-  warren: 'flat',
-  pratt: 'queen-post',
-  vierendeel: 'flat'
-};
-
-function normalizeTrussFamilyValue(value) {
-  const normalized = String(value || 'flat').toLowerCase();
-  if (TRUSS_FAMILY_OPTIONS.includes(normalized)) {
-    return normalized;
-  }
-  return TRUSS_FAMILY_ALIASES[normalized] || 'flat';
-}
+const TRUSS_FAMILY_OPTIONS = ['warren', 'pratt', 'howe', 'cross'];
 
 // Static circle data cache
 let staticCircleData = null;
@@ -618,7 +592,6 @@ const AVAILABLE_STYLE_VALUES = new Set([
 ]);
 
 const UNAVAILABLE_STYLE_VALUES = new Set([
-  'truss'
 ]);
 
 const ROUTABLE_STYLE_VALUES = new Set(
@@ -1364,10 +1337,12 @@ function resetStyleParameters(style) {
       updateGridVariantDisplay();
       break;
     case 'truss':
-      if (trussFamilySelect) trussFamilySelect.value = 'flat';
-      if (trussSegmentsSlider) trussSegmentsSlider.value = 15;
-      if (trussThicknessSlider) trussThicknessSlider.value = 2;
+      if (trussFamilySelect) trussFamilySelect.value = 'warren';
+      if (trussSegmentsSlider) trussSegmentsSlider.value = 16;
+      if (trussDepthSlider) trussDepthSlider.value = 100;
+      if (trussThicknessSlider) trussThicknessSlider.value = 1.25;
       updateTrussSegmentsDisplay();
+      updateTrussDepthDisplay();
       updateTrussThicknessDisplay();
       break;
     case 'music':
@@ -1544,9 +1519,11 @@ function randomizeStyleParameters(style) {
       break;
     case 'truss':
       if (trussFamilySelect) trussFamilySelect.value = pickRandom(TRUSS_FAMILY_OPTIONS);
-      if (trussSegmentsSlider) trussSegmentsSlider.value = randomStepValue(8, 32, 1);
-      if (trussThicknessSlider) trussThicknessSlider.value = randomStepValue(1, 4.5, 0.5);
+      if (trussSegmentsSlider) trussSegmentsSlider.value = randomDifferentStep(trussSegmentsSlider, 8, 28, 2);
+      if (trussDepthSlider) trussDepthSlider.value = randomStepValue(60, 100, 5);
+      if (trussThicknessSlider) trussThicknessSlider.value = randomStepValue(0.75, 2, 0.25);
       updateTrussSegmentsDisplay();
+      updateTrussDepthDisplay();
       updateTrussThicknessDisplay();
       break;
     case 'music':
@@ -2284,6 +2261,8 @@ function setup() {
   trussFamilySelect = document.getElementById('truss-family-select');
   trussSegmentsSlider = document.getElementById('truss-segments-slider');
   trussSegmentsDisplay = document.getElementById('truss-segments-display');
+  trussDepthSlider = document.getElementById('truss-depth-slider');
+  trussDepthDisplay = document.getElementById('truss-depth-display');
   trussThicknessSlider = document.getElementById('truss-thickness-slider');
   trussThicknessDisplay = document.getElementById('truss-thickness-display');
   staffGroup = document.getElementById('staff-group');
@@ -2850,6 +2829,13 @@ function setup() {
     });
     updateTrussSegmentsDisplay();
   }
+  if (trussDepthSlider) {
+    trussDepthSlider.addEventListener('input', function () {
+      updateTrussDepthDisplay();
+      updateUrlParameters(); requestUpdate();
+    });
+    updateTrussDepthDisplay();
+  }
   if (trussThicknessSlider) {
     trussThicknessSlider.addEventListener('input', function () {
       updateTrussThicknessDisplay();
@@ -3039,14 +3025,21 @@ function setup() {
       display: trussSegmentsDisplay,
       refreshDisplay: updateTrussSegmentsDisplay,
       commit: () => { updateTrussSegmentsDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set truss segments'
+      ariaLabel: 'Set truss panel count'
+    },
+    {
+      slider: trussDepthSlider,
+      display: trussDepthDisplay,
+      refreshDisplay: updateTrussDepthDisplay,
+      commit: () => { updateTrussDepthDisplay(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set truss depth percentage'
     },
     {
       slider: trussThicknessSlider,
       display: trussThicknessDisplay,
       refreshDisplay: updateTrussThicknessDisplay,
       commit: () => { updateTrussThicknessDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set truss thickness'
+      ariaLabel: 'Set truss stroke weight'
     },
     {
       slider: staffTempoSlider,
@@ -3529,6 +3522,11 @@ function updateCirclesSizeVariationDisplay() {
 function updateTrussSegmentsDisplay() {
   if (!trussSegmentsSlider || !trussSegmentsDisplay) return;
   trussSegmentsDisplay.textContent = trussSegmentsSlider.value;
+}
+
+function updateTrussDepthDisplay() {
+  if (!trussDepthSlider || !trussDepthDisplay) return;
+  trussDepthDisplay.textContent = trussDepthSlider.value;
 }
 
 function updateTrussThicknessDisplay() {
@@ -4103,9 +4101,10 @@ function getCurrentBarPatternValues(exactBarWidth) {
       ? getTrianglePatternControlValues()
       : { trianglesDirection: 'down-right', trianglesCount: 14 }),
     morseText: morseInput ? sanitizeBarText(normalizeBinaryText(morseInput.value)) : 'RPI',
-    trussFamily: trussFamilySelect ? trussFamilySelect.value : 'flat',
-    trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
-    trussThickness: trussThicknessSlider ? trussThicknessSlider.value : 2,
+    trussFamily: trussFamilySelect ? trussFamilySelect.value : 'warren',
+    trussSegments: trussSegmentsSlider ? trussSegmentsSlider.value : 16,
+    trussThickness: trussThicknessSlider ? trussThicknessSlider.value : 1.25,
+    trussDepth: trussDepthSlider ? trussDepthSlider.value : 100,
     staffText: 'RPI',
     staffThickness: 1,
     staffNotes: typeof currentStaffNotes !== 'undefined' ? currentStaffNotes : [],
@@ -5720,14 +5719,17 @@ function updateUrlParameters() {
   }
 
   if (styleSelect && styleSelect.value === 'truss') {
-    if (trussFamilySelect && trussFamilySelect.value !== 'flat') {
+    if (trussFamilySelect && trussFamilySelect.value !== 'warren') {
       params.set('trussFamily', trussFamilySelect.value);
     }
-    if (trussSegmentsSlider && parseInt(trussSegmentsSlider.value) !== 15) {
+    if (trussSegmentsSlider && parseInt(trussSegmentsSlider.value) !== 16) {
       params.set('trussSegments', trussSegmentsSlider.value);
     }
-    if (trussThicknessSlider && parseFloat(trussThicknessSlider.value) !== 2) {
+    if (trussThicknessSlider && parseFloat(trussThicknessSlider.value) !== 1.25) {
       params.set('trussThickness', trussThicknessSlider.value);
+    }
+    if (trussDepthSlider && Number(trussDepthSlider.value) !== 100) {
+      params.set('trussDepth', trussDepthSlider.value);
     }
   }
 
@@ -5919,15 +5921,17 @@ function applyUrlParameters() {
 
   // Apply truss parameters
   if (trussFamilySelect) {
-    trussFamilySelect.value = normalizeTrussFamilyValue(params.trussFamily);
+    trussFamilySelect.value = normalizeTrussFamily(params.trussFamily);
   }
   if (trussSegmentsSlider) {
     trussSegmentsSlider.value = params.trussSegments;
   }
+  if (trussDepthSlider) trussDepthSlider.value = params.trussDepth;
   if (trussThicknessSlider) {
     trussThicknessSlider.value = params.trussThickness;
   }
   updateTrussSegmentsDisplay();
+  updateTrussDepthDisplay();
   updateTrussThicknessDisplay();
 
   // Apply staff parameters
@@ -6045,6 +6049,7 @@ function updateAllDisplays() {
   updateNeuralNetworkHiddenLayersDisplay();
   updateTriangleGridVariantDisplay();
   updateTrussSegmentsDisplay();
+  updateTrussDepthDisplay();
   updateTrussThicknessDisplay();
   updateStaffTempoDisplay();
   updateGraphScaleDisplay();
@@ -6590,16 +6595,17 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       barY: 0,
       exactBarWidth,
       barHeight: rectHeight,
-      segments: trussSegmentsSlider ? trussSegmentsSlider.value : 15,
-      thickness: trussThicknessSlider ? trussThicknessSlider.value : 2,
-      family: trussFamilySelect ? trussFamilySelect.value : 'flat'
+      segments: trussSegmentsSlider ? trussSegmentsSlider.value : 16,
+      thickness: trussThicknessSlider ? trussThicknessSlider.value : 1.25,
+      family: trussFamilySelect ? trussFamilySelect.value : 'warren',
+      depth: trussDepthSlider ? trussDepthSlider.value : 100
     });
 
     noFill();
     stroke(fgColor);
     strokeWeight(trussGeometry.thickness);
-    strokeCap(SQUARE);
-    strokeJoin(MITER);
+    strokeCap(ROUND);
+    strokeJoin(ROUND);
 
     for (let i = 0; i < trussGeometry.lines.length; i++) {
       const lineSegment = trussGeometry.lines[i];

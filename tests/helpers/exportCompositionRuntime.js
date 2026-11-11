@@ -7,7 +7,7 @@ const base = path.resolve(__dirname, '../..');
 const read = file => fs.readFileSync(path.join(base, file), 'utf8');
 const main = read('js/main.js');
 const shaders = { graph: 12, solid: 0, ruler: 1, ticker: 2, binary: 3, waveform: 4, circles: 5,
-  numeric: 6, morse: 7, runway: 8, music: 10, lines: 13, 'point-connect': 14, 'triangle-grid': 15,
+  numeric: 6, morse: 7, runway: 8, truss: 9, music: 10, lines: 13, 'point-connect': 14, 'triangle-grid': 15,
   'circles-gradient': 16, gradient: 17, grid: 18, triangles: 19, 'fibonacci-sequence': 20,
   union: 21, 'wave-quantum': 22, 'neural-network': 23, lunar: 24, nucleotide: 25 };
 function createRuntime(overrides = {}) {
@@ -17,6 +17,7 @@ function createRuntime(overrides = {}) {
       waveformFrequency: 17, waveformSpeed: 0.3, waveformPoints: 750,
       tickerRepeats: 17, tickerRatio: 3, tickerWidthRatio: 2, tickerSpeed: 0.4,
       trianglesDirection: 'up-left', trianglesCount: 23, gradientVariant: 2, gradientSpeed: 0.1,
+      trussFamily: 'howe', trussSegments: 12, trussDepth: 65, trussThickness: 1.75,
       circlesGradientVariant: 3, gridVariant: 2, linesVariant: 2, triangleGridVariant: 2,
       nucleotideSequence: 'ATGGTGATGGTGATGGTGATGGTGATGGTG', nucleotideVariant: 'backbone',
       neuralNetworkSeed: 7, neuralNetworkUnits: 9, neuralNetworkHiddenLayers: 2 } };

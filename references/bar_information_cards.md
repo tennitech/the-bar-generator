@@ -58,6 +58,12 @@ checks Quantum copy before the canvas exists. See `scripts/routedStartupSmoke.js
 
 Numeric's card now names decimal entry and formula selection as separate sources and explains that signs are not encoded. Formula approximations, sources, limits and historical migration are documented in [Numeric modes](numeric_modes.md). The remaining 20 cards are unchanged.
 
+## Truss — November 11, 2026
+
+The live Under Construction card describes four bracing rules, meaningful panel/
+depth/stroke controls and the explicit absence of structural analysis. Its sources,
+implementation and limits are recorded in [Truss model](truss_model.md).
+
 
 ## November 11 working quantum studies
 

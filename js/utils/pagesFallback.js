@@ -8,7 +8,6 @@
   ]);
 
   const UNAVAILABLE_STYLE_VALUES = new Set([
-    'truss'
   ]);
 
   const ROUTABLE_STYLE_VALUES = new Set(
@@ -62,6 +61,7 @@
     'trussFamily',
     'trussSegments',
     'trussThickness',
+    'trussDepth',
     'staffNotes',
     'staffTempo',
     'staffInstrument',

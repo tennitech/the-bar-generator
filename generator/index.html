@@ -241,7 +241,7 @@
                 <option value="rabi">Rabi</option>
                   <option value="music">Music</option>
                   <option value="graph">Data Graph</option>
-                  <option value="truss" data-coming-soon disabled>Truss</option>
+                  <option value="truss">Truss</option>
                 </optgroup>
               </select>
             </div>
@@ -629,37 +629,31 @@
         <div id="truss-group" data-parameter-actions="truss" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control">
-            <label for="truss-family-select" class="control-label">TRUSS FAMILY</label>
+            <label for="truss-family-select" class="control-label">BRACING</label>
             <div class="select-wrapper">
-              <select id="truss-family-select" class="control-select">
-                <option value="flat">Flat</option>
-                <option value="king-post">King Post</option>
-                <option value="queen-post">Queen Post</option>
+              <select id="truss-family-select" data-url-parameter="trussFamily" class="control-select" aria-describedby="truss-family-hint">
+                <option value="warren">Warren zigzag</option>
+                <option value="pratt">Pratt</option>
                 <option value="howe">Howe</option>
-                <option value="scissor">Scissor</option>
-                <option value="fink">Fink</option>
-                <option value="attic">Attic</option>
-                <option value="mono">Mono</option>
-                <option value="hip">Hip</option>
-                <option value="gable">Gable</option>
-                <option value="cathedral">Cathedral</option>
-                <option value="fan">Fan</option>
-                <option value="raised-tie">Raised Tie</option>
+                <option value="cross">X-braced</option>
               </select>
             </div>
-            <div class="control-hint">Structural systems adapted to the bar format</div>
+            <div id="truss-family-hint" class="control-hint">A study of connections, not a load-bearing design.</div>
           </div>
           <div class="control slider-control">
-            <label for="truss-segments-slider" class="control-label">SEGMENTS <span
-                id="truss-segments-display" data-slider-value>15</span></label>
-            <input type="range" id="truss-segments-slider" data-url-parameter="trussSegments" min="5" max="50" value="15" class="control-slider"
-              aria-label="Truss Segments">
+            <label for="truss-segments-slider" class="control-label">PANELS <span id="truss-segments-display" data-slider-value>16</span></label>
+            <input type="range" id="truss-segments-slider" data-url-parameter="trussSegments" min="4" max="32" step="2" value="16" class="control-slider" aria-label="Truss panels" aria-describedby="truss-panels-hint">
+            <div id="truss-panels-hint" class="control-hint">Equal bays across the span. Even counts keep the pattern balanced.</div>
           </div>
           <div class="control slider-control">
-            <label for="truss-thickness-slider" class="control-label">THICKNESS <span
-                id="truss-thickness-display" data-slider-value>2</span></label>
-            <input type="range" id="truss-thickness-slider" data-url-parameter="trussThickness" min="0.5" max="5" step="0.5" value="2"
-              class="control-slider" aria-label="Truss Thickness">
+            <label for="truss-depth-slider" class="control-label">DEPTH <span id="truss-depth-display" data-slider-value>100</span>%</label>
+            <input type="range" id="truss-depth-slider" data-url-parameter="trussDepth" min="50" max="100" step="5" value="100" class="control-slider" aria-label="Truss depth percentage" aria-describedby="truss-depth-hint">
+            <div id="truss-depth-hint" class="control-hint">Height within the bar. The full span stays fixed.</div>
+          </div>
+          <div class="control slider-control">
+            <label for="truss-thickness-slider" class="control-label">STROKE WEIGHT <span id="truss-thickness-display" data-slider-value>1.25</span></label>
+            <input type="range" id="truss-thickness-slider" data-url-parameter="trussThickness" min="0.5" max="2" step="0.25" value="1.25" class="control-slider" aria-label="Truss stroke weight" aria-describedby="truss-thickness-hint">
+            <div id="truss-thickness-hint" class="control-hint">Drawing weight, not material thickness.</div>
           </div>
         </div>
 

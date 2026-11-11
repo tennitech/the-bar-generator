@@ -5,6 +5,10 @@
     "title": "Data Graph",
     "text": "Plot numeric samples as lines, steps, columns or dots. Each series uses equal sample-index spacing and the same Y range; Columns includes zero. Examples are mathematical values, not measurements. No units or timestamps are inferred. Under Construction for testing."
   },
+  "truss": {
+    "title": "Truss",
+    "text": "Compare four bracing patterns across a fixed span. Warren zigzag alternates diagonals; Pratt slopes down toward the center, Howe slopes up, and X-braced crosses each bay. Adjust panel count, depth and drawing weight. These are schematic connections, not a structural analysis: no loads, supports, materials or member forces are modeled."
+  },
   "nucleotide": {
     "title": "Nucleotide",
     "text": "Encode 30–50 bases to export. Dashed outlines show missing bases. Shapes represent A–T/U and C–G pairing, not standard molecular symbols. Presets are transcript excerpts, not complete genes."
