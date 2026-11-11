@@ -3,6 +3,24 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 refined dashed export-composition guides
+
+The owner’s screenshot identifies the decorative Export composition cards.
+The Bar + RPI diagram now outlines its RPI letters with dashes as requested;
+both diagrams use a calmer unequal 4.5px dash/2.5px gap rhythm, a 1.25px phase
+shift, rounded caps/joins and a thin 0.9px non-scaling stroke. Three alternatives
+were compared at 108 × 68 and 88 × 68 display sizes on light/dark surfaces using
+native rendering of the unchanged official paths. The longer rounded rhythm
+was chosen over equal dashes and a busier long-short pattern.
+
+This is a diagram-only UI treatment. Official path data, viewports, dimensions,
+radio labels/semantics, selected/hover/focus/disabled states and real preview or
+export artwork remain unchanged. No CSS, logo asset or export renderer changes.
+The exportUi and routed shell/bootstrap/fallback/Home prefetch versions advance
+together. The initial full suite passes 1,093 tests in 94 suites; 128 focused
+combined checks pass after preserving #181–183. See
+[schematic evidence and limits](export_schematic_qa.md).
+
 ## November 11 independent Randomize dice motion
 
 Randomize's two existing SVG dice now move around their own fill-box centers.
