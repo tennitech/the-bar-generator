@@ -8,7 +8,6 @@
   ]);
 
   const UNAVAILABLE_STYLE_VALUES = new Set([
-    'graph'
   ]);
 
   const ROUTABLE_STYLE_VALUES = new Set(
@@ -71,6 +70,8 @@
     'staffTremolo',
     'pulseText',
     'pulseIntensity',
+    'graphData', 'graphData2', 'graphData3', 'graphData4', 'graphData5',
+    'graphSource', 'graphVariant', 'graphDomain', 'graphWeight',
     'graphText',
     'graphText2',
     'graphText3',

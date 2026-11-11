@@ -7,8 +7,10 @@
     'runway', 'lunar', 'truss', 'music', 'graph'
   ]);
 
+  // Availability for testing does not promote a bar into the Home catalog.
+  const UNDER_CONSTRUCTION_STYLE_VALUES = new Set(['music', 'graph', 'truss', 'well-modes', 'rabi']);
+
   const UNAVAILABLE_STYLE_VALUES = new Set([
-    'graph'
   ]);
 
   const ROUTABLE_STYLE_VALUES = new Set(
@@ -73,6 +75,8 @@
     'staffTremolo',
     'pulseText',
     'pulseIntensity',
+    'graphData', 'graphData2', 'graphData3', 'graphData4', 'graphData5',
+    'graphSource', 'graphVariant', 'graphDomain', 'graphWeight',
     'graphText',
     'graphText2',
     'graphText3',
@@ -211,6 +215,7 @@
   const api = {
     AVAILABLE_STYLE_VALUES,
     UNAVAILABLE_STYLE_VALUES,
+    UNDER_CONSTRUCTION_STYLE_VALUES,
     ROUTABLE_STYLE_VALUES,
     GENERATOR_QUERY_KEYS,
     normalizeStyleValue,

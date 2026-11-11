@@ -1,14 +1,14 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { entries, samples, selectEntries } = require('../js/utils/marqueeCatalog');
-const { ROUTABLE_STYLE_VALUES, UNAVAILABLE_STYLE_VALUES } = require('../js/utils/generatorRoutes');
+const { ROUTABLE_STYLE_VALUES, UNAVAILABLE_STYLE_VALUES, UNDER_CONSTRUCTION_STYLE_VALUES } = require('../js/utils/generatorRoutes');
 const shell = fs.readFileSync(path.join(__dirname, '../generator/index.html'), 'utf8');
 const constructionGroup = shell.match(/<optgroup label="Under Construction">([\s\S]*?)<\/optgroup>/)[1];
 const construction = new Set([...constructionGroup.matchAll(/<option\b([^>]*)value="([^"]+)"([^>]*)>/g)]
   .filter(match => !/\bdisabled\b/.test(match[1] + match[3])).map(match => match[2]));
 const promoted = new Set([...ROUTABLE_STYLE_VALUES].filter(style => !construction.has(style)));
 test('promoted routes have canonical Home entries; accessible studies wait for category approval', () => {
-  expect([...construction].sort()).toEqual(['music', 'rabi', 'truss', 'well-modes']);
+  expect([...construction].sort()).toEqual(['graph', 'music', 'rabi', 'truss', 'well-modes']);
   for (const style of construction) expect(ROUTABLE_STYLE_VALUES.has(style)).toBe(true);
   expect(new Set(entries.map(entry => entry.value))).toEqual(promoted);
   expect(entries).toHaveLength(promoted.size);
@@ -69,4 +69,8 @@ test('Triangle Grid samples contain both diagonal directions, not only a frame',
     expect(diagonals.some(([x1, y1, x2, y2]) => (x2 - x1) * (y2 - y1) > 0)).toBe(true);
     expect(diagonals.some(([x1, y1, x2, y2]) => (x2 - x1) * (y2 - y1) < 0)).toBe(true);
   }
+});
+
+test('available construction routes remain absent from Home until approved', () => {
+  for (const style of UNDER_CONSTRUCTION_STYLE_VALUES) expect(entries.some(entry => entry.value === style)).toBe(false);
 });

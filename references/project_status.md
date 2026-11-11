@@ -28,6 +28,24 @@ is retained pending explicit user testing; automated checks are not acceptance.
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 Data Graph numeric reconstruction
+
+Data Graph is now an accessible testing option within Under Construction, with
+its own direct route. It remains absent from the promoted Home catalog. The old
+character-code sketch is replaced by strict numeric series, Line/Step/Columns/
+Dots, a shared fitted or zero-inclusive range, one to five series and weight.
+Mathematical examples and legacy UTF-16 migrations are explicitly disclosed.
+Constant and empty states, grouped zero-baseline columns and invalid data have
+consistent preview/export behavior. Randomize preserves the user's numbers.
+
+One bounded model drives preview, header, SVG and PNG. Existing parameter
+controls, Randomize/Undo/Reset, themes and both export compositions are reused.
+There are no new dependencies, animation or API changes. Automated model,
+control, routing, export and migration checks plus offline SVG review are
+recorded in [Data Graph model and verification](data_graph_model.md). Local
+browser QA is blocked by cloud-browser localhost reachability; no unverified
+browser or formal brand/science acceptance is claimed.
+
 ## November 11 live Truss geometry study
 
 Truss is selectable under Under Construction and at its existing direct route,

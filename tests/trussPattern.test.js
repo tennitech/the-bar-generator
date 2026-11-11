@@ -119,7 +119,7 @@ test('Truss stays selectable under Under Construction with all controls keyboard
 test('normalized query values include every new control and are safe to rehydrate', () => {
   const pattern = require('../js/utils/barPattern');
   const context = { window: { location: { pathname: '/generator/truss/', search: '?trussFamily=howe&trussSegments=31&trussDepth=63&trussThickness=2.15' },
-    GeneratorRoutes: require('../js/utils/generatorRoutes'), GeneratorInitialState: { resolveTheme: () => 'black' },
+    DataGraph: require('../js/utils/dataGraph'), GeneratorRoutes: require('../js/utils/generatorRoutes'), GeneratorInitialState: { resolveTheme: () => 'black' },
     NucleotidePattern: require('../js/utils/nucleotidePattern'), NumericControls: require('../js/utils/numericControls'), RulerScale: require('../js/utils/rulerScale'),
     loopingGifUtils: require('../js/utils/loopingGif'), WaveformNotes: require('../js/utils/waveformNotes'), MusicStyle: require('../js/utils/musicStyle') }, URLSearchParams, ...pattern, normalizeMusicNoteShape: () => 'circle' };
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/utils/generatorParameters'), 'utf8'), context);

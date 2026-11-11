@@ -63,6 +63,17 @@ This file distinguishes encoded data from illustrative patterns. It does not gra
 
 The owner clarified that the fixed viewport is a containment boundary, not a demand to paint every edge. Natural edge contact is retained where the pattern supports it. Natural gaps, including brief gaps during animation, are acceptable and will be reviewed individually. The former forced Ticker sides, Waveform baseline, Numeric sides and generic static edge-fitting pass are removed from preview, header and supported exports.
 
+## Numeric Data Graph — November 11, 2026
+
+Under Construction now includes an available Data Graph experiment. It plots
+finite user-entered numbers at equal sample-index spacing, with a shared Y range,
+Line/Step/Dots or signed zero-baseline Columns. The supplied sine and exponential
+decay values are explicitly rounded mathematical examples, never telemetry.
+Constants, invalid input, unequal comparison counts and zero columns have
+explicit handling shared by preview and still exports. Historical character-code
+links migrate with a legacy disclosure and without old vertical exaggeration.
+See [exact mapping, bounds, provenance and review limits](data_graph_model.md).
+
 ## Encoded and measurement-inspired styles
 
 | Style | Meaning and current assumption |
