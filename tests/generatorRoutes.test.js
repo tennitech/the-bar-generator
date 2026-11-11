@@ -12,7 +12,7 @@ describe('generator route utils', () => {
     expect(normalizeStyleValue('staff')).toBe('solid');
     expect(normalizeStyleValue('music')).toBe('solid');
     expect(normalizeStyleValue('graph')).toBe('solid');
-    expect(normalizeStyleValue('truss')).toBe('solid');
+    expect(normalizeStyleValue('truss')).toBe('truss');
     expect(normalizeStyleValue('matrix')).toBe('solid');
     expect(normalizeStyleValue('not-a-style')).toBe('solid');
   });

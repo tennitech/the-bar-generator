@@ -554,3 +554,15 @@ a Galilean-transformed quantum state. Preview and export share it. Display
 phase q now traverses a 4.28-second cycle at 1×; nonzero old phase links migrate
 to that new view, while phase-zero still images are unchanged. See
 [model and limits](quantum_model.md) and [measured GIF QA](ring_short_loop_qa.md).
+
+## Truss connectivity study — November 11, 2026
+
+The live Under Construction Truss replaces thirteen dormant roof silhouettes
+with Warren zigzag, Pratt, Howe and X-braced parallel-chord geometry. Every
+family responds to even panel count (4–32), centered depth (50–100%) and drawing
+weight (0.5–2 vector units). Shared finite normalization, radius-aware round caps
+and fixed endpoints preserve the full span and official viewport. There is no
+load, material, support, force or safety analysis. Preview/header/SVG/PNG use the
+same geometry; no new animation or GIF is added. Valid historical dormant share
+fields migrate without breaking unrelated saved styles. Category promotion and
+formal approvals remain open. See [equations, sources, migrations and QA](truss_model.md).

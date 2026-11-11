@@ -3,6 +3,27 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 live Truss geometry study
+
+Truss is selectable under Under Construction and at its existing direct route,
+without Home marquee or category promotion. Four explicit full-span bracing
+rules replace the thirteen dormant roof silhouettes: Warren zigzag, Pratt,
+Howe and X-braced. Panel count, centered depth and stroke weight all affect every
+family. Native parameter actions, numeric editing, changed-state feedback,
+matching style sample, themes, SVG/PNG and both export compositions are retained.
+
+The shared model uses fixed official geometry and contained round strokes. Its
+About copy and sources distinguish geometric connections from structural analysis.
+No loads/materials/supports/forces are modeled and no animation is invented. A
+narrow historical-share migration protects other styles whose snapshots captured
+the old hidden Truss controls. It does not silently accept invalid modern saves.
+
+Native raster/codec checks pass for 16 family/composition/size combinations;
+model/export/action/route and migration regressions cover the new behavior. Cloud
+CUA could not reach the local preview (connection refused), so local rendered UI
+and physical-device acceptance are not claimed. Exact suite/CI/production evidence
+is in the release PR. See [model, source and review images](truss_model.md).
+
 ## November 11 refined dashed export-composition guides
 
 The owner’s screenshot identifies the decorative Export composition cards.

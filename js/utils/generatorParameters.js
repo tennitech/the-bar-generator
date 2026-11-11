@@ -31,6 +31,9 @@ function read() {
   const circlesGradient = normalizeCirclesGradientSettings(Object.fromEntries(
     ['variant', 'columns', 'rows', 'size', 'contrast', 'stagger', 'reverse'].map(key => [key, params.get(`circlesGradient${key[0].toUpperCase()}${key.slice(1)}`)])));
 
+  const truss = normalizeTrussSettings({ family: params.get('trussFamily'), segments: params.get('trussSegments'),
+    thickness: params.get('trussThickness'), depth: params.get('trussDepth') });
+
   return {
     style,
     colorMode,
@@ -92,9 +95,10 @@ function read() {
     circlesSizeVariation: parseInt(params.get('circlesSizeVariation')) || 0,
 
     // Truss parameters
-    trussFamily: normalizeTrussFamily(params.get('trussFamily') || 'flat'),
-    trussSegments: parseInt(params.get('trussSegments')) || 15,
-    trussThickness: parseFloat(params.get('trussThickness')) || 2,
+    trussFamily: truss.family,
+    trussSegments: truss.segments,
+    trussThickness: truss.thickness,
+    trussDepth: truss.depth,
 
     // Staff parameters
     staffNotes: params.get('staffNotes') || '',

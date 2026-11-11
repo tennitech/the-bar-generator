@@ -21,7 +21,7 @@ test('startup and runtime share query precedence, typed controls and existing no
   expect(state.waveformEnvelopeWaves).toBeUndefined();
   expect(state.waveformSpeed).toBe(1.2);
   expect(read('?trianglesDirection=up&trianglesCount=99','/generator/triangles/').trianglesDirection).toBe('up-right');
-  expect(read('?trussFamily=pratt','/generator/truss/').trussFamily).toBe('queen-post');
+  expect(read('?trussFamily=pratt','/generator/truss/').trussFamily).toBe('pratt');
 });
 
 test('legacy triangle variant folds into direction without exposing a variant parameter', () => {

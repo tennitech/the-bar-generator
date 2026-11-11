@@ -9,8 +9,7 @@
 
   const UNAVAILABLE_STYLE_VALUES = new Set([
     'music',
-    'graph',
-    'truss'
+    'graph'
   ]);
 
   const ROUTABLE_STYLE_VALUES = new Set(
@@ -65,6 +64,7 @@
     'trussFamily',
     'trussSegments',
     'trussThickness',
+    'trussDepth',
     'staffNotes',
     'staffTempo',
     'staffInstrument',

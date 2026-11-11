@@ -17,21 +17,21 @@
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/pageEntrance.js?v=20261110-combined-brand-refinement"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261111-truss-revamp"></script>
   <script src="js/utils/themeMode.js?v=20261110-exact-theme-text"></script>
-  <script src="js/utils/selectorPreviews.js?v=20261103-nucleotide"></script>
+  <script src="js/utils/selectorPreviews.js?v=20261111-truss-revamp"></script>
   <script src="js/utils/secondaryColorGuidance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/customDropdowns.js?v=20261110-picker-tab-focus"></script>
-  <script src="js/utils/parameterControls.js?v=20261111-independent-dice-ring"></script>
+  <script src="js/utils/parameterControls.js?v=20261111-truss-revamp"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/loopingGif.js?v=20261111-short-ring"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261110-official-secondary-pairs"></script>
+  <script src="js/utils/shareState.js?v=20261111-truss-revamp"></script>
   <script src="js/utils/randomizeHistory.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/musicStyle.js"></script>
   <script src="js/utils/nucleotidePattern.js?v=20261110-input-limit-feedback"></script>
-  <script src="js/utils/barPattern.js?v=20261111-short-ring"></script>
+  <script src="js/utils/barPattern.js?v=20261111-truss-revamp"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/motionSpeed.js?v=20261110-input-limit-feedback"></script>
@@ -40,7 +40,7 @@
   <script src="js/utils/waveformLfo.js?v=20261110-waveform-scope"></script>
   <script src="js/utils/waveformAudio.js?v=20261110-waveform-scope"></script>
   <script src="js/utils/waveformScope.js?v=20261110-scope-contours"></script>
-  <script src="js/utils/generatorParameters.js?v=20261110-combined-brand-refinement"></script>
+  <script src="js/utils/generatorParameters.js?v=20261111-truss-revamp"></script>
   <script src="js/utils/generatorInitialState.js?v=20261110-combined-brand-refinement"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
@@ -239,7 +239,7 @@
                 <optgroup label="Under Construction">
                   <option value="music" data-coming-soon disabled>Music</option>
                   <option value="graph" data-coming-soon disabled>Data Graph</option>
-                  <option value="truss" data-coming-soon disabled>Truss</option>
+                  <option value="truss">Truss</option>
                 </optgroup>
               </select>
             </div>
@@ -619,37 +619,31 @@
         <div id="truss-group" data-parameter-actions="truss" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control">
-            <label for="truss-family-select" class="control-label">TRUSS FAMILY</label>
+            <label for="truss-family-select" class="control-label">BRACING</label>
             <div class="select-wrapper">
-              <select id="truss-family-select" class="control-select">
-                <option value="flat">Flat</option>
-                <option value="king-post">King Post</option>
-                <option value="queen-post">Queen Post</option>
+              <select id="truss-family-select" data-url-parameter="trussFamily" class="control-select" aria-describedby="truss-family-hint">
+                <option value="warren">Warren zigzag</option>
+                <option value="pratt">Pratt</option>
                 <option value="howe">Howe</option>
-                <option value="scissor">Scissor</option>
-                <option value="fink">Fink</option>
-                <option value="attic">Attic</option>
-                <option value="mono">Mono</option>
-                <option value="hip">Hip</option>
-                <option value="gable">Gable</option>
-                <option value="cathedral">Cathedral</option>
-                <option value="fan">Fan</option>
-                <option value="raised-tie">Raised Tie</option>
+                <option value="cross">X-braced</option>
               </select>
             </div>
-            <div class="control-hint">Structural systems adapted to the bar format</div>
+            <div id="truss-family-hint" class="control-hint">A study of connections, not a load-bearing design.</div>
           </div>
           <div class="control slider-control">
-            <label for="truss-segments-slider" class="control-label">SEGMENTS <span
-                id="truss-segments-display" data-slider-value>15</span></label>
-            <input type="range" id="truss-segments-slider" data-url-parameter="trussSegments" min="5" max="50" value="15" class="control-slider"
-              aria-label="Truss Segments">
+            <label for="truss-segments-slider" class="control-label">PANELS <span id="truss-segments-display" data-slider-value>16</span></label>
+            <input type="range" id="truss-segments-slider" data-url-parameter="trussSegments" min="4" max="32" step="2" value="16" class="control-slider" aria-label="Truss panels" aria-describedby="truss-panels-hint">
+            <div id="truss-panels-hint" class="control-hint">Equal bays across the span. Even counts keep the pattern balanced.</div>
           </div>
           <div class="control slider-control">
-            <label for="truss-thickness-slider" class="control-label">THICKNESS <span
-                id="truss-thickness-display" data-slider-value>2</span></label>
-            <input type="range" id="truss-thickness-slider" data-url-parameter="trussThickness" min="0.5" max="5" step="0.5" value="2"
-              class="control-slider" aria-label="Truss Thickness">
+            <label for="truss-depth-slider" class="control-label">DEPTH <span id="truss-depth-display" data-slider-value>100</span>%</label>
+            <input type="range" id="truss-depth-slider" data-url-parameter="trussDepth" min="50" max="100" step="5" value="100" class="control-slider" aria-label="Truss depth percentage" aria-describedby="truss-depth-hint">
+            <div id="truss-depth-hint" class="control-hint">Height within the bar. The full span stays fixed.</div>
+          </div>
+          <div class="control slider-control">
+            <label for="truss-thickness-slider" class="control-label">STROKE WEIGHT <span id="truss-thickness-display" data-slider-value>1.25</span></label>
+            <input type="range" id="truss-thickness-slider" data-url-parameter="trussThickness" min="0.5" max="2" step="0.25" value="1.25" class="control-slider" aria-label="Truss stroke weight" aria-describedby="truss-thickness-hint">
+            <div id="truss-thickness-hint" class="control-hint">Drawing weight, not material thickness.</div>
           </div>
         </div>
 
@@ -1157,15 +1151,15 @@
   <script src="js/utils/transparentGif.js?v=20261110-ring-release"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportUi.js?v=20261111-drafted-export-schematic"></script>
-  <script src="js/utils/barInformation.js?v=20261111-short-ring"></script>
+  <script src="js/utils/barInformation.js?v=20261111-truss-revamp"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
   <script src="js/utils/keyboardShortcuts.js?v=20261110-keyboard-shortcuts"></script>
   <script src="js/utils/inputLimitFeedback.js?v=20261110-input-limit-feedback"></script>
-  <script src="js/main.js?v=20261111-optional-shortcuts"></script>
+  <script src="js/main.js?v=20261111-truss-revamp"></script>
   <script src="js/utils/logoClipboard.js?v=20261110-export-composition-r2"></script>
-  <script src="js/drawing.js?v=20261110-ring-release"></script>
+  <script src="js/drawing.js?v=20261111-truss-revamp"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

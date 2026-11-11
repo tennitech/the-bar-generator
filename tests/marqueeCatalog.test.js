@@ -2,9 +2,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { entries, samples, selectEntries } = require('../js/utils/marqueeCatalog');
 const { ROUTABLE_STYLE_VALUES, UNAVAILABLE_STYLE_VALUES } = require('../js/utils/generatorRoutes');
-test('every implemented route has one canonical entry and bounded real samples', () => {
-  expect(new Set(entries.map(entry => entry.value))).toEqual(ROUTABLE_STYLE_VALUES);
-  expect(entries).toHaveLength(ROUTABLE_STYLE_VALUES.size);
+// Live construction routes remain deliberately outside the promoted Home catalog
+// until owner approval. Read the authored category rather than maintaining a list.
+const shell = fs.readFileSync(require.resolve('../generator/index.html'), 'utf8');
+const construction = shell.match(/<optgroup label="Under Construction">([\s\S]*?)<\/optgroup>/)?.[1] || '';
+const constructionStyles = new Set([...construction.matchAll(/<option value="([^"]+)"/g)].map(match => match[1]));
+const homeStyles = new Set([...ROUTABLE_STYLE_VALUES].filter(style => !constructionStyles.has(style)));
+test('every promoted route has one canonical entry and bounded real samples', () => {
+  expect(new Set(entries.map(entry => entry.value))).toEqual(homeStyles);
+  expect(entries).toHaveLength(homeStyles.size);
   expect(new Set(samples.map(sample => sample.path)).size).toBe(samples.length);
   for (const entry of entries) {
     expect(UNAVAILABLE_STYLE_VALUES.has(entry.value)).toBe(false);
@@ -28,11 +34,11 @@ test('every implemented route has one canonical entry and bounded real samples',
     expect(artwork.size).toBe(entry.variants.length);
   }
 });
-test('selection chooses exactly one sample per family with only 21 unique asset URLs', () => {
+test('selection chooses exactly one sample per promoted family', () => {
   for (const random of [() => 0, () => 0.5, () => 0.999999]) {
     const selection = selectEntries(random);
     expect(selection).toHaveLength(entries.length);
-    expect(new Set(selection.map(sample => sample.value))).toEqual(ROUTABLE_STYLE_VALUES);
+    expect(new Set(selection.map(sample => sample.value))).toEqual(homeStyles);
     expect(new Set(selection.map(sample => sample.path)).size).toBe(entries.length);
     for (const sample of selection) expect(samples).toContain(sample);
   }

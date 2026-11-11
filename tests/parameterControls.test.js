@@ -51,7 +51,7 @@ function fixture(random = 0) {
   };
   const context = { MotionSpeed: require('../js/utils/motionSpeed'), document, URLSearchParams, Event: class { constructor(type) { this.type = type; } },
     Math: Object.assign(Object.create(Math), { random: () => random }),
-    sharePatternSeed: 1, SURPRISE_TEXT_OPTIONS: ['RPI', 'BUILD', 'NEW'],
+    TRUSS_FAMILY_OPTIONS: ['warren', 'pratt', 'howe', 'cross'], sharePatternSeed: 1, SURPRISE_TEXT_OPTIONS: ['RPI', 'BUILD', 'NEW'],
     pickRandom: choices => choices[Math.floor(random * choices.length)],
     getStepPrecision: step => String(step).split('.')[1]?.length || 0,
     randomStepValue: (min, max, step = 1) => min + Math.floor(random * (Math.round((max - min) / step) + 1)) * step,
@@ -90,17 +90,17 @@ function fixture(random = 0) {
   return { context, fields, groups, buttons, snapshot };
 }
 
-const active = ['nucleotide', 'ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
+const active = ['truss', 'nucleotide', 'ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
   'circles-gradient', 'gradient', 'grid', 'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles'];
 const fixed = ['solid', 'fibonacci-sequence', 'union', 'runway', 'lunar'];
 
-test('explicit capabilities cover exactly all 22 selectable styles and reject construction/prototype names', () => {
+test('explicit capabilities cover exactly all selectable styles and reject construction/prototype names', () => {
   const h = fixture();
   expect(Object.keys(h.context.ParameterControls.capabilities).sort()).toEqual([...active, ...fixed].sort());
   expect(h.fields['style-select'].options.filter(option => !option.disabled).map(option => option.value).sort())
     .toEqual([...active, ...fixed].sort());
   for (const style of active) expect(h.context.ParameterControls.supportsActions(style)).toBe(true);
-  for (const style of [...fixed, 'music', 'graph', 'truss', 'constructor', '__proto__']) {
+  for (const style of [...fixed, 'music', 'graph', 'constructor', '__proto__']) {
     expect(h.context.ParameterControls.supportsActions(style)).toBe(false);
     h.context.resetStyleParameters(style); h.context.randomizeStyleParameters(style);
   }
