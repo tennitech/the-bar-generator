@@ -3,6 +3,23 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 concise, source-checked UI copy
+
+Audited Home, all 22 selectable About descriptions, control hints, dialogs,
+errors/status, accessibility instructions, route/fallback and animation copy.
+The live RPI Voice & Tone and Color pages inform the edits. About text drops
+from 967 to 609 whitespace-counted words, removing repeated exploration prompts
+while retaining actual encodings, model limits, provenance and approval caveats.
+The shortcut guide, Home prompt and selected helpers are shorter. Exact
+owner-supplied official color guidance stays verbatim.
+Useful error recovery, input limits, accessible names and state announcements,
+report metadata disclosure, scientific detail disclosures and source links stay.
+
+Only copy and delivery cache keys change; no model, filtering, renderer, control
+behavior, dependencies or logo assets change. Export-card cleanup is coordinated
+separately. [Audit record](ui_copy_audit.md) distinguishes code/tests, rendered
+checks and formal approval. Fresh route and fallback keys load the updated shell.
+
 ## November 11 clearer left/right dice shake
 
 The owner's follow-up rejected the first subtle tilt. Each die now makes six

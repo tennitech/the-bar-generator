@@ -1,5 +1,15 @@
 # Bar information cards
 
+## November 11 concise-copy update
+
+The current inventory has 22 selectable styles. Copy now ranges from 14 to 58
+words per card, with scientific explanations deliberately longer than simple
+geometric motifs. This supersedes the original two-sentence/40-word target below.
+See [the app-wide audit](ui_copy_audit.md) for source verification and retained
+meaning. Titles, disclosure behavior, source links and artwork remain unchanged.
+
+## Original implementation record
+
 October 28, 2026. One shared sidebar card sits immediately above Report a Problem (Report Anomaly in Mission Control), covering all 21 available bar styles. Each description has two sentences and approximately 40 words. Disabled Music, Data Graph and Truss entries remain unavailable and do not gain cards for unimplemented behavior.
 
 ## Copy and sources

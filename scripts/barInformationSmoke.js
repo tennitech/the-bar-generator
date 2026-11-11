@@ -42,14 +42,14 @@ const evidence = `/tmp/rpi-bar-information-${engine}`;
     await summary.click();
     await page.selectOption('#style-select', 'wave-quantum', { force: true });
     assert.equal(await about.getAttribute('open'), '');
-    assert.equal((await summary.textContent()).trim(), 'About Quantum');
+    assert.equal((await summary.textContent()).trim(), 'About Ring Wavefunction');
     const footer = page.locator('.sidebar-footer'), scroller = page.locator('#sidebar-scroll');
     const before = await footer.boundingBox();
     await scroller.evaluate(el => { el.scrollTop = el.scrollHeight; });
     const after = await footer.boundingBox();
     assert.equal(after.y, before.y, 'footer stays pinned when controls scroll');
     assert.ok(await scroller.evaluate(el => !el.contains(document.querySelector('.sidebar-footer'))));
-    for(const color of ['black','white','red','lunar']) {
+    for(const color of ['black','white','white-on-red','lunar']) {
       await page.selectOption('#color-mode-select',color,{force:true});
       assert.equal(await page.locator('.bar_information-credit').isVisible(),color==='lunar');
       await page.locator('#bar-information').scrollIntoViewIfNeeded();
@@ -69,7 +69,7 @@ const evidence = `/tmp/rpi-bar-information-${engine}`;
     await page.emulateMedia({reducedMotion:'no-preference'});
     await page.goto(`${base}/generator/wave-quantum/`);
     await page.waitForFunction(()=>window.barShareController);
-    assert.equal(await page.locator('#bar-information-title').textContent(),'Quantum');
+    assert.equal(await page.locator('#bar-information-title').textContent(),'Ring Wavefunction');
     await page.selectOption('#style-select','lunar',{force:true});
     await page.selectOption('#color-mode-select','lunar',{force:true});
     await page.locator('#bar-information-toggle').click();
@@ -77,6 +77,6 @@ const evidence = `/tmp/rpi-bar-information-${engine}`;
     await credit.focus();
     assert.equal(await credit.evaluate(el=>el===document.activeElement),true);
     assert.deepEqual(errors,[]);
-    console.log(`${engine}: 21 styles, 4 themes, 3 narrow layouts, direct route, motion preferences, and credit focus passed. Evidence: ${evidence}`);
+    console.log(`${engine}: 22 styles, 4 themes, 3 narrow layouts, direct route, motion preferences, and credit focus passed. Evidence: ${evidence}`);
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
