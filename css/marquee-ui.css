@@ -36,7 +36,7 @@
   --composition-scale: 1;
   --viewport-height: 100vh;
   --marquee-asset-width: 28rem;
-  --marquee-row-height: 3.9rem;
+  --marquee-row-height: 4.9rem;
   --marquee-row-gap: 1.45rem;
   --hero-copy-pad-x: clamp(1.1rem, 2vw, 1.75rem);
   --hero-copy-pad-top: clamp(0.85rem, 1.6vw, 1.35rem);
@@ -309,8 +309,8 @@ img {
 .bar_asset {
   display: block;
   width: 100%;
-  height: calc(100% - 0.9rem * var(--composition-scale));
-  margin-block: calc(0.45rem * var(--composition-scale));
+  height: calc(3rem * var(--composition-scale));
+  margin-block: calc(0.95rem * var(--composition-scale));
   object-fit: contain;
   filter: brightness(0) invert(1);
   user-select: none;

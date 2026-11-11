@@ -37,12 +37,12 @@ describe('marquee row layout helpers', () => {
     expect(positions[3] - positions[2]).toBeCloseTo(60.417, 3);
   });
 
-  test('uses the original wider-layout pitch when the stage is tall enough', () => {
-    expect(getRowStepPx(900)).toBeCloseTo((7.35 / 100) * 900, 3);
+  test('separates taller native targets in the rotated lane coordinate system', () => {
+    expect(getRowStepPx(900, 78.4) * Math.cos(17 * Math.PI / 180)).toBeCloseTo(80.4, 3);
   });
 
-  test('locks to the reference minimum pitch on shorter stages', () => {
-    expect(getRowStepPx(419)).toBeCloseTo((7.35 / 100) * 822, 3);
+  test('keeps targets separate on short stages too', () => {
+    expect(getRowStepPx(419, 78.4) * Math.cos(17 * Math.PI / 180)).toBeCloseTo(80.4, 3);
   });
 
   test.each([[1440, 900, 1], [1920, 1080, 1.2], [3840, 2160, 2.4],
@@ -52,7 +52,7 @@ describe('marquee row layout helpers', () => {
       expect(metrics.scale).toBeCloseTo(scale);
       expect(parseFloat(metrics.assetWidth)).toBeCloseTo(28 * scale);
       expect(parseFloat(metrics.rowGap)).toBeCloseTo(1.45 * scale);
-      expect(parseFloat(metrics.rowHeight)).toBeCloseTo(3.9 * scale);
+      expect(parseFloat(metrics.rowHeight)).toBeCloseTo(4.9 * scale);
       expect(metrics.heroMaxScale).toBeCloseTo(scale);
     });
 
