@@ -1,11 +1,10 @@
 /* The actual Waveform audio graph, shared by audible and offline rendering. */
 (function(scope) {
   const frequency = value => 32.70 + (Number(value) - 10) / 90 * (523.25 - 32.70);
-  function create(context, destination, values, initial = {}, WorkletNode = scope.AudioWorkletNode) {
+  function create(context, destination, values, WorkletNode = scope.AudioWorkletNode) {
     const oscillators = {}, oscillatorGains = {};
     let pulseWorkletNode = null;
     const mappedFrequency = frequency(values.frequency);
-    const lfo = scope.WaveformLfo.create(context, destination, values.lfo, initial);
     // Create basic oscillators for smooth morphing
     const waveTypes = ['sine', 'sawtooth', 'square'];
 
@@ -21,7 +20,7 @@
 
       // Connect oscillator -> gain -> master gain -> destination
       oscillators[type].connect(oscillatorGains[type]);
-      oscillatorGains[type].connect(lfo.input);
+      oscillatorGains[type].connect(destination);
 
       // Start oscillator
       oscillators[type].start();
@@ -48,7 +47,7 @@
       oscillatorGains.pulse.gain.setValueAtTime(0, context.currentTime);
 
       oscillators.pulse.connect(oscillatorGains.pulse);
-      oscillatorGains.pulse.connect(lfo.input);
+      oscillatorGains.pulse.connect(destination);
 
     } catch (error) {
       console.error('Failed to create pulse worklet:', error);
@@ -61,7 +60,7 @@
       oscillatorGains.pulse.gain.setValueAtTime(0, context.currentTime);
 
       oscillators.pulse.connect(oscillatorGains.pulse);
-      oscillatorGains.pulse.connect(lfo.input);
+      oscillatorGains.pulse.connect(destination);
       oscillators.pulse.start();
     }
 
@@ -152,7 +151,7 @@
       if (oscillatorGains.pulse) oscillatorGains.pulse.gain.setTargetAtTime(pulseGain, time, rampTime / 3);
 
     }
-    return { oscillators, oscillatorGains, pulseWorkletNode, lfo, update };
+    return { oscillators, oscillatorGains, pulseWorkletNode, update };
   }
   const api = { create, frequency };
   scope.WaveformAudio = api;

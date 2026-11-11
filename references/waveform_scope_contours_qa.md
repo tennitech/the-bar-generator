@@ -1,5 +1,8 @@
 # Scope contours and LFO playback QA — November10,2026
 
+Historical evidence: the November 11 LFO removal supersedes the modulation
+behavior and old checks described here. Use [current QA](waveform_lfo_removal_qa.md).
+
 ## Two distinct diagnoses
 
 The supplied private screenshot was inspected locally via Library. It shows

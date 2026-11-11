@@ -64,6 +64,7 @@ function fixture(random = 0) {
 
     normalizeCirclesGradientSettings: require('../js/utils/barPattern').normalizeCirclesGradientSettings,
     quantumModel: require('../js/utils/quantumModel'),
+    updateWaveformScopeControls: jest.fn(),
     applyTickerWidthRatioBounds: () => {}, stopAudio: jest.fn() };
   context.window = context;
   for (const field of Object.values(fields)) context[field.id.replace(/-([a-z])/g, (_, char) => char.toUpperCase())] = field;
@@ -81,7 +82,7 @@ function fixture(random = 0) {
 
   vm.runInContext(source.slice(source.indexOf('function getCirclesGradientControlValues'), source.indexOf('function updateGradientVariantDisplay')), context);
   vm.runInContext(source.slice(source.indexOf('const NEURAL_CONTROL_DEFAULTS'), source.indexOf('function updateTriangleGridVariantDisplay')), context);
-  vm.runInContext(source.slice(source.indexOf('function resetWaveformLfo()'), source.indexOf('function getCurrentAudioPreviewType()')), context);
+  vm.runInContext(source.slice(source.indexOf('function resetWaveformScope()'), source.indexOf('function getCurrentAudioPreviewType()')), context);
   vm.runInContext(source.slice(source.indexOf('function resetStyleParameters'), source.indexOf('function getBugReportContextLabel')), context);
   context.ParameterControls.bindActions({ reset: context.resetStyleParameters, randomize: context.randomizeStyleParameters,
     isDefaultSeed: () => context.sharePatternSeed === 1 });
@@ -216,9 +217,7 @@ test('same-page shared and legacy restoration refresh action state after the com
   let bridge;
   Object.assign(h.context, {
     BarShareState: { initialize: next => { bridge = next; } },
-    WaveformLfo: require('../js/utils/waveformLfo'),
-    getWaveformLfoSettings: () => ({enabled:false,rate:2,depth:60,type:0}),
-    updateWaveformLfoControls: jest.fn(),
+    updateWaveformScopeControls: jest.fn(),
     sanitizeBarText: value => value, liveMotionPhase: 0, currentStaffNotes: [], currentNoteDuration: 1,
     animationTime: 0, DEFAULT_MOTION_ENABLED: false, MOTION_ENABLED_BY_STYLE: { ticker: false, waveform: false },
     styleSupportsMotion: style => ['ticker', 'waveform'].includes(style),

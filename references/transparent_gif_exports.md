@@ -1,5 +1,14 @@
 # Transparent exports
 
+## Current Waveform export policy — November 11, 2026
+
+Waveform's LFO is removed. Historical LFO and joint-cycle policies below no
+longer apply. SVG/PNG/clipboard keep the captured unmodulated carrier frame;
+GIF replays its actual recorded one-period sweep with existing Speed/Reverse,
+finite capture and wrap behavior. No audio is included. See
+[removal and export verification](waveform_lfo_removal_qa.md).
+
+
 ## Current composition choices — November 10, 2026
 
 The illustrated **Bar + RPI** / **Bar only** selector applies to all downloads

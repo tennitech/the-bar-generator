@@ -10,7 +10,7 @@
     button.addEventListener('focus', () => show(true));
     button.addEventListener('blur', close);
     button.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') show(true); });
-    const boundary = button.closest?.('.waveform_lfo') || button;
+    const boundary = button.closest?.('.control') || button;
     boundary.addEventListener('pointerleave', () => { if (!pinned && documentRef.activeElement !== button) show(false); });
     button.addEventListener('click', () => { pinned = !pinned; show(pinned); });
     documentRef.addEventListener('pointerdown', event => {
