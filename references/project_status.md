@@ -3,6 +3,21 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 horizontal trackpad row control
+
+A horizontal-dominant wheel gesture over a marquee row now moves that row in
+native scroll direction. The listener is attached once per row, including its
+gaps, rather than to every repeated bar. Fractional pixel deltas are preserved;
+line/page wheel modes and Shift-wheel are normalized. OS momentum is applied
+once with no additional spring/fling, and any previous release spring is caught.
+
+Vertical-dominant/equal diagonal gestures, pinch zoom (Ctrl), other modified or
+already handled events, noncancelable events, and active pointer drags remain
+native. Direct scrolling stays available during keyboard pause or reduced motion,
+without restarting autoplay or creating synthetic inertia. Bar hover/focus,
+static artwork, touch gestures and click semantics remain unchanged. Both Home
+JS keys advance. Regression coverage and release verification are in the PR.
+
 ## November 11 elastic marquee drag release
 
 Dragging remains directly attached to the pointer. On a deliberate throw, each

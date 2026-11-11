@@ -595,6 +595,33 @@ function createTrackItem(state, path, isMeasure = false) {
   return item;
 }
 
+// Wheel deltas already include the operating system's momentum. Apply them
+// once, without sampling another throw or consuming vertical/pinch gestures.
+function getHorizontalWheelDelta(event, pageWidth) {
+  if (event.ctrlKey || event.metaKey || event.altKey || event.defaultPrevented || !event.cancelable) return 0;
+  const x = event.deltaX ?? 0, y = event.deltaY ?? 0;
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return 0;
+  const horizontal = event.shiftKey && !x ? y : Math.abs(x) > Math.abs(y) ? x : 0;
+  const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? pageWidth : 1;
+  return horizontal * unit;
+}
+
+function bindRowWheel(state) {
+  state.element.addEventListener('wheel', event => {
+    if (state.drag || !state.slotWidth || !state.items.length) return;
+    const delta = getHorizontalWheelDelta(event, window.innerWidth || state.slotWidth);
+    if (!delta) return;
+    event.preventDefault();
+    state.inertiaVelocity = 0;
+    state.inertiaOffset = 0;
+    state.inertiaOrigin = null;
+    state.currentFactor = 0;
+    // Positive scroll deltas move content left, regardless of lane direction.
+    state.travel -= delta * state.direction;
+    updateRowLayout(state);
+  }, { passive: false });
+}
+
 function createRow(index) {
   const row = document.createElement('div');
   row.className = `marquee_row ${index % 2 === 0 ? 'is-backward' : 'is-forward'}`;
@@ -607,7 +634,7 @@ function createRow(index) {
   track.className = 'marquee_track';
   row.append(track);
 
-  return {
+  const state = {
     element: row,
     track,
     pattern: rowPatterns[index % rowPatterns.length],
@@ -634,6 +661,8 @@ function createRow(index) {
     items: [],
     measureItem: null
   };
+  bindRowWheel(state);
+  return state;
 }
 
 function updateRowLayout(state) {
@@ -1025,6 +1054,8 @@ if (typeof module !== 'undefined' && module.exports) {
     getReleaseVelocity,
     advanceRowInertia,
     bindAssetInteractions,
+    getHorizontalWheelDelta,
+    bindRowWheel,
     bindStageFocus,
     resetRowInteraction,
     createRowPatterns,
