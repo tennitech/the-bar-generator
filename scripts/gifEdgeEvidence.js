@@ -59,7 +59,7 @@ async function main() {
   for (const item of cases) {
     const family = item.family || 'waveform'; r.select(family);
     Object.assign(r.state, item);
-    Object.assign(r.state.values, { waveformFrequency: 5, waveformType: item.type || 0, waveformLfo: false });
+    Object.assign(r.state.values, { waveformFrequency: 5, waveformType: item.type || 0 });
     const snapshot = r.captureLogoExportSnapshot();
     const plan = getLoopingGifFramePlan(family, snapshot.values, { barWidth: 250 });
     const renderer = r.createCapturedGifRenderer(snapshot, plan);

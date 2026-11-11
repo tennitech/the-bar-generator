@@ -112,9 +112,9 @@ test('nucleotide ignores retired target controls and preserves actual bases up t
 });
 
 
-test('new LFO snapshots preserve a bounded optional modulation phase without changing old snapshots', () => {
-  expect(normalizeRuntime({lfoPhase:.37})).toMatchObject({lfoPhase:.37});
-  expect(normalizeRuntime({lfoPhase:2})).toMatchObject({lfoPhase:0});
+test('retired modulation phase is ignored without changing other runtime state', () => {
+  expect(normalizeRuntime({lfoPhase:.37,phase:.6})).toEqual(normalizeRuntime({phase:.6}));
+  expect(normalizeRuntime({lfoPhase:2})).not.toHaveProperty('lfoPhase');
   expect(normalizeRuntime({})).not.toHaveProperty('lfoPhase');
 });
 

@@ -8,7 +8,7 @@ are in `generator-integration-evidence` beside the integration worktree.
 The integrated revision replaces literal repeat rates in the SPEED display with
 0.2–4× of each style's original default. Stored physical/display-rate values and
 all formerly valid configurations remain unchanged. Keyboard arrows use 0.05×,
-Page keys 0.25×, and the numeric editor accepts multipliers. LFO RATE remains Hz.
+Page keys 0.25×, and the numeric editor accepts multipliers.
 The already licensed Feather shuffle stays at a clearer 18px; refresh-cw is not
 added because it resembles Reset. No license/asset change is needed.
 

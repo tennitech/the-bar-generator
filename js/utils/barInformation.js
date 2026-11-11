@@ -27,7 +27,7 @@
   },
   "waveform": {
     "title": "Waveform",
-    "text": "Generate a repeating signal from the selected waveform and frequency. LFO modulates its amplitude and audio volume. The scope shows the generated audio signal, not an external recording."
+    "text": "Generate a repeating signal from the selected waveform and frequency. The scope shows the generated audio signal, not an external recording."
   },
   "circles": {
     "title": "Circles",

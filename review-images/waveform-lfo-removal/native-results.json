@@ -1,0 +1,217 @@
+{
+  "kind": "Native offline Web Audio/export QA; no browser, hardware audio or OS download",
+  "audio": [
+    {
+      "frequency": 10,
+      "type": 0,
+      "error": 0
+    },
+    {
+      "frequency": 10,
+      "type": 0.5,
+      "error": 0
+    },
+    {
+      "frequency": 10,
+      "type": 1,
+      "error": 0
+    },
+    {
+      "frequency": 10,
+      "type": 1.5,
+      "error": 0
+    },
+    {
+      "frequency": 10,
+      "type": 2,
+      "error": 0
+    },
+    {
+      "frequency": 24,
+      "type": 0,
+      "error": 0
+    },
+    {
+      "frequency": 24,
+      "type": 0.5,
+      "error": 0
+    },
+    {
+      "frequency": 24,
+      "type": 1,
+      "error": 0
+    },
+    {
+      "frequency": 24,
+      "type": 1.5,
+      "error": 0
+    },
+    {
+      "frequency": 24,
+      "type": 2,
+      "error": 0
+    },
+    {
+      "frequency": 100,
+      "type": 0,
+      "error": 0
+    },
+    {
+      "frequency": 100,
+      "type": 0.5,
+      "error": 0
+    },
+    {
+      "frequency": 100,
+      "type": 1,
+      "error": 0
+    },
+    {
+      "frequency": 100,
+      "type": 1.5,
+      "error": 0
+    },
+    {
+      "frequency": 100,
+      "type": 2,
+      "error": 0
+    }
+  ],
+  "png": [
+    {
+      "frequency": 10,
+      "type": 0,
+      "seconds": 0.12216666666666667,
+      "width": 1160,
+      "height": 232,
+      "ink": 23522
+    },
+    {
+      "frequency": 10,
+      "type": 1.5,
+      "seconds": 0.12216666666666667,
+      "width": 1160,
+      "height": 232,
+      "ink": 27585
+    },
+    {
+      "frequency": 10,
+      "type": 3,
+      "seconds": 0.12216666666666667,
+      "width": 1160,
+      "height": 232,
+      "ink": 36227
+    },
+    {
+      "frequency": 24,
+      "type": 0,
+      "seconds": 0.03666666666666667,
+      "width": 1160,
+      "height": 232,
+      "ink": 23505
+    },
+    {
+      "frequency": 24,
+      "type": 1.5,
+      "seconds": 0.03666666666666667,
+      "width": 1160,
+      "height": 232,
+      "ink": 27536
+    },
+    {
+      "frequency": 24,
+      "type": 3,
+      "seconds": 0.03666666666666667,
+      "width": 1160,
+      "height": 232,
+      "ink": 36217
+    },
+    {
+      "frequency": 100,
+      "type": 0,
+      "seconds": 0.0075,
+      "width": 1160,
+      "height": 232,
+      "ink": 23743
+    },
+    {
+      "frequency": 100,
+      "type": 1.5,
+      "seconds": 0.0075,
+      "width": 1160,
+      "height": 232,
+      "ink": 27229
+    },
+    {
+      "frequency": 100,
+      "type": 3,
+      "seconds": 0.0075,
+      "width": 1160,
+      "height": 232,
+      "ink": 35821
+    }
+  ],
+  "gif": [
+    {
+      "frequency": 10,
+      "type": 0,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 81173
+    },
+    {
+      "frequency": 10,
+      "type": 3,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 81173
+    },
+    {
+      "frequency": 24,
+      "type": 0,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 104615
+    },
+    {
+      "frequency": 24,
+      "type": 3,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 73368
+    },
+    {
+      "frequency": 100,
+      "type": 0,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 68706
+    },
+    {
+      "frequency": 100,
+      "type": 3,
+      "frames": 166,
+      "uniqueFrames": 166,
+      "period": 3.3333333333333335,
+      "bytes": 73019
+    }
+  ],
+  "pulse": {
+    "mean": 0.05996666648238897,
+    "rms": 0.09999999961752919,
+    "expectedDuty": 0.8,
+    "independentStartupPhase": true
+  },
+  "tap": {
+    "pairs": 2816,
+    "orderedSamples": 22528,
+    "audibleUnchanged": true,
+    "extremaExact": true,
+    "orderedExact": true
+  }
+}

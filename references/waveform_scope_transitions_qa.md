@@ -1,5 +1,8 @@
 # Scope history/X-scale transition QA — November 10, 2026
 
+Historical evidence: the November 11 LFO removal supersedes the modulation
+behavior and old checks described here. Use [current QA](waveform_lfo_removal_qa.md).
+
 Owner live feedback confirmed the actual-audio view works but identified a brief
 sparse waveform followed by increasing density after each parameter edit. Source
 inspection reproduced the mechanism: configure() cleared PCM and reallocated
