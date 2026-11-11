@@ -6,8 +6,8 @@ Both are working, selectable entries under **Under Construction**, with direct
 routes `/generator/well-modes/` and `/generator/rabi/`. They are deliberately
 absent from the promoted Home marquee. Future bars being iterated should use
 this same accessible category, not disabled placeholders; move them into a
-regular category only after the owner explicitly approves that move. Existing
-Music, Data Graph and Truss placeholders are not implemented by this change.
+regular category only after the owner explicitly approves that move. The separately implemented Music composer remains in the same experimental
+category. Data Graph and Truss placeholders are not implemented by this change.
 
 The existing Ring Wavefunction remains separate and unchanged. These are ideal
 mathematical models, not measured RPI experiments, hardware simulations, or

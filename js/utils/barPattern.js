@@ -290,25 +290,6 @@ function createWaveformPatternGeometry(options = {}) {
   ] };
 }
 
-function createMusicHeadSVG(shape, x, y, rx, ry, filled, fgColor, lineThickness) {
-  const normalizedShape = normalizeMusicNoteShape(shape);
-  const fill = filled ? fgColor : 'none';
-  const strokeAttr = filled ? '' : ` stroke="${fgColor}" stroke-width="${lineThickness}"`;
-
-  if (normalizedShape === 'circle') {
-    return `<circle cx="${x}" cy="${y}" r="${rx}" fill="${fill}"${strokeAttr}/>`;
-  }
-
-  if (normalizedShape === 'square') {
-    return `<rect x="${x - rx}" y="${y - ry}" width="${rx * 2}" height="${ry * 2}" fill="${fill}"${strokeAttr}/>`;
-  }
-
-  const points = normalizedShape === 'diamond'
-    ? `${x},${y - ry} ${x + rx},${y} ${x},${y + ry} ${x - rx},${y}`
-    : `${x},${y - ry} ${x + rx},${y + ry} ${x - rx},${y + ry}`;
-  return `<polygon points="${points}" fill="${fill}"${strokeAttr}/>`;
-}
-
 function clampPatternVariant(value, max) {
   const parsed = parseInt(value, 10);
   if (!Number.isFinite(parsed)) return 1;
@@ -1952,14 +1933,11 @@ function createBarPatternSVG(config) {
       rectTop: barY,
       rectHeight: barHeight,
       thickness: parseFloat(values.staffThickness || 1),
-      noteShape: values.staffNoteShape || 'circle'
+      noteShape: values.staffNoteShape || 'square'
     });
 
-    renderData.staffLines.forEach(segment => {
-      pattern += `\n    <line x1="${segment.x1}" y1="${segment.y1}" x2="${segment.x2}" y2="${segment.y2}" stroke="${fgColor}" stroke-width="${renderData.lineThickness}"/>`;
-    });
-    renderData.notes.forEach(noteRender => {
-      pattern += `\n    ${createMusicHeadSVG('circle', noteRender.noteX, noteRender.noteY, noteRender.rx, noteRender.ry, true, fgColor, renderData.lineThickness)}`;
+    renderData.notes.forEach(note => {
+      pattern += `\n    <polygon points="${note.points.map(point => point.join(',')).join(' ')}" fill="${fgColor}"/>`;
     });
     return pattern;
   }

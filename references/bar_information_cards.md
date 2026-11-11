@@ -66,3 +66,11 @@ its idealization and the visual/physical distinction: mirrored density is not a
 second dimension; a sliding pulse-duration scan is not a particle path. Cards
 identify Under Construction status and do not imply RPI experimental results or
 brand-library approval. Model sources and limits: [quantum studies](quantum_studies.md).
+
+## November 11 Music availability
+
+Music now has an implemented piano-roll composer and a truthful About entry.
+It stays under Under Construction until owner approval; this supersedes only
+the earlier Music-unavailable statement. The card explains semitone lanes,
+onset/duration, rests, equal temperament and silent static exports. Sources and
+validation limits are recorded in [music_bar.md](music_bar.md).

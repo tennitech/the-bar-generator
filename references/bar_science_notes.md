@@ -611,3 +611,23 @@ zeros. Rabi draws complementary populations from the initial-ground-state RWA
 solution over a pulse-duration scan. Its apparent translation is parameter
 scanning, not motion in physical space. Both use an illustrative eight-second
 default cycle. See [complete formulas, restrictions, sources and export QA](quantum_studies.md).
+
+## Music piano roll — November 11, 2026
+
+The dormant notation is superseded by a chromatic piano-roll model. A bounded
+monophonic phrase contains notes C4–C5 or rests, with durations in quarter-note
+beats (0.25, 0.5, 1, 2), at most 16 beats. C4 and C5 occupy distinct fixed end
+lanes, with all intervening sharps represented individually. Position is onset;
+shape bounding width is duration divided by total phrase duration. Rests leave
+gaps. Pitch centers remain fixed when notes are added or removed. Shape choice
+has no effect on pitch or duration; geometric shapes are not notation symbols.
+
+Audio uses `440 * 2^((MIDI - 69)/12)` with A4 = 440 Hz, and beat duration is
+60/BPM seconds. Synthesized voices/effects affect sound only. Artwork is static,
+with no tempo-derived movement. SVG/PNG remain silent. Preview, graphics, SVG,
+audio and persistence share validation and score geometry. No staff baseline,
+ledger lines, added side strips, or forced painted-edge scaling remain.
+
+Authoritative coordinate/tuning sources and exact drawing conventions are in
+[music_bar.md](music_bar.md). These are original short exercise patterns, not
+borrowed compositions, recordings or measured musical data.

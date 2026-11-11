@@ -205,43 +205,6 @@ function drawLunarBarPattern(target, barStartX, barY, exactBarWidth, barHeight, 
   }
 }
 
-function drawMusicHeadOnGraphics(pg, shape, x, y, rx, ry, filled, fgColor) {
-  const normalizedShape = normalizeMusicNoteShape(shape);
-
-  if (filled) {
-    pg.fill(fgColor);
-    pg.noStroke();
-  } else {
-    pg.noFill();
-    pg.stroke(fgColor);
-  }
-
-  if (normalizedShape === 'circle') {
-    pg.circle(x, y, rx * 2);
-    return;
-  }
-
-  if (normalizedShape === 'square') {
-    pg.rectMode(CENTER);
-    pg.rect(x, y, rx * 2, ry * 2);
-    pg.rectMode(CORNER);
-    return;
-  }
-
-  pg.beginShape();
-  if (normalizedShape === 'diamond') {
-    pg.vertex(x, y - ry);
-    pg.vertex(x + rx, y);
-    pg.vertex(x, y + ry);
-    pg.vertex(x - rx, y);
-  } else {
-    pg.vertex(x, y - ry);
-    pg.vertex(x + rx, y + ry);
-    pg.vertex(x - rx, y + ry);
-  }
-  pg.endShape(CLOSE);
-}
-
 const EXPORT_REFERENCE_WIDTH = RPI_LOGO_GEOMETRY.width;
 const EXPORT_REFERENCE_HEIGHT = RPI_LOGO_GEOMETRY.totalHeight;
 const EXPORT_BAR_Y = RPI_LOGO_GEOMETRY.barY;
@@ -542,25 +505,12 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       rectTop: barY,
       rectHeight,
       thickness: 1,
-      noteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'circle'
+      noteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'square'
     });
 
-    pg.stroke(fgColor);
-    pg.strokeWeight(renderData.lineThickness);
-    renderData.staffLines.forEach(segment => pg.line(segment.x1, segment.y1, segment.x2, segment.y2));
-    renderData.barLines.forEach(segment => pg.line(segment.x1, segment.y1, segment.x2, segment.y2));
-    renderData.notes.forEach(noteRender => {
-      pg.stroke(fgColor);
-      pg.strokeWeight(renderData.lineThickness);
-      noteRender.ledgerLines.forEach(segment => pg.line(segment.x1, segment.y1, segment.x2, segment.y2));
-      noteRender.accidentalLines.forEach(segment => pg.line(segment.x1, segment.y1, segment.x2, segment.y2));
-      drawMusicHeadOnGraphics(pg, noteRender.noteShape, noteRender.noteX, noteRender.noteY, noteRender.rx, noteRender.ry, noteRender.headFill, fgColor);
-      pg.stroke(fgColor);
-      pg.strokeWeight(renderData.lineThickness);
-      if (noteRender.stem) {
-        pg.line(noteRender.stem.x1, noteRender.stem.y1, noteRender.stem.x2, noteRender.stem.y2);
-      }
-      noteRender.flags.forEach(segment => pg.line(segment.x1, segment.y1, segment.x2, segment.y2));
+    pg.noStroke(); pg.fill(fgColor);
+    renderData.notes.forEach(note => {
+      pg.beginShape(); note.points.forEach(point => pg.vertex(...point)); pg.endShape(CLOSE);
     });
   } else if (currentShader === 11) {
     // Pulse / Centerline pattern
@@ -1051,6 +1001,10 @@ function captureLogoExportSnapshot(options = {}) {
       waveformType: scopeCapture.frame.type ?? currentValues.waveformType,
       waveformScopePlaybackSeconds: scopeCapture.recording?.playbackSeconds,
       waveformScopeReplaySeconds: scopeCapture.recording?.replaySeconds } : {}) }));
+  if (family === 'music') {
+    values.staffNotes = Object.freeze(window.MusicStyle.normalizeNotes(values.staffNotes).map(note => Object.freeze(note)));
+    if (!values.staffNotes.some(note => note.note !== 'rest')) throw new Error('Add at least one note to export Music. Rests preserve silent time but draw no mark.');
+  }
   if (values.waveformScopeRequired && !scopeCapture) throw new Error('The audio scope is not ready. Try exporting again in a moment.');
   const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values, preview: false });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');

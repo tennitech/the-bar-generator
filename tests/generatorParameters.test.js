@@ -88,3 +88,11 @@ test('retired LFO query fields are ignored while carrier and motion settings sur
   expect(state).toMatchObject({waveformType:2.5,waveformNote:require('../js/utils/waveformNotes').fromLegacy(70),waveformSpeed:.6,waveformReverse:true});
   for(const key of ['waveformLfo','waveformLfoRate','waveformLfoDepth','waveformLfoType']) expect(state).not.toHaveProperty(key);
 });
+
+test('Music restores canonical notes, explicit empty phrases and bounded sound controls', () => {
+  expect(read('', '/generator/music/')).toMatchObject({style:'music', staffNoteShape:'square', staffTempo:120, staffInstrument:'piano'});
+  expect(read('', '/generator/music/').staffNotes).toBe(require('../js/utils/musicStyle').presets.rise);
+  expect(read('?staffNotes=', '/generator/music/').staffNotes).toBe('');
+  expect(read('?staffNotes=C%234_0.5,rest_1,D5_1&staffTempo=9999&staffInstrument=constructor&staffNoteShape=invalid','/generator/music/'))
+    .toMatchObject({staffNotes:'C#4_0.5,rest_1',staffTempo:240,staffInstrument:'piano',staffNoteShape:'square'});
+});

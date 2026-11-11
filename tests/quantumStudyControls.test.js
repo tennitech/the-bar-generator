@@ -99,7 +99,7 @@ test('all routed inline scripts remain syntactically valid after the cache upgra
   expect(bootstrap).toContain("'quantumStudyModel'");
   for(const style of ['well-modes','rabi']) {
     const route=fs.readFileSync(path.join(root,`generator/${style}/index.html`),'utf8');
-    expect(route).toContain("generator/index.html?v=20261111-quantum-studies");
-    expect(route).toContain("js/generatorBootstrap.js?v=20261111-quantum-studies");
+    expect(route).toContain("generator/index.html?v=20261111-quantum-studies-r2");
+    expect(route).toContain("js/generatorBootstrap.js?v=20261111-quantum-studies-r2");
   }
 });
