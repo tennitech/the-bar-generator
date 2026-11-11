@@ -100,3 +100,7 @@ entries remain. Rechecked the copied official color guidance and all generator
 ARIA names, roles and relationships against current main. #184 remains a separate
 following release and is not included here. Final combined test and CI results
 are recorded on PR #187.
+
+Final reconciliation also preserves #189 (`20e869e`): the dice controller, its
+regressions and runtime key are identical to main. Only shared shell version
+conflicts are resolved; no dice animation or export behavior is changed.

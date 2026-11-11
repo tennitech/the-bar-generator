@@ -22,20 +22,40 @@ function fixture(reduce = false) {
   return { api: scope.ParameterControls, button, back, front, label, root, animations, media, document, scope };
 }
 
-test('Randomize moves each die independently, with different directions and settling times, then returns to rest', () => {
+test('Randomize moves each die independently, with clear lateral swings and different settling times, then returns to rest', () => {
   const f = fixture(); f.api.feedback(f.button, 'randomize');
   expect(f.back.animate).toHaveBeenCalledTimes(1); expect(f.front.animate).toHaveBeenCalledTimes(1);
   expect(f.root.animate).not.toHaveBeenCalled(); expect(f.label.animate).not.toHaveBeenCalled();
   const [back, front] = f.animations;
   expect(back.frames).not.toEqual(front.frames);
   expect(back.options.duration).toBeLessThan(front.options.duration);
-  expect(front.options.duration).toBeLessThanOrEqual(350);
-  expect(back.frames[1].transform).toMatch(/rotate\([1-9]/);
-  expect(front.frames[1].transform).toMatch(/rotate\(-[1-9]/);
+  expect(back.options.duration).toBeGreaterThanOrEqual(400);
+  expect(front.options.duration).toBeLessThanOrEqual(600);
+  expect(back.frames[1].transform).toMatch(/rotate\(-[1-9]/);
+  expect(front.frames[1].transform).toMatch(/rotate\([1-9]/);
   for (const animation of f.animations) {
     expect(animation.frames.at(-1)).toEqual(animation.frames[0]);
     expect(animation.options.fill).toBeUndefined();
-    expect(animation.frames.every(frame => Object.keys(frame).every(key => ['transform', 'offset'].includes(key)))).toBe(true);
+    expect(animation.frames.every(frame => Object.keys(frame).every(key => ['transform', 'offset', 'easing'].includes(key)))).toBe(true);
+  }
+});
+
+test('both dice reverse left/right repeatedly with decreasing excursions and a smooth final settle', () => {
+  const f = fixture(); f.api.feedback(f.button, 'randomize');
+  for (const { frames, options } of f.animations) {
+    const x = frames.map(frame => Number(frame.transform.match(/translateX\(([-.\d]+)px\)/)[1]));
+    const swings = x.slice(1, -1);
+    expect(swings.length).toBeGreaterThanOrEqual(6);
+    expect(Math.abs(swings[0])).toBeGreaterThanOrEqual(2.4);
+    expect(Math.max(...swings.map(Math.abs))).toBeLessThanOrEqual(3);
+    for (let i = 1; i < swings.length; i++) {
+      expect(Math.sign(swings[i])).toBe(-Math.sign(swings[i - 1]));
+      expect(Math.abs(swings[i])).toBeLessThan(Math.abs(swings[i - 1]));
+    }
+    expect(x[0]).toBe(0); expect(x.at(-1)).toBe(0);
+    expect(Math.abs(swings.at(-1))).toBeLessThan(0.2);
+    expect(options.easing).toBe('linear');
+    expect(frames.every(frame => frame.easing === 'cubic-bezier(0.37, 0, 0.63, 1)')).toBe(true);
   }
 });
 
