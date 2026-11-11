@@ -2,8 +2,9 @@
 
 ## November 11 letter-and-dash refinement
 
-Final reconciliation preserves trackpad release #181 and Ring release #182
-(current main `ae61c62530f43dae6a90439300fbd9819a8fe3cb`).
+Final reconciliation preserves trackpad release #181, Ring release #182 and
+Randomize-dice animation #183
+(current main `61fab6a41450ba007c0f70369c08d3762b304a09`).
 
 The current owner reference `libfile_02418cf7d0348191b26f25349e005d79` was
 materialized through the current Library skill, identity verified and its actual
@@ -38,7 +39,7 @@ compared unchanged. All 53 focused export/radio/cache checks pass in four suites
 initial-base suite passes 1,093 tests in 94 suites with the established 768 MB
 Node heap. JavaScript and all 81 inline scripts parse; exact source comparisons
 confirm real geometry/artwork/export/clipboard/GIF, CSS and radio markup are
-unchanged. After preserving #181/#182, 97 focused combined checks pass in seven suites.
+unchanged. After preserving #181–183, 128 focused combined checks pass in nine suites.
 No unit-test count expansion is added for this reversible change.
 
 The exact target is `export-composition-preview-logo`, with the bar guide in

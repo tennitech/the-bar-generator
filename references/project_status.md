@@ -17,9 +17,35 @@ This is a diagram-only UI treatment. Official path data, viewports, dimensions,
 radio labels/semantics, selected/hover/focus/disabled states and real preview or
 export artwork remain unchanged. No CSS, logo asset or export renderer changes.
 The exportUi and routed shell/bootstrap/fallback/Home prefetch versions advance
-together. The initial full suite passes 1,093 tests in 94 suites; 97 focused
-combined checks pass after preserving #181/#182. See
+together. The initial full suite passes 1,093 tests in 94 suites; 128 focused
+combined checks pass after preserving #181–183. See
 [schematic evidence and limits](export_schematic_qa.md).
+
+## November 11 independent Randomize dice motion
+
+Randomize's two existing SVG dice now move around their own fill-box centers.
+The rear die lifts with a small clockwise tilt and settles over 240ms; the front
+die counter-tilts and settles over 280ms, each with a gentle recoil. The icon
+geometry, thin stroke, fixed 18px slot, button dimensions, labels and Randomize
+callback remain unchanged. Transforms do not affect document layout; bounded
+visible overflow avoids clipping the tiny excursions.
+
+Repeated clicks cancel/replace each die's response from its current computed
+pose, keeping only one active animation per die. Completion callbacks cannot
+clear a newer response. Natural finish leaves no persistent transform. Page
+exit, backgrounding or a live reduced-motion preference cancel both; reduced
+motion and unavailable SVG animation keep a static icon. Keyboard-generated
+native clicks use the same immediate Randomize action and feedback path.
+Undo/Reset retain their existing label response. No bar model/export changes.
+
+Tests cover distinct transforms/timing, rapid repetition and continuity, stale
+completion, normal cleanup, reduced motion, page interruption, unsupported
+animation and native-click/controller semantics. Eight light/dark 18px key-pose
+reconstructions were inspected within the existing button context and bounded
+overflow envelope. This is offline SVG evidence, not browser motion QA. Full
+suite, exact-head required CI and production evidence are recorded in the PR.
+Actual native keyboard/touch, browser animation timing and aesthetic acceptance
+remain unverified; no prior denied browser route is retried.
 
 ## November 11 Ring route cache recovery
 
