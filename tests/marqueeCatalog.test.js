@@ -2,12 +2,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { entries, samples, selectEntries } = require('../js/utils/marqueeCatalog');
 const { ROUTABLE_STYLE_VALUES, UNAVAILABLE_STYLE_VALUES } = require('../js/utils/generatorRoutes');
-// Live experiments remain discoverable in the editor without being promoted on Home.
 const shell = fs.readFileSync(path.join(__dirname, '../generator/index.html'), 'utf8');
-const construction = new Set([...shell.match(/<optgroup label="Under Construction">([\s\S]*?)<\/optgroup>/)[1].matchAll(/value="([^"]+)"/g)].map(match => match[1]));
+const constructionGroup = shell.match(/<optgroup label="Under Construction">([\s\S]*?)<\/optgroup>/)[1];
+const construction = new Set([...constructionGroup.matchAll(/<option\b([^>]*)value="([^"]+)"([^>]*)>/g)]
+  .filter(match => !/\bdisabled\b/.test(match[1] + match[3])).map(match => match[2]));
 const promoted = new Set([...ROUTABLE_STYLE_VALUES].filter(style => !construction.has(style)));
-
-test('every promoted route has one canonical Home entry and bounded real samples', () => {
+test('promoted routes have canonical Home entries; accessible studies wait for category approval', () => {
+  expect([...construction].sort()).toEqual(['music', 'rabi', 'well-modes']);
+  for (const style of construction) expect(ROUTABLE_STYLE_VALUES.has(style)).toBe(true);
   expect(new Set(entries.map(entry => entry.value))).toEqual(promoted);
   expect(entries).toHaveLength(promoted.size);
   expect(new Set(samples.map(sample => sample.path)).size).toBe(samples.length);
@@ -34,7 +36,7 @@ test('every promoted route has one canonical Home entry and bounded real samples
     expect(artwork.size).toBe(entry.variants.length);
   }
 });
-test('selection chooses exactly one sample per promoted family with unique asset URLs', () => {
+test('selection chooses one sample per promoted family without adding iterative studies', () => {
   for (const random of [() => 0, () => 0.5, () => 0.999999]) {
     const selection = selectEntries(random);
     expect(selection).toHaveLength(entries.length);

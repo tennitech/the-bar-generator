@@ -629,7 +629,7 @@ const AVAILABLE_STYLE_VALUES = new Set([
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
   'numeric', 'morse', 'nucleotide', 'circles-gradient', 'gradient', 'grid',
   'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles',
-  'fibonacci-sequence', 'union', 'wave-quantum',
+  'fibonacci-sequence', 'union', 'wave-quantum', 'well-modes', 'rabi',
   'runway', 'lunar', 'truss', 'music', 'graph'
 ]);
 
@@ -649,6 +649,8 @@ function normalizeStyleValue(style) {
 }
 
 const RESETTABLE_GROUP_STYLE_MAP = {
+  'well-modes-group': 'well-modes',
+  'rabi-group': 'rabi',
   'ruler-group': 'ruler',
   'binary-group': 'binary',
   'morse-group': 'morse',
@@ -1037,6 +1039,7 @@ function getMotionControlConfig(style) {
 
 function getLoopRuntimeValues() {
   return {
+    ...window.quantumStudyControls.values(),
     quantumSpeed: window.quantumModel.normalizeSpeed(document.getElementById('quantum-speed-slider')?.value ?? 1),
     quantumReverse: document.getElementById('quantum-reverse-toggle')?.checked === true,
     gradientSpeed: normalizeLoopSpeed('gradient', gradientSpeedSlider ? gradientSpeedSlider.value : undefined),
@@ -1334,6 +1337,10 @@ function resetStyleParameters(style) {
       updateAudioParameters();
 
       break;
+    case 'well-modes':
+    case 'rabi':
+      window.quantumStudyControls.reset(style);
+      break;
     case 'wave-quantum':
       document.getElementById('quantum-phase').value = 0;
       document.getElementById('quantum-speed-slider').value = 1;
@@ -1513,6 +1520,10 @@ function randomizeStyleParameters(style) {
       updateWaveformNoteDisplay();
       updateWaveformSpeedDisplay();
       updateAudioParameters();
+      break;
+    case 'well-modes':
+    case 'rabi':
+      window.quantumStudyControls.randomize(style);
       break;
     case 'wave-quantum': {
       const phase = document.getElementById('quantum-phase');
@@ -2267,6 +2278,7 @@ function setup() {
   // Get control references
   styleSelect = document.getElementById('style-select');
   window.quantumControls.setup();
+  window.quantumStudyControls.setup();
   colorModeSelect = document.getElementById('color-mode-select');
   binaryInput = document.getElementById('binary-input');
   binaryGroup = document.getElementById('binary-group');
@@ -3303,6 +3315,13 @@ function setup() {
         if (isAudioPlaying) stopAudio(); else startAudio();
         return true;
       }
+      if (currentShader === 26 || currentShader === 27) {
+        const prefix = currentShader === 26 ? 'well' : 'rabi';
+        const toggle = document.getElementById(`${prefix}-motion-toggle`);
+        toggle.checked = !toggle.checked;
+        toggle.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
       if (currentShader === 22) {
         const toggle = document.getElementById('quantum-motion-toggle');
         toggle.checked = !toggle.checked;
@@ -3995,6 +4014,12 @@ function handleStyleChange() {
     case 'union':
       currentShader = 21;
       break;
+    case 'well-modes':
+      currentShader = 26;
+      break;
+    case 'rabi':
+      currentShader = 27;
+      break;
     case 'wave-quantum':
       currentShader = 22;
       break;
@@ -4119,6 +4144,7 @@ function handleStyleChange() {
   }
 
   window.quantumControls.sync();
+  window.quantumStudyControls.sync();
   syncLunarPreviewVisibility(selectedStyle);
   console.log('Style changed to:', selectedStyle, 'currentShader:', currentShader);
   syncSaveMenuCopy();
@@ -4190,6 +4216,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
       : getAnimationNowMs() / 1000.0);
 
   return {
+    ...window.quantumStudyControls.values(),
     ...window.quantumControls.values(),
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
     rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
@@ -4371,9 +4398,10 @@ function renderHeaderMotionPreview() {
   const style = getCurrentMotionStyle();
   const state = getCurrentLoopAnimationState();
   const values = getLoopRuntimeValues();
-  if (currentShader === 22) {
-    const geometry = createWaveQuantumPatternGeometry({
+  if ([22, 26, 27].includes(currentShader)) {
+    const geometry = (currentShader === 22 ? createWaveQuantumPatternGeometry : createQuantumStudyPatternGeometry)({ currentShader,
       barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH, barHeight: REFERENCE_BAR_HEIGHT,
+      ...window.quantumStudyControls.values(),
       ...window.quantumControls.values()
     });
     for (const polygon of geometry.polygons) {
@@ -4411,7 +4439,7 @@ function renderHeaderMotionPreview() {
 function updateHeaderBrandPreview(force = false) {
   if (!headerLogoPreview) return;
 
-  if (styleSupportsMotion(getCurrentMotionStyle()) || currentShader === 22) {
+  if (styleSupportsMotion(getCurrentMotionStyle()) || [22, 26, 27].includes(currentShader)) {
     renderHeaderMotionPreview();
     return;
   }
@@ -5970,6 +5998,16 @@ function updateUrlParameters() {
     if (document.getElementById('quantum-reverse-toggle').checked) params.set('quantumReverse', 'true');
   }
 
+  if (['well-modes', 'rabi'].includes(selectedStyle)) {
+    const prefix = selectedStyle === 'well-modes' ? 'well' : 'rabi';
+    for (const field of document.querySelectorAll(`#${selectedStyle}-group [data-url-parameter]`)) {
+      const value = field.type === 'checkbox' ? String(field.checked) : field.id === `${prefix}-phase`
+        ? String(window.quantumStudyControls.settingPhase(prefix)) : field.value;
+      const defaultValue = field.type === 'checkbox' ? String(field.defaultChecked) : field.defaultValue;
+      if (value !== defaultValue) params.set(field.dataset.urlParameter, value);
+    }
+  }
+
   // Update URL without reloading the page
   const newUrl = window.GeneratorRoutes && typeof window.GeneratorRoutes.buildGeneratorUrl === 'function'
     ? window.GeneratorRoutes.buildGeneratorUrl(selectedStyle, params, window.location.pathname)
@@ -6327,6 +6365,7 @@ function draw() {
   const currentTime = getAnimationNowMs();
   const drawingSuspended = document.hidden || document.body.classList.contains('has-logo-animation') || window.PageEntrance?.isHoldingArtwork?.();
   window.quantumControls.tick(currentTime, drawingSuspended);
+  window.quantumStudyControls.tick(currentTime, drawingSuspended);
   tickWaveformScope(currentTime, drawingSuspended);
   const currentMotionStyle = getCurrentMotionStyle();
   if (drawingSuspended) {
@@ -6369,7 +6408,7 @@ function draw() {
   // Commit a complete mark, never a letters-only frame while an SVG decodes.
   // Firefox can finish the image asynchronously after the initial p5 draw. Keep
   // the previous complete canvas during parameter/size changes until ready.
-  const usesCanonicalImage = ![1, 2, 4, 17, 22, 24].includes(currentShader);
+  const usesCanonicalImage = ![1, 2, 4, 17, 22, 24, 26, 27].includes(currentShader);
   const readyBarImage = usesCanonicalImage ? getReadyCanonicalBarImage(window) : null;
   if (usesCanonicalImage && !readyBarImage) return;
   if (currentShader === 24 && typeof window.createLunarBarVectorFragment !== 'function') return;
@@ -6440,7 +6479,7 @@ function draw() {
     lastLunarPreviewRenderer = window._renderer;
   }
 
-  if (currentShader === 22) updateHeaderBrandPreview();
+  if ([22, 26, 27].includes(currentShader)) updateHeaderBrandPreview();
   if (isAnimated && isMotionEnabledForStyle(currentMotionStyle)) {
     updateHeaderBrandPreview();
   }
@@ -6449,7 +6488,7 @@ function draw() {
 function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsiveLogoScale(), readyBarImage = null) {
   // Static preview and raster exports consume the same clipped SVG as the header.
   // Motion keeps its immediate shared geometry, avoiding asynchronous frame lag.
-  if (![1, 2, 4, 17, 22].includes(currentShader)) {
+  if (![1, 2, 4, 17, 22, 26, 27].includes(currentShader)) {
     push();
     if (!liveCanvasUsesWebGL) translate(width / 2, height / 2);
     translate(0, -getPreviewFitLayout().controlSpace / 2);
@@ -6999,12 +7038,13 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       }
       endShape(CLOSE);
     }
-  } else if (currentShader === 22) {
+  } else if ([22, 26, 27].includes(currentShader)) {
     resetShader();
     fill(fgColor);
     noStroke();
-    const geometry = createWaveQuantumPatternGeometry({
+    const geometry = (currentShader === 22 ? createWaveQuantumPatternGeometry : createQuantumStudyPatternGeometry)({ currentShader,
       barStartX, barY: 0, exactBarWidth, barHeight: rectHeight,
+      ...window.quantumStudyControls.values(),
       ...window.quantumControls.values()
     });
     for (const polygon of geometry.polygons) {
@@ -7400,12 +7440,17 @@ function setupShareLinks() {
       document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
         button.classList.toggle('active', Number(button.dataset.duration) === state.duration);
       });
+      const studyRunning = ['well', 'rabi'].map(prefix => document.getElementById(`${prefix}-motion-toggle`).checked);
+      window.quantumStudyControls.restoreSettingPhase();
+      window.quantumStudyControls.pause();
+      if (options.local && !reduce) ['well', 'rabi'].forEach((prefix, i) => { document.getElementById(`${prefix}-motion-toggle`).checked = studyRunning[i]; });
       const quantumRunning = document.getElementById('quantum-motion-toggle').checked;
       window.quantumControls.restoreSettingPhase?.();
       window.quantumControls.pause();
       // Historical share links open Quantum paused. Local Undo preserves transport.
       if (options.local && quantumRunning && !reduce) document.getElementById('quantum-motion-toggle').checked = true;
       window.quantumControls.sync();
+  window.quantumStudyControls.sync();
       resetCirclePatternCache();
     },
     refresh: () => {
@@ -7434,6 +7479,8 @@ function setupShareLinks() {
       lastWaveformScopeTimestamp = 0;
       for (const style of Object.keys(MOTION_ENABLED_BY_STYLE)) MOTION_ENABLED_BY_STYLE[style] = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       applyUrlParameters();
+      window.quantumStudyControls.readQuery();
+      window.quantumStudyControls.select();
       const quantumQuery = new URLSearchParams(location.search);
       document.getElementById('quantum-phase').value = quantumModel.normalizePhase(quantumQuery.get('quantumPhase') || 0);
       document.getElementById('quantum-speed-slider').value = quantumModel.normalizeSpeed(quantumQuery.has('quantumSpeed') ? quantumQuery.get('quantumSpeed') : 1);

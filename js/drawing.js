@@ -284,7 +284,7 @@ function drawExportLogoFrame(pg, options = {}) {
 }
 
 function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight, options = {}) {
-  if (![1, 2, 4, 22].includes(currentShader)) {
+  if (![1, 2, 4, 22, 26, 27].includes(currentShader)) {
     if (currentShader === 24 && typeof syncLunarBarVectorPreviewVisibility === 'function') {
       const scheme = colors[currentColorMode];
       drawLunarBarPattern(pg, barStartX, barY, exactBarWidth, rectHeight,
@@ -601,6 +601,15 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
         pg.vertex(x, y);
       }
       pg.endShape();
+    }
+  } else if (currentShader === 26 || currentShader === 27) {
+    const geometry = createQuantumStudyPatternGeometry({ currentShader,
+      barStartX, barY, exactBarWidth, barHeight: rectHeight, ...window.quantumStudyControls.values() });
+    pg.noStroke(); pg.fill(fgColor);
+    for (const polygon of geometry.polygons) {
+      pg.beginShape();
+      for (const point of polygon) pg.vertex(point.x, point.y);
+      pg.endShape(pg.CLOSE);
     }
   } else if (currentShader === 22) {
     const geometry = createWaveQuantumPatternGeometry({
@@ -1083,6 +1092,17 @@ function createCapturedGifRenderer(snapshot, framePlan) {
       const pattern = createBoundedTickGeometry({ ...values, shader: snapshot.currentShader,
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight });
       pattern.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
+    } else if (snapshot.currentShader === 26 || snapshot.currentShader === 27) {
+      const prefix = snapshot.currentShader === 26 ? 'well' : 'rabi';
+      const pattern = createQuantumStudyPatternGeometry({ ...values, currentShader: snapshot.currentShader,
+        barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,
+        [`${prefix}Phase`]: framePlan.getQuantumStudyPhase(progress) });
+      for (const polygon of pattern.polygons) {
+        if (!polygon.length) continue;
+        ctx.beginPath(); ctx.moveTo(polygon[0].x, polygon[0].y);
+        for (let i = 1; i < polygon.length; i++) ctx.lineTo(polygon[i].x, polygon[i].y);
+        ctx.closePath(); ctx.fill();
+      }
     } else if (snapshot.currentShader === 22) {
       const pattern = createWaveQuantumPatternGeometry({
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,

@@ -81,6 +81,14 @@
     "title": "Union",
     "text": "Five repeated modules pair a horizontal band with arches below. The name describes the motif, not an organizational affiliation or measurement."
   },
+  "well-modes": {
+    "title": "Well Modes",
+    "text": "Under construction, ready to explore. Two distinct stationary modes of an ideal infinite square well interfere as their relative phase changes. Mode B weight is its population; 0% and 100% give stationary eigenstates. Mirrored thickness encodes probability density at a fixed scale across the entire well. Empty endpoints and nodes are real zeros, not missing data. The mirror and 8-second beat are drawing choices, not a second spatial dimension or laboratory time."
+  },
+  "rabi": {
+    "title": "Rabi",
+    "text": "Under construction, ready to explore. An ideal driven two-level system starts in its ground state. Solid height shows excited-state probability; the hatched complement shows ground-state probability. Horizontal position represents pulse duration, not physical space. Motion slides that duration window across repeated experiments, not one particle traveling. Detuning changes both peak transfer and oscillation rate. The model uses the rotating-wave approximation and excludes relaxation and decoherence; the 8-second scan is a drawing choice."
+  },
   "wave-quantum": {
     "title": "Ring Wavefunction",
     "text": "One normalized free-particle wavefunction on an ideal periodic ring combines equal-weight modes −4, 3 and 7. Three phase projections use 0°, 60° and 120°. A scrolling coordinate view unwraps one circumference and repeats in 4.28 seconds at 1×. These phase-convention-dependent amplitudes are not particle paths, probability density or measured data. Ribbon thickness and display time are drawing choices."

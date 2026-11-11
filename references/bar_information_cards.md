@@ -59,6 +59,14 @@ checks Quantum copy before the canvas exists. See `scripts/routedStartupSmoke.js
 Numeric's card now names decimal entry and formula selection as separate sources and explains that signs are not encoded. Formula approximations, sources, limits and historical migration are documented in [Numeric modes](numeric_modes.md). The remaining 20 cards are unchanged.
 
 
+## November 11 working quantum studies
+
+Well Modes and Rabi now have separate explanatory cards. Each explicitly states
+its idealization and the visual/physical distinction: mirrored density is not a
+second dimension; a sliding pulse-duration scan is not a particle path. Cards
+identify Under Construction status and do not imply RPI experimental results or
+brand-library approval. Model sources and limits: [quantum studies](quantum_studies.md).
+
 ## November 11 Music availability
 
 Music now has an implemented piano-roll composer and a truthful About entry.

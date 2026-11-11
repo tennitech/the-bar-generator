@@ -18,6 +18,7 @@ function setup() {
   const main = read('js/main.js');
   // Exercise the real speed/direction collector with neighboring controls absent.
   for (const name of ['gradientSpeedSlider', 'gradientReverseToggle', 'rulerRepeatsSlider', 'rulerDivisionsSelect', 'rulerThicknessSlider', 'tickerSlider', 'tickerRatioSlider', 'tickerWidthRatioSlider', 'tickerSpeedSlider', 'tickerReverseToggle', 'waveformSpeedSlider', 'waveformReverseToggle']) r[name] = null;
+  r.quantumStudyControls = { values: () => ({}) };
   r.normalizeLoopSpeed = loops.normalizeLoopSpeed;
   vm.runInContext(main.slice(main.indexOf('function getLoopRuntimeValues('), main.indexOf('function isMotionEnabledForStyle(')), r);
   r.loopingGifUtils = loops;

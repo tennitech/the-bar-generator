@@ -94,14 +94,15 @@ function fixture(random = 0) {
 
 const active = ['music', 'nucleotide', 'ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
   'circles-gradient', 'gradient', 'grid', 'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles'];
+const studies = ['well-modes', 'rabi'];
 const fixed = ['solid', 'fibonacci-sequence', 'union', 'runway', 'lunar'];
 
-test('explicit capabilities cover exactly all selectable styles and reject construction/prototype names', () => {
+test('explicit capabilities cover exactly all 25 selectable styles and reject unavailable names', () => {
   const h = fixture();
-  expect(Object.keys(h.context.ParameterControls.capabilities).sort()).toEqual([...active, ...fixed].sort());
+  expect(Object.keys(h.context.ParameterControls.capabilities).sort()).toEqual([...active, ...studies, ...fixed].sort());
   expect(h.fields['style-select'].options.filter(option => !option.disabled).map(option => option.value).sort())
-    .toEqual([...active, ...fixed].sort());
-  for (const style of active) expect(h.context.ParameterControls.supportsActions(style)).toBe(true);
+    .toEqual([...active, ...studies, ...fixed].sort());
+  for (const style of [...active, ...studies]) expect(h.context.ParameterControls.supportsActions(style)).toBe(true);
   for (const style of [...fixed, 'graph', 'truss', 'constructor', '__proto__']) {
     expect(h.context.ParameterControls.supportsActions(style)).toBe(false);
     h.context.resetStyleParameters(style); h.context.randomizeStyleParameters(style);
@@ -224,6 +225,7 @@ test('same-page shared and legacy restoration refresh action state after the com
     styleSupportsMotion: style => ['ticker', 'waveform'].includes(style),
     matchMedia: () => ({ matches: false }), location: { search: '' },
     resetAnimationClock: jest.fn(), quantumModel: require('../js/utils/quantumModel'),
+    quantumStudyControls: { settingPhase: prefix => Number(h.fields[`${prefix}-phase`].value), restoreSettingPhase: jest.fn(), pause: jest.fn(), sync: jest.fn(), select: jest.fn(), readQuery: jest.fn() },
     quantumControls: { select: () => {}, pause: jest.fn(), sync: jest.fn() },
     applyUrlParameters() {
       for (const field of Object.values(h.fields)) {

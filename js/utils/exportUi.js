@@ -14,7 +14,8 @@
   function contextKey() {
     const style = byId('style-select')?.value || '';
     return JSON.stringify([creditsContext, style, byId('color-mode-select')?.value || '', size(), composition(),
-      style === 'wave-quantum' ? byId('quantum-speed-slider')?.value : '', designRevision]);
+      style === 'wave-quantum' ? byId('quantum-speed-slider')?.value :
+        ['well-modes', 'rabi'].includes(style) ? byId(`${style === 'well-modes' ? 'well' : 'rabi'}-speed-slider`)?.value : '', designRevision]);
   }
   function resetResult() {
     const progress = byId('export-progress');
@@ -66,6 +67,11 @@
           description = policy.supported
             ? `${Number(policy.periodSeconds.toFixed(1))} s loop · up to 50 fps${policy.note ? ' · Smaller file for long loop' : ''}`
             : 'Set SPEED to 1× or higher for GIF';
+        }
+        if (format === 'gif' && ['well-modes', 'rabi'].includes(byId('style-select')?.value)) {
+          const prefix = byId('style-select').value === 'well-modes' ? 'well' : 'rabi';
+          const speed = root.quantumStudyModel.normalizeSpeed(byId(`${prefix}-speed-slider`)?.value ?? 1);
+          description = `${Number((8 / speed).toFixed(1))} s loop · up to 50 fps`;
         }
         if (!button) continue;
         button.querySelector('.option-label').textContent = format.toUpperCase();
@@ -212,6 +218,7 @@
   }
   function init() {
     byId('quantum-speed-slider')?.addEventListener('input', () => sync());
+    for (const prefix of ['well', 'rabi']) byId(`${prefix}-speed-slider`)?.addEventListener('input', () => sync());
     const designChanged = event => {
       if (!event.target?.closest?.('[data-parameter-actions]')) return;
       designRevision++;
