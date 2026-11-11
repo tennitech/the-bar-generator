@@ -36,7 +36,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8783';
     const exported=await page.evaluate(async()=>{
       const snapshot=captureLogoExportSnapshot();const blob=await createRasterExportBlob(snapshot,new AbortController().signal);
       const image=await createImageBitmap(blob);const result={width:image.width,height:image.height,bytes:blob.size,header:buildHeaderPreviewSVG().includes(buildCurrentBarPatternSVGFragment())};image.close();return result;
-    });assert.ok(exported.header&&exported.bytes>1000);assert.equal(exported.width,2320);
+    });assert.ok(exported.header&&exported.bytes>1000);assert.equal(exported.width,4752);
     await page.evaluate(()=>setZoomLevel(4,{immediate:true}));assert.equal(await svg(),configured);
     await page.evaluate(()=>setZoomLevel(1,{immediate:true}));
     await page.screenshot({path:'/tmp/circle-gradient-controls-desktop.png'});

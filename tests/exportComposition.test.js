@@ -3,6 +3,31 @@ const { createRuntime, shaders, read } = require('./helpers/exportCompositionRun
 const options = require('../js/utils/exportOptions');
 const geometry = require('../js/utils/logoGeometry').RPI_LOGO_GEOMETRY;
 
+test.each(['logo', 'bar'])('SVG source and geometry stay identical at both %s raster size choices', composition => {
+  const r = createRuntime(); r.state.composition = composition;
+  for (const family of Object.keys(shaders)) {
+    r.select(family); r.state.size = 'large'; const high = r.captureLogoExportSnapshot({ format: 'svg' });
+    r.state.size = 'standard'; const small = r.captureLogoExportSnapshot({ format: 'svg' });
+    expect(high.svgSource).toBe(small.svgSource);
+    expect(high.svgSource).not.toContain('<image');
+    expect(high.viewport).toEqual(small.viewport);
+  }
+});
+
+test.each(['ticker', 'waveform', 'gradient', 'wave-quantum'])('%s snapshot uses GIF pixels without changing PNG selection', family => {
+  const r = createRuntime({ loopingGifUtils: require('../js/utils/loopingGif') });
+  r.select(family);
+  for (const composition of ['logo', 'bar']) for (const size of ['standard', 'large']) {
+    Object.assign(r.state, { composition, size });
+    const gif = r.captureLogoExportSnapshot({ format: 'gif' });
+    const png = r.captureLogoExportSnapshot({ format: 'png' });
+    expect(gif.dimensions).toEqual(options.dimensions(size, geometry, composition, 'gif'));
+    expect(png.dimensions).toEqual(options.dimensions(size, geometry, composition, 'png'));
+    expect(gif.svgSource).toBe(png.svgSource);
+    expect(r.state.size).toBe(size);
+  }
+});
+
 test('both compositions retain identical current bar content for every selectable family and ink', () => {
   const r = createRuntime();
   for (const family of Object.keys(shaders)) for (const ink of Object.keys(require('../js/utils/themeMode').COLOR_SCHEMES)) {
@@ -21,8 +46,8 @@ test('both compositions retain identical current bar content for every selectabl
     expect(bar.svgSource).not.toMatch(/NaN|undefined/);
     expect(bar.values).toEqual(logo.values);
     expect(bar.values).toMatchObject({ loopOffsetX: 0, timeSeconds: 0, quantumPhase: 0 });
-    expect(bar.dimensions).toMatchObject({ width: 2320, height: 464 });
-    expect(logo.dimensions).toMatchObject({ width: 2320, height: 1524 });
+    expect(bar.dimensions).toMatchObject({ width: 4752, height: 951 });
+    expect(logo.dimensions).toMatchObject({ width: 4752, height: 3121 });
   }
 });
 
@@ -57,7 +82,7 @@ test.each(['logo', 'bar'])('GIF draws %s at the selected viewport with current c
   const canvas = { getContext: () => ctx };
   const r = createRuntime({ Path2D: class { constructor(d) { this.d = d; } }, document: { querySelector: () => null, createElement: () => canvas } });
   r.select('ticker'); r.state.composition = composition;
-  const snapshot = r.captureLogoExportSnapshot();
+  const snapshot = r.captureLogoExportSnapshot({ format: 'gif' });
   const plan = { getLoopOffsetX: p => p * 7, getTimeSeconds: p => p * 2 };
   const renderer = r.createCapturedGifRenderer(snapshot, plan);
   for (const progress of [0, 0.3, 0.9]) {
@@ -92,7 +117,7 @@ test.each(['svg', 'png'])('clipboard %s shares the selected frozen export and ke
     const xml = await written[0].text();
     expect(xml).toContain('viewBox="-20 112.4885 290 58"');
     expect(xml).not.toContain(geometry.paths.r);
-  } else expect(captured).toMatchObject({ composition: 'bar', dimensions: { width: 2320, height: 464 }, values: { waveformFrequency: 17 } });
+  } else expect(captured).toMatchObject({ composition: 'bar', dimensions: { width: 4752, height: 951 }, values: { waveformFrequency: 17 } });
 });
 
 test('composition choices have native radio semantics, visible labels and hidden diagrams', () => {

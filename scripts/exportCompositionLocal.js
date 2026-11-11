@@ -33,9 +33,9 @@ function checkPixels(image, snapshot, gif = false) {
   for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
     const i = (y * width + x) * 4, a = data[i + 3];
     if (!a) continue;
-    if (x < left || x >= right) throw Error(`horizontal overflow at ${x},${y}`);
-    if (y < 20 * scale || y >= Math.ceil(bottom)) throw Error(`vertical overflow at ${x},${y}`);
-    if (bar && (y < top || y >= bottom)) throw Error('bar-only contains paint beyond bar viewport');
+    if (x < Math.floor(left) || x >= Math.ceil(right)) throw Error(`horizontal overflow at ${x},${y}`);
+    if (y < Math.floor(20 * scale) || y >= Math.ceil(bottom)) throw Error(`vertical overflow at ${x},${y}`);
+    if (bar && (y < Math.floor(top) || y >= Math.ceil(bottom))) throw Error('bar-only contains paint beyond bar viewport');
     else if (!bar && y < Math.floor(top)) { if (y >= Math.ceil((20 + 111.4885) * scale)) throw Error('paint in letter/bar gap'); letterInk++; }
     ink++; if (a < 255) partial++;
     if (a === 255) for (let c = 0; c < 3; c++) maxInkError = Math.max(maxInkError, Math.abs(data[i + c] - snapshot.rgb[c]));
@@ -54,15 +54,15 @@ async function main() {
     const blob = await r.createRasterExportBlob(snapshot, new AbortController().signal);
     assert.equal(blob.type, 'image/png');
     const image = await pixels(blob);
-    assert.equal(image.width, size === 'large' ? 2320 : 1160);
-    assert.equal(image.height, composition === 'bar' ? (size === 'large' ? 464 : 232) : (size === 'large' ? 1524 : 762));
+    assert.equal(image.width, size === 'large' ? 4752 : 1160);
+    assert.equal(image.height, composition === 'bar' ? (size === 'large' ? 951 : 232) : (size === 'large' ? 3121 : 762));
     let coverage;
     try { coverage = checkPixels(image, snapshot); } catch (error) { throw Error(`${family}/${color}/${size}/${composition}: ${error.message}`); }
     // Independent explicit viewport oracle catches a PNG path accidentally
     // retaining the complete-logo origin while reporting cropped dimensions.
     const fragment = r.buildCurrentBarPatternSVGFragment({ fgColor: snapshot.foreground, values: snapshot.values, preview: false });
     if (composition === 'bar') {
-      const oracle = `<svg xmlns="http://www.w3.org/2000/svg" width="${image.width}" height="${image.height}" viewBox="-20 112.4885 290 58">${fragment}</svg>`;
+      const oracle = `<svg xmlns="http://www.w3.org/2000/svg" width="${image.width}" height="${image.height}" viewBox="-20 112.4885 ${image.width / snapshot.dimensions.scale} ${image.height / snapshot.dimensions.scale}">${fragment}</svg>`;
       const expected = await pixels(new Blob([oracle]));
       assert.equal(hash(image.data), hash(expected.data), `${family} bar-only PNG differs from explicit viewport oracle`);
     }
@@ -79,7 +79,7 @@ async function main() {
   for (const family of ['ticker', 'waveform', 'gradient']) for (const size of ['standard', 'large']) for (const composition of ['logo', 'bar']) {
     r.select(family); r.currentColorMode = family === 'ticker' ? 'white' : (size === 'large' ? 'gray' : 'black');
     Object.assign(r.state, { size, composition });
-    const snapshot = r.captureLogoExportSnapshot();
+    const snapshot = r.captureLogoExportSnapshot({ format: 'gif' });
     const plan = getLoopingGifFramePlan(family, snapshot.values, { barWidth: 250 });
     const renderer = r.createCapturedGifRenderer(snapshot, plan), expectedHashes = [];
     const result = await encode({ ...snapshot.dimensions, frameCount: plan.frameCount, periodSeconds: plan.periodSeconds,
