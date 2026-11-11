@@ -151,7 +151,7 @@ test.each([false, true])('saved scrolling pause holds lanes without cancelling e
 test('scrolling pause does not blanket-disable hover fades, while reduced motion still does', () => {
   const css = fs.readFileSync(path.join(__dirname, '../css/marquee-ui.css'), 'utf8');
   expect(css).not.toMatch(/\[data-marquee-motion-paused[^}]+transition:\s*none/s);
-  expect(css).toMatch(/\.bar_asset_wrap\s*\{[^}]*transition:\s*opacity 480ms ease-in-out/);
+  expect(css).toMatch(/\.bar_asset_wrap\s*\{[^}]*transition:\s*opacity 300ms cubic-bezier\(0\.4, 0, 0\.2, 1\)/);
   expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[^}]*transition:\s*none !important/);
 });
 
