@@ -16,7 +16,7 @@ function fixture(width, height, dpr = 1) {
   const stage = { ...node(), append: jest.fn(), getBoundingClientRect: () => ({ height: size.height * 1.24 }) };
   function makeRow(index) {
     const element = node(), asset = node();
-    Object.defineProperty(element, 'offsetHeight', { get: () => 3.9 * 16 * metrics().scale });
+    Object.defineProperty(element, 'offsetHeight', { get: () => 4.9 * 16 * metrics().scale });
     element.getBoundingClientRect = () => {
       const angle = 17 * Math.PI / 180, rowWidth = 2.2 * size.width, rowHeight = element.offsetHeight;
       return { left: 0.42 * size.width - rowWidth / 2 * Math.cos(angle) - rowHeight / 2 * Math.sin(angle),

@@ -1,5 +1,5 @@
 const BAR_ASSET_WIDTH = '28rem';
-const ROW_HEIGHT = '3.9rem';
+const ROW_HEIGHT = '4.9rem';
 const ROW_GAP = '1.45rem';
 const ROW_COUNT = 10;
 const ROW_START_PERCENT = -7.5;
@@ -270,11 +270,14 @@ function getNarrowPortraitHeroScaleCap(viewportWidth, viewportHeight) {
   return 1 - ((1 - NARROW_PORTRAIT_SCALE_MIN) * easedFactor);
 }
 
-function getRowStepPx(stageHeight, rowHeight = resolveCssLengthToPx(ROW_HEIGHT)) {
+function getRowStepPx(stageHeight, rowHeight = resolveCssLengthToPx(ROW_HEIGHT), tiltRadians = 17 * Math.PI / 180) {
   const referenceRowStep = (ROW_STEP_PERCENT / 100) * ROW_REFERENCE_VIEWPORT_HEIGHT;
   const responsiveRowStep = (ROW_STEP_PERCENT / 100) * stageHeight;
   // Tall screens get more lanes, not ever-growing gaps between fixed-size bars.
-  return Math.min(rowHeight * 1.32, Math.max(referenceRowStep, responsiveRowStep));
+  // Keep the full native link targets separate after rotation. Extra height
+  // belongs to the hitbox, never the artwork. Two screen pixels remain clear.
+  return Math.max((rowHeight + 2) / Math.cos(tiltRadians),
+    Math.min(rowHeight * 1.32, Math.max(referenceRowStep, responsiveRowStep)));
 }
 
 function wrap(value, length) {
@@ -366,7 +369,6 @@ function createMarqueeFocusFade(stage) {
   let field = { value: 1, velocity: 0, target: 1 };
   const highlights = new Map();
   let pointer = null, active = null, frame = 0, lastTime = 0;
-  let sample = null, pendingSample = null, anticipated = null, anticipationUntil = 0;
   stage.dataset.focusFade = 'continuous';
 
   function render() {
@@ -381,8 +383,6 @@ function createMarqueeFocusFade(stage) {
   function settle() {
     if (frame) window.cancelAnimationFrame(frame);
     frame = 0;
-    sample = pendingSample = anticipated = null;
-    retarget();
     field = { value: field.target, velocity: 0, target: field.target };
     for (const [asset, motion] of highlights) highlights.set(asset, { value: motion.target, velocity: 0, target: motion.target });
     render();
@@ -392,69 +392,28 @@ function createMarqueeFocusFade(stage) {
     if (document.hidden || reduced?.matches) { settle(); return; }
     const dt = Math.min(0.064, Math.max(0, (now - lastTime) / 1000));
     lastTime = now;
-    // A real gap releases immediately, but a short crossing should not flash
-    // the whole screen. Local highlights still respond at the brisk rate.
     field = advanceFocusFade(field, dt, active ? 26 : 12);
-    if (pendingSample) {
-      const next = pendingSample;
-      pendingSample = null;
-      const elapsed = sample ? next.time - sample.time : 0;
-      const dx = sample ? next.x - sample.x : 0, dy = sample ? next.y - sample.y : 0;
-      const distance = Math.hypot(dx, dy);
-      anticipated = null;
-      if (elapsed > 0 && elapsed < 100 && distance > 1 && !reduced?.matches
-        && !stage.querySelector('.bar_asset_wrap:focus-visible')) {
-        // Read only a few actual hit targets along the travel direction. Native
-        // hit testing handles rotated lanes, gaps, overlays and responsive size.
-        const lead = Math.min(72, distance / elapsed * 60);
-        for (const fraction of [0.33, 0.66, 1]) {
-          const hit = document.elementFromPoint?.(next.x + dx / distance * lead * fraction,
-            next.y + dy / distance * lead * fraction)?.closest?.('.bar_asset_wrap');
-          if (hit && hit !== active && stage.contains(hit)) { anticipated = hit; break; }
-        }
-      }
-      sample = next;
-      anticipationUntil = now + 80;
-      retarget();
-    } else if (anticipated && now >= anticipationUntil) {
-      anticipated = null;
-      retarget();
-    }
     for (const [asset, motion] of highlights) highlights.set(asset, advanceFocusFade(motion, dt));
     render();
-    if (anticipated || pendingSample || field.value !== field.target || field.velocity || [...highlights.values()].some(m => m.value !== m.target || m.velocity)) {
+    if (field.value !== field.target || field.velocity || [...highlights.values()].some(m => m.value !== m.target || m.velocity)) {
       frame = window.requestAnimationFrame(tick);
     }
   }
-  function retarget() {
-    field.target = active ? 0.2 : 1;
-    for (const [asset, motion] of highlights) motion.target = asset === active || asset === anticipated ? 1 : field.target;
-    for (const asset of [active, anticipated]) {
-      if (asset && (!highlights.has(asset) || highlights.get(asset).value < field.value)) {
-        highlights.set(asset, { value: field.value, velocity: field.velocity, target: 1 });
-      }
-    }
-  }
   function sync() {
-    const keyboard = stage.querySelector('.bar_asset_wrap:focus-visible');
-    const selected = keyboard || (hover?.matches === false ? null : pointer);
+    const selected = stage.querySelector('.bar_asset_wrap:focus-visible')
+      || (hover?.matches === false ? null : pointer);
     active = selected && stage.contains(selected) ? selected : null;
-    if (keyboard || reduced?.matches || hover?.matches === false) anticipated = null;
-    retarget();
+    field.target = active ? 0.2 : 1;
+    for (const [asset, motion] of highlights) motion.target = asset === active ? 1 : field.target;
+    if (active && (!highlights.has(active) || highlights.get(active).value < field.value)) {
+      // Re-enter from the actual displayed (max) brightness, not a stale local
+      // highlight hidden below the field during a recent gap.
+      highlights.set(active, { value: field.value, velocity: field.velocity, target: 1 });
+    }
     // The gap target is 1 immediately. No hold, debounce or delayed release.
     if (reduced?.matches || document.hidden) { settle(); return; }
     if (!frame) { lastTime = performance.now(); frame = window.requestAnimationFrame(tick); }
   }
-  stage.addEventListener('pointermove', event => {
-    if (event.pointerType === 'touch' || event.buttons || hover?.matches === false || reduced?.matches) return;
-    pendingSample = { x: event.clientX, y: event.clientY, time: performance.now() };
-    if (!frame) { lastTime = performance.now(); frame = window.requestAnimationFrame(tick); }
-  });
-  stage.addEventListener('pointerleave', () => {
-    sample = pendingSample = anticipated = null;
-    pointer = null;
-    sync();
-  });
   stage.addEventListener('focusin', sync);
   stage.addEventListener('focusout', sync);
   reduced?.addEventListener?.('change', sync);
@@ -895,7 +854,8 @@ function syncRowVerticalLayout(rowStates, stage, bindRowFocus) {
   const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
   const rowLift = getEdgeCaseRowLiftPx(viewportWidth, viewportHeight);
   let rowStart = ((ROW_START_PERCENT / 100) * stageHeight) - rowLift;
-  const rowStep = getRowStepPx(stageHeight, rowStates[0].element.offsetHeight);
+  const tiltRadians = parseFloat(getComputedStyle(stage).getPropertyValue('--marquee-tilt')) * Math.PI / 180;
+  const rowStep = getRowStepPx(stageHeight, rowStates[0].element.offsetHeight, tiltRadians);
   const coveredSpan = (ROW_COUNT - 1) * (ROW_STEP_PERCENT / 100) * stageHeight;
   let neededRows = Math.max(ROW_COUNT, 1 + Math.floor(coveredSpan / rowStep));
   // Fit every viewport to the actual title and unscaled controls. This keeps
@@ -906,7 +866,7 @@ function syncRowVerticalLayout(rowStates, stage, bindRowFocus) {
     const fitted = fitRowsAboveHero({
       rowStart, rowStep, rowHeight: first.offsetHeight,
       firstBounds: first.getBoundingClientRect(),
-      tiltRadians: parseFloat(getComputedStyle(stage).getPropertyValue('--marquee-tilt')) * Math.PI / 180,
+      tiltRadians,
       heroRects: [...document.querySelectorAll('.hero_brand, .hero_title-line, .hero_credit')]
         .map(element => element.getBoundingClientRect())
     });
