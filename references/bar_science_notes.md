@@ -1,5 +1,29 @@
 # Bar meaning and source notes
 
+## Current Waveform model — November 11, 2026
+
+The owner's “remove the LFO completely” direction supersedes the historical
+November 4/10 modulation sections below. Waveform has no LFO controls, graph,
+visual clock or saved modulation fields. The carrier graph connects its
+normalized crossfade gains directly to the existing master fade/output. Sine,
+Sawtooth, Square and Pulse, the C1–C5 mapping, gain scale 0.1, parameter ramps,
+Pulse duty and Square fallback remain unchanged.
+
+The scope continues to display actual generated PCM. The physical X window is
+exactly four carrier periods before sample-grid quantization: `4 / f`, where
+`f = 32.70 + (frequency - 10) / 90 * (523.25 - 32.70)` Hz. Its one-period
+triggered sweep takes `1 / SPEED` display seconds, independently of audio pitch.
+Each view uses ordered PCM with fractional-sample interpolation. The former
+long modulation-envelope view is removed. One second of extrema and ordered
+PCM history safely covers the longest supported window plus replay margin.
+
+Pause holds the exact frame. Live edits retain real sample history; stale offline
+renders cannot replace newer settings. Exports retain immutable captured PCM,
+with the existing wrap/reset disclosure rather than an idealized reconstruction.
+Legacy LFO queries/share fields are ignored. See
+[current validation](waveform_lfo_removal_qa.md). Earlier sections are historical.
+
+
 This file distinguishes encoded data from illustrative patterns. It does not grant brand approval.
 
 ## Shared mark geometry
@@ -26,7 +50,7 @@ The owner clarified that the fixed viewport is a containment boundary, not a dem
 | Fibonacci Sequence | Segment widths follow consecutive values `34, 21, 13, 8, 5, 3, 2, 1` in descending order. Gaps separate the values visually. |
 | Ruler | REPEATS counts major intervals across the fixed width; DIVISIONS counts equal subdivisions of each interval. Major ticks are full-height, halves 3/4-height, thirds/quarters/fifths 1/2-height, and finer fractions 1/4-height. It is a dimensionless illustrative scale, not a calibrated physical ruler. |
 | Numeric | Visualizes digits supplied by the user or generated from the selected formula. It does not claim to measure an external quantity. |
-| Waveform | Synthetic waveform based on the selected controls. It is not a recording or measured signal. |
+| Waveform | Actual PCM from the generated carrier, rendered silently or captured from live playback; not an external recording. |
 | Ticker | Repeating visual ticks with configurable ratios. It is not tied to a physical time or length unit. |
 | Neural Network | Untrained feedforward model with computed weighted sums, tanh/sigmoid activation and deterministic dense or local connections. Ring centers encode activation area; dashed edges indicate negative weights. See [model, sources and limits](neural_network_model.md). |
 | Artemis II | The splashdown counter uses April 10, 2026, 8:07 p.m. EDT, matching [NASA's splashdown record](https://www.nasa.gov/gallery/artemis-ii-splashdown-and-recovery/). The bar artwork is a supplied project asset, not mission telemetry. |

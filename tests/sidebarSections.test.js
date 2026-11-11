@@ -74,15 +74,10 @@ test('preparation stays within control groups, leaving the separate About footer
     .toEqual(['.control-group .control-header', '[data-control-help]']);
 });
 
-test('LFO is above Motion and Preview with independent physical Hz and folding controls', () => {
-  const html = fs.readFileSync(require.resolve('../generator/index.html'), 'utf8');
+test('Waveform keeps carrier, scope, Motion and Audio without the retired modulation controls', () => {
   const waveform = html.slice(html.indexOf('id="waveform-group"'), html.indexOf('id="circles-group"'));
-  expect(waveform.indexOf('class="control waveform_lfo"')).toBeLessThan(waveform.indexOf('motion_section'));
-  expect(waveform.indexOf('class="control waveform_lfo"')).toBeLessThan(waveform.indexOf('audio_section'));
-  expect(waveform).toMatch(/id="waveform-lfo-hint"[^>]*role="tooltip" hidden/);
-  expect(waveform).toContain('data-control-help="waveform-lfo-hint"');
-  expect(waveform).toMatch(/id="waveform-lfo-rate"[^>]*min="0.07" max="1300" step="0.01"/);
-  expect(waveform).toMatch(/id="waveform-lfo-type"[^>]*step="0.01"/);
+  expect(waveform).not.toMatch(/waveform[-_]lfo|LFO/);
+  for(const id of ['waveform-type-slider','waveform-frequency-slider','waveform-scope-status','waveform-motion-toggle','waveform-reverse-toggle','waveform-speed-slider','waveform-audio-btn']) expect(waveform).toContain(`id="${id}"`);
 });
 
 

@@ -1,20 +1,19 @@
-global.WaveformLfo=require('../js/utils/waveformLfo');
 global.WaveformAudio=require('../js/utils/waveformAudio');
 const scope=require('../js/utils/waveformScope');
 const {getLoopingGifFramePlan:plan}=require('../js/utils/loopingGif');
-const base={frequency:24,type:0,lfo:{enabled:true,rate:2,depth:100,type:0}};
+const base={frequency:24,type:0};
 const rate=6000;
 function samples(v,seconds=4) {
   const hz=WaveformAudio.frequency(v.frequency);
   return Float32Array.from({length:Math.ceil(seconds*rate)*2},(_,i)=> {
     const t=Math.floor(i/2)/rate;
-    return .1*Math.sin(2*Math.PI*hz*t)*(v.lfo.enabled?1-v.lfo.depth/200+v.lfo.depth/200*Math.sin(2*Math.PI*v.lfo.rate*t):1);
+    return .1*Math.sin(2*Math.PI*hz*t);
   });
 }
-test('default sweep follows one active LFO cycle, or one carrier cycle when modulation is off',()=>{
+test('default sweep follows one carrier cycle and ignores legacy modulation',()=>{
   for(const frequency of [10,24,100])for(const enabled of [false,true])for(const lfoRate of [.07,2,1300])for(const depth of [0,25,100]) {
     const v={...base,frequency,lfo:{...base.lfo,enabled,rate:lfoRate,depth}};
-    const visibleRate=enabled&&depth>0?lfoRate:WaveformAudio.frequency(frequency);
+    const visibleRate=WaveformAudio.frequency(frequency);
     expect(scope.sweepSpan(v)*visibleRate).toBeCloseTo(1,12);
     const display=scope.displaySettings(v);
     const captured=scope.recording(samples(v,Math.max(4,.1+display.replayLimit)),rate,.1,'offline',display);
@@ -50,6 +49,6 @@ test('live playback honors motion time without incoming packets, ignores packet 
     c.tick(4,true);expect(c.status()).toContain('sample playback');
     expect(first.recording.frame(0)).toBe(first.frame);
     c.configure({...base,type:2,lfo:{...base.lfo,depth:25}});c.tick(4);
-    expect(c.frame().seconds).toBe(1);expect(c.frame().parameterChanges).toBe(true);
+    expect(c.frame().seconds).toBeCloseTo(scope.duration(base),3);expect(c.frame().parameterChanges).toBe(true);
   } finally {c.dispose();}
 });

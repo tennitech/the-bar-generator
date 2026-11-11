@@ -1,5 +1,8 @@
 # Scope playback repair QA — November 10, 2026
 
+Historical evidence: the November 11 LFO removal supersedes the modulation
+behavior and old checks described here. Use [current QA](waveform_lfo_removal_qa.md).
+
 Production default was visibly inspected in the permitted cloud browser at
 `generator/waveform/`: .037s offline audio view; starting Audio selected live
 capture with the same physical window; stopping it restored the offline source.

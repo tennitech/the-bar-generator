@@ -15,7 +15,7 @@ function drawRuntime() {
     quantumControls: { tick: jest.fn() }, PageEntrance: { isHoldingArtwork: () => false },
     _renderer: { canvas: { width: 2000, height: 1400 } },
     createLunarBarVectorFragment: () => '',
-    tickWaveformVisualLfo: jest.fn(), getAnimationNowMs: () => 1234, getCurrentMotionStyle: () => null,
+    tickWaveformScope: jest.fn(), getAnimationNowMs: () => 1234, getCurrentMotionStyle: () => null,
     isMotionEnabledForStyle: () => false, getRenderedResponsiveLogoScale: () => context.fitScale,
     getPreviewFitLayout: () => ({ controlSpace: context.previewControlSpace }),
     isLunarBarVectorPreviewReady: () => context.ready,

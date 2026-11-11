@@ -1031,17 +1031,13 @@ function captureLogoExportSnapshot(options = {}) {
   // capture the exact live phase without changing playback or saved settings.
   const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const currentValues = getCurrentBarPatternValues(REFERENCE_WIDTH);
-  const lfoSettings = currentShader === 4 ? getWaveformLfoSettings() : null;
   const scopeCapture = currentShader === 4 ? window.waveformScopeController?.capture(getLoopRuntimeValues().waveformReverse === true) : null;
   const values = JSON.parse(JSON.stringify({ ...currentValues, ...getLoopRuntimeValues(),
     loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: options.format === 'gif' && family === 'wave-quantum'
       ? window.quantumModel.normalizePhase(currentValues.quantumPhase) : 0,
     ...(scopeCapture ? { waveformScope: scopeCapture.frame,
       waveformScopePlaybackSeconds: scopeCapture.recording?.playbackSeconds,
-      waveformScopeReplaySeconds: scopeCapture.recording?.replaySeconds } : {}),
-    waveformLfoPhase: 0,
-    waveformLfoSampleRate: lfoSettings ? lfoSettings.rate : 2,
-    waveformLfoAmount: lfoSettings?.enabled ? lfoSettings.depth / 100 : 0 }));
+      waveformScopeReplaySeconds: scopeCapture.recording?.replaySeconds } : {}) }));
   if (values.waveformScopeRequired && !scopeCapture) throw new Error('The audio scope is not ready. Try exporting again in a moment.');
   const barMarkup = buildCurrentBarPatternSVGFragment({ fgColor: foreground, values, preview: false });
   if (!barMarkup.trim()) throw new Error('The input produces no visible bar. Enter supported data or use Height Encoding for zero-only numbers.');
