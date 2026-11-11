@@ -3,6 +3,30 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 separated dice with varied rolls
+
+The owner's latest refinement separates Randomize's two complete thin die faces.
+Each makes one full independent roll with a restrained 3–7 degree recoil, then
+returns to its unchanged resting orientation. Every activation samples its own
+direction, 0.6–1.2 viewBox-unit outward travel and duration (rear 560–660ms,
+front 600–700ms). Sampled smooth acceleration/deceleration avoids pauses between
+poses. These bounded decorative choices do not enter control values or exports.
+
+The fixed 18px slot, labels, hover/focus and immediate native Randomize callback
+remain. Rapid activation starts from each face's computed displayed pose and
+cancels the previous pair; stale completion, reduced motion, hidden state and
+page-exit cleanup remain. The CSS, menu, bar models, audio and exports are
+unchanged. Cache keys advance through the routes, fetched shell and fallback.
+
+Focused tests cover full rotation/recoil and travel/duration bounds at random
+extrema, independent variation, minimum separation under rotation, transform-only
+motion, continuity, cleanup, labels and keyboard-generated clicks. Source-driven
+18px light/dark previews were inspected and padding checked offline. Native
+browser motion/input remains unverified under the existing restriction. See
+[the evidence and limits](dice_roll_qa.md); final full-suite/CI/live evidence is
+recorded in the PR. Current main's copy/menu and export changes are preserved;
+the concurrent Truss release is kept separate and reconciled before shipping.
+
 ## November 11 concise, source-checked UI copy
 
 Audited Home, all 22 selectable About descriptions, control hints, dialogs,

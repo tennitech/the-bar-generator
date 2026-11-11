@@ -11,7 +11,7 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
         window.__actionFeedback = [];
         const animate = Element.prototype.animate;
         Element.prototype.animate = function (frames, options) {
-          if (this.matches('.parameter_action-icon, .parameter_action-label')) window.__actionFeedback.push({ target: this.className.baseVal || this.className, options });
+          if (this.matches('[data-die-face], .parameter_action-label')) window.__actionFeedback.push({ face: this.dataset.dieFace, options });
           return animate.call(this, frames, options);
         };
       });
@@ -42,9 +42,15 @@ const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8000';
       assert.deepEqual(await boxes(), initialBoxes);
       const feedback = await page.evaluate(() => window.__actionFeedback);
       assert.equal(feedback.length > 0, reducedMotion === 'no-preference');
-      assert(feedback.every(event => event.options.duration <= 220));
+      assert(feedback.every(event => event.options.duration <= (event.face ? 700 : 220)));
+      if (reducedMotion === 'no-preference') {
+        assert(feedback.some(event => event.face === 'back'));
+        assert(feedback.some(event => event.face === 'front'));
+      }
+      await randomize.focus(); await randomize.press('Enter');
+      assert.deepEqual(await boxes(), initialBoxes, 'keyboard activation preserves layout');
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      const before = feedback.length; await randomize.click();
+      const before = await page.evaluate(() => window.__actionFeedback.length); await randomize.click();
       assert.equal(await page.evaluate(() => window.__actionFeedback.length), before);
       assert.equal(await randomize.locator('svg[aria-hidden="true"][focusable="false"]').count(), 1);
       assert.deepEqual(errors, []);

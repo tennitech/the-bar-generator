@@ -30,28 +30,25 @@
       document.addEventListener('visibilitychange', () => { if (document.hidden) cancelFeedback(); });
     }
     if (feedbackMotion.matches || document.hidden) { cancelFeedback(); return; }
-    const rest = 'translateX(0px) rotate(0deg)';
+    // Decoration only: each die rolls once, with bounded independent variation.
+    const roll = (face, side) => {
+      const direction = Math.random() < 0.5 ? -1 : 1;
+      const travel = 0.6 + Math.random() * 0.6;
+      const overshoot = 3 + Math.random() * 4;
+      const duration = (face === 'back' ? 560 : 600) + Math.random() * 100;
+      const smooth = value => value * value * (3 - 2 * value);
+      const frames = Array.from({ length: 25 }, (_, index) => {
+        const t = index / 24;
+        const spread = index === 24 ? 0 : travel * Math.sin(Math.PI * t) ** 2;
+        const angle = t <= 0.84
+          ? (360 + overshoot) * smooth(t / 0.84)
+          : 360 + overshoot * (1 - smooth((t - 0.84) / 0.16));
+        return { offset: t, transform: `translate(${side * spread}px, ${-side * spread * 0.55}px) rotate(${direction * angle}deg)` };
+      });
+      return { target: button.querySelector(`[data-die-face="${face}"]`), duration, frames };
+    };
     const responses = action === 'randomize' ? [
-      { target: button.querySelector('[data-die-face="back"]'), duration: 460, frames: [
-        { transform: rest },
-        { transform: 'translateX(-2.4px) rotate(-7deg)', offset: 0.12 },
-        { transform: 'translateX(2.2px) rotate(6deg)', offset: 0.28 },
-        { transform: 'translateX(-1.5px) rotate(-4deg)', offset: 0.44 },
-        { transform: 'translateX(0.95px) rotate(2.5deg)', offset: 0.60 },
-        { transform: 'translateX(-0.45px) rotate(-1.25deg)', offset: 0.76 },
-        { transform: 'translateX(0.15px) rotate(0.4deg)', offset: 0.90 },
-        { transform: rest }
-      ] },
-      { target: button.querySelector('[data-die-face="front"]'), duration: 520, frames: [
-        { transform: rest },
-        { transform: 'translateX(-2.6px) rotate(8deg)', offset: 0.12 },
-        { transform: 'translateX(2.3px) rotate(-7deg)', offset: 0.28 },
-        { transform: 'translateX(-1.6px) rotate(5deg)', offset: 0.44 },
-        { transform: 'translateX(0.95px) rotate(-3deg)', offset: 0.60 },
-        { transform: 'translateX(-0.45px) rotate(1.5deg)', offset: 0.76 },
-        { transform: 'translateX(0.15px) rotate(-0.5deg)', offset: 0.90 },
-        { transform: rest }
-      ] }
+      roll('back', 1), roll('front', -1)
     ] : [{ target: button.querySelector('.parameter_action-label'), duration: 160,
       frames: action === 'undo'
         ? [{ transform: 'translateX(-2px)', opacity: 0.7 }, { transform: 'translateX(0)', opacity: 1 }]
@@ -63,10 +60,8 @@
       const current = action === 'randomize' && previous ? scope.getComputedStyle?.(target)?.transform : null;
       previous?.cancel();
       const poses = current && current !== 'none' ? [{ ...frames[0], transform: current }, ...frames.slice(1)] : frames;
-      // Smooth each reversal; shrinking alternating swings provide the damped settle.
-      const keyframes = action === 'randomize'
-        ? poses.map(frame => ({ ...frame, easing: 'cubic-bezier(0.37, 0, 0.63, 1)' })) : poses;
-      const animation = target.animate(keyframes, { duration, easing: action === 'randomize' ? 'linear' : 'ease-out' });
+      // Sampled smooth acceleration and a small recoil settle into a full turn.
+      const animation = target.animate(poses, { duration, easing: action === 'randomize' ? 'linear' : 'ease-out' });
       feedbackAnimations.set(target, animation);
       const done = () => { if (feedbackAnimations.get(target) === animation) feedbackAnimations.delete(target); };
       animation.finished.then(done, done);
@@ -258,8 +253,8 @@
           const glyph = document.createElement('span');
           glyph.className = 'parameter_action-glyph';
           glyph.setAttribute('aria-hidden', 'true');
-          // Original paired-dice geometry follows the owner reference; no raster is embedded.
-          glyph.innerHTML = '<svg class="parameter_action-icon" data-control-icon="dice" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g data-die-face="back"><path d="M9 7.2 10.4 2.2Q10.7 1.1 11.8 1.4L21.2 4Q22.3 4.3 22 5.4L19.1 16Q18.8 17.1 17.7 16.8L16.6 16.5"/><circle cx="13" cy="5.4" r="1.25" fill="currentColor" stroke="none"/><circle cx="18.5" cy="6.9" r="1.25" fill="currentColor" stroke="none"/><circle cx="17.5" cy="12.4" r="1.25" fill="currentColor" stroke="none"/></g><g data-die-face="front"><rect x="2" y="9" width="13" height="13" rx="2"/><circle cx="5.5" cy="18.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.35" fill="currentColor" stroke="none"/><circle cx="11.5" cy="12.5" r="1.35" fill="currentColor" stroke="none"/></g></svg>';
+          // Separate complete faces remain recognizable while each rolls independently.
+          glyph.innerHTML = '<svg class="parameter_action-icon" data-control-icon="dice" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g data-die-face="back"><g transform="rotate(12 18 6)"><rect x="13" y="1" width="10" height="10" rx="1.6"/><circle cx="15.5" cy="3.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="20.5" cy="3.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="20.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"/></g></g><g data-die-face="front"><rect x="1" y="13" width="10" height="10" rx="1.6"/><circle cx="3.5" cy="20.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="6" cy="18" r="1.1" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.1" fill="currentColor" stroke="none"/></g></svg>';
           button.appendChild(glyph);
         }
         button.appendChild(actionLabel);
