@@ -296,8 +296,9 @@ img {
   -webkit-user-drag: none;
   color: inherit;
   text-decoration: none;
-  /* One easing and duration for every complete bar, in both directions. */
-  transition: opacity 240ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* One symmetric fade for every bar and both directions. A gentle start
+     softens rapid reversals across gaps without delaying their release. */
+  transition: opacity 480ms ease-in-out;
 }
 
 .bar_asset_wrap:focus-visible {

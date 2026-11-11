@@ -3,6 +3,18 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 smoother Home bar handoff
+
+The shared whole-bar opacity transition now uses 480 ms ease-in-out rather than
+240 ms ease-out. Its gentler initial slope reduces the brightness flash during
+quick reversals between neighboring bars, with one identical transition for
+entry and exit across every sample. No delayed hover clearing, gap hold, blur,
+extra animation layer, or changed 20% resting dim level is introduced. Pointer,
+keyboard, drag, reduced-motion behavior, and static artwork remain unchanged.
+Both Home documents refresh the CSS cache key. Production inspection confirmed
+the previous 240 ms computed transition; final tests and release verification
+are recorded in the PR. No generator or export changes are included.
+
 ## November 11 marquee pause-state and fade recovery
 
 The removed Home pause button left its persisted `rpi-marquee-motion` value
