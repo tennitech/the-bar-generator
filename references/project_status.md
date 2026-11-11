@@ -1,7 +1,22 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-**Last Updated:** 2026-11-10
+**Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
+
+## November 11 essential-test consolidation
+
+Reconciled the previously isolated audit onto current main without changing
+application code or required CI. Remove 25 redundant cases: sixteen triangle
+round trips, six repeated Ruler cases, a source-name edge-paint blacklist,
+a duplicate marquee case and a retired-envelope spelling blacklist. Unique
+Ruler assertions and exact seven-slot/reversed-order marquee coverage move
+into the focused suites. Static Ruler offset repetition and brittle helper-call
+counts are also removed; executable behavior and all newer regressions remain.
+The complete baseline passes 1,074 cases in 93 suites. The reduced suite passes
+1,049 cases in the same 93 suites, with no skips or relaxed tolerances.
+See [the audit and retained-coverage map](test_suite_audit.md) for details and
+validation limits. Required Node 22 CI remains the release gate; exact final
+PR/merge/deployment evidence is recorded in the PR.
 
 ## November 10 picker exit-focus follow-up
 

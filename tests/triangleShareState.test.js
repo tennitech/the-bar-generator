@@ -7,7 +7,15 @@ const manifest = {
   'triangles-direction-select': { options: ['down-right', 'up-right', 'up-left', 'down-left'] },
   'triangles-count-slider': { type: 'range', min: 6, max: 28, step: 1 }
 };
-const cases = [1, 2].flatMap(variant => ['up-left', 'up-right', 'down-left', 'down-right'].flatMap(direction => [6, 14, 28].map(count => [variant, direction, count])));
+// With the legacy variant control present, validation handles these fields
+// independently. Cover every variant/direction and min/default/max count without
+// repeating the full Cartesian product. Variant-free migration stays exhaustive.
+const cases = [
+  [1, 'up-left', 6], [1, 'up-right', 14],
+  [1, 'down-left', 28], [1, 'down-right', 6],
+  [2, 'up-left', 28], [2, 'up-right', 6],
+  [2, 'down-left', 14], [2, 'down-right', 28]
+];
 
 test.each(cases)('v1 shares triangle variant %s, direction %s, count %s', (variant, direction, count) => {
   const controls = { 'style-select': 'triangles', 'triangles-variant-slider': String(variant),
