@@ -109,3 +109,63 @@ test.each([{repeat:true}, {defaultPrevented:true}, {altKey:true}, {ctrlKey:true}
   expect(send(overrides).preventDefault).not.toHaveBeenCalled();
   expect(motion.paused).toBe(false);
 });
+
+// Exercise the actual startup scheduler with saved pause, rather than merely
+// asserting the preference helper. This caught the second entrance cancellation
+// that used to occur after pageEntrance's early head-script check.
+test.each([false, true])('saved scrolling pause holds lanes without cancelling entrance; reduced=%s', reduced => {
+  const vm = require('node:vm');
+  const cancel = jest.fn(), raf = jest.fn(() => 1);
+  const root = { dataset: {} };
+  const stage = { append() {}, addEventListener() {} };
+  const rows = [];
+  const media = { matches: reduced, addEventListener() {} };
+  const context = vm.createContext({
+    window: { MarqueeCatalog: require('../js/utils/marqueeCatalog'), localStorage: storage('paused'),
+      matchMedia: () => media, addEventListener() {}, requestAnimationFrame: raf,
+      cancelAnimationFrame() {}, PageEntrance: { cancel } },
+    document: { documentElement: root, querySelector: () => null,
+      getElementById: () => null, addEventListener() {}, hidden: false },
+    performance: { now: () => 0 }, rows
+  });
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/marqueeUi.js'), 'utf8'), context);
+  vm.runInContext(`
+    document.querySelector = () => stage;
+    createRow = () => { const row = { element: {}, inertiaVelocity: 100, currentFactor: 1 }; rows.push(row); return row; };
+    bindStageFocus = () => () => {};
+    syncViewportHeightVar = () => {};
+    syncMarqueeSizing = () => ({});
+    syncHeroScale = () => {};
+    syncRowMeasurements = () => {};
+    syncRowVerticalLayout = () => {};
+    initMarqueeScene();
+  `, Object.assign(context, { stage }));
+  expect(root.dataset.marqueeMotionPaused).toBe('true');
+  expect(rows).toHaveLength(10);
+  expect(rows.every(row => row.inertiaVelocity === 0 && row.currentFactor === 0)).toBe(true);
+  expect(cancel).toHaveBeenCalledTimes(reduced ? 1 : 0);
+  // Only the layout request runs. No lane-animation frame is scheduled.
+  expect(raf).toHaveBeenCalledTimes(1);
+});
+
+test('scrolling pause does not blanket-disable hover fades, while reduced motion still does', () => {
+  const css = fs.readFileSync(path.join(__dirname, '../css/marquee-ui.css'), 'utf8');
+  expect(css).not.toMatch(/\[data-marquee-motion-paused[^}]+transition:\s*none/s);
+  expect(css).toMatch(/\.bar_asset_wrap\s*\{[^}]*transition:\s*opacity 240ms/);
+  expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[^}]*transition:\s*none !important/);
+});
+
+
+test('orphaned pause-button state is ignored; new Space choices remain persistent', () => {
+  const values = new Map([['rpi-marquee-motion', 'paused']]);
+  const saved = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  const current = createMarqueeMotionPreference(() => saved);
+  expect(current.paused).toBe(false);
+  expect(values.get('rpi-marquee-motion')).toBe('paused');
+  expect(values.has(MARQUEE_MOTION_STORAGE_KEY)).toBe(false);
+  current.setPaused(true);
+  expect(createMarqueeMotionPreference(() => saved).paused).toBe(true);
+  current.setPaused(false);
+  expect(createMarqueeMotionPreference(() => saved).paused).toBe(false);
+  expect(createMarqueeMotionPreference(() => saved, true).paused).toBe(true);
+});

@@ -89,9 +89,8 @@ async function verifyFade(page) {
     const bounded=await verifyFade(stalledPage); assert.ok(bounded.firstFade<3500);
     assert.equal(await stalledPage.locator('.marquee_skip-link').count(),1);
     results.push({kind:'bounded-unresolved-decode',...bounded}); await stalled.close();
-    for (const mode of ['reduced','saved-pause','interaction','live-reduced','history']) {
+    for (const mode of ['reduced','interaction','live-reduced','history']) {
       const ctx=await context({reducedMotion:mode==='reduced'?'reduce':'no-preference'});
-      if(mode==='saved-pause') await ctx.addInitScript(()=>{try {localStorage.setItem('rpi-marquee-motion','paused');} catch (_) { /* Initial about:blank has no storage origin. */ }});
       if(['interaction','live-reduced','history'].includes(mode)) await ctx.route('**/assets/images/marquee-bars/**',async route=>{await new Promise(r=>setTimeout(r,700));await route.continue();});
       const page=await ctx.newPage(); await page.goto(base,{waitUntil:'domcontentloaded'});
       if(mode==='interaction') await page.keyboard.press('Tab');
@@ -100,7 +99,7 @@ async function verifyFade(page) {
       await finished(page);
       assert.equal(await page.locator('[data-entrance-page]').evaluate(e=>getComputedStyle(e).opacity),'1');
       if(mode==='interaction') assert.equal(await page.locator('.marquee_skip-link').evaluate(e=>e===document.activeElement),true);
-      if(['reduced','saved-pause'].includes(mode)) assert.ok((await page.evaluate(()=>window.__entrySamples)).every(s=>s.opacity===1));
+      if(mode==='reduced') assert.ok((await page.evaluate(()=>window.__entrySamples)).every(s=>s.opacity===1));
       await page.waitForTimeout(900); assert.equal(await page.evaluate(()=>PageEntrance.isActive()),false);
       results.push({kind:mode,visible:true,noReplay:true}); await ctx.close();
     }

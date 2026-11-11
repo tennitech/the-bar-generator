@@ -581,9 +581,6 @@ img {
   white-space: nowrap;
 }
 
-[data-marquee-motion-paused='true'] .marquee_page *,
-[data-marquee-motion-paused='true'] .marquee_page *::before,
-[data-marquee-motion-paused='true'] .marquee_page *::after {
-  animation: none !important;
-  transition: none !important;
-}
+/* Scrolling pause is enforced by the lane scheduler, not a page-wide motion
+   override. Hover/focus fades remain usable while lanes are still. The device
+   reduced-motion rule above continues to suppress all transitions. */

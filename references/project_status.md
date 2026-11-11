@@ -3,6 +3,31 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 marquee pause-state and fade recovery
+
+The removed Home pause button left its persisted `rpi-marquee-motion` value
+active after the control disappeared. Production cloud-browser inspection
+reproduced a saved pause with entry mode `bypass` and computed hover transition
+`none`; Space Resume restored the 240 ms fade, and a fresh load completed the
+640 ms ASCII entrance. The old state is now retired, without deleting it. New
+Space-key choices persist under `rpi-marquee-scroll-v2`, so the first visit after
+this repair starts scrolling unless device reduced motion is enabled.
+
+Scrolling pause now holds lane travel and inertia only. It no longer disables
+all Home CSS transitions or cancels a fresh one-time entrance. Hover/keyboard
+opacity feedback remains at 20% with the existing 240 ms curve, and static bar
+artwork stays static. Device reduced motion still suppresses transitions and
+entrance motion; keyboard and cross-tab pause remain supported. Both Home entry
+points refresh the three affected asset keys. No generator geometry, parameters,
+export rendering, dependencies or workflow settings change.
+
+Regression coverage checks orphaned state recovery, new keyboard persistence,
+startup lane/inertia hold, reduced-motion cancellation, and normal ASCII/plain
+fade completion with saved scrolling pause. Final test and production checks are
+recorded in the release PR. Local rendered browser QA remains unavailable under
+the established execution restrictions; production inspection uses the supported
+cloud browser. Physical-device and formal brand acceptance are not inferred.
+
 ## November 11 essential-test consolidation
 
 Reconciled the previously isolated audit onto current main without changing

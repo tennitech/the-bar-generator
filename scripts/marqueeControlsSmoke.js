@@ -6,7 +6,7 @@ const { chromium, webkit } = require('playwright');
 const base = (process.env.RPI_SITE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
 const engine = process.env.RPI_BROWSER || 'chromium';
 const evidence = process.env.RPI_MARQUEE_EVIDENCE || '/tmp/marquee-controls-evidence';
-const key = 'rpi-marquee-motion';
+const { MARQUEE_MOTION_STORAGE_KEY: key } = require('../js/marqueeUi');
 async function ready(page) {
   await page.waitForFunction(() => document.images.length > 100
     && [...document.images].every(image => image.complete && image.naturalWidth)
@@ -32,6 +32,7 @@ const paused = page => page.evaluate(() => document.documentElement.dataset.marq
   try {
     for (const route of ['/', '/marquee-ui.html']) for (const [width,height] of [[1440,900],[390,844],[320,568],[844,390]]) {
       const context = await browser.newContext({viewport:{width,height},reducedMotion:'no-preference'});
+      await context.addInitScript(() => localStorage.setItem('rpi-marquee-motion', 'paused'));
       const page = await context.newPage(); page.on('pageerror', error => errors.push(error.message));
       await page.goto(base + route); await ready(page); await running(page);
       assert.equal(await page.locator('#marquee-motion-toggle,.hero_controls').count(),0);
@@ -42,6 +43,8 @@ const paused = page => page.evaluate(() => document.documentElement.dataset.marq
       assert.match(await page.locator('#marquee-motion-description').textContent(),/paused.*Space to resume/);
       await page.reload(); await ready(page); await frozen(page);
       assert.equal(await paused(page),true);
+      assert.notEqual(await page.locator('[data-entrance-plane]').getAttribute('data-entry-mode'), 'bypass');
+      assert.match(await page.locator('.bar_asset_wrap').first().evaluate(e => getComputedStyle(e).transition), /opacity 0.24s/);
       await page.keyboard.press('Space'); await running(page);
       await page.emulateMedia({reducedMotion:'reduce'}); await frozen(page);
       await page.keyboard.press('Space'); await frozen(page);
