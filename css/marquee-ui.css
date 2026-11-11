@@ -560,15 +560,22 @@ img {
 /* Dim complete samples without filtering clipped rows or moving their ink.
    Keyboard focus takes priority over a parked pointer. Touch has no sticky hover. */
 @media (hover: hover) and (pointer: fine) {
-  .marquee_stage.has-bar-focus .bar_asset_wrap:not(.is-hovered) {
+  .marquee_stage:not([data-focus-fade]).has-bar-focus .bar_asset_wrap:not(.is-hovered) {
     opacity: 0.2;
   }
 }
-.marquee_stage:has(.bar_asset_wrap:focus-visible) .bar_asset_wrap {
+.marquee_stage:not([data-focus-fade]):has(.bar_asset_wrap:focus-visible) .bar_asset_wrap {
   opacity: 0.2;
 }
-.marquee_stage:has(.bar_asset_wrap:focus-visible) .bar_asset_wrap:focus-visible {
+.marquee_stage:not([data-focus-fade]):has(.bar_asset_wrap:focus-visible) .bar_asset_wrap:focus-visible {
   opacity: 1;
+}
+
+/* One shared field and only recent highlights are updated per frame. Keep the
+   brighter of field/selection so a selected bar never dims on a gap exit. */
+.marquee_stage[data-focus-fade] .bar_asset_wrap {
+  opacity: max(var(--marquee-focus-field, 1), var(--marquee-focus-local, 0.2));
+  transition: none;
 }
 
 .marquee_visually-hidden {
