@@ -3,6 +3,32 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 clearer left/right dice shake
+
+The owner's follow-up rejected the first subtle tilt. Each die now makes six
+clearly alternating lateral swings, with progressively smaller travel/rotation
+and smooth per-leg cubic easing at each reversal. The back settles over 460ms;
+the front over 520ms, with different amplitudes and opposite angular tilts. The
+small final excursion eases into exact rest. The unchanged 18px icon slot, thin
+SVG, labels and button dimensions remain fixed; no geometry/layout animation.
+
+The existing per-face current-pose replacement, stale-completion guard, natural
+cleanup, immediate Randomize callback and native keyboard/click path remain.
+Reduced motion, page exit and hidden state still cancel both. Undo/Reset keep
+their existing easing and label responses. The refinement changes no menu,
+scientific model, export, palette or accessibility behavior.
+
+Focused tests require repeated left/right reversals, monotonically shrinking
+extrema, smooth turnarounds, exact rest and bounded duration, alongside rapid
+activation/cleanup and reduced-motion coverage. An offline source-keyframe
+preview and 12 chronological 18px button-context samples were rendered in
+light/dark, visually inspected and checked within the existing padding/gap
+envelope. This is reconstructed SVG motion, not native browser animation proof.
+Full-suite, exact-head CI and production evidence are recorded in the PR.
+Actual browser timing, physical keyboard/touch and aesthetic acceptance remain
+unverified; no prior denied browser route is retried. This release is independent of approval-held PRs #184 and #187. Export-copy
+#186 and export-state #188 are preserved; neither held PR is merged here.
+
 ## November 11 uniform export choice states
 
 Export composition and image size now share one bordered choice style, native

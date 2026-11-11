@@ -30,18 +30,26 @@
       document.addEventListener('visibilitychange', () => { if (document.hidden) cancelFeedback(); });
     }
     if (feedbackMotion.matches || document.hidden) { cancelFeedback(); return; }
-    const rest = 'translate(0px, 0px) rotate(0deg)';
+    const rest = 'translateX(0px) rotate(0deg)';
     const responses = action === 'randomize' ? [
-      { target: button.querySelector('[data-die-face="back"]'), duration: 240, frames: [
+      { target: button.querySelector('[data-die-face="back"]'), duration: 460, frames: [
         { transform: rest },
-        { transform: 'translate(0.25px, -0.6px) rotate(7deg)', offset: 0.36 },
-        { transform: 'translate(0px, 0.15px) rotate(-2deg)', offset: 0.72 },
+        { transform: 'translateX(-2.4px) rotate(-7deg)', offset: 0.12 },
+        { transform: 'translateX(2.2px) rotate(6deg)', offset: 0.28 },
+        { transform: 'translateX(-1.5px) rotate(-4deg)', offset: 0.44 },
+        { transform: 'translateX(0.95px) rotate(2.5deg)', offset: 0.60 },
+        { transform: 'translateX(-0.45px) rotate(-1.25deg)', offset: 0.76 },
+        { transform: 'translateX(0.15px) rotate(0.4deg)', offset: 0.90 },
         { transform: rest }
       ] },
-      { target: button.querySelector('[data-die-face="front"]'), duration: 280, frames: [
+      { target: button.querySelector('[data-die-face="front"]'), duration: 520, frames: [
         { transform: rest },
-        { transform: 'translate(-0.25px, 0.5px) rotate(-8deg)', offset: 0.42 },
-        { transform: 'translate(0px, -0.1px) rotate(2deg)', offset: 0.78 },
+        { transform: 'translateX(-2.6px) rotate(8deg)', offset: 0.12 },
+        { transform: 'translateX(2.3px) rotate(-7deg)', offset: 0.28 },
+        { transform: 'translateX(-1.6px) rotate(5deg)', offset: 0.44 },
+        { transform: 'translateX(0.95px) rotate(-3deg)', offset: 0.60 },
+        { transform: 'translateX(-0.45px) rotate(1.5deg)', offset: 0.76 },
+        { transform: 'translateX(0.15px) rotate(-0.5deg)', offset: 0.90 },
         { transform: rest }
       ] }
     ] : [{ target: button.querySelector('.parameter_action-label'), duration: 160,
@@ -54,8 +62,11 @@
       // A repeated activation continues from each die's current displayed pose.
       const current = action === 'randomize' && previous ? scope.getComputedStyle?.(target)?.transform : null;
       previous?.cancel();
-      const keyframes = current && current !== 'none' ? [{ ...frames[0], transform: current }, ...frames.slice(1)] : frames;
-      const animation = target.animate(keyframes, { duration, easing: 'ease-out' });
+      const poses = current && current !== 'none' ? [{ ...frames[0], transform: current }, ...frames.slice(1)] : frames;
+      // Smooth each reversal; shrinking alternating swings provide the damped settle.
+      const keyframes = action === 'randomize'
+        ? poses.map(frame => ({ ...frame, easing: 'cubic-bezier(0.37, 0, 0.63, 1)' })) : poses;
+      const animation = target.animate(keyframes, { duration, easing: action === 'randomize' ? 'linear' : 'ease-out' });
       feedbackAnimations.set(target, animation);
       const done = () => { if (feedbackAnimations.get(target) === animation) feedbackAnimations.delete(target); };
       animation.finished.then(done, done);
