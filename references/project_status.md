@@ -28,6 +28,22 @@ is retained pending explicit user testing; automated checks are not acceptance.
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 taller physical marquee targets
+
+Directional prediction is removed following user testing. Each native bar link
+now has a 4.9rem-high target instead of 3.9rem, while artwork remains 3rem high
+and unchanged in width. Centered transparent padding adds 8px above and below
+at base scale. The same real anchor receives hover, click, focus and drag.
+
+Lane pitch accounts for the actual rotation and leaves 2px between targets in
+perpendicular coordinates, preventing overlapping links or ambiguous selection.
+This deliberately spaces lanes a little farther apart; fitting still keeps the
+hero clear. Horizontal link widths and gaps are unchanged. Entering any true
+gap immediately starts background restoration. Continuous fades, 20% settled
+dimming, reduced motion and keyboard priority remain. No prediction or extra
+pointer hit-testing remains. Rendering and release checks are recorded in PR.
+The directional entry below describes the superseded release.
+
 ## November 11 directional marquee handoff
 
 Pointer travel previews the next native hit-tested bar up to 60ms/72px ahead,
