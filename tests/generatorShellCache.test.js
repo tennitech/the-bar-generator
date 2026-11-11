@@ -110,3 +110,17 @@ test.each(['runway', 'graph'])('routed %s startup loads the graph model before i
   const allLoaded = new Set([...scriptNodes(route).map(node => node.getAttribute('src')), ...loaded]);
   for (const node of scriptNodes(shell)) expect(allLoaded.has(node.getAttribute('src'))).toBe(true);
 });
+
+test('startup display synchronization only calls current helpers and refreshes Data Graph', () => {
+  const main = read('js/main.js');
+  const updateDisplays = main.slice(main.indexOf('function updateAllDisplays()'), main.indexOf('function updateAudioParameters()'));
+  // Only stub helpers that really exist in main. This deliberately leaves retired
+  // names undefined, matching browser startup instead of hiding dead call sites.
+  const scope = Object.fromEntries(Array.from(main.matchAll(/^function ([A-Za-z_$][\w$]*)\(/gm), match => [match[1], jest.fn()]));
+  const sync = jest.fn();
+  scope.window = { DataGraphControls: { sync } };
+  vm.createContext(scope);
+  vm.runInContext(updateDisplays, scope);
+  expect(() => scope.updateAllDisplays()).not.toThrow();
+  expect(sync).toHaveBeenCalledTimes(1);
+});
