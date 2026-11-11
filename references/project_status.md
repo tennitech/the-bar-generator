@@ -3,6 +3,25 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 compact Color Theme helper spacing
+
+How to use now sits closer to the Color Theme dropdown. Its transparent button
+keeps the 44px minimum hit area (48px in large-controls mode), but aligns its
+label at the top with the existing 6px hint-gap padding rather than centering it
+below an additional label-sized margin. No negative margin, transform, absolute
+hit-area extension or overlap is used. Large-controls mode also retains the
+existing tight red label focus outline instead of the generic full-button outline.
+
+Secondary-only visibility, text/copy, exact theme palette, modal/keyboard/touch
+controllers, selection and all other editor states remain unchanged. Current
+main already includes copy audit #187, menu release #184 and dice #191; their
+copy, startup/About modules, presentation and animation are preserved. Only the
+two CSS scopes and their synchronized cache keys change production behavior.
+All 37 focused checks in seven suites, JavaScript/81 inline-script syntax and
+source/cache checks pass. See [spacing rationale and QA limits](color_help_spacing_qa.md).
+
+
+
 ## November 11 continuous marquee emphasis
 
 Rapid hover reversals no longer restart a CSS opacity transition with a shortened

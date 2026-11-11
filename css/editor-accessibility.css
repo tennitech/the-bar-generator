@@ -99,6 +99,8 @@ html[data-editor-size="large"] .export_size-option { min-height: var(--editor-la
 html[data-editor-size="large"] :is(.export_menu button, .report_dialog button) { font-size: var(--editor-large-label); }
 html[data-editor-size="large"] .export_action-columns { grid-template-columns: 1fr; }
 html[data-editor-size="large"] #app-sidebar :is(button, summary, a, .custom-select-trigger):focus-visible { outline: 2px solid var(--accent-color); outline-offset: -2px; }
+/* The helper keeps its tight label outline instead of outlining the transparent hit area. */
+html[data-editor-size="large"] #app-sidebar .color_guidance-button:focus-visible { outline: none; }
 
 @media (pointer: coarse) and (max-width: 1100px) {
   html[data-editor-size="large"] { --mobile-panel-width: min(25rem, 58vw); --sidebar-width: var(--mobile-panel-width); }
