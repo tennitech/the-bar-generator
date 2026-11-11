@@ -105,14 +105,8 @@ function read() {
     pulseText: params.get('pulseText') || 'RPI',
     pulseIntensity: parseFloat(params.get('pulseIntensity')) || 5,
 
-    // Graph parameters
-    graphText: params.get('graphText') || 'RPI',
-    graphText2: params.get('graphText2') || '',
-    graphText3: params.get('graphText3') || '',
-    graphText4: params.get('graphText4') || '',
-    graphText5: params.get('graphText5') || '',
-    graphMulti: params.get('graphMulti') === 'true',
-    graphScale: Math.max(4, parseInt(params.get('graphScale')) || 10),
+    // Numeric graph queries explicitly migrate legacy text-code series.
+    ...window.DataGraph.readQuery(params),
 
     // Additional parameters
     morseText: normalizeBinaryText(params.has('morseText') ? params.get('morseText') : 'RPI')

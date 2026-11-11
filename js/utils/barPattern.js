@@ -1,3 +1,6 @@
+const dataGraphModel = typeof module !== 'undefined' && module.exports
+  ? require('./dataGraph') : window.DataGraph;
+
 const waveformNoteModel = typeof module !== 'undefined' && module.exports
   ? require('./waveformNotes') : window.WaveformNotes;
 
@@ -2171,72 +2174,7 @@ function createBarPatternSVG(config) {
   }
 
   if (currentShader === 12) {
-    const streamTexts = [];
-    const primaryText = (values.graphText || 'RPI').trim() || 'RPI';
-    const multiEnabled = values.graphMulti === true || values.graphMulti === 'true';
-    if (!multiEnabled) {
-      streamTexts.push(primaryText);
-    } else {
-      const candidateStreams = [
-        values.graphText,
-        values.graphText2,
-        values.graphText3,
-        values.graphText4,
-        values.graphText5
-      ];
-      for (let i = 0; i < candidateStreams.length; i++) {
-        const value = (candidateStreams[i] || '').trim();
-        if (value.length > 0) {
-          streamTexts.push(value);
-        }
-      }
-      if (streamTexts.length === 0) {
-        streamTexts.push(primaryText);
-      }
-    }
-
-    const scaleFactor = Math.max(0.4, parseInt(values.graphScale || 10, 10) / 10.0);
-    const seriesList = streamTexts.map(text => {
-      const source = (text || 'RPI').slice(0, 200);
-      const valuesList = [];
-      for (let i = 0; i < source.length; i++) {
-        valuesList.push(source.charCodeAt(i));
-      }
-      if (valuesList.length === 1) {
-        valuesList.push(valuesList[0]);
-      }
-      return valuesList;
-    });
-
-    let minValue = Infinity;
-    let maxValue = -Infinity;
-    for (let i = 0; i < seriesList.length; i++) {
-      for (let j = 0; j < seriesList[i].length; j++) {
-        minValue = Math.min(minValue, seriesList[i][j]);
-        maxValue = Math.max(maxValue, seriesList[i][j]);
-      }
-    }
-    if (!isFinite(minValue) || !isFinite(maxValue) || minValue === maxValue) {
-      minValue = 0;
-      maxValue = 1;
-    }
-
-    for (let streamIndex = 0; streamIndex < seriesList.length; streamIndex++) {
-      const series = seriesList[streamIndex];
-      if (!series || series.length < 2) continue;
-
-      const opacity = seriesList.length > 1 ? Math.max(0.35, 1 - streamIndex * 0.14) : 1;
-      const steps = series.length - 1;
-      let pathData = '';
-      for (let i = 0; i < series.length; i++) {
-        const normalized = (series[i] - minValue) / (maxValue - minValue);
-        const x = barStartX + (steps === 0 ? 0 : (i / steps) * exactBarWidth);
-        const y = barY + barHeight - normalized * barHeight * scaleFactor;
-        pathData += `${i === 0 ? 'M' : ' L'} ${x} ${y}`;
-      }
-      pattern += `\n    <path d="${pathData}" fill="none" stroke="${fgColor}" stroke-width="${seriesList.length > 1 ? 1.6 : 2.2}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${opacity}"/>`;
-    }
-    return pattern;
+    return dataGraphModel.svg({ ...values, barStartX, barY, exactBarWidth, barHeight }, fgColor);
   }
 
   return pattern;

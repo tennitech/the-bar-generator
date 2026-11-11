@@ -5,7 +5,7 @@ const routes = require('../js/utils/generatorRoutes');
 const theme = require('../js/utils/themeMode');
 const loopingGifUtils = require('../js/utils/loopingGif');
 function read(search, pathname = '/generator/waveform/') {
-  const window = {WaveformNotes:require('../js/utils/waveformNotes'),NucleotidePattern:require('../js/utils/nucleotidePattern'),location:{search,pathname},GeneratorRoutes:routes,loopingGifUtils,RulerScale:require('../js/utils/rulerScale'),NumericControls:require('../js/utils/numericControls')};
+  const window = {DataGraph:require('../js/utils/dataGraph'),WaveformNotes:require('../js/utils/waveformNotes'),NucleotidePattern:require('../js/utils/nucleotidePattern'),location:{search,pathname},GeneratorRoutes:routes,loopingGifUtils,RulerScale:require('../js/utils/rulerScale'),NumericControls:require('../js/utils/numericControls')};
   window.GeneratorInitialState = {resolveTheme: query => theme.normalizeColorModeValue(new URLSearchParams(query).get('colorMode'))};
   const context = vm.createContext({window,URLSearchParams,...pattern});
   vm.runInContext(fs.readFileSync(require.resolve('../js/utils/musicStyle'),'utf8'),context);

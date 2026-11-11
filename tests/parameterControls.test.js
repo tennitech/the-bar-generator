@@ -77,6 +77,8 @@ function fixture(random = 0) {
     context[name[1]] ||= jest.fn();
   }
   vm.createContext(context);
+  context.DataGraph = require('../js/utils/dataGraph');
+  vm.runInContext(fs.readFileSync(require.resolve('../js/utils/dataGraphControls'), 'utf8'), context);
   vm.runInContext(source.slice(source.indexOf('function generateRandomStaffPattern()'), source.indexOf('function updateWaveformScopeControls()')), context);
   vm.runInContext(fs.readFileSync(require.resolve('../js/utils/parameterControls'), 'utf8'), context);
   vm.runInContext(source.slice(source.indexOf('function getTriangleGridControlValues'), source.indexOf('function updateTrianglesCountDisplay')), context);
@@ -92,18 +94,18 @@ function fixture(random = 0) {
   return { context, fields, groups, buttons, snapshot };
 }
 
-const active = ['music', 'nucleotide', 'ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
+const active = ['graph', 'music', 'nucleotide', 'ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
   'circles-gradient', 'gradient', 'grid', 'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles'];
 const studies = ['well-modes', 'rabi'];
 const fixed = ['solid', 'fibonacci-sequence', 'union', 'runway', 'lunar'];
 
-test('explicit capabilities cover exactly all 25 selectable styles and reject unavailable names', () => {
+test('explicit capabilities cover all selectable styles and reject unavailable names', () => {
   const h = fixture();
   expect(Object.keys(h.context.ParameterControls.capabilities).sort()).toEqual([...active, ...studies, ...fixed].sort());
   expect(h.fields['style-select'].options.filter(option => !option.disabled).map(option => option.value).sort())
     .toEqual([...active, ...studies, ...fixed].sort());
   for (const style of [...active, ...studies]) expect(h.context.ParameterControls.supportsActions(style)).toBe(true);
-  for (const style of [...fixed, 'graph', 'truss', 'constructor', '__proto__']) {
+  for (const style of [...fixed, 'truss', 'constructor', '__proto__']) {
     expect(h.context.ParameterControls.supportsActions(style)).toBe(false);
     h.context.resetStyleParameters(style); h.context.randomizeStyleParameters(style);
   }

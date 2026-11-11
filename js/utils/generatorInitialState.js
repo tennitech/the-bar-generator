@@ -152,7 +152,7 @@
       root.querySelectorAll('input[id$="-motion-toggle"]').forEach(toggle => { toggle.checked = false; });
     }
     const series = root.querySelector('#graph-multi-inputs');
-    if (series) series.style.display = root.querySelector('#graph-multi-toggle')?.checked ? 'block' : 'none';
+    if (series) series.hidden = !root.querySelector('#graph-multi-toggle')?.checked;
     scope.applyTickerWidthRatioBounds?.(root.querySelector('#ticker-ratio-slider'), root.querySelector('#ticker-width-ratio-slider'));
     root.querySelectorAll('[data-slider-value], #waveform-type-display, #lines-variant-display').forEach(display => {
       const field = root.querySelector(`#${CSS.escape(display.id.replace(/-display$/, '-slider'))}`)

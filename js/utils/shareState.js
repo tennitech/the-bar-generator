@@ -8,6 +8,13 @@
   const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
   const safeText = (value, limit) => Array.from(String(value || '').replace(/[\u0000-\u001f\u007f]/g, '')).slice(0, limit).join('');
 
+  // Numeric samples are quantities, not encoded words. Do not turn 455 into
+  // a masked leetspeak word during capture/Undo. Non-numeric drafts still filter.
+  function sanitizeControlText(field, value, sanitize) {
+    if (/^graph-data(?:-[2-5])?$/.test(field.id) && typeof value === 'string' && /^[0-9eE+.,;\s-]*$/.test(value)) return value;
+    return sanitize(value);
+  }
+
   function normalizeRuntime(value) {
     const data = isRecord(value) ? value : {};
     const bounded = (key, fallback, max) => Number.isFinite(data[key]) && data[key] >= 0 && data[key] <= max ? data[key] : fallback;
@@ -83,6 +90,12 @@
         if (Array.from(sourceControls[id]).length > 100) throw new Error('Text in this share link is too long.');
         sourceControls[id] = safeText(sourceControls[id], 10);
       }
+    }
+    if (scope.DataGraph && manifest['graph-data'] && !Object.hasOwn(sourceControls, 'graph-data') && Object.hasOwn(sourceControls, 'graph-input')) {
+      scope.DataGraph.keys.forEach((key, index) => {
+        sourceControls[`graph-data${index ? '-' + (index + 1) : ''}`] = scope.DataGraph.legacy(sourceControls[`graph-input${index ? '-' + (index + 1) : ''}`]);
+      });
+      sourceControls['graph-source'] = 'legacy';
     }
     if (scope.NumericControls && manifest['numeric-source-select']) {
       if (!Object.hasOwn(sourceControls, 'numeric-source-select')) {
@@ -231,7 +244,7 @@
     }
     const sanitize = value => bridge.sanitize ? bridge.sanitize(value) : value;
     const capture = () => ({ v: VERSION, name: sanitize(name), controls: Object.fromEntries(fields.map(field => [field.id,
-      field.type === 'checkbox' ? field.checked : (field.type === 'text' ? sanitize(field.value) : field.value)])), runtime: bridge.capture() });
+      field.type === 'checkbox' ? field.checked : (field.type === 'text' ? sanitizeControlText(field, field.value, sanitize) : field.value)])), runtime: bridge.capture() });
     function buildLink() {
       const snapshot = capture();
       const url = new URL(location.href);
@@ -250,7 +263,7 @@
         scope.applyTickerWidthRatioBounds?.(countRatio, widthRatio);
         for (const field of fields) {
           if (field.type === 'checkbox') field.checked = values[field.id];
-          else field.value = field.type === 'text' ? sanitize(values[field.id]) : values[field.id];
+          else field.value = field.type === 'text' ? sanitizeControlText(field, values[field.id], sanitize) : values[field.id];
         }
         name = sanitize(snapshot.name);
         updateNameContext();
@@ -307,7 +320,7 @@
     return controller;
   }
 
-  const api = { VERSION, MAX_FRAGMENT_LENGTH, MAX_NAME_LENGTH, MAX_TEXT_LENGTH, normalizeState, normalizeRuntime, encodeState, decodeState, seededRandom, prepareTrigger, prepareNameContext, initialize };
+  const api = { sanitizeControlText, VERSION, MAX_FRAGMENT_LENGTH, MAX_NAME_LENGTH, MAX_TEXT_LENGTH, normalizeState, normalizeRuntime, encodeState, decodeState, seededRandom, prepareTrigger, prepareNameContext, initialize };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   scope.BarShareState = api;
 })(typeof window !== 'undefined' ? window : globalThis);

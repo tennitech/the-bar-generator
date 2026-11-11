@@ -11,7 +11,7 @@ describe('generator route utils', () => {
   test('normalizes legacy and unknown style values safely', () => {
     expect(normalizeStyleValue('staff')).toBe('solid');
     expect(normalizeStyleValue('music')).toBe('music');
-    expect(normalizeStyleValue('graph')).toBe('solid');
+    expect(normalizeStyleValue('graph')).toBe('graph');
     expect(normalizeStyleValue('truss')).toBe('solid');
     expect(normalizeStyleValue('matrix')).toBe('solid');
     expect(normalizeStyleValue('not-a-style')).toBe('solid');
@@ -51,7 +51,7 @@ describe('generator route utils', () => {
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/index.html', '?style=unknown&colorMode=white')).toBe('/repo/generator/solid/?colorMode=white');
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/ticker/index.html', '?style=waveform&colorMode=red')).toBe('/repo/generator/ticker/?colorMode=red');
     expect(getLegacyGeneratorRedirectUrl('/repo/generator/music/', '?style=staff')).toBe('/repo/generator/music/');
-    expect(getLegacyGeneratorRedirectUrl('/repo/generator/graph/', '?graphText=RPI')).toBe('/repo/generator/solid/?graphText=RPI');
+    expect(getLegacyGeneratorRedirectUrl('/repo/generator/graph/', '?graphText=RPI')).toBe(null);
   });
   test('retains imported motion speed and direction through legacy routes', () => {
     expect(hasGeneratorQueryState('?rulerSpeed=5')).toBe(true);

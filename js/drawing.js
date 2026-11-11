@@ -539,69 +539,7 @@ function drawBarPatternOnGraphics(pg, barStartX, barY, exactBarWidth, rectHeight
       }
     }
   } else if (currentShader === 12) {
-    // Data Graph / Continuous line graph
-    const inputElements = [graphInput, graphInput2, graphInput3, graphInput4, graphInput5].filter(Boolean);
-    const multiEnabled = graphMultiToggle && graphMultiToggle.checked;
-    const streamTexts = [];
-    if (inputElements.length > 0) {
-      const primaryText = (inputElements[0].value || 'RPI').trim() || 'RPI';
-      if (!multiEnabled) {
-        streamTexts.push(primaryText);
-      } else {
-        for (let i = 0; i < inputElements.length; i++) {
-          const value = (inputElements[i].value || '').trim();
-          if (value.length > 0) streamTexts.push(value);
-        }
-        if (streamTexts.length === 0) streamTexts.push(primaryText);
-      }
-    } else {
-      streamTexts.push('RPI');
-    }
-
-    const scaleFactor = Math.max(0.4, parseInt(graphScaleSlider ? graphScaleSlider.value : 10, 10) / 10.0);
-    const seriesList = streamTexts.map(text => {
-      const chars = (text || 'RPI').slice(0, 200);
-      const values = [];
-      for (let i = 0; i < chars.length; i++) values.push(chars.charCodeAt(i));
-      if (values.length === 1) values.push(values[0]);
-      return values;
-    });
-
-    let minValue = Infinity;
-    let maxValue = -Infinity;
-    for (let i = 0; i < seriesList.length; i++) {
-      for (let j = 0; j < seriesList[i].length; j++) {
-        minValue = Math.min(minValue, seriesList[i][j]);
-        maxValue = Math.max(maxValue, seriesList[i][j]);
-      }
-    }
-    if (!isFinite(minValue) || !isFinite(maxValue) || minValue === maxValue) {
-      minValue = 0;
-      maxValue = 1;
-    }
-
-    pg.noFill();
-    const baseColor = color(fgColor);
-    for (let streamIndex = 0; streamIndex < seriesList.length; streamIndex++) {
-      const series = seriesList[streamIndex];
-      if (!series || series.length < 2) continue;
-
-      const alpha = seriesList.length > 1 ? Math.max(80, 255 - streamIndex * 30) : 255;
-      baseColor.setAlpha(alpha);
-      pg.stroke(baseColor);
-      pg.strokeWeight(seriesList.length > 1 ? 1.6 : 2.2);
-      pg.strokeJoin(ROUND);
-
-      const steps = series.length - 1;
-      pg.beginShape();
-      for (let i = 0; i < series.length; i++) {
-        const normalized = (series[i] - minValue) / (maxValue - minValue);
-        const x = barStartX + (steps === 0 ? 0 : (i / steps) * exactBarWidth);
-        const y = barY + rectHeight - normalized * rectHeight * scaleFactor;
-        pg.vertex(x, y);
-      }
-      pg.endShape();
-    }
+    window.DataGraph.draw(pg, { ...window.DataGraphControls.values(), barStartX, barY, exactBarWidth, barHeight: rectHeight }, fgColor);
   } else if (currentShader === 26 || currentShader === 27) {
     const geometry = createQuantumStudyPatternGeometry({ currentShader,
       barStartX, barY, exactBarWidth, barHeight: rectHeight, ...window.quantumStudyControls.values() });
@@ -983,6 +921,8 @@ function escapeExportXML(value) {
 }
 
 function captureLogoExportSnapshot(options = {}) {
+  const graphBlocker = window.DataGraphControls?.exportBlocker();
+  if (graphBlocker) throw new Error(graphBlocker);
   const nucleotideBlocker = window.NucleotidePattern?.exportBlocker(document);
   if (nucleotideBlocker) throw new Error(nucleotideBlocker);
   const foreground = colors[currentColorMode] ? colors[currentColorMode].fg : '#000000';

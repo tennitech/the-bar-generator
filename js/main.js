@@ -107,15 +107,6 @@ let pulseInput;
 let pulseIntensitySlider;
 let pulseIntensityDisplay;
 let graphGroup;
-let graphInput;
-let graphInput2;
-let graphInput3;
-let graphInput4;
-let graphInput5;
-let graphMultiToggle;
-let graphMultiInputs;
-let graphScaleSlider;
-let graphScaleDisplay;
 const sliderValueEditorConfigs = [];
 const externalScriptLoadPromises = new Map();
 
@@ -473,13 +464,6 @@ const SURPRISE_TEXT_OPTIONS = [
   'LAB',
   'DEBUG'
 ];
-const SURPRISE_GRAPH_STREAM_SETS = [
-  ['RPI', 'BUILD', 'TEST', 'REBUILD'],
-  ['LIFT', 'DRAG', 'THRUST', 'WING'],
-  ['SIGNAL', 'NOISE', 'SYNC', 'PHASE'],
-  ['DATA', 'MODEL', 'TRAIN', 'DEPLOY'],
-  ['TROY', 'STACK', 'SHIFT', 'SCALE']
-];
 const MORSE_DICT = {
   'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
   'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
@@ -634,7 +618,6 @@ const AVAILABLE_STYLE_VALUES = new Set([
 ]);
 
 const UNAVAILABLE_STYLE_VALUES = new Set([
-  'graph',
   'truss'
 ]);
 
@@ -1401,15 +1384,7 @@ function resetStyleParameters(style) {
       });
       break;
     case 'graph':
-      if (graphInput) graphInput.value = 'RPI';
-      if (graphInput2) graphInput2.value = '';
-      if (graphInput3) graphInput3.value = '';
-      if (graphInput4) graphInput4.value = '';
-      if (graphInput5) graphInput5.value = '';
-      if (graphMultiToggle) graphMultiToggle.checked = false;
-      if (graphMultiInputs) graphMultiInputs.style.display = 'none';
-      if (graphScaleSlider) graphScaleSlider.value = GRAPH_SCALE_DEFAULT;
-      updateGraphScaleDisplay();
+      window.DataGraphControls.reset();
       break;
     case 'lines':
       if (linesVariantSlider) linesVariantSlider.value = 2;
@@ -1585,21 +1560,9 @@ function randomizeStyleParameters(style) {
       setStaffDurationSelection(pickRandom([0.5, 1, 2]));
       updateStaffEffects();
       break;
-    case 'graph': {
-      const streamSet = pickRandom(SURPRISE_GRAPH_STREAM_SETS);
-      const multiStreamEnabled = randomChance(0.55);
-      const streamCount = multiStreamEnabled ? randomStepValue(2, Math.min(5, streamSet.length), 1) : '1';
-      if (graphInput) graphInput.value = streamSet[0];
-      if (graphMultiToggle) graphMultiToggle.checked = multiStreamEnabled;
-      if (graphInput2) graphInput2.value = multiStreamEnabled && parseInt(streamCount, 10) > 1 ? streamSet[1] || '' : '';
-      if (graphInput3) graphInput3.value = multiStreamEnabled && parseInt(streamCount, 10) > 2 ? streamSet[2] || '' : '';
-      if (graphInput4) graphInput4.value = multiStreamEnabled && parseInt(streamCount, 10) > 3 ? streamSet[3] || '' : '';
-      if (graphInput5) graphInput5.value = multiStreamEnabled && parseInt(streamCount, 10) > 4 ? streamSet[4] || '' : '';
-      if (graphMultiInputs) graphMultiInputs.style.display = multiStreamEnabled ? 'block' : 'none';
-      if (graphScaleSlider) graphScaleSlider.value = randomStepValue(6, 14, 1);
-      updateGraphScaleDisplay();
+    case 'graph':
+      window.DataGraphControls.randomize();
       break;
-    }
     case 'lines':
       if (linesVariantSlider) linesVariantSlider.value = randomDifferentStep(linesVariantSlider, 1, 2);
       updateLinesVariantDisplay();
@@ -1900,77 +1863,6 @@ function getSelectedMusicNoteShape() {
 // Convert numeric string to digit array
 function parseNumericString(value) {
   return window.NumericControls.digits(value);
-}
-
-const GRAPH_MAX_STREAMS = 5;
-const GRAPH_SCALE_MIN = 4;
-const GRAPH_SCALE_DEFAULT = 10;
-
-function getGraphScaleFactor() {
-  const sliderValue = parseInt(graphScaleSlider ? graphScaleSlider.value : GRAPH_SCALE_DEFAULT, 10);
-  const clampedValue = Math.max(GRAPH_SCALE_MIN, isNaN(sliderValue) ? GRAPH_SCALE_DEFAULT : sliderValue);
-  return clampedValue / 10.0;
-}
-
-function getGraphInputElements() {
-  return [graphInput, graphInput2, graphInput3, graphInput4, graphInput5].filter(Boolean).slice(0, GRAPH_MAX_STREAMS);
-}
-
-function getGraphStreamTexts() {
-  const inputs = getGraphInputElements();
-  if (inputs.length === 0) return ['RPI'];
-
-  const primaryText = (inputs[0].value || 'RPI').trim();
-  const multiEnabled = graphMultiToggle && graphMultiToggle.checked;
-  if (!multiEnabled) {
-    return [primaryText || 'RPI'];
-  }
-
-  const streams = [];
-  for (let i = 0; i < inputs.length; i++) {
-    const value = (inputs[i].value || '').trim();
-    if (value.length > 0) {
-      streams.push(value);
-    }
-  }
-
-  return streams.length > 0 ? streams : [primaryText || 'RPI'];
-}
-
-function graphTextToSeries(text) {
-  const source = (text && text.length > 0 ? text : 'RPI').slice(0, 200);
-  const values = [];
-  for (let i = 0; i < source.length; i++) {
-    values.push(source.charCodeAt(i));
-  }
-  if (values.length === 1) {
-    values.push(values[0]);
-  }
-  return values;
-}
-
-function buildGraphSeriesData(streamTexts) {
-  const seriesList = streamTexts.map(graphTextToSeries);
-  let minValue = Infinity;
-  let maxValue = -Infinity;
-
-  for (let i = 0; i < seriesList.length; i++) {
-    const series = seriesList[i];
-    for (let j = 0; j < series.length; j++) {
-      minValue = Math.min(minValue, series[j]);
-      maxValue = Math.max(maxValue, series[j]);
-    }
-  }
-
-  if (!isFinite(minValue) || !isFinite(maxValue)) {
-    minValue = 0;
-    maxValue = 1;
-  }
-  if (maxValue === minValue) {
-    maxValue = minValue + 1;
-  }
-
-  return { seriesList, minValue, maxValue };
 }
 
 // Create texture from numeric data
@@ -2408,15 +2300,7 @@ function setup() {
   pulseIntensitySlider = document.getElementById('pulse-intensity-slider');
   pulseIntensityDisplay = document.getElementById('pulse-intensity-display');
   graphGroup = document.getElementById('graph-group');
-  graphInput = document.getElementById('graph-input');
-  graphInput2 = document.getElementById('graph-input-2');
-  graphInput3 = document.getElementById('graph-input-3');
-  graphInput4 = document.getElementById('graph-input-4');
-  graphInput5 = document.getElementById('graph-input-5');
-  graphMultiToggle = document.getElementById('graph-multi-toggle');
-  graphMultiInputs = document.getElementById('graph-multi-inputs');
-  graphScaleSlider = document.getElementById('graph-scale-slider');
-  graphScaleDisplay = document.getElementById('graph-scale-display');
+
   appMain = document.querySelector('.app-main');
   canvasViewport = document.querySelector('.canvas-viewport');
   bindPanGestureHandlers();
@@ -3060,37 +2944,7 @@ function setup() {
     if (pulseIntensityDisplay && pulseIntensitySlider) pulseIntensityDisplay.textContent = pulseIntensitySlider.value;
   }
 
-  // Setup graph controls
-  if (graphInput) {
-    graphInput.addEventListener('input', function () { updateUrlParameters(); requestUpdate(); });
-    graphInput.addEventListener('keyup', function () { updateUrlParameters(); requestUpdate(); });
-    if (!window.location.search) graphInput.value = "RPI";
-  }
-  const graphAdditionalInputs = [graphInput2, graphInput3, graphInput4, graphInput5].filter(Boolean);
-  graphAdditionalInputs.forEach(input => {
-    input.addEventListener('input', function () { updateUrlParameters(); requestUpdate(); });
-    input.addEventListener('keyup', function () { updateUrlParameters(); requestUpdate(); });
-  });
-  if (graphMultiToggle) {
-    graphMultiToggle.addEventListener('change', function () {
-      if (graphMultiInputs) graphMultiInputs.style.display = this.checked ? 'block' : 'none';
-      updateUrlParameters();
-      requestUpdate();
-    });
-    if (graphMultiInputs) graphMultiInputs.style.display = graphMultiToggle.checked ? 'block' : 'none';
-  }
-  if (graphScaleSlider) {
-    graphScaleSlider.addEventListener('input', function () {
-      const value = Math.max(GRAPH_SCALE_MIN, parseInt(this.value, 10) || GRAPH_SCALE_DEFAULT);
-      this.value = value;
-      updateGraphScaleDisplay();
-      updateUrlParameters(); requestUpdate();
-    });
-    if (graphScaleSlider) {
-      graphScaleSlider.value = Math.max(GRAPH_SCALE_MIN, parseInt(graphScaleSlider.value, 10) || GRAPH_SCALE_DEFAULT);
-    }
-    updateGraphScaleDisplay();
-  }
+  window.DataGraphControls.bind(() => { updateUrlParameters(); requestUpdate(); });
 
   [
     {
@@ -3202,11 +3056,11 @@ function setup() {
       ariaLabel: 'Set music tempo'
     },
     {
-      slider: graphScaleSlider,
-      display: graphScaleDisplay,
-      refreshDisplay: updateGraphScaleDisplay,
-      commit: () => { updateGraphScaleDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set graph scale max'
+      slider: document.getElementById('graph-weight'),
+      display: document.getElementById('graph-weight-display'),
+      refreshDisplay: () => window.DataGraphControls.sync(),
+      commit: () => { window.DataGraphControls.sync(); updateUrlParameters(); requestUpdate(); },
+      ariaLabel: 'Set graph weight'
     },
     ...['columns', 'rows', 'size', 'contrast', 'stagger'].map(key => ({
       slider: document.getElementById(`circles-gradient-${key}`),
@@ -3687,11 +3541,6 @@ function updateStaffTempoDisplay() {
   staffTempoDisplay.textContent = staffTempoSlider.value;
 }
 
-function updateGraphScaleDisplay() {
-  if (!graphScaleSlider || !graphScaleDisplay) return;
-  graphScaleSlider.value = Math.max(GRAPH_SCALE_MIN, parseInt(graphScaleSlider.value, 10) || GRAPH_SCALE_DEFAULT);
-  graphScaleDisplay.textContent = graphScaleSlider.value;
-}
 
 function resetCirclePatternCache() {
   staticCircleData = null;
@@ -4263,13 +4112,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     staffNoteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'square',
     pulseText: pulseInput ? pulseInput.value : 'RPI',
     pulseIntensity: pulseIntensitySlider ? pulseIntensitySlider.value : 5,
-    graphText: graphInput ? graphInput.value : 'RPI',
-    graphText2: graphInput2 ? graphInput2.value : '',
-    graphText3: graphInput3 ? graphInput3.value : '',
-    graphText4: graphInput4 ? graphInput4.value : '',
-    graphText5: graphInput5 ? graphInput5.value : '',
-    graphMulti: graphMultiToggle ? graphMultiToggle.checked : false,
-    graphScale: graphScaleSlider ? graphScaleSlider.value : 10
+    ...window.DataGraphControls.values()
   };
 }
 
@@ -5907,29 +5750,7 @@ function updateUrlParameters() {
     }
   }
 
-  if (styleSelect && styleSelect.value === 'graph') {
-    if (graphInput && graphInput.value !== 'RPI') {
-      params.set('graphText', graphInput.value);
-    }
-    if (graphMultiToggle && graphMultiToggle.checked) {
-      params.set('graphMulti', 'true');
-    }
-    if (graphInput2 && graphInput2.value.trim()) {
-      params.set('graphText2', graphInput2.value);
-    }
-    if (graphInput3 && graphInput3.value.trim()) {
-      params.set('graphText3', graphInput3.value);
-    }
-    if (graphInput4 && graphInput4.value.trim()) {
-      params.set('graphText4', graphInput4.value);
-    }
-    if (graphInput5 && graphInput5.value.trim()) {
-      params.set('graphText5', graphInput5.value);
-    }
-    if (graphScaleSlider && parseInt(graphScaleSlider.value, 10) !== GRAPH_SCALE_DEFAULT) {
-      params.set('graphScale', graphScaleSlider.value);
-    }
-  }
+  if (styleSelect?.value === 'graph') window.DataGraphControls.writeQuery(params);
 
   if (styleSelect && styleSelect.value === 'ruler') {
     if (rulerRepeatsSlider && parseInt(rulerRepeatsSlider.value) !== 10) {
@@ -6136,32 +5957,7 @@ function applyUrlParameters() {
     pulseIntensitySlider.value = params.pulseIntensity;
   }
 
-  // Apply graph parameters
-  if (graphInput) {
-    graphInput.value = params.graphText;
-  }
-  if (graphInput2) {
-    graphInput2.value = params.graphText2;
-  }
-  if (graphInput3) {
-    graphInput3.value = params.graphText3;
-  }
-  if (graphInput4) {
-    graphInput4.value = params.graphText4;
-  }
-  if (graphInput5) {
-    graphInput5.value = params.graphText5;
-  }
-  if (graphMultiToggle) {
-    graphMultiToggle.checked = params.graphMulti;
-  }
-  if (graphMultiInputs) {
-    graphMultiInputs.style.display = params.graphMulti ? 'block' : 'none';
-  }
-  if (graphScaleSlider) {
-    graphScaleSlider.value = Math.max(GRAPH_SCALE_MIN, params.graphScale);
-  }
-  updateGraphScaleDisplay();
+  window.DataGraphControls.restore(params);
 
   // Apply ruler parameters
   if (rulerRepeatsSlider) {
@@ -7080,35 +6876,8 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       }
     }
   } else if (currentShader === 12) {
-    // Data Graph / Continuous line graph
     resetShader();
-    const streamTexts = getGraphStreamTexts();
-    const scaleFactor = getGraphScaleFactor();
-    const { seriesList, minValue, maxValue } = buildGraphSeriesData(streamTexts);
-
-    noFill();
-    const baseColor = color(fgColor);
-
-    for (let streamIndex = 0; streamIndex < seriesList.length; streamIndex++) {
-      const series = seriesList[streamIndex];
-      if (!series || series.length < 2) continue;
-
-      const alpha = seriesList.length > 1 ? Math.max(80, 255 - streamIndex * 30) : 255;
-      baseColor.setAlpha(alpha);
-      stroke(baseColor);
-      strokeWeight(seriesList.length > 1 ? 1.6 : 2.2);
-      strokeJoin(ROUND);
-
-      const steps = series.length - 1;
-      beginShape();
-      for (let i = 0; i < series.length; i++) {
-        const normalized = (series[i] - minValue) / (maxValue - minValue);
-        const x = barStartX + (steps === 0 ? 0 : (i / steps) * exactBarWidth);
-        const y = rectHeight - normalized * rectHeight * scaleFactor;
-        vertex(x, y);
-      }
-      endShape();
-    }
+    window.DataGraph.draw(window, { ...window.DataGraphControls.values(), barStartX, barY: 0, exactBarWidth, barHeight: rectHeight }, fgColor);
   } else {
     // Fallback to solid with current foreground color
     resetShader();

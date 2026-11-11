@@ -1,6 +1,10 @@
 // Descriptions explain the implemented pattern; source records live in references/bar_information_cards.md.
 (function (globalScope) {
   const descriptions = {
+  "graph": {
+    "title": "Data Graph",
+    "text": "Plot numeric samples as lines, steps, columns or dots. Each series uses equal sample-index spacing and the same Y range; Columns includes zero. Examples are mathematical values, not measurements. No units or timestamps are inferred. Under Construction for testing."
+  },
   "nucleotide": {
     "title": "Nucleotide",
     "text": "Encode 30–50 bases to export. Dashed outlines show missing bases. Shapes represent A–T/U and C–G pairing, not standard molecular symbols. Presets are transcript excerpts, not complete genes."
