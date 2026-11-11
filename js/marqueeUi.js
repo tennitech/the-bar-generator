@@ -43,7 +43,9 @@ const ROW_NARROW_CLEARANCE_WIDTH_END = 430;
 const ROW_NARROW_CLEARANCE_BASE_LIFT = 18;
 const ROW_NARROW_CLEARANCE_MAX_LIFT = 56;
 
-const MARQUEE_MOTION_STORAGE_KEY = 'rpi-marquee-motion';
+// The removed pause button used rpi-marquee-motion. Do not carry its orphaned
+// state into keyboard-only scrolling controls. New Space choices persist here.
+const MARQUEE_MOTION_STORAGE_KEY = 'rpi-marquee-scroll-v2';
 
 // Storage is optional (for example, in an embedded or private browsing context).
 // An OS pause stays held for this visit until an intentional Resume, even if
@@ -938,7 +940,9 @@ function initMarqueeScene() {
       ? 'Motion is paused by your device’s reduced motion setting. Dragging still works.'
       : motion.paused ? 'Scrolling is paused. Press Space to resume. Dragging still works.'
         : 'Scrolling is running. Press Space to pause. Dragging still works while paused.';
-    if (motion.paused) window.PageEntrance?.cancel?.();
+    // Scrolling pause holds the lanes below. It must not suppress a fresh
+    // entrance or interactive opacity feedback; reduced motion still does.
+    if (motion.reduced) window.PageEntrance?.cancel?.();
     handleResize();
     if (document.hidden || motion.paused) {
       if (document.hidden) cancelInteractions();

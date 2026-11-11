@@ -119,7 +119,7 @@ test.each(['pointerdown', 'keydown', 'focusin'])('%s immediately exposes pending
   source.resolve(); await flush(); jest.advanceTimersByTime(4000);
   expect(s.root.classList.contains('is-selector-entering')).toBe(false); expect(s.api.isActive()).toBe(false);
 });
-test.each([{ reduced: true }, { stored: 'paused' }, { nav: 'back_forward' }])('Home has no conceal or motion for %j', async options => {
+test.each([{ reduced: true }, { nav: 'back_forward' }])('Home has no conceal or motion for %j', async options => {
   const ascii = { prepare: jest.fn() };
   const s = setup({ ...options, ascii }); s.api.revealAsset(s.image('slow', new Promise(() => {}))); await flush();
   expect(ascii.prepare).not.toHaveBeenCalled();
@@ -189,4 +189,20 @@ test.each(['input', 'change'])('generator %s during decode cancels without late 
   expect(cleanup).toHaveBeenCalledTimes(1); expect(start).not.toHaveBeenCalled();
   s.api.revealGenerator(() => '<svg/>');
   expect(ascii.prepareGenerator).toHaveBeenCalledTimes(1);
+});
+
+
+test.each([false, true])('saved scrolling pause retains Home entrance (ASCII=%s)', async useAscii => {
+  const start = jest.fn(), cleanup = jest.fn();
+  const ascii = useAscii ? { prepare: jest.fn(() => Promise.resolve({ start, cleanup })) } : null;
+  const s = setup({ stored: 'paused', ascii });
+  expect(s.api.isActive()).toBe(true);
+  s.api.revealAsset(s.image('loaded')); await flush();
+  jest.advanceTimersByTime(32); await flush();
+  expect(s.plane.dataset.entryMode).toBe(useAscii ? 'ascii' : 'fade');
+  expect(s.root.classList.contains('is-selector-entering')).toBe(true);
+  if (useAscii) expect(start.mock.calls[0][0]).toBe(640);
+  jest.advanceTimersByTime(1800);
+  expect(s.api.isActive()).toBe(false);
+  expect(s.root.classList.contains('has-selector-entrance')).toBe(false);
 });

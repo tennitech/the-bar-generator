@@ -11,9 +11,9 @@
   // Read in the head, before Home's first paint. This does not rely on body markup
   // that has not been parsed yet, or on View Transition support.
   const selectorPage = document.currentScript?.dataset.entryKind === 'selector';
-  let savedPause = false;
-  try { savedPause = selectorPage && scope.localStorage.getItem('rpi-marquee-motion') === 'paused'; } catch (_) {}
-  let stopped = motion.matches || savedPause || (!selectorPage && !supported && !scope.AsciiEntrance)
+  // The saved Home preference pauses lane travel, not the one-time reveal.
+  // Only the device's reduced-motion preference suppresses all entrance motion.
+  let stopped = motion.matches || (!selectorPage && !supported && !scope.AsciiEntrance)
     || performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
   let selectorPending = selectorPage && !stopped;
   let readinessTimer = 0;
