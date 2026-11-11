@@ -1067,7 +1067,7 @@ function createWaveQuantumPatternGeometry(options = {}) {
   const phases = [0, Math.PI / 3, 2 * Math.PI / 3];
   const points = 400;
   // Sample the state once per position, then project it; avoid tripling trig work per frame.
-  const samples = Array.from({ length: points + 1 }, (_, i) => model.sample(i / points, options.quantumPhase));
+  const samples = Array.from({ length: points + 1 }, (_, i) => model.sampleDisplay(i / points, options.quantumPhase));
   const paths = phases.map(projection => samples.map((state, i) => {
     const value = (state.re * Math.cos(projection) - state.im * Math.sin(projection)) / model.AMPLITUDE_BOUND;
     return { x: barStartX + i / points * exactBarWidth, y: centerY - value * amplitude };

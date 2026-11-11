@@ -44,7 +44,7 @@ async function main() {
     Object.assign(r.state, { size, composition, speed: 4, reverse }); r.currentColorMode = ink;
     r.state.values.quantumPhase = 0.37123456789;
     const snapshot = r.captureLogoExportSnapshot({ format: 'gif' });
-    const plan = getLoopingGifFramePlan(snapshot.family, snapshot.values);
+    const plan = getLoopingGifFramePlan(snapshot.family, snapshot.values, { fps: Number(process.env.RPI_RING_GIF_FPS) || undefined });
     const renderer = r.createCapturedGifRenderer(snapshot, plan);
     const first = renderer.renderFrame(0, 0);
     assert.equal(hash(first.data), hash(renderer.renderFrame(0, 1).data), `${ink}/${size}/${composition}/${reverse}: cycle closure`);
@@ -65,7 +65,7 @@ async function main() {
     r.currentColorMode = process.env.RPI_RING_GIF_INK || (size === 'standard' ? 'white' : 'gray');
     r.state.values.quantumPhase = composition === 'bar' ? 0.37123456789 : 0.9999;
     const snapshot = r.captureLogoExportSnapshot({ format: 'gif' });
-    const plan = getLoopingGifFramePlan(snapshot.family, snapshot.values);
+    const plan = getLoopingGifFramePlan(snapshot.family, snapshot.values, { fps: Number(process.env.RPI_RING_GIF_FPS) || undefined });
     const timing = frameTiming(plan.periodSeconds, plan.frameCount);
     const renderer = r.createCapturedGifRenderer(snapshot, plan), expected = [];
     const references = new Set(Array.from({ length: Math.min(referenceCount, plan.frameCount) }, (_, i) => Math.round(i * (plan.frameCount - 1) / (Math.min(referenceCount, plan.frameCount) - 1))));

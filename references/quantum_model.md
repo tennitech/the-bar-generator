@@ -1,6 +1,6 @@
 # Ring Wavefunction: phase projections
 
-The single visualization is a stylized graph of one analytic complex wavefunction. The curves are not particles, trajectories, probabilities or experimental measurements. The visible style is **Ring Wavefunction**, a concise scientific description of the wavefunction being plotted. Its ideal model is the established free particle on a ring. Earlier interface labels were Quantum and Particle on a Ring; the proposed creative name Phase Weave is not used. More precisely, the artwork shows three wavefunction phase projections for a free particle on a ring; it does not draw a particle or a literal ring trajectory. The model, three ribbons and fixed drawing geometry are unchanged. `/generator/wave-quantum/`, internal identifiers, control IDs, query fields and saved share envelopes remain compatible.
+The single visualization is a stylized graph of one analytic complex wavefunction. The curves are not particles, trajectories, probabilities or experimental measurements. The visible style is **Ring Wavefunction**, a concise scientific description of the wavefunction being plotted. Its ideal model is the established free particle on a ring. Earlier interface labels were Quantum and Particle on a Ring; the proposed creative name Phase Weave is not used. More precisely, the artwork shows three wavefunction phase projections for a free particle on a ring; it does not draw a particle or a literal ring trajectory. The underlying model, three ribbons and fixed drawing geometry are retained; the November 11 display now uses scrolling coordinates as described below. `/generator/wave-quantum/`, internal identifiers, control IDs, query fields and saved share envelopes remain compatible.
 
 [Oregon State University's Particle on a Ring materials](https://sites.science.oregonstate.edu/physics/coursewikis/portfolioswiki/courses_hw_cfhw_cfhweigenring.html) explicitly use that scientific model name, normalized superposition states and complex exponential modes. [MIT's time-evolution notes, §§6.1.1–6.1.2](https://ocw.mit.edu/courses/22-02-introduction-to-applied-nuclear-physics-spring-2012/b5106a499ae03e36b5a2e002355668f9_MIT22_02S12_lec_ch6.pdf) supply the eigenstate phase evolution and linear superposition rule. Inspection of this app's source supports applying that nomenclature: its exponent is `i(2πnu − n²τ)` and its periodic domain has no potential. This is a source-backed identification of the mathematical model, not a claim of absolute accuracy for decorative ribbons or unspecified physical parameters.
 
@@ -37,7 +37,35 @@ The bar draws three fixed projections Re(exp(iα)psi), α=0,π/3,2π/3. These ar
 
 A thin vertical ribbon follows each graph: 1.35 reference units at the nominal 18-unit bar height (a modest 15.4% increase from 1.17). Fixed interior padding keeps the entire ribbon within the bar without clipping. That cosmetic line width is not uncertainty or additional probability. Exact full-domain endpoints and cap-free polygons keep real paint at both nominal horizontal edges and within caller bounds, up to the documented 1e-12 reference-unit floating tolerance. The fixed spatial sampling uses 400 intervals; linear interpolation between samples is a drawing approximation. The state is sampled once per position and then projected three times, avoiding redundant trigonometric evaluations.
 
-Phase advances continuously from browser-frame timestamps. The nominal playback recurrence is 120 display seconds at speed 1.0 under normal frame delivery. SPEED ranges from 0.2 to 4.0 (default 1.0) and multiplies the same time parameter for every mode. Component frequencies at a fixed position are 16s/120, 9s/120 and 49s/120 cycles per second for multiplier s. The fastest component reaches 1.6333 cycles/display second at 4× (0.4083 at the unchanged 1× default). Current main advances phase with unchecked REVERSE and decreases phase with checked REVERSE. GIF follows the exact current model direction; neither operation is a claim to reverse an experiment. Unspecified mass and circumference mean display seconds are not physical calibration. A delayed frame is capped at 50 ms, so a stalled device can play more slowly instead of catching up in a large jump.
+### Scrolling coordinates and short display recurrence — November 11
+
+The analytic state `psi(u,p)` above remains unchanged in `quantumModel.sample`.
+The drawing uses `sampleDisplay(u,q) = psi(u + 3q/28, q/28)`. Thus its exponent
+is `2pi*i*[n*u - (n² - 3n)*q/28]`. For modes -4, 3 and 7 the effective
+frequencies are 1, 0 and 1: the entire complex display state repeats after one
+unit of q. This is a scrolling coordinate chart of the same normalized state,
+not a new potential, a density-only view, or a fully Galilean-transformed
+wavefunction. No additional inertial-frame phase factor is claimed.
+
+This changes the visible movement and phase interpretation, not just the GIF.
+Preview, header, GIF and static geometry share the same display sampler.
+Phase zero retains its previous picture; older nonzero phase links intentionally
+migrate to the new coordinate view. The About text discloses the moving view.
+The old fixed-coordinate state still has the 120-second designed recurrence;
+clipping it at the fastest component's lap would not produce a seamless loop.
+
+The new display cycle is 4.28 seconds at 1×, chosen near 120/28 seconds so that
+its default GIF has exactly 214 uniform 20 ms frames. This is 0.133% faster than
+that exact old display-time mapping, not a physically calibrated change.
+SPEED remains 0.2–4×, giving 21.4–1.07 second cycles. This is a defensible
+smoothness/size default, not a universal shortest or smallest animation.
+Four-times speed is smaller but visibly faster; lower frame rates save bytes
+but increase motion steps. See [short-loop QA](ring_short_loop_qa.md).
+
+Phase advances continuously from browser-frame timestamps, capped at 50 ms
+per frame to avoid large catch-up jumps. SPEED multiplies the same display time
+for every mode, and REVERSE changes its direction. Unspecified mass and ring
+circumference mean display seconds are not physical calibration.
 
 Fine projection detail can merge at tiny sizes. Slower motion cannot by itself prevent subpixel shimmer in the header. The miniature rendering policy and actual-size checks are documented separately in motion_rendering.md; a static fallback must disclose snapshot semantics rather than claim a live same-phase view. No universal minimum pattern size, flicker-free guarantee, or formal brand approval is claimed.
 
@@ -51,11 +79,20 @@ The density selector `quantum-view` and query `quantumView` were removed at the 
 
 Shared control styles follow the shared touch conventions: 2.75rem target floor, 3rem control rows, comfortable switch labels and native slider/editor targets, with visible keyboard focus. These changes apply to the shared components rather than a quantum-specific button. No new framework, library, font or asset was added. SVG/PNG/clipboard retain current main's phase-zero still-image policy. GIF captures the exact live phase, SPEED, REVERSE, ink, size, composition and title synchronously before yielding; live playback and saved settings are never changed. Frames use the same three 400-interval model polygons, fixed amplitude bound and thickness.
 
-The exact amplitude recurrence is one full phase cycle: the integer temporal frequencies are 16, 9 and 49, whose greatest common divisor is one. The three fixed phase projections also retain that full-cycle requirement. The natural display period is therefore `120 / SPEED` seconds (30–600 seconds over current controls). GIF uses 30 fps with balanced 30/40 ms centisecond delays and actual accumulated encoded-time progress. It omits a duplicate terminal frame; the remaining final delay completes the natural step across the seam. No shorter loop, faster playback, density substitute or phase-zero reset is used.
+The exact display recurrence is one full display-phase cycle. GIF captures that
+cycle from the live phase and selected direction, omitting a duplicate terminal
+frame. It uses up to 50 fps with centisecond-balanced delays and actual encoded
+time for phase sampling. At 1× every delay is exactly 20 ms. At speeds whose
+period is not an even centisecond count, occasional 30 ms delays are necessary;
+total quantization error remains at most 5 ms. Preview/export speed agrees
+apart from that unavoidable GIF time quantization.
 
-Particle-on-a-ring GIF permits up to 120 seconds / 3600 frames, so the default 1× full recurrence works. Other families retain the existing 100-second / 3000-frame limits. The two-input-frame 32 MiB and encoded-output 64 MiB guards are unchanged for every style. SPEED below 1× would require a longer cycle and fails early with a clear recovery message; SPEED is never changed automatically.
-
-Full-logo GIFs longer than 60 seconds use Standard resolution (1160 × 762 px) even when Large is selected. This is disclosed in the GIF action and accessible name before activation and captured in progress/filename dimensions. It preserves the full natural period, 30 fps, transparent composition, exact phase/model and uniform official proportions. It does not alter the saved size selector or PNG/SVG/clipboard. Bar-only retains its selected 1160 × 232 or 2320 × 464 px canvas; full-logo loops up to 60 seconds retain Large if selected. The measured 30-second Large full-logo file was 20.16 MB, implying roughly 80 MB at default duration, beyond the 64 MiB guard; the Standard rendition was 8.45 MB (roughly 34 MB for 120 seconds). Direct default-loop measurements are in [GIF QA](quantum_gif_qa.md). These estimates motivated the policy; the file guard still rejects excessive jobs safely.
+Every allowed speed fits the existing encoder budgets. The existing two-frame
+32 MiB and encoded-output 64 MiB guards remain unchanged. Requested Standard
+or Large resolution and bar-only/full-logo composition are retained at every
+speed; no automatic downscaling or speed change is needed. The prior 120-second
+and long-loop downscale policy is historical, superseded by this short display
+cycle. SVG/PNG retain the existing phase-zero still-image policy.
 
 ## Tested guarantees and limits
 
@@ -68,11 +105,8 @@ restores paused. Physical-device, manual screen-reader, low-power/high-refresh
 and final combined visual checks remain distinct from analytic/numerical tests.
 
 
-## November 10 normalized display speed
+## Speed compatibility
 
-SPEED displays 0.2–4× model time, default 1×. A nominal full recurrence at the
-maximum takes 30 display seconds. Previously valid 0.2–1× values keep their
-meaning and all modes retain their n² ratios and fixed geometry. The shared
-multiplier interface uses arrow steps of 0.05×, numeric entry and fine dragging.
-This is independent of the Waveform LFO rate in Hz. See
-[motion rendering](motion_rendering.md) for stored units and verification limits.
+The SPEED control retains 0.2–4× and existing persisted values. Its multiplier
+now applies to the disclosed moving-coordinate display cycle above. The prior
+fixed-coordinate 30–600 second duration range no longer describes the artwork.

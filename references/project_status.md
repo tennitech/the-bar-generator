@@ -18,6 +18,19 @@ without restarting autoplay or creating synthetic inertia. Bar hover/focus,
 static artwork, touch gestures and click semantics remain unchanged. Both Home
 JS keys advance. Regression coverage and release verification are in the PR.
 
+## November 11 short Ring Wavefunction cycle
+
+The Ring view now plots the same analytic state in scrolling coordinates,
+`psi(u + 3q/28, q/28)`, with exact complete display recurrence in 4.28 seconds
+at 1×. Preview/header/export use the same geometry and the About explanation
+discloses the viewpoint. Phase-zero stills are unchanged; older nonzero phases
+intentionally map to the new view. GIF uses up to 50 fps: 214 uniform 20 ms
+frames at 1×. Every speed now fits the existing limits without downscaling.
+Native raster/codec and independent decoded-frame results are documented in
+[short-loop QA](ring_short_loop_qa.md). No formal scientific or brand approval
+or universal minimum-size claim is made. Browser verification remains separate
+from native raster checks.
+
 ## November 11 elastic marquee drag release
 
 Dragging remains directly attached to the pointer. On a deliberate throw, each

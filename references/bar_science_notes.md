@@ -544,3 +544,13 @@ selected direction and visual speed. Noncommensurate source ratios may reset
 at the replay boundary, and live snapshot refresh can change the measured
 outline. The display does not claim real-time scrolling or an exact analytic
 envelope between measured bin peaks.
+
+## Ring scrolling-coordinate display — November 11
+
+Ring Wavefunction retains the analytic normalized free-particle state with modes
+-4, 3, 7, but draws `psi(u + 3q/28, q/28)` so the complete displayed complex
+state repeats in one cycle. This is a coordinate view, not a new potential or
+a Galilean-transformed quantum state. Preview and export share it. Display
+phase q now traverses a 4.28-second cycle at 1×; nonzero old phase links migrate
+to that new view, while phase-zero still images are unchanged. See
+[model and limits](quantum_model.md) and [measured GIF QA](ring_short_loop_qa.md).
