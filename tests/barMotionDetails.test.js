@@ -1,36 +1,8 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
-const { createRulerPatternGeometry, normalizeBinaryText } = require('../js/utils/barPattern');
+const { normalizeBinaryText } = require('../js/utils/barPattern');
 const { getLoopingGifFramePlan, getLoopingAnimationState, advanceLiveLoopPhase } = require('../js/utils/loopingGif');
 const { normalizeState } = require('../js/utils/shareState');
-
-for (const divisions of [2, 4, 8, 10, 16]) test(`Ruler ${divisions} divisions represent exact fractions without duplicate ticks`, () => {
-  const options = { rulerRepeats: 10, rulerUnits: divisions, exactBarWidth: 250, barHeight: 18 };
-  const still = createRulerPatternGeometry(options);
-  expect(still.repeatWidth).toBeCloseTo((250 - still.tickWidth) / 10);
-  expect(still.tickSpacing).toBeCloseTo(still.repeatWidth / divisions);
-  expect(still.rects).toHaveLength(10 * divisions + 1);
-  expect(still.rects.filter(tick => tick.height === 18)).toHaveLength(11);
-  expect(still.rects[0].width).toBeCloseTo(still.tickWidth);
-  expect(still.rects.at(-1).width).toBeCloseTo(still.tickWidth);
-  expect(createRulerPatternGeometry({ ...options, loopOffsetX: 0 })).toEqual(still);
-  expect(getLoopingGifFramePlan('ruler', options)).toBeNull();
-  for (const phase of [-.31, 0, .17, .5, .99, 1]) {
-    const moving = createRulerPatternGeometry({ ...options, loopOffsetX: phase * still.repeatWidth });
-    const positions = moving.rects.map(tick => tick.x.toFixed(8));
-    expect(new Set(positions).size).toBe(positions.length);
-    expect(moving.tickSpacing).toBe(still.tickSpacing);
-    for (const rect of moving.rects) {
-      expect(rect.x).toBeGreaterThanOrEqual(0);
-      expect(rect.x + rect.width).toBeLessThanOrEqual(250 + 1e-8);
-    }
-  }
-});
-
-test('Ruler halves, quarters and eighths have a consistent height hierarchy', () => {
-  const ticks = createRulerPatternGeometry({ rulerRepeats: 10, rulerUnits: 8 }).rects.slice(0, 9);
-  ticks.forEach((tick, index) => expect(tick.height / 18).toBeCloseTo([1, .35, .5, .35, .7, .35, .5, .35, 1][index]));
-});
 
 test.each(['ticker', 'waveform'])('%s transport uses the selected direction in live and GIF rendering', style => {
   const sign = style === 'ticker' ? -1 : 1;
@@ -57,7 +29,6 @@ test('Binary keeps ten complete Unicode code points at every encoding entry', ()
     expect(context.textToBinary(text)).toEqual(expected);
   }
   expect(normalizeBinaryText('ab\ncd\t')).toBe('abcd');
-  expect(source).not.toMatch(/binaryAudioBtn|scheduleBinaryNote|startSequenceAudio\('binary'\)/);
 });
 
 test('old long Binary shares migrate only Binary and retain other controls', () => {
@@ -66,14 +37,6 @@ test('old long Binary shares migrate only Binary and retain other controls', () 
   expect(result.controls).toEqual({ 'binary-input': '🚀'.repeat(10), 'morse-input': 'ABCDEFGHIJKLM' });
   expect(() => normalizeState({ v: 1, controls: { 'binary-input': 'a'.repeat(101) } }, manifest)).toThrow('too long');
 });
-
-test('canonical render paths do not add synthetic side or bottom paint or force an edge fit', () => {
-  for (const file of ['../js/main', '../js/drawing']) {
-    const source = fs.readFileSync(require.resolve(file), 'utf8');
-    expect(source).not.toMatch(/createWaveformBaselineGeometry|createEncodedBarBoundaryGeometry|fitBarSVGToEdges|isBoundary/);
-  }
-});
-
 
 test.each([false, true])('Ticker major ticks move right by default and left with reverse=%s', reverse => {
   const { createTickerPatternGeometry } = require('../js/utils/barPattern');

@@ -34,6 +34,8 @@ describe('bounded circular marquee style separation', () => {
       }));
       const patterns = createRowPatterns(catalog);
       expectSeparated(patterns, catalog);
+      // Retain the exact lane length from the consolidated 21-family regression.
+      if (count === 21) expect(patterns.every(row => row.length === 7)).toBe(true);
       expect(new Set(patterns.flat())).toEqual(new Set(catalog.map(entry => entry.path)));
       expect(createRowPatterns(catalog)).toEqual(patterns);
     });
@@ -49,7 +51,9 @@ describe('bounded circular marquee style separation', () => {
   });
 
   test('canonical and full variant catalogs both remain separated', () => {
-    expectSeparated(createRowPatterns(entries), entries);
+    const patterns = createRowPatterns(entries);
+    expectSeparated(patterns, entries);
+    expect(createRowPatterns([...entries].reverse())).not.toEqual(patterns);
     expectSeparated(createRowPatterns(samples), samples);
   });
 

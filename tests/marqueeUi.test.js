@@ -1,7 +1,6 @@
 const {
   updateRowLayout,
   advanceRowSpeed,
-  createRowPatterns,
   syncRowTargetFactor,
   computeRowTopPositions,
   fitRowsAboveHero,
@@ -128,16 +127,6 @@ describe('marquee hover motion and fixed per-load samples', () => {
       speed => advanceRowSpeed(speed, 1, 1 / hz), 0);
     expect(simulate(60)).toBeCloseTo(simulate(120), 12);
     expect(simulate(120)).toBeCloseTo(simulate(240), 12);
-  });
-
-  test('bounded lane patterns cover every selected family without altering the sample set', () => {
-    const entries = Array.from({ length: 21 }, (_, i) => ({ value: `style-${i}`, path: `sample-${i}` }));
-    const patterns = createRowPatterns(entries);
-    expect(patterns).toHaveLength(10);
-    expect(patterns.every(row => row.length === 7 && new Set(row).size === 7)).toBe(true);
-    expect(new Set(patterns.flat())).toEqual(new Set(entries.map(entry => entry.path)));
-    expect(createRowPatterns(entries)).toEqual(patterns);
-    expect(createRowPatterns([...entries].reverse())).not.toEqual(patterns);
   });
 });
 

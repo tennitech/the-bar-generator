@@ -1,7 +1,6 @@
 const fs = require('node:fs');
 const { DIVISIONS, normalizeUnits, normalizeDivisions, normalizeThickness, tickLevel } = require('../js/utils/rulerScale');
 const { createRulerPatternGeometry, createBarPatternSVG } = require('../js/utils/barPattern');
-const { getLoopingGifFramePlan, advanceLiveLoopPhase } = require('../js/utils/loopingGif');
 const { normalizeState } = require('../js/utils/shareState');
 
 test('ruler defaults to decimal tenths and offers only conventional subdivisions', () => {
@@ -31,6 +30,8 @@ test('fractional ruler gives halves, quarters, eighths and sixteenths distinct h
     if (i > 1) expect(levels[i - 1].width).toBeGreaterThan(levels[i].width);
   }
   for (let i = 0; i <= 16; i++) expect(ticks[i].height).toBe(ticks[16 - i].height);
+  const eighths = createRulerPatternGeometry({ rulerRepeats: 1, rulerUnits: 8 }).rects;
+  expect(eighths.map(tick => tick.height / 18)).toEqual([1, .35, .5, .35, .7, .35, .5, .35, 1]);
 });
 
 test.each(DIVISIONS)('%s subdivisions preserve exact major endpoints, equal coordinates and fixed geometry', divisions => {
@@ -38,6 +39,10 @@ test.each(DIVISIONS)('%s subdivisions preserve exact major endpoints, equal coor
     const values = { rulerRepeats: units, rulerUnits: divisions };
     const geometry = createRulerPatternGeometry(values);
     expect(geometry.rects).toHaveLength(units * divisions + 1);
+    expect(geometry.rects.filter(tick => tick.height === 18)).toHaveLength(units + 1);
+    expect(geometry.repeatWidth).toBeCloseTo((250 - geometry.tickWidth) / units);
+    expect(geometry.tickSpacing).toBeCloseTo(geometry.repeatWidth / divisions);
+    expect(new Set(geometry.rects.map(tick => tick.x.toFixed(8))).size).toBe(geometry.rects.length);
     expect(geometry.rects[0]).toMatchObject({ x: 0, y: 0, height: 18 });
     const last = geometry.rects.at(-1);
     expect(last.x + last.width).toBeCloseTo(250);
@@ -45,12 +50,6 @@ test.each(DIVISIONS)('%s subdivisions preserve exact major endpoints, equal coor
     for (let i = 1; i < geometry.rects.length - 1; i++) {
       const tick = geometry.rects[i];
       expect(tick.x + tick.width / 2).toBeCloseTo(geometry.tickWidth / 2 + i * geometry.tickSpacing);
-    }
-    expect(createRulerPatternGeometry({ ...values, loopOffsetX: geometry.repeatWidth })).toEqual(geometry);
-    for (const phase of [.13, .51, .99]) {
-      const a = createRulerPatternGeometry({ ...values, loopOffsetX: phase * geometry.repeatWidth });
-      const b = createRulerPatternGeometry({ ...values, loopOffsetX: (phase + 1) * geometry.repeatWidth });
-      a.rects.forEach((rect, i) => { expect(rect.x).toBeCloseTo(b.rects[i].x); expect(rect.height).toBeCloseTo(b.rects[i].height); });
     }
   }
 });

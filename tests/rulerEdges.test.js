@@ -12,20 +12,18 @@ test.each([[250, 18, 0, 132.4885], [500, 36, -25, 40], [125, 9, 20, -18]])(
     for (const rulerRepeats of [1, 10, 20]) for (const rulerUnits of [2, 4, 10]) {
       const base = { shader: 1, barStartX: x, barY: y, exactBarWidth: width, barHeight: height,
         rulerRepeats, rulerUnits };
-      const repeatWidth = createRulerPatternGeometry(base).repeatWidth;
-      for (const phase of [undefined, 0, 0.07, 0.23, 0.49, 0.73, 0.99, -0.23]) {
-        const options = { ...base, loopOffsetX: phase === undefined ? undefined : phase * repeatWidth };
-        const natural = createRulerPatternGeometry(options);
-        const bounded = context.createBoundedTickGeometry(options);
-        expect(bounded).toEqual(natural);
-        expect(bounded.rects.length).toBeGreaterThan(0);
-        for (const rect of bounded.rects) {
-          expect(rect.isBoundary).toBeUndefined();
-          expect(rect.x).toBeGreaterThanOrEqual(x - 1e-8);
-          expect(rect.x + rect.width).toBeLessThanOrEqual(x + width + 1e-8);
-          expect(rect.y).toBeGreaterThanOrEqual(y - 1e-8);
-          expect(rect.y + rect.height).toBeLessThanOrEqual(y + height + 1e-8);
-        }
+      // Ruler is static: offset migration is checked once below, rather than
+      // repeating identical geometry at eight phases for every size/settings pair.
+      const natural = createRulerPatternGeometry(base);
+      const bounded = context.createBoundedTickGeometry(base);
+      expect(bounded).toEqual(natural);
+      expect(bounded.rects.length).toBeGreaterThan(0);
+      for (const rect of bounded.rects) {
+        expect(rect.isBoundary).toBeUndefined();
+        expect(rect.x).toBeGreaterThanOrEqual(x - 1e-8);
+        expect(rect.x + rect.width).toBeLessThanOrEqual(x + width + 1e-8);
+        expect(rect.y).toBeGreaterThanOrEqual(y - 1e-8);
+        expect(rect.y + rect.height).toBeLessThanOrEqual(y + height + 1e-8);
       }
     }
   }
@@ -34,9 +32,8 @@ test.each([[250, 18, 0, 132.4885], [500, 36, -25, 40], [125, 9, 20, -18]])(
 test('Ruler ignores historical motion offsets and keeps complete scale endpoints', () => {
   const options = { shader: 1, exactBarWidth: 250, barHeight: 18, rulerRepeats: 10, rulerUnits: 4 };
   const natural = createRulerPatternGeometry(options);
-  const shifted = context.createBoundedTickGeometry({ ...options, loopOffsetX: natural.tickWidth });
-  expect(shifted).toEqual(natural);
-  expect(shifted.tickSpacing).toBe(natural.tickSpacing);
-  expect(shifted.tickWidth).toBe(natural.tickWidth);
+  for (const offset of [0, natural.tickWidth, -.31 * natural.repeatWidth, .99 * natural.repeatWidth, 2 * natural.repeatWidth]) {
+    expect(context.createBoundedTickGeometry({ ...options, loopOffsetX: offset })).toEqual(natural);
+  }
   expect(context.createBoundedTickGeometry({ shader: 2 }).rects.filter(rect => rect.isBoundary)).toHaveLength(0);
 });

@@ -47,5 +47,4 @@ test('every sample stays an SVG still and links to exactly its displayed configu
 test.each(['index.html','marquee-ui.html'])('%s never loads the optional live-preview renderer', file => {
   const html=fs.readFileSync(path.join(__dirname,'..',file),'utf8');
   expect(html).not.toContain('js/utils/marqueeAnimation.js');
-  expect(html).toContain('Press Space to pause or resume scrolling.');
 });

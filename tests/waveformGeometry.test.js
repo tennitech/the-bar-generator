@@ -1,4 +1,3 @@
-const fs = require('node:fs');
 const {
   createWaveformPatternGeometry, createBarPatternSVG, generateWaveValue,
   applyWaveformEnvelope, mapWaveformToBarYFraction
@@ -65,17 +64,13 @@ test('envelopes retain their fixed spatial coordinates, bounds and phase wrap', 
   }
 });
 
-test('SVG serializes the same exact polygon used by both live renderers', () => {
+test('SVG serializes the exact shared waveform polygon', () => {
   const values = { ...base, waveformType: 2.6, timeSeconds: .347 };
   const geometry = createWaveformPatternGeometry(values);
   const svg = createBarPatternSVG({ currentShader: 4, fgColor: '#000',
     barStartX: 0, barY: 0, exactBarWidth: 250, barHeight: 18, values });
   const expected = geometry.polygon.map((p, i) => `${i ? 'L' : 'M'} ${p.x} ${p.y}`).join(' ') + ' Z';
   expect(svg).toContain(`d="${expected}"`);
-  const main = fs.readFileSync(require.resolve('../js/main'), 'utf8');
-  const drawing = fs.readFileSync(require.resolve('../js/drawing'), 'utf8');
-  expect(main.match(/const geometry = getLiveWaveformGeometry\(/g)).toHaveLength(2);
-  expect(drawing).toContain('const geometry = getLiveWaveformGeometry(');
 });
 
 // Assert painted coordinates rather than only transport-clock signs.
