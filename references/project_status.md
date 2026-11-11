@@ -3,6 +3,16 @@
 **Last Updated:** 2026-11-11
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
+## November 11 brisk, soft-start Home focus fade
+
+Follow-up feedback asked for faster entry and exit without the flash when the
+pointer returns to another bar. The shared fade is now 300 ms with a (0.4, 0,
+0.2, 1) curve: a gentle initial change during brief gap crossings, then a faster
+settle than the preceding 480 ms symmetric fade. Both directions still use the
+same rule. Gap state clears immediately; there is no retained dim or timer.
+20% dimming, keyboard focus, reduced motion, and lane interaction are unchanged.
+Both Home CSS cache keys advance together. Release verification is in the PR.
+
 ## November 11 smoother Home bar handoff
 
 The shared whole-bar opacity transition now uses 480 ms ease-in-out rather than
