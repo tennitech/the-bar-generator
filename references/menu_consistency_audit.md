@@ -66,3 +66,6 @@ so returning visitors receive the updated dialog markup and helper.
 
 Reconciled again after #183: independent dice motion CSS, parameter-control
 helper keys and documentation are retained. Final local tests: 1,128 / 96 suites.
+
+The final reconciliation also preserves #185's dashed export schematics and
+refreshes only this release's shell keys. The same 1,128 tests / 96 suites pass.

@@ -235,10 +235,12 @@
       if (diagram && geometry && root.logoExportOptions) {
         const frame = root.logoExportOptions.viewport(geometry, value);
         diagram.setAttribute('viewBox', `${frame.x} ${frame.y} ${frame.width} ${frame.height}`);
+        // Unequal dash/gap lengths and a slight phase shift keep these small
+        // construction guides calm; none of these styles reach exported artwork.
+        const outline = 'fill="none" stroke="currentColor" stroke-width="0.9" stroke-dasharray="4.5 2.5" stroke-dashoffset="1.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
         const letters = value === 'bar' ? '' : Object.values(geometry.paths)
-          .map(path => `<path d="${path}" fill="currentColor"/>`).join('');
-        // A schematic boundary identifies the bar area without implying a style or ink.
-        const bar = `<path d="${geometry.barPath}" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>`;
+          .map(path => `<path d="${path}" ${outline}/>`).join('');
+        const bar = `<path d="${geometry.barPath}" ${outline}/>`;
         diagram.innerHTML = letters + bar;
       }
       byId(`export-composition-${value}`)?.addEventListener('change', event => {
