@@ -100,7 +100,7 @@ let staffReverbToggle;
 let staffTremoloToggle;
 let staffTempoSlider;
 let staffTempoDisplay;
-let currentStaffNotes = [];
+let currentStaffNotes = window.MusicStyle.normalizeNotes(window.MusicStyle.presets.rise);
 let currentNoteDuration = 1; // quarter note by default
 let pulseGroup;
 let pulseInput;
@@ -480,37 +480,6 @@ const SURPRISE_GRAPH_STREAM_SETS = [
   ['DATA', 'MODEL', 'TRAIN', 'DEPLOY'],
   ['TROY', 'STACK', 'SHIFT', 'SCALE']
 ];
-const STAFF_SURPRISE_PATTERNS = [
-  [
-    { note: 'C4', duration: 1 },
-    { note: 'E4', duration: 1 },
-    { note: 'G4', duration: 1 },
-    { note: 'C5', duration: 1 }
-  ],
-  [
-    { note: 'A4', duration: 0.5 },
-    { note: 'G4', duration: 0.5 },
-    { note: 'E4', duration: 1 },
-    { note: 'D4', duration: 1 },
-    { note: 'C4', duration: 1 }
-  ],
-  [
-    { note: 'C4', duration: 0.5 },
-    { note: 'D4', duration: 0.5 },
-    { note: 'E4', duration: 0.5 },
-    { note: 'G4', duration: 0.5 },
-    { note: 'A4', duration: 1 },
-    { note: 'G4', duration: 1 }
-  ],
-  [
-    { note: 'E4', duration: 1 },
-    { note: 'G4', duration: 0.5 },
-    { note: 'A4', duration: 0.5 },
-    { note: 'G4', duration: 1 },
-    { note: 'D4', duration: 1 }
-  ]
-];
-
 const MORSE_DICT = {
   'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
   'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
@@ -665,7 +634,6 @@ const AVAILABLE_STYLE_VALUES = new Set([
 ]);
 
 const UNAVAILABLE_STYLE_VALUES = new Set([
-  'music',
   'graph',
   'truss'
 ]);
@@ -1168,8 +1136,8 @@ function setMotionEnabledForStyle(style, enabled, options = {}) {
 }
 
 function generateRandomStaffPattern() {
-  const basePattern = pickRandom(STAFF_SURPRISE_PATTERNS);
-  return basePattern.map(note => ({ ...note }));
+  const previous = window.MusicStyle.serialize(currentStaffNotes);
+  return window.MusicStyle.normalizeNotes(pickRandom(Object.values(window.MusicStyle.presets).filter(phrase => phrase !== previous)));
 }
 
 function updateWaveformScopeControls() {
@@ -1272,7 +1240,7 @@ function resetAudioSequencePosition(type) {
     return;
   }
 
-  if (currentType === 'staff' && (!currentStaffNotes || currentStaffNotes.length === 0)) {
+  if (currentType === 'staff' && (!currentStaffNotes?.some(note => note.note !== 'rest'))) {
     showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
     return;
   }
@@ -1287,7 +1255,7 @@ function togglePreviewAudio(type) {
   if (!currentType || currentType !== type) return;
   const activeType = getActiveAudioPreviewType();
 
-  if (type === 'staff' && (!currentStaffNotes || currentStaffNotes.length === 0)) {
+  if (type === 'staff' && (!currentStaffNotes?.some(note => note.note !== 'rest'))) {
     showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
     return;
   }
@@ -1414,13 +1382,13 @@ function resetStyleParameters(style) {
       break;
     case 'music':
       if (staffInstrumentSelect) staffInstrumentSelect.value = 'piano';
-      if (staffNoteShapeSelect) staffNoteShapeSelect.value = 'circle';
+      if (staffNoteShapeSelect) staffNoteShapeSelect.value = 'square';
       if (staffReverbToggle) staffReverbToggle.checked = false;
       if (staffTremoloToggle) staffTremoloToggle.checked = false;
       if (staffTempoSlider) staffTempoSlider.value = 120;
       updateStaffTempoDisplay();
       currentNoteDuration = 1;
-      currentStaffNotes = [];
+      currentStaffNotes = window.MusicStyle.normalizeNotes(window.MusicStyle.presets.rise);
       document.querySelectorAll('#staff-duration-selector .duration-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-duration') === '1');
       });
@@ -1915,44 +1883,7 @@ function getNumericSourceValue() {
 }
 
 function getSelectedMusicNoteShape() {
-  return normalizeMusicNoteShape(staffNoteShapeSelect ? staffNoteShapeSelect.value : 'circle');
-}
-
-function drawMusicHeadP5(shape, x, y, rx, ry, filled, noteColor) {
-  const normalizedShape = normalizeMusicNoteShape(shape);
-
-  if (filled) {
-    fill(noteColor);
-    noStroke();
-  } else {
-    noFill();
-    stroke(noteColor);
-  }
-
-  if (normalizedShape === 'circle') {
-    circle(x, y, rx * 2);
-    return;
-  }
-
-  if (normalizedShape === 'square') {
-    rectMode(CENTER);
-    rect(x, y, rx * 2, ry * 2);
-    rectMode(CORNER);
-    return;
-  }
-
-  beginShape();
-  if (normalizedShape === 'diamond') {
-    vertex(x, y - ry);
-    vertex(x + rx, y);
-    vertex(x, y + ry);
-    vertex(x - rx, y);
-  } else {
-    vertex(x, y - ry);
-    vertex(x + rx, y + ry);
-    vertex(x - rx, y + ry);
-  }
-  endShape(CLOSE);
+  return normalizeMusicNoteShape(staffNoteShapeSelect ? staffNoteShapeSelect.value : 'square');
 }
 
 // Convert numeric string to digit array
@@ -3066,49 +2997,42 @@ function setup() {
     });
   }
 
-  // Setup note duration buttons
-  const durationBtns = document.querySelectorAll('#staff-duration-selector .duration-btn');
-  durationBtns.forEach(btn => {
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      durationBtns.forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      currentNoteDuration = parseFloat(this.getAttribute('data-duration'));
+  const commitMusic = notes => {
+    stopAudio();
+    currentStaffNotes = window.MusicStyle.normalizeNotes(notes);
+    updateAudioControlsUI(); updateUrlParameters(); requestUpdate();
+    syncAllCustomSelects();
+  };
+  document.querySelectorAll('#staff-duration-selector [data-duration]').forEach(button => {
+    button.addEventListener('click', () => {
+      currentNoteDuration = Number(button.dataset.duration);
+      window.MusicStyle.syncComposer(document, currentStaffNotes, currentNoteDuration);
     });
   });
-
-  // Setup keyboard
-  const pianoKeys = document.querySelectorAll('.piano-keyboard .key');
-  pianoKeys.forEach(key => {
-    key.addEventListener('mousedown', function (e) {
-      e.preventDefault();
-      this.classList.add('active');
-      const noteName = this.getAttribute('data-note');
-      const totalDuration = currentStaffNotes.reduce((sum, n) => sum + n.duration, 0);
-      if (totalDuration + currentNoteDuration <= 16) {
-        currentStaffNotes.push({ note: noteName, duration: currentNoteDuration });
-        updateAudioControlsUI();
-        updateUrlParameters();
-        requestUpdate();
-      } else {
-        if (typeof Toast !== 'undefined') {
-          Toast.show('Maximum of 4 measures reached.', 'warning');
-        }
+  document.querySelectorAll('#staff-group [data-note]').forEach(button => {
+    button.addEventListener('click', () => {
+      if (window.MusicStyle.totalBeats(currentStaffNotes) + currentNoteDuration > 16) {
+        document.getElementById('music-status').textContent = 'Phrase full: remove an event or clear the phrase to add a note.';
+        return;
       }
+      commitMusic([...currentStaffNotes, { note: button.dataset.note, duration: currentNoteDuration }]);
     });
-    key.addEventListener('mouseup', function () { this.classList.remove('active'); });
-    key.addEventListener('mouseleave', function () { this.classList.remove('active'); });
   });
-
-  if (staffClearBtn) {
-    staffClearBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      currentStaffNotes = [];
-      updateAudioControlsUI();
-      updateUrlParameters();
-      requestUpdate();
-    });
-  }
+  document.getElementById('music-sequence')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-music-remove]');
+    if (!button) return;
+    const index = Number(button.dataset.musicRemove);
+    commitMusic(currentStaffNotes.filter((_, i) => i !== index));
+    const remaining = document.querySelectorAll('[data-music-remove]');
+    (remaining[Math.min(index, remaining.length - 1)] || document.querySelector('#staff-group [data-note]'))?.focus();
+  });
+  document.getElementById('music-preset')?.addEventListener('change', event => {
+    const phrase = window.MusicStyle.presets[event.target.value];
+    if (phrase) commitMusic(phrase);
+  });
+  staffClearBtn?.addEventListener('click', () => {
+    commitMusic([]); document.querySelector('#staff-group [data-note]')?.focus();
+  });
 
   // Setup pulse controls
   if (pulseInput) {
@@ -4309,7 +4233,7 @@ function getCurrentBarPatternValues(exactBarWidth) {
     staffText: 'RPI',
     staffThickness: 1,
     staffNotes: typeof currentStaffNotes !== 'undefined' ? currentStaffNotes : [],
-    staffNoteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'circle',
+    staffNoteShape: typeof getSelectedMusicNoteShape === 'function' ? getSelectedMusicNoteShape() : 'square',
     pulseText: pulseInput ? pulseInput.value : 'RPI',
     pulseIntensity: pulseIntensitySlider ? pulseIntensitySlider.value : 5,
     graphText: graphInput ? graphInput.value : 'RPI',
@@ -4644,8 +4568,9 @@ function showAudioToast(message, type = 'info') {
 }
 
 function updateAudioControlsUI() {
+  window.MusicStyle.syncComposer(document, currentStaffNotes, currentNoteDuration);
   const activeType = getActiveAudioPreviewType();
-  const staffPreviewDisabled = !currentStaffNotes || currentStaffNotes.length === 0;
+  const staffPreviewDisabled = !currentStaffNotes?.some(note => note.note !== 'rest');
   const lunarPreviewDisabled = !isMissionControlThemeActive();
 
   getAudioButtonConfig().forEach(({ type, button, currentShader: shaderId }) => {
@@ -5339,7 +5264,7 @@ async function startAudio() {
       } else if (requestedType === 'morse') {
         startSequenceAudio('morse');
       } else if (requestedType === 'staff') {
-        if (!currentStaffNotes || currentStaffNotes.length === 0) {
+        if (!currentStaffNotes?.some(note => note.note !== 'rest')) {
           showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
           updateAudioControlsUI();
           return;
@@ -5662,14 +5587,6 @@ function scheduleMorseNote() {
   sequenceContext.currentNote++;
 }
 
-// Map notes to frequencies
-const NOTE_FREQUENCIES = {
-  'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13,
-  'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'G4': 392.00,
-  'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
-  'C5': 523.25
-};
-
 function registerStaffVoiceCleanup(voice, releaseAt) {
   sequenceContext.activeVoices.push(voice);
   const cleanupDelay = Math.max(0, (releaseAt - audioContext.currentTime) * 1000 + 250);
@@ -5813,13 +5730,13 @@ function scheduleStaffNote() {
   const noteData = data[idx];
   const time = sequenceContext.nextNoteTime;
   const actualDuration = noteData.duration * quarterNoteDuration;
-  const freq = NOTE_FREQUENCIES[noteData.note] || 440;
+  const freq = window.MusicStyle.frequency(noteData.note);
   const instrument = staffInstrumentSelect ? staffInstrumentSelect.value : 'piano';
   updateStaffEffects(time);
 
-  if (instrument === 'piano') {
+  if (freq && instrument === 'piano') {
     triggerPianoVoice(freq, time, actualDuration);
-  } else {
+  } else if (freq) {
     triggerSimpleStaffVoice(freq, time, actualDuration, instrument);
   }
 
@@ -5836,6 +5753,7 @@ function getUrlParameters() {
 }
 
 function updateUrlParameters() {
+  window.MusicStyle.syncComposer(document, currentStaffNotes, currentNoteDuration);
   window.randomizeHistory?.clear();
   window.ParameterControls.refresh();
   if (window.barShareController && window.barShareController.syncUrl()) return;
@@ -5943,14 +5861,14 @@ function updateUrlParameters() {
   }
 
   if (styleSelect && styleSelect.value === 'music') {
-    // staffNotes removed
+    params.set('staffNotes', window.MusicStyle.serialize(currentStaffNotes));
     if (staffTempoSlider && parseInt(staffTempoSlider.value) !== 120) {
       params.set('staffTempo', staffTempoSlider.value);
     }
     if (staffInstrumentSelect && staffInstrumentSelect.value !== 'piano') {
       params.set('staffInstrument', staffInstrumentSelect.value);
     }
-    if (staffNoteShapeSelect && staffNoteShapeSelect.value !== 'circle') {
+    if (staffNoteShapeSelect && staffNoteShapeSelect.value !== 'square') {
       params.set('staffNoteShape', staffNoteShapeSelect.value);
     }
     if (staffReverbToggle && staffReverbToggle.checked) {
@@ -6154,16 +6072,7 @@ function applyUrlParameters() {
   updateTrussThicknessDisplay();
 
   // Apply staff parameters
-  /*
-  if (params.staffNotes) {
-    currentStaffNotes = params.staffNotes.split(',').map(s => {
-      const parts = s.split('_');
-      return { note: parts[0], duration: parseFloat(parts[1]) };
-    });
-  } else {
-    currentStaffNotes = [];
-  }
-  */
+  currentStaffNotes = window.MusicStyle.normalizeNotes(params.staffNotes);
   if (staffTempoSlider) {
     staffTempoSlider.value = params.staffTempo;
   }
@@ -6874,12 +6783,9 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       noteShape: getSelectedMusicNoteShape()
     });
 
-    stroke(fgColor);
-    strokeWeight(renderData.lineThickness);
-    renderData.staffLines.forEach(segment => line(segment.x1, segment.y1, segment.x2, segment.y2));
-
-    renderData.notes.forEach(noteRender => {
-      drawMusicHeadP5('circle', noteRender.noteX, noteRender.noteY, noteRender.rx, noteRender.ry, true, fgColor);
+    noStroke(); fill(fgColor);
+    renderData.notes.forEach(note => {
+      beginShape(); note.points.forEach(point => vertex(...point)); endShape(CLOSE);
     });
 
   } else if (currentShader === 13) {
@@ -7478,7 +7384,7 @@ function setupShareLinks() {
     restore: (state, options = {}) => {
       stopAudio();
       sharePatternSeed = state.seed;
-      currentStaffNotes = state.notes;
+      currentStaffNotes = window.MusicStyle.normalizeNotes(state.notes);
       currentNoteDuration = state.duration;
       resetAnimationClock(state.time);
       liveMotionPhase = styleSupportsMotion(styleSelect.value) ? state.phase : 0;

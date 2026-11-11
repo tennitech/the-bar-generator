@@ -57,3 +57,12 @@ now prepares the selected-style text before inserting chrome. A regression
 checks Quantum copy before the canvas exists. See `scripts/routedStartupSmoke.js`.
 
 Numeric's card now names decimal entry and formula selection as separate sources and explains that signs are not encoded. Formula approximations, sources, limits and historical migration are documented in [Numeric modes](numeric_modes.md). The remaining 20 cards are unchanged.
+
+
+## November 11 Music availability
+
+Music now has an implemented piano-roll composer and a truthful About entry.
+It stays under Under Construction until owner approval; this supersedes only
+the earlier Music-unavailable statement. The card explains semitone lanes,
+onset/duration, rests, equal temperament and silent static exports. Sources and
+validation limits are recorded in [music_bar.md](music_bar.md).

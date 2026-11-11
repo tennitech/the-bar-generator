@@ -8,7 +8,6 @@
   ]);
 
   const UNAVAILABLE_STYLE_VALUES = new Set([
-    'music',
     'graph',
     'truss'
   ]);

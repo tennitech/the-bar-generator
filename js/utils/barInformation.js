@@ -5,6 +5,10 @@
     "title": "Nucleotide",
     "text": "Encode 30–50 bases to export. Dashed outlines show missing bases. Shapes represent A–T/U and C–G pairing, not standard molecular symbols. Presets are transcript excerpts, not complete genes."
   },
+  "music": {
+    "title": "Music",
+    "text": "A piano-roll score: height encodes pitch and length encodes duration, with gaps for rests. Build a phrase from C4 to C5, change its shapes or preview synthesized audio. Tempo and effects affect sound only; exports stay static and silent."
+  },
   "solid": {
     "title": "Solid",
     "text": "One continuous shape fills the bar. A quiet starting point for the official mark."

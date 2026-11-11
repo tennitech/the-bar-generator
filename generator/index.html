@@ -11,28 +11,28 @@
   <link rel="preload" href="assets/fonts/RPIGeist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeist-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/RPIGeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="css/style.css?v=20261111-waveform-notes-r2" rel="stylesheet" type="text/css" />
+  <link href="css/style.css?v=20261111-music-score-r2" rel="stylesheet" type="text/css" />
   <link href="css/editor-accessibility.css?v=20261111-color-help-gap" rel="stylesheet" type="text/css">
   <script src="js/utils/editorAccessibility.js?v=20261110-larger-controls-release"></script>
   <link href="css/page-entrance.css?v=20261104-letter-resolve" rel="stylesheet" type="text/css">
   <script src="js/utils/asciiEntrance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/pageEntrance.js?v=20261110-combined-brand-refinement"></script>
-  <script src="js/utils/generatorRoutes.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/generatorRoutes.js?v=20261111-music-score-r2"></script>
   <script src="js/utils/themeMode.js?v=20261110-exact-theme-text"></script>
-  <script src="js/utils/selectorPreviews.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/selectorPreviews.js?v=20261111-music-score-r2"></script>
   <script src="js/utils/secondaryColorGuidance.js?v=20261110-combined-brand-refinement"></script>
   <script src="js/utils/customDropdowns.js?v=20261110-picker-tab-focus"></script>
-  <script src="js/utils/parameterControls.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/parameterControls.js?v=20261111-music-score-r2"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
   <script src="js/utils/loopingGif.js?v=20261111-high-resolution"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
-  <script src="js/utils/shareState.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/shareState.js?v=20261111-music-score-r2"></script>
   <script src="js/utils/randomizeHistory.js?v=20261104-parameter-action-recovery"></script>
-  <script src="js/utils/musicStyle.js"></script>
+  <script src="js/utils/musicStyle.js?v=20261111-music-score-r2"></script>
   <script src="js/utils/nucleotidePattern.js?v=20261110-input-limit-feedback"></script>
   <script src="js/utils/waveformNotes.js?v=20261111-waveform-notes-r2"></script>
-  <script src="js/utils/barPattern.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/barPattern.js?v=20261111-music-score-r2"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/motionSpeed.js?v=20261110-input-limit-feedback"></script>
@@ -40,7 +40,7 @@
   <script src="js/utils/quantumModel.js?v=20261111-short-ring"></script>
   <script src="js/utils/waveformAudio.js?v=20261111-waveform-notes-r2"></script>
   <script src="js/utils/waveformScope.js?v=20261111-waveform-notes-r2"></script>
-  <script src="js/utils/generatorParameters.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/generatorParameters.js?v=20261111-music-score-r2"></script>
   <script src="js/utils/generatorInitialState.js?v=20261111-waveform-notes-r2"></script>
   <script>GeneratorInitialState.apply(document.documentElement);</script>
   <script src="third_party/p5/p5.min.js"></script>
@@ -234,7 +234,7 @@
                   <option value="lunar">Artemis II</option>
                 </optgroup>
                 <optgroup label="Under Construction">
-                  <option value="music" data-coming-soon disabled>Music</option>
+                  <option value="music">Music</option>
                   <option value="graph" data-coming-soon disabled>Data Graph</option>
                   <option value="truss" data-coming-soon disabled>Truss</option>
                 </optgroup>
@@ -625,23 +625,52 @@
         <div id="staff-group" data-parameter-actions="music" class="control-group" style="display: none;">
           <div class="control-header">PARAMETERS</div>
           <div class="control">
-            <label for="staff-instrument-select" class="control-label">INSTRUMENT</label>
-            <div class="select-wrapper">
-              <select id="staff-instrument-select" data-url-parameter="staffInstrument" class="control-select">
-                <option value="piano">Piano</option>
-                <option value="synth">Synth</option>
-                <option value="marimba">Marimba / Pluck</option>
-              </select>
-            </div>
+            <label for="music-preset" class="control-label">PHRASE</label>
+            <div class="select-wrapper"><select id="music-preset" class="control-select">
+              <option value="rise">Rise &amp; return</option><option value="arpeggio">Arpeggio</option>
+              <option value="syncopation">Syncopation</option><option value="custom" disabled>Custom phrase</option>
+            </select></div>
+            <div class="control-hint">Pitch rises from C4 to C5. Shape length is note duration. The complete phrase spans the bar.</div>
           </div>
+          <input id="staff-notes-input" type="hidden" data-url-parameter="staffNotes" value="C4_1,D4_1,E4_1,G4_1,A4_2,G4_1,E4_1,F4_1,A4_1,C5_2,B4_1,G4_1,E4_1,C4_1">
           <div class="control">
             <label for="staff-note-shape-select" class="control-label">NOTE SHAPE</label>
             <div class="select-wrapper">
               <select id="staff-note-shape-select" data-url-parameter="staffNoteShape" class="control-select">
-                <option value="circle">Circles</option>
-                <option value="square">Squares</option>
+                <option value="square">Bars</option>
+                <option value="circle">Capsules</option>
                 <option value="diamond">Diamonds</option>
                 <option value="triangle">Triangles</option>
+              </select>
+            </div>
+          </div>
+          <div class="control">
+            <div class="control-label" id="music-duration-label">NEXT NOTE · BEATS</div>
+            <div class="duration-selector" id="staff-duration-selector" role="group" aria-labelledby="music-duration-label">
+              <button class="duration-btn" data-duration="2" type="button" aria-pressed="false">2</button>
+              <button class="duration-btn active" data-duration="1" type="button" aria-pressed="true">1</button>
+              <button class="duration-btn" data-duration="0.5" type="button" aria-pressed="false">½</button>
+              <button class="duration-btn" data-duration="0.25" type="button" aria-pressed="false">¼</button>
+            </div>
+          </div>
+          <div class="control">
+            <div class="control-label" id="music-keyboard-label">ADD A NOTE</div>
+            <div class="music_keyboard" role="group" aria-labelledby="music-keyboard-label"><button type="button" class="music_key" data-note="C4" aria-label="Add C4">C4</button><button type="button" class="music_key" data-note="C#4" aria-label="Add C sharp 4">C♯4</button><button type="button" class="music_key" data-note="D4" aria-label="Add D4">D4</button><button type="button" class="music_key" data-note="D#4" aria-label="Add D sharp 4">D♯4</button><button type="button" class="music_key" data-note="E4" aria-label="Add E4">E4</button><button type="button" class="music_key" data-note="F4" aria-label="Add F4">F4</button><button type="button" class="music_key" data-note="F#4" aria-label="Add F sharp 4">F♯4</button><button type="button" class="music_key" data-note="G4" aria-label="Add G4">G4</button><button type="button" class="music_key" data-note="G#4" aria-label="Add G sharp 4">G♯4</button><button type="button" class="music_key" data-note="A4" aria-label="Add A4">A4</button><button type="button" class="music_key" data-note="A#4" aria-label="Add A sharp 4">A♯4</button><button type="button" class="music_key" data-note="B4" aria-label="Add B4">B4</button><button type="button" class="music_key" data-note="C5" aria-label="Add C5">C5</button><button type="button" class="music_key" data-note="rest" aria-label="Add a rest">Rest</button></div>
+          </div>
+          <div class="control">
+            <div class="music_sequence-heading"><span class="control-label">YOUR PHRASE</span><button id="staff-clear-btn" type="button" class="workspace-btn">Clear</button></div>
+            <div id="music-sequence" class="music_sequence" role="group" aria-label="Phrase events, select to remove"></div>
+            <div id="music-status" class="control-hint" role="status" aria-live="polite"></div>
+          </div>
+          <div class="runtime_section audio_section">
+            <div class="control-header">PREVIEW</div>
+          <div class="control">
+            <label for="staff-instrument-select" class="control-label">AUDIO VOICE</label>
+            <div class="select-wrapper">
+              <select id="staff-instrument-select" data-url-parameter="staffInstrument" class="control-select">
+                <option value="piano">Piano-like synth</option>
+                <option value="synth">Synth</option>
+                <option value="marimba">Plucked synth</option>
               </select>
             </div>
           </div>
@@ -663,44 +692,9 @@
             <label for="staff-tempo-slider" class="control-label">TEMPO <span id="staff-tempo-display" data-slider-value>120</span>
               BPM</label>
             <input type="range" id="staff-tempo-slider" data-url-parameter="staffTempo" min="60" max="240" step="1" value="120" class="control-slider"
-              aria-label="Staff Tempo">
+              aria-label="Music tempo in quarter-note beats per minute">
           </div>
-          <div class="control">
-            <label class="control-label">NOTE DURATION</label>
-            <div class="duration-selector" id="staff-duration-selector">
-              <button class="duration-btn" data-duration="2">1/2</button>
-              <button class="duration-btn active" data-duration="1">1/4</button>
-              <button class="duration-btn" data-duration="0.5">1/8</button>
-              <button class="duration-btn" data-duration="0.25">1/16</button>
-            </div>
-          </div>
-          <div class="control">
-            <label class="control-label" style="display:flex; justify-content:space-between; align-items:center;">
-              KEYBOARD
-              <button id="staff-clear-btn" class="workspace-btn" style="padding: 2px 6px; height: auto;"
-                aria-label="Clear Notes">CLEAR</button>
-            </label>
-            <div class="piano-keyboard">
-              <div class="keys">
-                <div class="key white" data-note="C4"></div>
-                <div class="key black" data-note="C#4"></div>
-                <div class="key white" data-note="D4"></div>
-                <div class="key black" data-note="D#4"></div>
-                <div class="key white" data-note="E4"></div>
-                <div class="key white" data-note="F4"></div>
-                <div class="key black" data-note="F#4"></div>
-                <div class="key white" data-note="G4"></div>
-                <div class="key black" data-note="G#4"></div>
-                <div class="key white" data-note="A4"></div>
-                <div class="key black" data-note="A#4"></div>
-                <div class="key white" data-note="B4"></div>
-                <div class="key white" data-note="C5"></div>
-              </div>
-            </div>
-            <div class="control-hint">Click keys to add notes (max 4 measures)</div>
-          </div>
-          <div class="runtime_section audio_section">
-            <div class="control-header">PREVIEW</div>
+            <p class="control-hint">Audio loops your phrase. Tempo, voice and effects change sound only; SVG and PNG are silent, static scores.</p>
             <div class="control_row control_row-preview">
               <div class="control-label control_row-label">AUDIO</div>
               <div class="preview-controls">
@@ -1118,15 +1112,15 @@
   <script src="js/utils/transparentGif.js?v=20261110-ring-release"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportUi.js?v=20261111-high-resolution"></script>
-  <script src="js/utils/barInformation.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/utils/barInformation.js?v=20261111-music-score-r2"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
   <script src="js/utils/keyboardShortcuts.js?v=20261111-menu-consistency"></script>
   <script src="js/utils/inputLimitFeedback.js?v=20261110-input-limit-feedback"></script>
-  <script src="js/main.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/main.js?v=20261111-music-score-r2"></script>
   <script src="js/utils/logoClipboard.js?v=20261110-export-composition-r2"></script>
-  <script src="js/drawing.js?v=20261111-waveform-notes-r2"></script>
+  <script src="js/drawing.js?v=20261111-music-score-r2"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

@@ -12,7 +12,7 @@
     const data = isRecord(value) ? value : {};
     const bounded = (key, fallback, max) => Number.isFinite(data[key]) && data[key] >= 0 && data[key] <= max ? data[key] : fallback;
     const notes = Array.isArray(data.notes) ? data.notes.slice(0, 64).filter(note => isRecord(note)
-      && /^[A-G](?:#|b)?[0-8]$/.test(note.note) && [0.25, 0.5, 1, 2].includes(note.duration))
+      && /^(?:C#?4|D#?4|E4|F#?4|G#?4|A#?4|B4|C5|rest)$/.test(note.note) && [0.25, 0.5, 1, 2].includes(note.duration))
       .map(note => ({ note: note.note, duration: note.duration })) : [];
     let duration = 0;
     const boundedNotes = notes.filter(note => { duration += note.duration; return duration <= 16; });
