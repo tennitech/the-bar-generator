@@ -1,5 +1,15 @@
 # Bar meaning and source notes
 
+## Waveform direction and paused edits — November 17, 2026
+
+Loop pauses the visual sweep. Changing the note, type or direction replaces
+the displayed signal at the held sweep phase once the new PCM is ready.
+Reverse reverses the sweep and reflects the synthesized signal about its carrier
+phase origin. It preserves the selected pitch and whole-cycle interval. The
+signed gains and paired Pulse waves apply to both audible and offline synthesis.
+Editor, header and exports use the settled PCM. See the
+[Waveform model and assumptions](waveform_notes.md).
+
 ## Current Waveform note model — November 11, 2026
 
 The note redesign supersedes all earlier Waveform frequency/timebase and Pulse

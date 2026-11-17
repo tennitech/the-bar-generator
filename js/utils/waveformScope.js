@@ -6,7 +6,7 @@
   const MAX_HISTORY_SECONDS = 1;
   function settings(values = {}) {
     return { note: notes.read(values),
-      type: Math.max(0, Math.min(3, Number(values.type) || 0)) };
+      type: Math.max(0, Math.min(3, Number(values.type) || 0)), reverse: values.reverse === true };
   }
   function duration(values) {
     return notes.get(settings(values).note).seconds;
@@ -106,7 +106,7 @@
   }
   function displaySettings(values) {
     const v = settings(values), carrierHz = root.WaveformAudio.frequency(v.note);
-    return { displayMode: 'trace', carrierHz, note: v.note, type: v.type, cycles: notes.get(v.note).cycles, replayLimit: .1 };
+    return { displayMode: 'trace', carrierHz, note: v.note, type: v.type, reverse: v.reverse, cycles: notes.get(v.note).cycles, replayLimit: .1 };
   }
   function sweep(captured, values) {
     const requestedSpan = sweepSpan(values);
@@ -147,7 +147,7 @@
     let pending = null, cancelPending = () => {}, queue = Promise.resolve(), timer;
     let tap = null, input = null, ring = null, pcmRing = null, hasPcm = false, written = 0, pairRate = 0, attachGeneration = 0;
     let currentRecording = null, exportRecording = null, lastWritten = -1, lastEditAt = null, liveError = '';
-    let offset = 0, currentOrigin = 0, currentReverse = false, running = true;
+    let offset = 0, currentOrigin = 0, currentReverse = false, running = true, sweepTime = 0;
     let currentSweep = null, liveCycle = null;
     // Bounded per-controller LRU. Render on demand, reuse recent immutable PCM.
     // 8 entries keep memory bounded; do not pre-render all 61 x 301 morph values.
@@ -201,9 +201,11 @@
               while (cache.size > 8) cache.delete(cache.keys().next().value);
               if (token === generation) {
                 offline = captured; offlineKey = nextKey; rendering = false;
-                // Frozen data remains frozen across edits. A first still can
-                // appear on initial load; subsequent swaps wait for playback.
-                if (!current || (running && !tap)) showOffline(captured, 0, nextKey);
+                // Loop pauses the sweep clock. Edits still replace the signal
+                // at that phase once a complete render of the new settings exists.
+                if (!current || (running && !tap) || (!running && currentKey !== nextKey)) {
+                  showOffline(captured, sweepTime, nextKey);
+                }
                 onChange();
               }
               resolve(captured);
@@ -251,9 +253,12 @@
     }
     function tick(seconds, isRunning = true, reverse = false) {
       running = isRunning;
+      sweepTime = seconds;
       if (reverse !== currentReverse && currentRecording) exportRecording = sweepReplay(currentSweep, offset, current, reverse);
       currentReverse = reverse;
-      if (!running) return current;
+      // A settled live signal can also satisfy an edit if offline rendering is
+      // unavailable. Once the paused frame matches the controls, keep it still.
+      if (!running && (!tap || currentKey === key)) return current;
       if (tap) {
         // Capture continuously, but present immutable, triggered sweeps at
         // the selected visual speed rather than racing through native PCM.

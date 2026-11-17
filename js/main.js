@@ -1086,6 +1086,7 @@ function setMotionEnabledForStyle(style, enabled, options = {}) {
   if (['gradient', 'waveform'].includes(normalizedStyle) && options.resetPhase !== true) {
     // Hold the current coverage on pause; resume has no elapsed-time catch-up.
     lastAnimationFrameTimestamp = 0;
+    if (normalizedStyle === 'waveform') lastWaveformScopeTimestamp = 0;
   } else if (!enabled || options.resetPhase === true) {
     resetAnimationClock();
   }
@@ -1099,6 +1100,14 @@ function generateRandomStaffPattern() {
   return window.MusicStyle.normalizeNotes(pickRandom(Object.values(window.MusicStyle.presets).filter(phrase => phrase !== previous)));
 }
 
+function getWaveformSignalSettings() {
+  return {
+    note: waveformNoteSlider?.value || 24,
+    type: waveformTypeSlider?.value || 0,
+    reverse: waveformReverseToggle?.checked === true
+  };
+}
+
 function updateWaveformScopeControls() {
   if (!window.WaveformScope || getCurrentMotionStyle() !== 'waveform') return;
   const syncStatus = () => {
@@ -1108,9 +1117,7 @@ function updateWaveformScopeControls() {
   if (!window.waveformScopeController) window.waveformScopeController = window.WaveformScope.createController({
     onChange: () => { syncStatus(); requestUpdate(); }
   });
-  window.waveformScopeController.configure({
-    note: waveformNoteSlider?.value || 24, type: waveformTypeSlider?.value || 0
-  });
+  window.waveformScopeController.configure(getWaveformSignalSettings());
   syncStatus();
 }
 
@@ -1129,11 +1136,12 @@ function tickWaveformScope(timestamp, suspended = false) {
   const elapsed = lastWaveformScopeTimestamp ? clampLiveAnimationDeltaMs(timestamp - lastWaveformScopeTimestamp) / 1000 : 0;
   lastWaveformScopeTimestamp = timestamp;
   const scope = window.waveformScopeController;
-  scope?.tick(waveformScopeTime, isMotionEnabledForStyle('waveform'), waveformReverseToggle?.checked === true);
+  const running = isMotionEnabledForStyle('waveform');
+  const reverse = waveformReverseToggle?.checked === true;
+  if (running) waveformScopeTime += elapsed * Number(waveformSpeedSlider?.value || .3) / .3 * (reverse ? -1 : 1);
+  scope?.tick(waveformScopeTime, running, reverse);
   const scopeStatus = document.getElementById('waveform-scope-status');
   if (scopeStatus && scope) scopeStatus.textContent = scope.status();
-  if (!isMotionEnabledForStyle('waveform')) return;
-  waveformScopeTime += elapsed * Number(waveformSpeedSlider?.value || .3) / .3 * (waveformReverseToggle?.checked ? -1 : 1);
 }
 
 function resetWaveformScope() {
@@ -2424,6 +2432,8 @@ function setup() {
   }
   if (waveformReverseToggle) {
     waveformReverseToggle.addEventListener('change', function () {
+      updateWaveformScopeControls();
+      updateAudioParameters();
       updateUrlParameters();
       requestUpdate();
     });
@@ -2991,7 +3001,7 @@ function setup() {
       slider: waveformNoteSlider,
       display: waveformNoteDisplay,
       refreshDisplay: updateWaveformNoteDisplay,
-      commit: () => { updateWaveformNoteDisplay(); updateAudioParameters(); updateUrlParameters(); requestUpdate(); },
+      commit: () => { updateWaveformNoteDisplay(); updateWaveformScopeControls(); updateAudioParameters(); updateUrlParameters(); requestUpdate(); },
       ariaLabel: 'Set waveform note, C1 to C6',
       inputMode: 'text',
       limitMessage: value => window.WaveformNotes.parse(value) === null ? 'Enter a note from C1 to C6, such as C#3.' : '',
@@ -5188,9 +5198,7 @@ async function startWaveformAudio() {
 
   const note = window.WaveformNotes.normalize(waveformNoteSlider.value);
   const mappedFrequency = window.WaveformNotes.get(note).frequencyHz;
-  waveformCarrier = window.WaveformAudio.create(audioContext, gainNode, {
-    note, type: Number(waveformTypeSlider.value)
-  });
+  waveformCarrier = window.WaveformAudio.create(audioContext, gainNode, getWaveformSignalSettings());
   oscillators = waveformCarrier.oscillators;
   oscillatorGains = waveformCarrier.oscillatorGains;
   pulseWorkletNode = waveformCarrier.pulseWorkletNode;
@@ -6059,7 +6067,7 @@ function updateAudioParameters() {
   if (!isAudioPlaying || currentShader !== 4) return;
 
   try {
-    waveformCarrier?.update({ note: waveformNoteSlider.value, type: waveformTypeSlider.value });
+    waveformCarrier?.update(getWaveformSignalSettings());
   } catch (error) {
     console.error('Failed to update audio parameters:', error);
   }
