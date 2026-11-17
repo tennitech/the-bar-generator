@@ -11,7 +11,7 @@ test('physical timebase covers the nearest whole-cycle window for every selected
   for(const note of [24,49,84])for(const rate of [.07,2,100,1300]) {
     const v={...values,note,lfo:{enabled:true,rate,depth:100,type:3}};
     expect(scope.duration(v)*WaveformAudio.frequency(note)).toBeCloseTo(notes.get(note).cycles,12);
-    expect(scope.settings(v)).toEqual({note,type:0});
+    expect(scope.settings(v)).toEqual({note,type:0,reverse:false});
   }
 });
 
@@ -116,7 +116,7 @@ test('routed bootstrap loads the actual audio/scope head dependencies before mai
   const html=fs.readFileSync(require.resolve('../generator/index.html'),'utf8');
   for(const name of ['waveformAudio','waveformScope']) {
     expect(early).toContain(`'${name}'`);
-    const version='20261111-waveform-notes-r2';
+    const version='20261117-waveform-controls';
     expect(html).toContain(`src="js/utils/${name}.js?v=${version}"`);
   }
 });

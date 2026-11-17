@@ -18,7 +18,7 @@ function offlineEngine() {
     constructor(channels,length){this.length=length;}
     createGain(){return {connect(){},gain:{setValueAtTime(){},linearRampToValueAtTime(){}}};}
     startRendering(){return new Promise((resolve,reject)=>jobs.push({
-      finish:value=>resolve({getChannelData:()=>new Float32Array(this.length).fill(value)}),fail:reject
+      finish:value=>resolve({getChannelData:()=>value instanceof Float32Array ? value : new Float32Array(this.length).fill(value)}),fail:reject
     }));}
   }};
   return {environment,jobs};
@@ -100,6 +100,21 @@ test('freeze holds exact data, recording and timebase through edits, incoming sa
   } finally {c.dispose();}
 });
 
+test('a paused edit can settle from live PCM when there is no offline renderer',async()=>{
+  const {controller:c,push}=await live();
+  try {
+    push(.8);c.tick(.7,false);
+    const held=c.frame();
+    c.configure({note:49,type:1,reverse:true});c.tick(.7,false,true);
+    expect(c.frame()).toBe(held);
+    push(.7,-.01,.01);c.tick(.7,false,true);
+    const updated=c.frame();
+    expect(updated).toMatchObject({source:'live',note:49,type:1,reverse:true,parameterChanges:false});
+    push(.2);c.tick(.7,false,true);
+    expect(c.frame()).toBe(updated);
+  } finally {c.dispose();}
+});
+
 test('silent edits hold a labeled previous frame until one complete latest render replaces it',async()=>{
   jest.useFakeTimers();const {environment,jobs}=offlineEngine();
   const create=jest.spyOn(WaveformAudio,'create').mockReturnValue({update(){},pulseWorkletNode:{}});
@@ -120,17 +135,29 @@ test('silent edits hold a labeled previous frame until one complete latest rende
   } finally {c.dispose();create.mockRestore();jest.useRealTimers();}
 });
 
-test('frozen offline data survives replacement renders and failures until playback resumes',async()=>{
+test('paused edits replace the rendered signal at the held phase and retain the last valid frame on failure',async()=>{
   jest.useFakeTimers();const {environment,jobs}=offlineEngine();
   const create=jest.spyOn(WaveformAudio,'create').mockReturnValue({update(){},pulseWorkletNode:{}});
   const c=scope.createController({environment});
   try {
     c.configure(base,true);await jest.advanceTimersByTimeAsync(0);jobs[0].finish(.01);await c.ready();
-    c.tick(0,false);const held=c.frame();
-    c.configure({...base,type:3},true);await jest.advanceTimersByTimeAsync(0);jobs[1].finish(.08);await c.ready();
-    expect(c.frame()).toBe(held);expect(c.status()).toContain('frozen');expect(c.status()).toContain('previous settings');
-    c.tick(0,true);expect(c.frame().extrema.every(x=>x>.07)).toBe(true);
-    const complete=c.frame();c.configure({...base,type:2},true);await jest.advanceTimersByTimeAsync(0);
+    const heldTime = .7;
+    c.tick(heldTime);c.tick(heldTime,false);
+    const held=c.capture();
+    c.configure({note:49,type:3,reverse:true},true);await jest.advanceTimersByTimeAsync(0);
+    expect(c.frame()).toBe(held.frame);expect(c.status()).toContain('previous settings');
+    expect(create.mock.lastCall[2]).toEqual({note:49,type:3,reverse:true});
+    const pcm=Float32Array.from({length:48000},(_,i)=>.01+i/48000);
+    jobs[1].finish(pcm);await c.ready();
+    let complete=c.frame();
+    expect(complete).toMatchObject({note:49,type:3,reverse:true});
+    expect(c.status()).toContain('frozen');expect(c.status()).not.toContain('previous settings');
+    expect(c.capture().recording.frame(0)).toBe(complete);
+    expect(held.recording.frame(0)).toBe(held.frame);
+    c.tick(heldTime,false);expect(c.frame()).toBe(complete);
+    c.tick(heldTime,true);expect(c.frame()).toEqual(complete);
+    complete=c.frame();
+    c.configure({...base,type:2},true);await jest.advanceTimersByTimeAsync(0);
     jobs[2].fail(new Error('render failed'));await c.ready();c.tick(1,true);
     expect(c.frame()).toBe(complete);expect(c.status()).toContain('previous settings (update unavailable)');
   } finally {c.dispose();create.mockRestore();jest.useRealTimers();}

@@ -1,5 +1,17 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
+## November 17 Waveform edits with Loop off and signal reversal
+
+Loop holds the Waveform sweep phase while note, shape and direction edits
+replace the displayed signal as soon as the latest settled PCM is ready
+([#208](https://github.com/tennitech/the-bar-generator/issues/208)). Reverse
+also reflects the signal in time around the oscillator phase origin
+([#218](https://github.com/tennitech/the-bar-generator/issues/218)).
+Signed oscillator gains and paired Pulse waves use the existing 50 ms ramps.
+The live graph and the offline renderer share synthesis. The editor, header
+and still exports display the same captured signal, and GIF replays a sweep
+through that recording. See the [Waveform model](waveform_notes.md).
+
 ## November 17 complete Brand Hub text evidence and mandatory review gate
 
 The signed-in browser review captures 17 authored guideline pages, seven library
