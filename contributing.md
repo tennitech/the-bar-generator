@@ -6,6 +6,14 @@ What if we tried this? Open an issue with the problem, the proposed change, and 
 
 Use Node.js 22 and Python 3. No build step is required.
 
+Read [the mandatory brand policy](references/brand_policy.md) before every change,
+then its routed full official source pages. Maintain
+`references/brand_review.json` with review decisions, source IDs, evidence and the
+current changed-file fingerprint. `npm run check:brand -- --print-fingerprint`
+prints the value to record. `npm test` runs this guard before Jest; missing/stale
+reviews or incomplete source records fail the existing required CI job. The
+guard does not replace human visual/scientific review or institutional approval.
+
 ```sh
 npm ci --ignore-scripts --no-audit --no-fund
 npm test -- --runInBand

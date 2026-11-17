@@ -1,5 +1,60 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
+## November 17 complete Brand Hub text evidence and mandatory review gate
+
+The signed-in browser review captures 17 authored guideline pages, seven library
+landing pages and 12 inspected collection pages. Every top-level navigation
+entry is accounted for. The owner excluded the generator embed, individual
+asset records/files and the remaining logo catalog; external sites/forms,
+image-only text and media transcripts are not claimed as captured. No logo,
+font, image or template files were downloaded. Each guideline was scrolled to
+its bottom to capture progressively loaded examples. The dated archive retains
+reading copies, ordered raw frame text, source/modified/capture dates, hashes and
+explicit scope. See [the source index](brand_sources/index.md).
+
+[Brand policy](brand_policy.md) routes every kind of change to its required full
+official sources. A structured area registry and per-change review record cover
+identity, copy, interface, bars/exports, media, assets/approvals and governance.
+The new `scripts/checkBrandPolicy.js` checks archive coverage/integrity, source
+references, required area decisions, approval applicability, check evidence and
+a fingerprint of the actual changed files. A stale or incomplete record blocks
+`npm test` before Jest. Required CI keeps the existing Unit tests job, pinned
+actions, public-repo/ready-PR guards, read-only permissions, five-minute limit,
+and no browser installation, caches or artifact uploads. Checkout depth becomes
+two so its PR merge tree can be compared with main. No runtime/build dependency
+or generator behavior is changed; tooling follows the existing CommonJS/Jest
+convention.
+
+The [conflict register](brand_conflicts.md) retains the unresolved gradient/artwork,
+asset-redistribution and institutional-approval questions. It adds the conflicting
+Video typography directions, the seal's distinct approval routes and contextual
+font/example boundaries. No institutional approval or full compliance of existing
+features is inferred. A protected merge check can enforce review records, not
+replace visual/scientific judgment or make unverified approvals true. Existing
+stricter app controls and the November 3 natural-whitespace clarification remain.
+
+Archive text is RPI material, not sublicensed under the software MIT grant.
+The project owner explicitly requested committing the complete package, opening
+a PR and merging after passing checks on November 17. This records the intended
+repository publication scope without asserting a general asset license or formal
+RPI approval of generator output. Validation results are recorded in
+brand_review.json; live acceptance in other coding clients and formal RPI
+approval remain separate.
+
+Validation: all 1,296 tests across 107 suites pass, including 13 new cases for
+review staleness, source tampering/coverage, required areas, honest pending
+validation and approval evidence. Source/archive links and the complete npm
+pretest-to-Jest path are checked locally. These are source, tooling and automated
+checks; no generator UI/export changes or new physical-device/brand acceptance
+are claimed.
+
+Final release review also closed a review-only-change bypass and made file
+fingerprints use Git-normalized contents. Source archive LF checkout rules keep
+its integrity hashes stable under Windows line-ending conversion. Review-only
+corruption/deletion has an executable regression; a local CI-style Git merge
+checkout and line-ending-conversion clone exercise the release gate without
+claiming a native Windows client test. Exact-head CI/merge evidence is in the PR.
+
 ## November 17 provider-neutral branches and AI contribution records
 
 New branches use `<type>/<short-description>` for both humans and AI tools,

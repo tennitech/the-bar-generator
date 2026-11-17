@@ -26,6 +26,7 @@ it followed the rules is not proof that the tool loaded the files.
 
 ## Required Reading Before Edits
 
+0. Read `references/brand_policy.md` and `references/brand_conflicts.md` for every task. Follow the source routes there and read the full applicable captured official pages before work. Brand requirements apply to every aspect of this generator and every deliverable, regardless of contributor or AI service. Source examples and existing code are not automatic approvals.
 1. Read `references/project_status.md` for the current state and known issues.
 2. For copy, design, pattern, or export changes, read the dated checklist in `references/rpi_brand_guidelines.md` and its relevant full sections.
 3. For asset changes, read `references/asset_licensing.md` and the actual asset license or permission record.
@@ -33,6 +34,14 @@ it followed the rules is not proof that the tool loaded the files.
 5. Read `contributing.md` for branch, test, and pull request conventions. Use `README.md` for development commands.
 
 This file remains the canonical agent policy. `references/AGENTS.md` and older local rule files are supplementary references, not competing policy.
+
+## Mandatory Brand Review For Every Change
+
+- Follow `references/brand_policy.md` across algorithms, data, motion, audio, preview, header, exports, UI, copy, accessibility, media, documentation and release material. Its source archive separates official text, dated evidence, project applications and unresolved conflicts.
+- Complete `references/brand_review.json` for the actual changed file state. Cover every review area, cite the required full source pages, explain non-applicability, record performed checks honestly, and document approval applicability. Read relevant science/export/asset records as well.
+- Run `npm run check:brand` and the relevant tests/checks. `npm test` runs the brand guard first; required CI uses the same guard. Refresh the review fingerprint after further edits. Do not remove sources, weaken a check, invent an approval or relabel pending validation to make a change pass.
+- If work depends on an unresolved source conflict or missing permission, stop that part and obtain the applicable documented decision. Preserve stricter app controls. This task's source capture is not formal RPI approval of the current generator or a license for unrestricted redistribution.
+- Automated validation verifies coverage, integrity and current review records. It cannot guarantee scientific correctness, aesthetic judgment, photosensitivity safety or institutional approval. Perform and evidence the applicable rendered, keyboard, contrast, motion and export checks; distinguish those from user testing and formal approval.
 
 ## Feature Branches, User Testing, And Deletion
 

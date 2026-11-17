@@ -4,6 +4,8 @@
   "description": "A generative visual identity system for Rensselaer Polytechnic Institute that embodies the concept of measurement itself as a design tool. Rather than a static logo, this creates infinite variations of the RPI wordmark where the bottom bar transforms into live visualizations of data, patterns, and metrics.",
   "main": "index.js",
   "scripts": {
+    "pretest": "node scripts/checkBrandPolicy.js",
+    "check:brand": "node scripts/checkBrandPolicy.js",
     "test": "jest",
     "test:browser": "node scripts/browserSmoke.js",
     "test:browser:install": "playwright install chromium firefox webkit",

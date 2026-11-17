@@ -1,5 +1,22 @@
 # Source record and contributor checks
 
+## November 17, 2026 complete authored-page review
+
+Start with [the mandatory operational policy](brand_policy.md),
+[the dated source archive](brand_sources/index.md), and
+[the interpretation/approval register](brand_conflicts.md). The signed-in review
+covered all 17 authored guideline pages, seven library landing pages and 12
+inspected collection pages. The generator embed, individual assets/downloads and
+remaining logo catalog were excluded at the owner's explicit direction.
+
+The archive is the current dated text evidence, with source URLs, modification
+dates, coverage and hashes. The older transcription below remains historical
+context; do not use it to override newer captured text or scoped clarifications.
+Read the complete applicable page, including caveats and examples. Capture is
+not formal approval, a font/asset license, or proof of unrestricted redistribution.
+Every generator change now requires a fingerprinted brand review, with source
+integrity and review coverage checked before the existing unit suite.
+
 ## November 11, 2026 voice and color copy audit
 
 The live official [Voice & Tone](https://brand.rpi.edu/d/pfJS6BKVKBeq/brand-guidelines#/-/voice-tone)

@@ -1,0 +1,2 @@
+# Preserve the exact archived source bytes used by the brand-integrity checks.
+references/brand_sources/** text eol=lf

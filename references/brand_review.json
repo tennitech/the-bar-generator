@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "reviewedOn": "2026-11-17",
+  "reviewer": "Codex self-review; exact model/reasoning identifiers unavailable",
+  "sourceSnapshot": "2026-11-17",
+  "changeFingerprint": "3a16e8d2747f69b9c883b1121a0598d43cb5aca1251f867266bc8c801ada8696",
+  "areas": {
+    "foundations": {
+      "status": "reviewed",
+      "rationale": "Reviewed the complete institutional foundation pages. The new source/routing system keeps evidence, purpose and authentic experimentation central without claiming institutional approval.",
+      "sources": [
+        "home",
+        "about-our-brand",
+        "who-we-are"
+      ]
+    },
+    "copy": {
+      "status": "reviewed",
+      "rationale": "Read Naming Conventions and the complete Voice & Tone page, including fictional examples. New contributor documentation uses specific recovery actions and separates policy, evidence and interpretation.",
+      "sources": [
+        "naming-conventions",
+        "voice-tone"
+      ]
+    },
+    "interface": {
+      "status": "not-applicable",
+      "rationale": "No app HTML, CSS, UI runtime or interaction behavior changes. The work routes future UI changes to full source pages and rendered accessibility checks.",
+      "sources": []
+    },
+    "bar-and-exports": {
+      "status": "not-applicable",
+      "rationale": "No bar model, official vector, scientific coordinate, animation, preview, header or exporter changes. Existing geometry/parity rules and natural-whitespace clarification remain; unresolved existing treatments are recorded.",
+      "sources": []
+    },
+    "media": {
+      "status": "not-applicable",
+      "rationale": "No photography, video, audio, mascot, seal or signature implementation or file added. The source corpus records context-specific guidance and its limits, without extrapolating video settings to GIF exports.",
+      "sources": []
+    },
+    "assets-and-approvals": {
+      "status": "reviewed",
+      "rationale": "Read logo, bar, typography, seal and spirit-mark approval/rights passages. No asset files were downloaded. Owner requested repository publication of the complete text/policy/tooling package after checks; RPI copyright and separate broader-reuse/asset permission limits are preserved.",
+      "sources": [
+        "logo-system",
+        "the-bar",
+        "typography",
+        "seal",
+        "spirit-marks"
+      ]
+    },
+    "governance": {
+      "status": "reviewed",
+      "rationale": "Visited all 17 in-scope authored pages, seven library roots and 12 collection pages. Verified scroll completion, source dates, hashes, navigation accounting and explicit owner exclusions. Added source routing, conflict records, cross-service instructions and a fingerprinted gate in the existing test job.",
+      "sources": [
+        "home",
+        "about-our-brand",
+        "who-we-are",
+        "naming-conventions",
+        "voice-tone",
+        "design-principles",
+        "logo-system",
+        "the-bar",
+        "seal",
+        "color",
+        "typography",
+        "pattern",
+        "video",
+        "photography",
+        "spirit-marks",
+        "inspiration-gallery-1",
+        "email-signature"
+      ]
+    }
+  },
+  "blockingConflicts": [],
+  "existingConflicts": {
+    "ids": [
+      "B01",
+      "B02",
+      "B03",
+      "B04",
+      "B05",
+      "B06",
+      "B07",
+      "B08",
+      "B09",
+      "B10"
+    ],
+    "disposition": "Recorded in references/brand_conflicts.md; no disputed runtime treatment is added, expanded or approved by this task."
+  },
+  "requiresFormalApproval": false,
+  "approvalStatus": "not-required-for-source-and-tooling-work",
+  "approvalRationale": "The owner authorized the complete repository package to be committed, opened as a PR and merged after checks on November 17, 2026. No new institutional generator output or assets are introduced. Owner publication intent is not a general redistribution license or formal RPI brand approval; upstream text attribution and separate asset-permission questions remain explicit.",
+  "approvalEvidence": "No formal institutional approval claimed.",
+  "publicationScope": "Owner-authorized complete package for tennitech/the-bar-generator: dated Brand Hub text corpus, policy/routing/review records, guard/tests and existing CI integration. No asset downloads or new review images. Retain the source branch after merge.",
+  "checks": [
+    {
+      "name": "brand-policy",
+      "result": "passed",
+      "evidence": "The complete guard passes: 36 source records, coverage/hashes and current Git-normalized fingerprint validated. All 13 brand-guard cases pass, including review-only corruption/deletion."
+    },
+    {
+      "name": "unit-tests",
+      "result": "passed",
+      "evidence": "All 1,296 tests in 107 suites pass on official Node 22.23.5 with locked dependencies, including 13 policy-guard cases. Exact-head CI evidence is recorded in the PR."
+    },
+    {
+      "name": "rendered-ui",
+      "result": "not-applicable",
+      "evidence": "No app UI/runtime changes. Browser use was authenticated source reading, not testing the generator."
+    },
+    {
+      "name": "preview-export-parity",
+      "result": "not-applicable",
+      "evidence": "No preview, header, math, geometry, theme, audio or export implementation changed."
+    },
+    {
+      "name": "cross-client acceptance",
+      "result": "pending",
+      "evidence": "Other coding clients were not launched. Canonical root instructions and existing thin adapters route contributors to the brand policy."
+    },
+    {
+      "name": "user acceptance",
+      "result": "pending",
+      "evidence": "The owner has not yet tested/reviewed this new local policy system."
+    },
+    {
+      "name": "ci-merge-parent simulation",
+      "result": "passed",
+      "evidence": "A temporary real two-parent Git merge checkout and a clone with persistent core.autocrlf=true both pass with the same reviewed fingerprint. README checks out as CRLF while source archive stays exact LF. These are local Git simulations, not native Windows or GitHub Actions runs."
+    }
+  ]
+}

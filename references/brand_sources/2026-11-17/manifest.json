@@ -1,0 +1,648 @@
+{
+  "schemaVersion": 1,
+  "capturedOn": "2026-11-17",
+  "origin": "https://brand.rpi.edu",
+  "method": "User-authorized signed-in browser navigation and rendered DOM/accessibility reads; no direct authenticated APIs or credential extraction. PageDown sampling reaches each guideline bottom, with exact-line deduplication for reading copies and ordered raw frame text retained in JSON.",
+  "scope": "All 17 authored guideline pages, seven library landing pages and 12 inspected collection pages. Generator embed and remaining logo catalog excluded per user. Asset records/files and off-site destinations excluded.",
+  "navigation": [
+    {
+      "text": "Home",
+      "url": "https://brand.rpi.edu/document/4#/-/home"
+    },
+    {
+      "text": "About Our Brand",
+      "url": "https://brand.rpi.edu/document/4#/-/about-our-brand"
+    },
+    {
+      "text": "Who We Are",
+      "url": "https://brand.rpi.edu/document/4#/-/who-we-are"
+    },
+    {
+      "text": "Naming Conventions",
+      "url": "https://brand.rpi.edu/document/4#/-/naming-conventions"
+    },
+    {
+      "text": "Voice & Tone",
+      "url": "https://brand.rpi.edu/document/4#/-/voice-tone"
+    },
+    {
+      "text": "Design Principles",
+      "url": "https://brand.rpi.edu/document/4#/-/design-principles"
+    },
+    {
+      "text": "Logo System",
+      "url": "https://brand.rpi.edu/document/4#/-/logo-system"
+    },
+    {
+      "text": "The Bar",
+      "url": "https://brand.rpi.edu/document/4#/-/the-bar"
+    },
+    {
+      "text": "The Bar Generator",
+      "url": "https://brand.rpi.edu/document/4#/-/the-bar-generator"
+    },
+    {
+      "text": "Seal",
+      "url": "https://brand.rpi.edu/document/4#/-/seal"
+    },
+    {
+      "text": "Color",
+      "url": "https://brand.rpi.edu/document/4#/-/color"
+    },
+    {
+      "text": "Typography",
+      "url": "https://brand.rpi.edu/document/4#/-/typography"
+    },
+    {
+      "text": "Pattern",
+      "url": "https://brand.rpi.edu/document/4#/-/pattern"
+    },
+    {
+      "text": "Video",
+      "url": "https://brand.rpi.edu/document/4#/-/video"
+    },
+    {
+      "text": "Photography",
+      "url": "https://brand.rpi.edu/document/4#/-/photography"
+    },
+    {
+      "text": "Spirit Marks",
+      "url": "https://brand.rpi.edu/document/4#/-/spirit-marks"
+    },
+    {
+      "text": "Inspiration Gallery",
+      "url": "https://brand.rpi.edu/document/4#/-/inspiration-gallery-1"
+    },
+    {
+      "text": "Email Signature",
+      "url": "https://brand.rpi.edu/document/4#/-/email-signature"
+    },
+    {
+      "text": "Logos",
+      "url": "https://brand.rpi.edu/document/27"
+    },
+    {
+      "text": "Patterns and Bars",
+      "url": "https://brand.rpi.edu/document/28"
+    },
+    {
+      "text": "Fonts",
+      "url": "https://brand.rpi.edu/document/13"
+    },
+    {
+      "text": "Virtual Backgrounds",
+      "url": "https://brand.rpi.edu/document/22"
+    },
+    {
+      "text": "PowerPoint Template",
+      "url": "https://brand.rpi.edu/document/25"
+    },
+    {
+      "text": "Letterhead Template",
+      "url": "https://brand.rpi.edu/document/30"
+    },
+    {
+      "text": "Social Media Banners",
+      "url": "https://brand.rpi.edu/document/26"
+    }
+  ],
+  "counts": {
+    "guideline": 17,
+    "collection": 12,
+    "library": 7
+  },
+  "exclusions": [
+    {
+      "label": "The Bar Generator",
+      "url": "https://brand.rpi.edu/document/4#/-/the-bar-generator",
+      "reason": "User explicitly excluded this embedding destination."
+    },
+    {
+      "label": "Individual asset records and all downloads",
+      "reason": "User requested brand text only; no logos, fonts, images or template files."
+    },
+    {
+      "label": "Remaining logo collections and catalog",
+      "library": "https://brand.rpi.edu/document/27",
+      "collectionIds": [
+        "45",
+        "34"
+      ],
+      "reason": "User instructed to skip logos. Root and variation collection had already been inspected; neither added usage rules."
+    },
+    {
+      "label": "External destinations",
+      "reason": "Contact/request forms, external RPI sites, video platforms and linked asset delivery URLs are outside the brand.rpi.edu authored-page scope. No form was submitted."
+    },
+    {
+      "label": "Image-only text and media transcripts",
+      "reason": "Rendered text and alternative text capture, not OCR or video/audio transcription. Consult official diagrams/media when required."
+    }
+  ],
+  "records": [
+    {
+      "id": "about-our-brand",
+      "label": "About Our Brand",
+      "url": "https://brand.rpi.edu/document/4#/-/about-our-brand",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:05.250Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "about-our-brand.md",
+      "json": "about-our-brand.json",
+      "markdownSha256": "2b1f9dfaa84e272b676054fc0d1cd46d850c6cbca71e8078b08a1d8358880bc5",
+      "jsonSha256": "3727eacace605a3401ee7188092fe8c39ede805244dce4a700e94a1b882253f6",
+      "characters": 1609,
+      "reachedBottom": true
+    },
+    {
+      "id": "color",
+      "label": "Color",
+      "url": "https://brand.rpi.edu/document/4#/-/color",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:28.762Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "color.md",
+      "json": "color.json",
+      "markdownSha256": "e935fb9dcd8cac5ea20adae6c55f6a1b0a72bdb9576b19bd2ba70e9a4e470128",
+      "jsonSha256": "87da2980b39f9a91ef7a97e6312c01998bda263f98b613629ac056267d59c47b",
+      "characters": 3762,
+      "reachedBottom": true
+    },
+    {
+      "id": "design-principles",
+      "label": "Design Principles",
+      "url": "https://brand.rpi.edu/document/4#/-/design-principles",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:12.488Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "design-principles.md",
+      "json": "design-principles.json",
+      "markdownSha256": "46eebd2605b64fa97ccdb74c43773beeff6fd3ec86b9cf06488695ef0635c26b",
+      "jsonSha256": "40890a28c24630e7ee538b126da946de4d16fa3103683e29eb0b0c0468d1ec67",
+      "characters": 4288,
+      "reachedBottom": true
+    },
+    {
+      "id": "email-signature",
+      "label": "Email Signature",
+      "url": "https://brand.rpi.edu/document/4#/-/email-signature",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:47.027Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "email-signature.md",
+      "json": "email-signature.json",
+      "markdownSha256": "c254fe045f5ee33fb23c6bc59f9c9db6b2fd715c3935404b0e5fa136b1aa66e3",
+      "jsonSha256": "50f99a1206adcaa4b3ec5cde22502fe1f3f75f49b9aa83e5771973fd8064a817",
+      "characters": 1157,
+      "reachedBottom": true
+    },
+    {
+      "id": "home",
+      "label": "Home",
+      "url": "https://brand.rpi.edu/document/4#/-/home",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:18:53.550Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "home.md",
+      "json": "home.json",
+      "markdownSha256": "0d85f894f892720477e7687465778a786770536a296951492fed1f201de4b39a",
+      "jsonSha256": "feaf838204367b0d2b5d5c5ecc9d8ee814a176b6d2784d991e7a961bead47cbc",
+      "characters": 1401,
+      "reachedBottom": true
+    },
+    {
+      "id": "inspiration-gallery-1",
+      "label": "Inspiration Gallery",
+      "url": "https://brand.rpi.edu/document/4#/-/inspiration-gallery-1",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:45.956Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "inspiration-gallery-1.md",
+      "json": "inspiration-gallery-1.json",
+      "markdownSha256": "beab8d883afef6d6aa15d9978554290921f4c1f277df7bdeee4943b948c4f5da",
+      "jsonSha256": "755c70f2b1f5752e3d79e6b7bda1bfe0c2ff6bda21e292392e673e4bf53bb728",
+      "characters": 36,
+      "reachedBottom": true
+    },
+    {
+      "id": "library-13-collection-10",
+      "label": "Fonts — Replica Webfonts",
+      "url": "https://brand.rpi.edu/document/13/collection/10",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:15:58.492Z",
+      "modified": null,
+      "markdown": "library-13-collection-10.md",
+      "json": "library-13-collection-10.json",
+      "markdownSha256": "5be4d5e79d0b33deadb768fd350bdaf969a55129030bb435953e0af4f1ac10b3",
+      "jsonSha256": "3a95a035efb61aebdd3540ae0ce36ae067d51dcd45b3dd8d0810867221f69aea",
+      "characters": 53,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-13-collection-3",
+      "label": "Fonts — RPI Geist Desktop Fonts",
+      "url": "https://brand.rpi.edu/document/13/collection/3",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:16:11.759Z",
+      "modified": null,
+      "markdown": "library-13-collection-3.md",
+      "json": "library-13-collection-3.json",
+      "markdownSha256": "fe6f3292fc36b5b0369a5c1d95b3d33bcf665aa9672156fa1de40dc5470765d9",
+      "jsonSha256": "3bb761b278d036e6b7995f0575f0c91c0328ace529c279cf35b64265bb6f75ed",
+      "characters": 42,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-13-collection-4",
+      "label": "Fonts — RPI Geist Webfonts",
+      "url": "https://brand.rpi.edu/document/13/collection/4",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:16:09.112Z",
+      "modified": null,
+      "markdown": "library-13-collection-4.md",
+      "json": "library-13-collection-4.json",
+      "markdownSha256": "76b367110101f4a242b6c42c418f6ba75967ee1619a37ac1adccb325b1867ffd",
+      "jsonSha256": "43c97f833e3f9aee947aff728f9bd65f1f35543969620257f371d653c8006297",
+      "characters": 37,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-13-collection-6",
+      "label": "Fonts — RPI Geist Mono Desktop Fonts",
+      "url": "https://brand.rpi.edu/document/13/collection/6",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:16:06.372Z",
+      "modified": null,
+      "markdown": "library-13-collection-6.md",
+      "json": "library-13-collection-6.json",
+      "markdownSha256": "37bfd4815a0601cb0398a3f167bb415c5ee732c316c588a3dded59886861f0c0",
+      "jsonSha256": "3400cddfd38be8a60e6b83c5b0e962dfb1a3b44a1ec4a69c5071d8dd9fb98ea0",
+      "characters": 47,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-13-collection-7",
+      "label": "Fonts — RPI Geist Mono Webfonts",
+      "url": "https://brand.rpi.edu/document/13/collection/7",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:16:03.662Z",
+      "modified": null,
+      "markdown": "library-13-collection-7.md",
+      "json": "library-13-collection-7.json",
+      "markdownSha256": "d0f552d53684923d441ff06c69785f92216c7c623891f10df208699edf8a263a",
+      "jsonSha256": "93323bc12d70207d97a2ea9570622e03675e2b6d836352fd46b239e55d1d54b7",
+      "characters": 42,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-13-collection-9",
+      "label": "Fonts — Replica Desktop Fonts",
+      "url": "https://brand.rpi.edu/document/13/collection/9",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:16:01.074Z",
+      "modified": null,
+      "markdown": "library-13-collection-9.md",
+      "json": "library-13-collection-9.json",
+      "markdownSha256": "818400d4af7a7464a6a977b7e071464aa0d84f2024995a53fab00cb4ed9ab909",
+      "jsonSha256": "69636990d84a456db5bd5de1331b01c72943bbe3266e8e12c86d18a9b0df17c1",
+      "characters": 58,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-13",
+      "label": "Fonts",
+      "url": "https://brand.rpi.edu/document/13",
+      "kind": "library",
+      "capturedAt": "2026-11-17T16:15:28.072Z",
+      "modified": null,
+      "markdown": "library-13.md",
+      "json": "library-13.json",
+      "markdownSha256": "b677e435bad3d0bca00459d3b98083d0bee595cb40b466d0c02580659475210a",
+      "jsonSha256": "9b9ea39afe8ccb527dcd11d9675f458b4e2230b4aefd112b35c97ca12126d924",
+      "characters": 223,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-22-collection-23",
+      "label": "Virtual Backgrounds — Sunny Day - Static",
+      "url": "https://brand.rpi.edu/document/22/collection/23",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:17:05.664Z",
+      "modified": null,
+      "markdown": "library-22-collection-23.md",
+      "json": "library-22-collection-23.json",
+      "markdownSha256": "25a2a8bfcf3db4e47bfab095ee0874b600c758cc24f19121d82348f402d2fac9",
+      "jsonSha256": "7b526d7f84cb66b045d3653204e8c0545fa0515ddb1ca8739ae717dd9040d6ac",
+      "characters": 37,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-22-collection-24",
+      "label": "Virtual Backgrounds — Sunny Day - Animated",
+      "url": "https://brand.rpi.edu/document/22/collection/24",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:17:03.046Z",
+      "modified": null,
+      "markdown": "library-22-collection-24.md",
+      "json": "library-22-collection-24.json",
+      "markdownSha256": "0c1dbdb28a6d03b088c32481e58730563b11d6d8f93a326dd77aa55494adb5da",
+      "jsonSha256": "80712a06a70b6042b2477fd3505a7febffede3e4e43a16fd312e49079384529e",
+      "characters": 39,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-22",
+      "label": "Virtual Backgrounds",
+      "url": "https://brand.rpi.edu/document/22",
+      "kind": "library",
+      "capturedAt": "2026-11-17T16:16:13.279Z",
+      "modified": null,
+      "markdown": "library-22.md",
+      "json": "library-22.json",
+      "markdownSha256": "44f963217dbc5489c6ba28c8e2620108089d0d0950fcee5cb0b77e9fc8069476",
+      "jsonSha256": "22bcb2d4d59ce54e5c8ef312b6b82869b29975f02134014e892f9fefd7b99563",
+      "characters": 81,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-25",
+      "label": "PowerPoint Template",
+      "url": "https://brand.rpi.edu/document/25",
+      "kind": "library",
+      "capturedAt": "2026-11-17T16:16:39.294Z",
+      "modified": null,
+      "markdown": "library-25.md",
+      "json": "library-25.json",
+      "markdownSha256": "b7e5d1ca825b2027dc33cc2c0187f4e927595b136fa01c4eebfe021a71ff8b72",
+      "jsonSha256": "280544d5615ee7d6d094946e4a0b034b3722436d2979b19750063a5022c19ace",
+      "characters": 5,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-26-collection-22",
+      "label": "Social Media Banners — LinkedIn Banners - Personal Use",
+      "url": "https://brand.rpi.edu/document/26/collection/22",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:20:36.049Z",
+      "modified": null,
+      "markdown": "library-26-collection-22.md",
+      "json": "library-26-collection-22.json",
+      "markdownSha256": "e2b661798fbd70916fb52609b4cb6bf76a294c23a87157fcfcd101a8c366398c",
+      "jsonSha256": "3a94595529073c76d107afba0e0a676e6c5d5728a8766064e04478f00a6144ab",
+      "characters": 50,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-26",
+      "label": "Social Media Banners",
+      "url": "https://brand.rpi.edu/document/26",
+      "kind": "library",
+      "capturedAt": "2026-11-17T16:20:16.351Z",
+      "modified": null,
+      "markdown": "library-26.md",
+      "json": "library-26.json",
+      "markdownSha256": "2d5be55c1629787d354e4b89048b0e074b738f3692034803c818b9c7e4edeca5",
+      "jsonSha256": "e1a100bf0ffc3069cbc571d961b6599c1f383cb7805c294b343263037d8341c2",
+      "characters": 62,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-27-collection-46",
+      "label": "Logos — Primary Logo (Variations)",
+      "url": "https://brand.rpi.edu/document/27/collection/46",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:14:43.296Z",
+      "modified": null,
+      "markdown": "library-27-collection-46.md",
+      "json": "library-27-collection-46.json",
+      "markdownSha256": "7c9c39d09f8b84c50be2958e36303ce743f36fa12eeff0dad28e773c13acaf07",
+      "jsonSha256": "e6900dca6e063de37f05cbdde87b775198f171abff8109074eba1676d935ad0a",
+      "characters": 44,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-27",
+      "label": "Logos",
+      "url": "https://brand.rpi.edu/document/27",
+      "kind": "library",
+      "capturedAt": "2026-11-17T16:20:18.402Z",
+      "modified": null,
+      "markdown": "library-27.md",
+      "json": "library-27.json",
+      "markdownSha256": "5919bd506b7612232dba2dda30173d1eeb3ab4eeab40e3cca15858a8acdfc51f",
+      "jsonSha256": "62cc894199f37c730f21d32f414f362649817fcb73ac4a7dffca14a703bd0c3c",
+      "characters": 121,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-28-collection-40",
+      "label": "Patterns and Bars — Bars",
+      "url": "https://brand.rpi.edu/document/28/collection/40",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:14:58.870Z",
+      "modified": null,
+      "markdown": "library-28-collection-40.md",
+      "json": "library-28-collection-40.json",
+      "markdownSha256": "79aa01edc173bc4a19cbf7360188c8d9e40d65c172c4cc18c84b40284b5a1cae",
+      "jsonSha256": "8311e0e74336579ef4b9a67ca6511760c8c22ff08ad2c497917ce5cd96b5966e",
+      "characters": 23,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-28-collection-41",
+      "label": "Patterns and Bars — Patterns",
+      "url": "https://brand.rpi.edu/document/28/collection/41",
+      "kind": "collection",
+      "capturedAt": "2026-11-17T16:14:56.113Z",
+      "modified": null,
+      "markdown": "library-28-collection-41.md",
+      "json": "library-28-collection-41.json",
+      "markdownSha256": "29968d77e99379e9546884942ab41343e3cc99565dde09d9d00042f862d2bf29",
+      "jsonSha256": "bd939b19ae47dd470991554364eeedabfaa4e3041f78fe6bbe883b522f377563",
+      "characters": 27,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-28",
+      "label": "Patterns and Bars",
+      "url": "https://brand.rpi.edu/document/28",
+      "kind": "library",
+      "capturedAt": "2026-11-17T16:14:44.922Z",
+      "modified": null,
+      "markdown": "library-28.md",
+      "json": "library-28.json",
+      "markdownSha256": "9201cba1e4e03fd85dde4300919b99724b547152950edb66744f291ea9d19a96",
+      "jsonSha256": "b87216403be7b67ac7a3ceb393776616be46a8cf554bb7a9f88375f1060a221d",
+      "characters": 56,
+      "reachedBottom": null
+    },
+    {
+      "id": "library-30",
+      "label": "Letterhead Template",
+      "url": "https://brand.rpi.edu/document/30",
+      "kind": "library",
+      "capturedAt": "2026-11-17T16:16:59.394Z",
+      "modified": null,
+      "markdown": "library-30.md",
+      "json": "library-30.json",
+      "markdownSha256": "d974bf8c9349eff296c0b0f3c99ebb286507cc099c46d44469d47c04675579e3",
+      "jsonSha256": "7a10ed437c3e34593b6b73edbc83e59a54c6d4598250ffef0e535c5a55fc4eba",
+      "characters": 9,
+      "reachedBottom": null
+    },
+    {
+      "id": "logo-system",
+      "label": "Logo System",
+      "url": "https://brand.rpi.edu/document/4#/-/logo-system",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:16.264Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "logo-system.md",
+      "json": "logo-system.json",
+      "markdownSha256": "dd6a3456afa373fac2ba4c4bc26276dc4a43b3457bcb5ffd6f28c0d0c2ff513a",
+      "jsonSha256": "6f9d0533c0a0fda839f12934e3e318298ea13a79d88fee2f5b7db3605f4cfbaf",
+      "characters": 6621,
+      "reachedBottom": true
+    },
+    {
+      "id": "naming-conventions",
+      "label": "Naming Conventions",
+      "url": "https://brand.rpi.edu/document/4#/-/naming-conventions",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:08.073Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "naming-conventions.md",
+      "json": "naming-conventions.json",
+      "markdownSha256": "0d04c69b6296ea7ac364ad39561a1e1d3ad4a796c0f28a4c7b3f2819b0a09f5e",
+      "jsonSha256": "dc34e24402a6e34232f849edbeacf63d9a4b6380006f40118a29ce91a5ab9db0",
+      "characters": 1189,
+      "reachedBottom": true
+    },
+    {
+      "id": "pattern",
+      "label": "Pattern",
+      "url": "https://brand.rpi.edu/document/4#/-/pattern",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:34.567Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "pattern.md",
+      "json": "pattern.json",
+      "markdownSha256": "23bcb0a95595047868dafb13247a54cf3f26a6fb1b57b13d855f767980a97c62",
+      "jsonSha256": "f23ebfaaf9cc2a18d382a89f195f12d245d59b4e284cb9c6f3b6185d63165429",
+      "characters": 3281,
+      "reachedBottom": true
+    },
+    {
+      "id": "photography",
+      "label": "Photography",
+      "url": "https://brand.rpi.edu/document/4#/-/photography",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:41.817Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "photography.md",
+      "json": "photography.json",
+      "markdownSha256": "9fe3af59998624a832f5da5016cad95e3a6f1c3f2e1c644920e40ef2c5f00cce",
+      "jsonSha256": "d7af9e5b85a8b6d82f50ee9f5366a8f5246a56aef47dff6d31e647fbbbd03fad",
+      "characters": 3158,
+      "reachedBottom": true
+    },
+    {
+      "id": "seal",
+      "label": "Seal",
+      "url": "https://brand.rpi.edu/document/4#/-/seal",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:26.343Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "seal.md",
+      "json": "seal.json",
+      "markdownSha256": "7721feb17af68992e7c2cd9201762fffc908b0c774a77ab103bf630f3a50cb81",
+      "jsonSha256": "760913c827047d8af9dd62270ca862233397c59c72ecdb939a27bb8fd8fca574",
+      "characters": 3229,
+      "reachedBottom": true
+    },
+    {
+      "id": "spirit-marks",
+      "label": "Spirit Marks",
+      "url": "https://brand.rpi.edu/document/4#/-/spirit-marks",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:43.354Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "spirit-marks.md",
+      "json": "spirit-marks.json",
+      "markdownSha256": "6292fe78ee7a32a817829098646748bb15937cb12c2429b4295d59f64751d634",
+      "jsonSha256": "6a5eb981b8df1cd4d673c296c12fbf46a7931f941bf00e5f61f5ac4b712dc266",
+      "characters": 1689,
+      "reachedBottom": true
+    },
+    {
+      "id": "the-bar",
+      "label": "The Bar",
+      "url": "https://brand.rpi.edu/document/4#/-/the-bar",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:18.236Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "the-bar.md",
+      "json": "the-bar.json",
+      "markdownSha256": "74db1a32445923c62b8826c5b9e9476970acd2b0554f3a6cc5e7c47887e8571d",
+      "jsonSha256": "e5d9d43a1d096611780819d05f993ad57f6f57aad6c46dd2a7319c876a635782",
+      "characters": 3937,
+      "reachedBottom": true
+    },
+    {
+      "id": "typography",
+      "label": "Typography",
+      "url": "https://brand.rpi.edu/document/4#/-/typography",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:32.251Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "typography.md",
+      "json": "typography.json",
+      "markdownSha256": "cecd683105f1ba241b9164ff4a57bf77021021e8eba06dd560a9e0410bf9fd03",
+      "jsonSha256": "2e4bb32edf6f9e1e76432f8c8f5081b126150b546c7353bb4053169180fd52bd",
+      "characters": 5681,
+      "reachedBottom": true
+    },
+    {
+      "id": "video",
+      "label": "Video",
+      "url": "https://brand.rpi.edu/document/4#/-/video",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:39.132Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "video.md",
+      "json": "video.json",
+      "markdownSha256": "1467c0662a2d9c41b238ed9269a1245a05697576fcf045a09e31c4a79e85c2c0",
+      "jsonSha256": "f0d49d6ff12644687d751fde8d536472bfcf117b1345bb5dbce41cc8386b1732",
+      "characters": 10747,
+      "reachedBottom": true
+    },
+    {
+      "id": "voice-tone",
+      "label": "Voice & Tone",
+      "url": "https://brand.rpi.edu/document/4#/-/voice-tone",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:10.541Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "voice-tone.md",
+      "json": "voice-tone.json",
+      "markdownSha256": "a0b45100071bd12fd78892f97d1c1b56d95dd2abe1a721017afbd229056aaf1b",
+      "jsonSha256": "a4cf5c64794ca6ffe2bf6444dfdfff6d7b805de76cca3134fde221b765e409a1",
+      "characters": 9626,
+      "reachedBottom": true
+    },
+    {
+      "id": "who-we-are",
+      "label": "Who We Are",
+      "url": "https://brand.rpi.edu/document/4#/-/who-we-are",
+      "kind": "guideline",
+      "capturedAt": "2026-11-17T16:19:06.929Z",
+      "modified": "Last modified on October 29, 2026 at 10:29 AM",
+      "markdown": "who-we-are.md",
+      "json": "who-we-are.json",
+      "markdownSha256": "963ab434a4b51858412ce5fa847f6bacbe79db0797bc711b2dc1a781a2fe4377",
+      "jsonSha256": "0ecc724a328ea1a17a9c2152e80586490a56cbc96a9c76a518a78c21bedc2057",
+      "characters": 4010,
+      "reachedBottom": true
+    }
+  ]
+}

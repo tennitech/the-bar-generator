@@ -13,6 +13,7 @@ An open-source software license does not itself grant rights to use RPI trademar
 | RPIGeist, RPIGeistMono, and other bundled fonts | Font files in assets/fonts | Obtain the applicable font licenses, including web embedding and repo distribution terms. |
 | Artemis II artwork and audio | Files and references in the repo | Record source and reuse terms, including any third-party elements. |
 | Vendored libraries | THIRD_PARTY_NOTICES.md and third_party licenses | Preserve each license and update notices when dependencies change. |
+| Brand Hub text captures (November 17, 2026) | User-authorized signed-in text capture; the project owner subsequently requested committing the complete package, opening a public repository PR and merging after checks. RPI copyright is preserved in each reading copy; coverage is in references/brand_sources/index.md. | Owner publication intent for this repo does not establish a general redistribution license or sublicense the text under MIT. Preserve RPI attribution and confirm any broader reuse terms with the sponsor. No asset/font files were downloaded; their permissions remain separate. |
 
 Keep this table open until the sponsor supplies evidence. Do not claim that all bundled assets have been cleared for unrestricted open-source reuse. If an asset cannot be distributed, replace it or remove it with sponsor approval.
 
