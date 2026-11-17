@@ -25,17 +25,19 @@ function harness(style = 'well-modes', search = '', reduced = false) {
     set(id, value) { elements[id].value = value; elements[id].emit('input'); },
     loop(prefix, checked) { elements[`${prefix}-motion-toggle`].checked = checked; elements[`${prefix}-motion-toggle`].emit('change'); } };
 }
-test.each(['well-modes','rabi'])('%s starts, pauses at current frame, seeks and resumes without catch-up', style => {
+test.each(['well-modes','rabi'])('%s resets on both Loop transitions and allows seeking with Loop off', style => {
   const h = harness(style), prefix = style === 'rabi' ? 'rabi' : 'well';
   h.controls.tick(0); h.controls.tick(50);
-  const phase = h.controls.values()[`${prefix}Phase`];
-  expect(phase).toBeGreaterThan(prefix === 'well' ? .15 : .12);
+  const defaultPhase = prefix === 'well' ? .15 : .12;
+  expect(h.controls.values()[`${prefix}Phase`]).toBeGreaterThan(defaultPhase);
   h.loop(prefix,false); h.controls.tick(5000);
-  expect(h.controls.values()[`${prefix}Phase`]).toBe(phase);
+  expect(h.controls.values()[`${prefix}Phase`]).toBeCloseTo(defaultPhase,12);
   h.set(`${prefix}-phase`,.371); h.controls.tick(6000); h.controls.tick(6050);
   expect(h.controls.values()[`${prefix}Phase`]).toBeCloseTo(.371,12);
-  h.loop(prefix,true); h.controls.tick(10000); h.controls.tick(10020);
-  expect(h.controls.values()[`${prefix}Phase`]).toBeCloseTo(.371 + .02/8,12);
+  h.loop(prefix,true); h.controls.tick(10000);
+  expect(h.controls.values()[`${prefix}Phase`]).toBeCloseTo(defaultPhase,12);
+  h.controls.tick(10020);
+  expect(h.controls.values()[`${prefix}Phase`]).toBeCloseTo(defaultPhase + .02/8,12);
 });
 test('chosen phase ignores animation; query settings restore zero and reverse, hidden and reduced motion pause safely', () => {
   const h = harness('well-modes','?wellN1=6&wellN2=6&wellPopulation=0&wellPhase=0&wellSpeed=.2&wellReverse=true');

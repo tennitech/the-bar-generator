@@ -50,19 +50,23 @@ test('Gradient SVG consumes the explicit phase while marquee samples opt out of 
   expect(marquee.createSettings({value:'gradient',query:'gradientVariant=2'})).toBeNull();
 });
 
-test('Gradient pause/resume preserves phase and rebases the timestamp through the real transport function', () => {
+test.each(['gradient', 'ticker'])('%s resets its motion clock on every Loop change', style => {
   const fs = require('node:fs'), vm = require('node:vm');
-  const source = fs.readFileSync(require.resolve('../js/main'),'utf8');
-  const context = { normalizeStyleValue: value=>value, styleSupportsMotion: value=>value==='gradient',
-    MOTION_ENABLED_BY_STYLE:{gradient:true}, lastAnimationFrameTimestamp:123, liveMotionPhase:.37,
-    resetAnimationClock:jest.fn(), syncMotionToggleState:jest.fn(), requestUpdate:jest.fn() };
-  vm.runInNewContext(source.slice(source.indexOf('function setMotionEnabledForStyle('),source.indexOf('function generateRandomStaffPattern(')),context);
-  context.setMotionEnabledForStyle('gradient',false);
-  expect(context.MOTION_ENABLED_BY_STYLE.gradient).toBe(false);expect(context.liveMotionPhase).toBe(.37);
-  expect(context.lastAnimationFrameTimestamp).toBe(0);expect(context.resetAnimationClock).not.toHaveBeenCalled();
-  context.setMotionEnabledForStyle('gradient',true);
-  expect(context.MOTION_ENABLED_BY_STYLE.gradient).toBe(true);expect(context.liveMotionPhase).toBe(.37);
-  context.setMotionEnabledForStyle('gradient',true,{resetPhase:true});expect(context.resetAnimationClock).toHaveBeenCalledTimes(1);
+  const source = fs.readFileSync(require.resolve('../js/main'), 'utf8');
+  const context = {
+    normalizeStyleValue: value => value,
+    styleSupportsMotion: value => value === style,
+    MOTION_ENABLED_BY_STYLE: { [style]: true },
+    resetAnimationClock: jest.fn(),
+    syncMotionToggleState: jest.fn(),
+    requestUpdate: jest.fn()
+  };
+  vm.runInNewContext(source.slice(source.indexOf('function setMotionEnabledForStyle('), source.indexOf('function generateRandomStaffPattern(')), context);
+  for (const enabled of [false, true, false, true]) {
+    context.setMotionEnabledForStyle(style, enabled);
+    expect(context.MOTION_ENABLED_BY_STYLE[style]).toBe(enabled);
+  }
+  expect(context.resetAnimationClock).toHaveBeenCalledTimes(4);
 });
 
 test.each([1,2])('Gradient %s GIF renderer paints the shared geometry at every captured phase', variant => {

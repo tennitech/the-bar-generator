@@ -54,10 +54,8 @@
     const commit = () => { root.updateUrlParameters(); root.requestUpdate(); };
     select(); // Default motion, with reduced-motion and shared-state overrides below.
     el('quantum-motion-toggle').addEventListener('change', () => {
-      if (!el('quantum-motion-toggle').checked) {
-        el('quantum-phase').value = 0;
-        restoreSettingPhase();
-      }
+      el('quantum-phase').value = 0;
+      restoreSettingPhase();
       lastTimestamp = null; sync(); commit();
     });
     el('quantum-reverse-toggle').addEventListener('change', () => { lastTimestamp = null; commit(); });

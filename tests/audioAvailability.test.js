@@ -20,3 +20,43 @@ test('Ticker and Binary never advertise or start audio; supported styles still d
     expect(context.sequenceContext.active).toBe(false);
   }
 });
+
+test('a user start resumes prefixed Web Audio and an interrupted request cannot play after cancellation', async () => {
+  let finishResume;
+  const context = {
+    isAudioPlaying: false,
+    audioStartRequest: null,
+    audioContext: undefined,
+
+    getCurrentAudioPreviewType: () => 'waveform',
+    getActiveAudioPreviewType: () => null,
+    sequenceContext: {},
+    window: {},
+    updateAudioControlsUI: jest.fn(),
+    startWaveformAudio: jest.fn(),
+    console
+  };
+  context.window.webkitAudioContext = class {
+    state = 'interrupted';
+    createGain() { return { gain: {}, connect() {} }; }
+    resume() {
+      return new Promise(resolve => {
+        finishResume = () => { this.state = 'running'; resolve(); };
+      });
+    }
+  };
+  vm.runInNewContext(extract('initializeAudio', 'updateStaffEffects'), context);
+  vm.runInNewContext('async ' + extract('startAudio', 'startWaveformAudio'), context);
+  vm.runInNewContext(extract('stopAudio', 'stopArtemisMissionAudio'), context);
+
+  const cancelled = context.startAudio();
+  expect(context.audioContext.state).toBe('interrupted');
+  expect(context.startWaveformAudio).not.toHaveBeenCalled();
+  context.stopAudio();
+  finishResume();
+  await cancelled;
+  expect(context.startWaveformAudio).not.toHaveBeenCalled();
+
+  await context.startAudio();
+  expect(context.startWaveformAudio).toHaveBeenCalledTimes(1);
+});

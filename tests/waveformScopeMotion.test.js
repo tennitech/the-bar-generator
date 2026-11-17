@@ -18,10 +18,9 @@ test('default sweep follows one carrier cycle and ignores legacy modulation',()=
     const display=scope.displaySettings(v);
     const captured=scope.recording(samples(v,Math.max(4,.1+display.replayLimit)),rate,.1,'offline',display);
     const view=scope.sweep(captured,v),first=captured.frame(view.origin);
-    const forward=scope.sweepReplay(view,0,first,false),reverse=scope.sweepReplay(view,0,first,true);
+    const forward=scope.sweepReplay(view,0,first);
     expect(forward.playbackSeconds).toBeCloseTo(1/.3,12);
     expect(forward.frame(view.span/4)).toEqual(captured.frame(view.origin+view.span/4));
-    expect(reverse.frame(view.span/4)).toEqual(captured.frame(view.origin+view.span*3/4));
     expect(forward.frame(0)).toBe(first);expect(forward.frame(view.span)).toBe(first);
     for(const speed of [.06,.3,1.2]) {
       const p=plan('waveform',{waveformScope:first,waveformScopeReplaySeconds:forward.replaySeconds,waveformScopePlaybackSeconds:forward.playbackSeconds,waveformSpeed:speed});
@@ -35,6 +34,31 @@ test('actual rising crossings trigger the captured source without reconstructed 
   expect(data[index*2]).toBeGreaterThan(0);expect(data[(index-1)*2]).toBeLessThanOrEqual(0);
   expect(view.origin+view.span).toBeLessThanOrEqual(recorded.replaySeconds);
 });
+test('Reverse replays the same paused PCM in the opposite direction from the captured frame', async () => {
+  let node;
+  const controller = scope.createController({ environment: {
+    AudioWorkletNode: class {
+      constructor() { node = this; this.port = {}; }
+      connect() {}
+      disconnect() {}
+    }
+  } });
+  controller.configure(base);
+  try {
+    await controller.attach({sampleRate:rate*8,audioWorklet:{addModule:async()=>{}},destination:{}},{connect(){},disconnect(){}});
+    node.port.onmessage({data:samples(base)});
+    controller.tick(0);
+    controller.tick(0, false);
+    const forward = controller.capture();
+    const backward = controller.capture(true);
+    expect(backward.frame).toBe(forward.frame);
+    expect(backward.recording.frame(0)).toBe(forward.frame);
+    const span = forward.recording.replaySeconds;
+    expect(backward.recording.frame(span/4)).toEqual(forward.recording.frame(span*3/4));
+    expect(backward.recording.frame(span/4)).not.toEqual(forward.recording.frame(span/4));
+  } finally { controller.dispose(); }
+});
+
 test('live playback honors motion time without incoming packets, ignores packet jitter within a sweep and freezes exact exports',async()=>{
   let node;
   const c=scope.createController({environment:{AudioWorkletNode:class {constructor(){node=this;this.port={};}connect(){}disconnect(){}}}});
@@ -45,7 +69,9 @@ test('live playback honors motion time without incoming packets, ignores packet 
     c.tick(1);expect(c.frame()).toEqual(first.recording.frame(first.recording.replaySeconds*.3));
     node.port.onmessage({data:new Float32Array(512).fill(.099)});c.tick(1);
     expect(c.frame()).toEqual(first.recording.frame(first.recording.replaySeconds*.3));
-    c.tick(1,false);const frozen=c.capture();c.tick(99,false,true);expect(c.frame()).toBe(frozen.frame);
+    c.tick(1,false);const frozen=c.capture();c.tick(99,false);expect(c.frame()).toBe(frozen.frame);
+    c.resetSweep();
+    expect(c.frame()).toEqual(first.frame);
     c.tick(4,true);expect(c.status()).toContain('interpolated PCM');
     expect(first.recording.frame(0)).toBe(first.frame);
     c.configure({...base,type:2,lfo:{...base.lfo,depth:25}});c.tick(4);

@@ -558,6 +558,31 @@ body {
   margin: 0 0 var(--control-field-gap);
 }
 
+.bar_information-row {
+  --about-audio-size: 1.75rem;
+  position: relative;
+}
+
+.bar_information-audio {
+  position: absolute;
+  inset-block-start: calc((var(--control-touch-size) - var(--about-audio-size)) / 2);
+  inset-inline-end: 0;
+}
+
+.bar_information-audio[hidden],
+.bar_information-audio button[hidden] {
+  display: none;
+}
+
+.bar_information-audio .preview-control-btn {
+  min-width: var(--about-audio-size);
+  min-height: var(--about-audio-size);
+}
+
+.bar_information-row:has(.bar_information-audio:not([hidden])) .bar_information-toggle {
+  margin-inline-end: calc(var(--about-audio-size) + 0.5rem);
+}
+
 .bar_information {
   margin: 0 0 0.25rem;
   color: var(--text-primary);
@@ -968,10 +993,6 @@ body.theme-lunar .bar_information-credit { display: block; }
 
 input:checked+.slider {
   background-color: var(--accent-color);
-}
-
-input:focus+.slider {
-  box-shadow: 0 0 1px var(--accent-color);
 }
 
 input:checked+.slider:before {
@@ -2004,12 +2025,6 @@ body.has-logo-animation {
   margin-bottom: 0;
 }
 
-.control_row-preview {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .runtime_section {
   margin-top: var(--control-section-gap);
   margin-bottom: var(--control-section-gap);
@@ -2656,7 +2671,6 @@ body.has-logo-animation {
   --slider-thumb-ring: rgba(214, 0, 28, 0.2);
   --toggle-track-active: var(--rpi-red);
   --toggle-knob-active: #ffffff;
-  --toggle-ring: rgba(214, 0, 28, 0.2);
 }
 
 :is(html, body):is(.theme-white, .theme-gray-on-black) {
@@ -2704,7 +2718,6 @@ body.has-logo-animation {
   --slider-thumb-ring: rgba(214, 0, 28, 0.2);
   --toggle-track-active: var(--rpi-red);
   --toggle-knob-active: #ffffff;
-  --toggle-ring: rgba(214, 0, 28, 0.2);
 }
 
 /* Mission Control is an intentional illustrated environment. */
@@ -2795,7 +2808,6 @@ body.has-logo-animation {
   --toggle-knob: #ffffff;
   --toggle-track-active: var(--rpi-red);
   --toggle-knob-active: #ffffff;
-  --toggle-ring: rgba(214, 0, 28, 0.26);
   --control-focus-ring: rgba(214, 0, 28, 0.34);
   --menu-shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
 }
@@ -2886,22 +2898,6 @@ body.theme-lunar .control-header::before {
   border-radius: 1px;
   background: var(--rpi-red);
   box-shadow: 0 0 14px var(--lunar-red-glow);
-}
-
-body.theme-lunar #lunar-group .control-header {
-  justify-content: flex-start;
-}
-
-body.theme-lunar #lunar-group {
-  margin-top: 23px;
-}
-
-body.theme-lunar #lunar-group .control-header::before {
-  content: none;
-}
-
-body.theme-lunar #lunar-group .control_row-preview {
-  justify-content: space-between;
 }
 
 body.theme-lunar .control-input,
@@ -3487,11 +3483,6 @@ body.theme-lunar .lunar_counter {
   transform: scale(1.08);
 }
 
-.switch:hover .slider:before,
-.switch:focus-within .slider:before {
-  box-shadow: 0 0 0 4px var(--toggle-ring), 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
 .slider {
   background: var(--toggle-track);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--toggle-track) 40%, var(--control-border) 60%);
@@ -3506,12 +3497,20 @@ input:checked + .slider {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--toggle-track-active) 84%, #000000 16%);
 }
 
-input:focus + .slider {
-  box-shadow: 0 0 0 3px var(--toggle-ring);
-}
-
 input:checked + .slider:before {
   background: var(--toggle-knob-active);
+}
+
+/* Keyboard focus adds a mark inside the thumb without changing the track. */
+.switch input:focus-visible + .slider::before {
+  background-image: radial-gradient(circle, var(--rpi-black) 0 26%, transparent 31%);
+}
+
+@media (forced-colors: active) {
+  .switch input:focus-visible + .slider::before {
+    forced-color-adjust: none;
+    background: radial-gradient(circle, CanvasText 0 26%, Canvas 31%);
+  }
 }
 
 /* ────────────────────────────────────────
@@ -3878,11 +3877,7 @@ body { min-height: 0; }
   .app-sidebar.active { transform: none; visibility: visible; }
 }
 
-/* Preserve a visible keyboard ring and shared preview transport touch targets. */
-.switch input:focus-visible + .slider {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 2px;
-}
+/* Keep shared preview transport touch targets. */
 @media (pointer: coarse) {
   .preview-controls, .audio-controls { gap: 0.5rem; }
   .preview-controls .preview-control-btn,
@@ -4247,10 +4242,6 @@ body.theme-lunar .export_menu { min-width: 0; }
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
   box-shadow: none;
-}
-#app-sidebar .switch input:focus-visible + .slider {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 3px;
 }
 .parameter_summary {
   min-height: 1.125rem;

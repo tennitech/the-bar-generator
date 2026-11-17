@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261117-waveform-controls';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261117-loop-controls';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
@@ -59,8 +59,8 @@
       .map(name => shellSources.find(src => src.startsWith(`js/utils/${name}.js`))).filter(Boolean);
     await Promise.all(earlySources.map(source => { earlyScripts.add(source); return loadScript(source); }));
     // Reconcile fetched shell CSS before inserting its chrome (also protects old route stubs).
-    const shellCSS = doc.querySelector('link[rel="stylesheet"][href*="css/style.css?v=20261111-music-score-r2"]');
-    const routeCSS = document.querySelector('link[rel="stylesheet"][href*="css/style.css?v=20261111-music-score-r2"]');
+    const shellCSS = doc.querySelector('link[rel="stylesheet"][href^="css/style.css?"]');
+    const routeCSS = document.querySelector('link[rel="stylesheet"][href^="css/style.css?"]');
     if (shellCSS && routeCSS && routeCSS.getAttribute('href') !== shellCSS.getAttribute('href')) {
       await new Promise((resolve, reject) => {
         routeCSS.onload = resolve;

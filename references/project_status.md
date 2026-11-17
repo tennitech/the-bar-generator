@@ -1,5 +1,38 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
+## November 17 Loop defaults, compact Waveform controls and audio startup
+
+Both Loop transitions reset the selected bar to its default phase. Ticker,
+Gradient, Waveform and Ring Wavefunction start at phase zero. Well Modes
+starts at 15% and Rabi at 12%, their authored starting phases. Manual seeking
+and restored snapshots still use their saved phase. Waveform repaints the
+default phase of its captured PCM without resetting note, shape or audio.
+
+Waveform keeps tuning and time-window context in About Waveform. The editor
+omits the changing audio status so audio playback cannot reposition controls.
+The About speaker target is 28 CSS pixels square at default text size. Audio
+creates and resumes Web Audio from the activation gesture, supports the
+prefixed constructor, and uses offline PCM display when live capture is
+unavailable. Ordinary audio actions and failures no longer show pop-ups.
+Artemis II uses its native MP3 player.
+
+Sidebar toggles mark keyboard focus with a high-contrast dot in the thumb.
+The track has no added outline or halo on hover or focus.
+
+## November 17 About audio controls and Waveform motion
+
+The audio icon sits at the right edge of the About row for Waveform, Morse
+Code and Music, and for Artemis II in Mission Control. It works with About
+open or closed. Music's voice, effects and tempo are in Parameters. The icon
+updates when playback starts. The former first-play toast could cover it and
+block an immediate pause, so playback uses the icon state for confirmation.
+
+Waveform Reverse is a Motion setting. It changes travel direction from the
+current phase in the editor and in GIF replay. Audio keeps the selected note
+and shape. Type and Note show completed PCM during a drag, including with
+Loop off, with at most one native render in progress and one waiting setting.
+See the [Waveform model](waveform_notes.md).
+
 ## November 17 local preview handoff and grouped AI contribution records
 
 For site changes, contributors verify the affected route in a local browser
@@ -21,12 +54,12 @@ independent contributions and material configuration changes distinct. See the
 [local preview setup](../README.md#local-preview-for-site-changes) and
 [AI contribution records](ai_contribution_records.md).
 
-## November 17 Waveform edits with Loop off and signal reversal
+## Earlier November 17 Waveform revision
 
-Loop holds the Waveform sweep phase while note, shape and direction edits
+In the earlier revision, Loop held the Waveform sweep phase while note, shape and direction edits
 replace the displayed signal as soon as the latest settled PCM is ready
 ([#208](https://github.com/tennitech/the-bar-generator/issues/208)). Reverse
-also reflects the signal in time around the oscillator phase origin
+also reflected the signal in time around the oscillator phase origin
 ([#218](https://github.com/tennitech/the-bar-generator/issues/218)).
 Signed oscillator gains and paired Pulse waves use the existing 50 ms ramps.
 The live graph and the offline renderer share synthesis. The editor, header

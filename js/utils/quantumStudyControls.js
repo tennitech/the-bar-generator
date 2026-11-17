@@ -142,7 +142,11 @@
           }), commit: () => change(prefix, key), ariaLabel: `Set ${config.name} ${key}${percent ? ' percent' : ''}` };
         state[prefix].editors.push(editor); root.registerSliderValueEditor(editor);
       }
-      for (const suffix of ['motion-toggle', 'reverse-toggle']) el(`${prefix}-${suffix}`).addEventListener('change', () => change(prefix, suffix));
+      el(`${prefix}-motion-toggle`).addEventListener('change', () => {
+        el(`${prefix}-phase`).value = config.phase;
+        change(prefix, 'phase');
+      });
+      el(`${prefix}-reverse-toggle`).addEventListener('change', () => change(prefix, 'reverse-toggle'));
     }
     const finish = event => { for (const item of Object.values(state)) { item.pointers.delete(event.pointerId); item.last = null; } };
     root.addEventListener('pointerup', finish); root.addEventListener('pointercancel', finish);

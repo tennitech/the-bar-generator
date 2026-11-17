@@ -37,13 +37,11 @@ uniformly close to 30.578 ms and must not be described as fixed. It stays fixed
 within a selected note; there is no per-frame painted-bounds fitting.
 
 The interval can start at any phase and still span N periods. The display
-uses a rising crossing of the actual generated PCM as a helpful initial
-trigger. Fractional crossing times are linearly interpolated between adjacent
-PCM samples. Motion then sweeps one signal period at the independent selected
-visual speed. The display sweeps much more slowly than the 32–1047 Hz carrier.
-Reverse changes both the sweep direction and the signal from f(t) to f(−t),
-measured about the oscillator phase origin. The selected note sets the same
-fundamental frequency in either direction.
+uses a rising crossing of the generated PCM. Fractional crossing times are
+linearly interpolated between adjacent PCM samples. Motion sweeps one signal
+period at the independent selected visual speed, much more slowly than the
+32–1047 Hz carrier. Reverse changes the sweep direction from the current phase.
+The same direction applies to GIF replay through the captured PCM.
 
 ## Audio and sampled visualization
 
@@ -59,22 +57,24 @@ distribution intentionally differs from the former DC-offset pulse. The
 Square→Pulse morph retains D=0.2+0.6×(type−2). The settled gain magnitudes
 sum to 0.1. RMS and perceived loudness vary by waveform.
 
-All five oscillators share one explicit future start time. Native Sine,
-Sawtooth and Square are odd about that phase origin, so a signed gain reverses
-them. Pulse needs two PeriodicWaves. Its reversed wave preserves the cosine
-coefficients and negates the sine coefficients. The graph crossfades the two
-Pulse directions while ramping the signed gains on the other shapes. A periodic
-tone may sound equivalent after reversal, especially when reversal amounts to a
-phase shift.
+All four oscillators share one explicit future start time. The selected shape
+sets their gain mix. Reverse only changes the presentation clock, so toggling
+it has no effect on the carrier gains, phase, or frequency.
 
 Note changes step to the new target while keeping carrier phase continuous.
-Shape and direction gains use finite 50 ms ramps. A scope view of transition
-history is aperiodic. The UI holds the preceding settled view, labeled as
-previous settings, or displays a new offline render until enough settled live
-samples exist. Turning Loop off holds the visual sweep phase. Note, type and
-direction edits still replace the displayed signal once the newest result is
-ready. Starting or stopping Audio alone leaves the paused frame in place.
-Each export keeps its captured frame and recording while later edits settle.
+Shape gains use finite 50 ms ramps. Transitional live history
+is aperiodic, so the viewport uses completed offline PCM during edits and
+returns to live capture when its history has settled. The renderer starts
+without waiting for slider release. It runs one short render at a time and
+keeps only the newest waiting setting. Completed intermediate frames can be
+displayed while newer work is pending. The 48 kHz offline render discards the
+first 75 ms, which includes the 50 ms ramps and the common oscillator start.
+The drag response depends on native render time. Turning Loop on or off
+returns the visual sweep to phase zero of its current signal. Audio starts
+from a user gesture and can play without the live AudioWorklet capture. In
+that case, the scope uses offline PCM. Starting or stopping Audio alone
+leaves the paused frame in place. Each export keeps its captured frame and
+recording while later edits settle.
 
 Offline render and audible synthesis share the same graph. Offline audio uses
 48 kHz; live capture uses the actual AudioContext rate. Capture retains ordered
@@ -123,11 +123,11 @@ Float32 render per setting would require over 2 GB; eager work would delay the
 page and waste most renders.
 
 Each scope controller keeps an eight-entry LRU of immutable, settled offline
-recordings. The key is normalized note, type and direction. The controller has one fixed
+recordings. The key is normalized note and type. The controller has one fixed
 48 kHz offline renderer and synthesis implementation for its lifetime. If either
 becomes configurable, include it in the cache identity. Only the post-settle PCM
-copy is retained, avoiding pinning the discarded settling buffer. Recent pairs
-of Pulse PeriodicWaves use a bounded 16-entry per-graph/context cache keyed by duty.
+copy is retained, avoiding pinning the discarded settling buffer. Recent Pulse
+PeriodicWaves use a bounded 16-entry per-graph/context cache keyed by duty.
 Live data is never served from those caches. Dispose clears the scope cache.
 Native oscillators already have optimized synthesis; precomputation chiefly
 reduces repeated offline/render work, not necessarily audible synthesis cost.
@@ -144,6 +144,8 @@ or hardware performance guarantee. See the reproducible QA script and results.
   [PeriodicWave](https://www.w3.org/TR/webaudio/#PeriodicWave), and
   [AudioParam](https://www.w3.org/TR/webaudio/#AudioParam): oscillator shapes,
   band limiting, normalization and scheduled signal parameters.
+- W3C [AudioContext resume](https://www.w3.org/TR/webaudio/#dom-audiocontext-resume):
+  user-activation and context startup behavior.
 - CompuServe [GIF89a specification](https://www.w3.org/Graphics/GIF/spec-gif89a.txt),
   Graphic Control Extension: frame-delay time units.
 

@@ -11,7 +11,7 @@ test('physical timebase covers the nearest whole-cycle window for every selected
   for(const note of [24,49,84])for(const rate of [.07,2,100,1300]) {
     const v={...values,note,lfo:{enabled:true,rate,depth:100,type:3}};
     expect(scope.duration(v)*WaveformAudio.frequency(note)).toBeCloseTo(notes.get(note).cycles,12);
-    expect(scope.settings(v)).toEqual({note,type:0,reverse:false});
+    expect(scope.settings(v)).toEqual({note,type:0});
   }
 });
 
@@ -93,7 +93,7 @@ test('SVG/PNG freeze displayed PCM and GIF reads the frozen actual recording aft
   renderer.release();
 });
 
-test('offline render jobs serialize and stale completed PCM cannot replace newer controls',async()=>{
+test('offline renders serialize and finish on the latest controls',async()=>{
   jest.useFakeTimers();const jobs=[];
   const original=WaveformAudio.create;WaveformAudio.create=()=>({update(){},pulseWorkletNode:{}});
   const environment={OfflineAudioContext:class {
@@ -105,8 +105,8 @@ test('offline render jobs serialize and stale completed PCM cannot replace newer
   try {
     c.configure(values,true);await jest.advanceTimersByTimeAsync(0);expect(jobs).toHaveLength(1);
     c.configure({...values,type:3},true);await jest.advanceTimersByTimeAsync(0);expect(jobs).toHaveLength(1);
-    jobs[0].resolve();await jest.advanceTimersByTimeAsync(0);expect(jobs).toHaveLength(2);expect(c.frame()).toBe(null);
-    jobs[1].resolve();await c.ready();expect(c.frame().source).toBe('offline');
+    jobs[0].resolve();await jest.advanceTimersByTimeAsync(0);expect(jobs).toHaveLength(2);expect(c.frame().type).toBe(0);
+    jobs[1].resolve();await c.ready();expect(c.frame()).toMatchObject({source:'offline',type:3});
   } finally {c.dispose();WaveformAudio.create=original;jest.useRealTimers();}
 });
 
@@ -116,7 +116,7 @@ test('routed bootstrap loads the actual audio/scope head dependencies before mai
   const html=fs.readFileSync(require.resolve('../generator/index.html'),'utf8');
   for(const name of ['waveformAudio','waveformScope']) {
     expect(early).toContain(`'${name}'`);
-    const version='20261117-waveform-controls';
+    const version='20261117-loop-controls';
     expect(html).toContain(`src="js/utils/${name}.js?v=${version}"`);
   }
 });
@@ -131,11 +131,11 @@ test('captured replay starts at the displayed phase and reverses without synthes
   expect(reverse.frame(.2)).toEqual(recorded.frame(.4));
 });
 
-test('frozen scope note/type metadata describes captured PCM rather than newer control values',()=>{
+test('frozen scope signal metadata describes captured PCM rather than newer control values',()=>{
   const pcm=Float32Array.from({length:48000},(_,i)=>.1*Math.sin(i*.01));
   const recorded=scope.recording(scope.pcmExtrema(pcm),6000,scope.duration({note:49}), 'offline',scope.displaySettings({note:49,type:1.5}),pcm);
   const frame=recorded.frame(0),r=createRuntime({waveformScopeController:{capture:()=>({frame,recording:recorded})}});
-  r.select('waveform');Object.assign(r.state.values,{waveformNote:84,waveformType:3});
+  r.select('waveform');Object.assign(r.state.values,{waveformNote:84,waveformType:3,waveformReverse:true});
   const snapshot=r.captureLogoExportSnapshot();
-  expect(snapshot.values.waveformNote).toBe(49);expect(snapshot.values.waveformType).toBe(1.5);
+  expect(snapshot.values.waveformNote).toBe(49);expect(snapshot.values.waveformType).toBe(1.5);expect(snapshot.values.waveformReverse).toBe(true);
 });

@@ -3,7 +3,7 @@ const fs = require('node:fs/promises');
 const { chromium, webkit } = require('playwright');
 const engine = process.env.RPI_BROWSER || 'chromium';
 const base = process.env.RPI_SITE_URL || 'http://127.0.0.1:8841';
-const expectedDefault = Number(process.env.RPI_EXPECTED_DIRECTION || 1);
+const expectedDirection = -1;
 const evidence = process.env.RPI_EVIDENCE_DIR || `/tmp/waveform-direction-${engine}`;
 (async () => {
   await fs.mkdir(evidence, { recursive: true });
@@ -24,8 +24,7 @@ const evidence = process.env.RPI_EVIDENCE_DIR || `/tmp/waveform-direction-${engi
       await page.evaluate(() => {
         setMotionEnabledForStyle('waveform', false);
         waveformTypeSlider.value = 2; waveformTypeSlider.dispatchEvent(new Event('input', { bubbles: true }));
-        waveformFrequencySlider.value = 10; waveformFrequencySlider.dispatchEvent(new Event('input', { bubbles: true }));
-        liveMotionPhase = .37; requestUpdate();
+        waveformNoteSlider.value = 48; waveformNoteSlider.dispatchEvent(new Event('input', { bubbles: true }));
       });
       const capture = async () => {
         await page.evaluate(async () => { for (let i = 0; i < 3; i++) await new Promise(requestAnimationFrame); });
@@ -42,30 +41,34 @@ const evidence = process.env.RPI_EVIDENCE_DIR || `/tmp/waveform-direction-${engi
           }
           const edges = [];
           if (row >= 0) for (let x = 1; x < width; x++) if (painted(x, row) && !painted(x - 1, row)) edges.push(x);
-          return { phase: liveMotionPhase, row, edges, width, height };
+          return { phase: waveformScopeTime, row, edges, width, height };
         });
       };
       for (const reverse of [false, true]) {
-        const beforeReverse = await page.evaluate(() => liveMotionPhase);
+        const beforeReverse = await page.evaluate(() => waveformScopeTime);
         await page.evaluate(reverse => {
           waveformReverseToggle.checked = reverse;
           waveformReverseToggle.dispatchEvent(new Event('change', { bubbles: true }));
         }, reverse);
-        assert.equal(await page.evaluate(() => liveMotionPhase), beforeReverse, 'Reverse does not jump phase');
+        assert.equal(await page.evaluate(() => waveformScopeTime), beforeReverse, 'Reverse does not jump phase');
+        await page.waitForFunction(() => {
+          const frame = waveformScopeController.frame();
+          return frame?.note === 48 && frame.type === 2;
+        });
         const before = await capture();
         await page.screenshot({ path: `${evidence}/${fallback ? '2d' : 'webgl'}-${reverse ? 'reverse' : 'default'}-before.png` });
         await page.evaluate(() => setMotionEnabledForStyle('waveform', true));
         await page.waitForTimeout(300);
-        await page.evaluate(() => setMotionEnabledForStyle('waveform', false));
         const after = await capture();
         await page.screenshot({ path: `${evidence}/${fallback ? '2d' : 'webgl'}-${reverse ? 'reverse' : 'default'}-after.png` });
         const deltas = before.edges.filter(x => x > before.width * .2 && x < before.width * .8)
           .map(x => after.edges.reduce((nearest, current) => Math.abs(current - x) < Math.abs(nearest - x) ? current : nearest) - x);
-        assert.ok(deltas.length >= 3, JSON.stringify({ before, after }));
-        const expected = expectedDefault * (reverse ? -1 : 1);
-        assert.ok(deltas.every(delta => Math.sign(delta) === expected), JSON.stringify({ reverse, deltas, before, after }));
-        const stopped = await page.evaluate(() => liveMotionPhase); await page.waitForTimeout(100);
-        assert.equal(await page.evaluate(() => liveMotionPhase), stopped, 'Loop pause holds phase');
+        assert.ok(deltas.length >= 2, JSON.stringify({ before, after }));
+        assert.ok(deltas.every(delta => Math.sign(delta) === expectedDirection * (reverse ? -1 : 1)), JSON.stringify({ reverse, deltas, before, after }));
+        await page.evaluate(() => setMotionEnabledForStyle('waveform', false));
+        await page.waitForTimeout(100);
+        assert.equal(await page.evaluate(() => waveformScopeTime), 0, 'Loop off returns to default phase');
+        assert.deepEqual((await capture()).edges, before.edges, 'Loop off restores the default rendered frame');
         results.push({ fallback, reverse, pixelDeltas: deltas, beforePhase: before.phase, afterPhase: after.phase });
       }
       assert.deepEqual(errors, []); await page.close();

@@ -42,13 +42,15 @@ test('repeated phase seeks retain LOOP and advance from the new phase without st
   expect(h.window.requestUpdate).toHaveBeenCalledTimes(4);
 });
 
-test('paused seeks stay paused; explicit resume retains speed and reverse', () => {
+test('paused seeks stay paused; Loop starts at zero with the selected speed and reverse', () => {
   const h = harness('?quantumSpeed=0.2&quantumReverse=true'); h.loop(false);
   h.seek(.371); h.controls.tick(1000); h.controls.tick(1050);
   expect(h.phase()).toBeCloseTo(.371, 12);
   expect(h.elements['quantum-motion-toggle'].checked).toBe(false);
-  h.loop(true); h.controls.tick(2000); h.controls.tick(2050);
-  expect(h.phase()).toBeCloseTo(.371 - .2 * .05 / model.PERIOD_SECONDS, 12);
+  h.loop(true); h.controls.tick(2000);
+  expect(h.phase()).toBe(0);
+  h.controls.tick(2050);
+  expect(h.phase()).toBeCloseTo(1 - .2 * .05 / model.PERIOD_SECONDS, 12);
 });
 
 test.each(['pointerup', 'pointercancel'])('pointer seek holds phase and resumes without catch-up after %s', end => {

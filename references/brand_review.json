@@ -3,11 +3,11 @@
   "reviewedOn": "2026-11-17",
   "reviewer": "Codex self-review",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "7def4f8c49a132d7a96901de18ff7c793d7c7224446f307b38b1fe82be7b756f",
+  "changeFingerprint": "2a42000c4213bbfe06aeb6ba0136b05e7030d4b37b3cb515fb5cf4770791f0df",
   "areas": {
     "foundations": {
       "status": "reviewed",
-      "rationale": "The timed preview workflow lets people inspect and test work directly, and specifies when their local preview closes.",
+      "rationale": "Both Loop transitions return to a reproducible starting frame. Audio playback is explicitly started, and the Waveform technical explanation is available in About.",
       "sources": [
         "home",
         "about-our-brand",
@@ -16,54 +16,46 @@
     },
     "copy": {
       "status": "reviewed",
-      "rationale": "Contributor instructions describe preview timing, conversational sign-off, issue status and live-site verification. Attribution examples identify unavailable details.",
+      "rationale": "Waveform keeps a compact editing surface and an About explanation. The study hints describe what Cycle controls and the phase restored by Loop. The speaker retains its accessible name.",
       "sources": [
         "naming-conventions",
         "voice-tone"
       ]
     },
     "interface": {
-      "status": "not-applicable",
-      "rationale": "Changes cover local developer tooling, contributor instructions and templates.",
-      "sources": []
+      "status": "reviewed",
+      "rationale": "Use a 28 CSS-pixel icon target in the About row with current theme and focus styling. Clear dynamic Waveform text and audio notifications. Toggle tracks retain their on/off colors and position, and keyboard focus uses a black mark within the white thumb.",
+      "sources": [
+        "design-principles",
+        "color",
+        "typography",
+        "pattern"
+      ]
     },
     "bar-and-exports": {
-      "status": "not-applicable",
-      "rationale": "No renderer, bar logic, preview or export implementation changed.",
-      "sources": []
+      "status": "reviewed",
+      "rationale": "Reset clocks to the authored phases on both Loop transitions. Waveform reuses captured PCM and its fixed viewport at phase zero. GIF uses the existing captured sweep direction and SVG and PNG use the displayed frame.",
+      "sources": [
+        "logo-system",
+        "the-bar",
+        "color",
+        "pattern"
+      ]
     },
     "media": {
       "status": "not-applicable",
-      "rationale": "The documentation change introduces no media or contextual brand application.",
+      "rationale": "Artemis II remains limited to existing Mission Control playback through its native MP3 element. Web Audio startup and optional live capture affect the existing generated audio only.",
       "sources": []
     },
     "assets-and-approvals": {
       "status": "not-applicable",
-      "rationale": "No institutional assets, asset permissions or brand approval requests changed.",
+      "rationale": "No runtime assets or new institutional logo compositions are added. Two review screenshots document existing generator surfaces using the existing official vectors and brand fonts.",
       "sources": []
     },
     "governance": {
-      "status": "reviewed",
-      "rationale": "Maintain the canonical cross-service workflow and references, including the merge and release checklist. Existing official source routes, coverage, hashes, conflict register and required review gate apply to later site changes.",
-      "sources": [
-        "home",
-        "about-our-brand",
-        "who-we-are",
-        "naming-conventions",
-        "voice-tone",
-        "design-principles",
-        "logo-system",
-        "the-bar",
-        "seal",
-        "color",
-        "typography",
-        "pattern",
-        "video",
-        "photography",
-        "spirit-marks",
-        "inspiration-gallery-1",
-        "email-signature"
-      ]
+      "status": "not-applicable",
+      "rationale": "The change applies the existing review policy and records its results. Policy, captured sources and the brand guard retain their current rules.",
+      "sources": []
     }
   },
   "blockingConflicts": [],
@@ -80,53 +72,43 @@
       "B09",
       "B10"
     ],
-    "disposition": "Recorded in references/brand_conflicts.md. These instructions introduce no new use of the disputed treatments."
+    "disposition": "Existing boundaries remain documented in brand_conflicts.md. Moving the existing audio action preserves playback eligibility and adds no use of disputed art or media."
   },
   "requiresFormalApproval": false,
-  "approvalStatus": "not-required-for-contributor-documentation",
-  "approvalRationale": "Contributor guidance and local server lifecycle changes introduce no institutional artwork, assets or generator output.",
+  "approvalStatus": "not-required-for-this-change",
+  "approvalRationale": "Existing controls and native audio synthesis are adjusted within the current generator. No new institutional composition, library submission, asset use or redistribution is proposed.",
   "approvalEvidence": "No formal institutional approval claimed.",
-  "publicationScope": "Owner-authorized repository PR and merge for contributor documentation, the PR template and local preview server tooling.",
+  "publicationScope": "Owner authorized publication and merge in tennitech/the-bar-generator, including generator code, project notes, tests, and screenshots of the existing generator UI.",
   "checks": [
     {
       "name": "brand-policy",
       "result": "passed",
-      "evidence": "Local guard validates the source corpus, required area coverage and changed-file fingerprint."
+      "evidence": "Local guard verifies source integrity, review coverage and the final normalized changed-file fingerprint."
     },
     {
       "name": "unit-tests",
       "result": "passed",
-      "evidence": "Local Jest run passed all 1,298 tests across 107 suites against current main including merged Waveform PR #228."
-    },
-    {
-      "name": "local-preview-command",
-      "result": "passed",
-      "evidence": "Served root and /generator/solid/ on loopback and verified the listening socket closed at expiry. An actual request for merged PR #227 closed the server before expiry. Simulated unmerged and rate-limited responses, network errors and a stalled request left the independent expiry active. Invalid arguments failed validation."
-    },
-    {
-      "name": "commit-trailer-example",
-      "result": "passed",
-      "evidence": "git interpret-trailers --parse recognized both grouped AI-Assistance example records."
+      "evidence": "1300 Jest tests in 107 suites passed. Coverage includes Loop reset, Waveform recording and phase, prefixed audio startup, and cancellation of a pending resume."
     },
     {
       "name": "rendered-ui",
-      "result": "not-applicable",
-      "evidence": "No generator UI changes. Route checks verified local developer preview startup and HTTP responses."
+      "result": "passed",
+      "evidence": "Chromium and WebKit verified two off/on cycles for all six Loop styles and actual audio signal or media progress for all four audio styles. Pixel 7 and iPhone 15 touch emulation passed. The icon measured 28 CSS pixels square. Waveform text and About positions stayed fixed and audio produced no toasts. Prefixed constructor and missing AudioWorklet paths passed. Screenshots inspected. Toggle focus, hover and checked states were checked in light, dark and red themes in Chromium and WebKit, including forced colors in Chromium."
     },
     {
       "name": "preview-export-parity",
-      "result": "not-applicable",
-      "evidence": "No changes to runtime rendering, geometry or export behavior."
-    },
-    {
-      "name": "release-checklist",
       "result": "passed",
-      "evidence": "Checked instructions and template against the active main ruleset, current Pages deployment, and GitHub default-branch issue closing documentation. Verified internal anchors and diff formatting."
+      "evidence": "Chromium checked default rendered Waveform edges after Loop off in native and forced Canvas 2D. SVG and PNG matched captured artwork and 107 decoded GIF frames matched reversed replay. Both canvases updated during slider edits."
     },
     {
-      "name": "user acceptance",
-      "result": "not-applicable",
-      "evidence": "This change concerns contributor documentation and local tooling. The owner authorized the merge. Generator visual acceptance does not apply."
+      "name": "firefox",
+      "result": "pending",
+      "evidence": "Playwright Firefox failed to launch on this host before reaching the preview. Firefox playback is unverified."
+    },
+    {
+      "name": "owner-acceptance",
+      "result": "passed",
+      "evidence": "Owner requested merge after the final localhost handoff for change fingerprint 2197183509d27be89788ddbccce3b0fe34f0cedf1da5984ebd98ee307368d919. The PR adds review images and release records. No specific owner test steps were reported. Physical-device and screen-reader testing were not performed."
     }
   ]
 }

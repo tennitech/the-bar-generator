@@ -25,9 +25,9 @@
     const startTime = context.currentTime + .01;
     phaseOrigin = startTime;
     const pulseWaves = new Map();
-    for (const type of ['sine', 'sawtooth', 'square', 'pulse', 'reversePulse']) {
+    for (const type of ['sine', 'sawtooth', 'square', 'pulse']) {
       const osc = context.createOscillator(), gain = context.createGain();
-      if (type !== 'pulse' && type !== 'reversePulse') osc.type = type;
+      if (type !== 'pulse') osc.type = type;
       osc.frequency.setValueAtTime(frequency(notes.read(values)), startTime);
       gain.gain.setValueAtTime(0, startTime);
       osc.connect(gain); gain.connect(destination);
@@ -50,39 +50,24 @@
       }
       const width = .2 + Math.max(0, type - 2) * .6;
       if (width !== currentWidth) {
-        let waves = pulseWaves.get(width);
-        if (waves) pulseWaves.delete(width);
-        else {
-          const { real, imag } = pulseCoefficients(width);
-          // f(-t) preserves cosine coefficients and negates sine coefficients.
-          waves = [context.createPeriodicWave(real, imag),
-            context.createPeriodicWave(real, imag.map(coefficient => -coefficient))];
-        }
-        pulseWaves.set(width, waves);
+        let wave = pulseWaves.get(width);
+        if (wave) pulseWaves.delete(width);
+        else { const {real, imag} = pulseCoefficients(width); wave = context.createPeriodicWave(real, imag); }
+        pulseWaves.set(width, wave);
         while (pulseWaves.size > 16) pulseWaves.delete(pulseWaves.keys().next().value);
-        oscillators.pulse.setPeriodicWave(waves[0]);
-        oscillators.reversePulse.setPeriodicWave(waves[1]);
+        oscillators.pulse.setPeriodicWave(wave);
         currentWidth = width;
       }
-      // Native sine, sawtooth and square are odd about their common phase origin.
-      // Ramp their signed gains and crossfade the asymmetric Pulse through the
-      // same envelope so Reverse can change during playback without a hard cut.
-      const reverse = values.reverse === true, direction = reverse ? -1 : 1;
-      const gains = {
-        sine: direction * Math.max(0, 1 - type),
-        sawtooth: direction * Math.max(0, 1 - Math.abs(type - 1)),
-        square: direction * Math.max(0, 1 - Math.abs(type - 2)),
-        pulse: reverse ? 0 : Math.max(0, type - 2),
-        reversePulse: reverse ? Math.max(0, type - 2) : 0
-      };
-      for (const [key, target] of Object.entries(gains)) {
+      const gains = [Math.max(0,1-type), Math.max(0,1-Math.abs(type-1)),
+        Math.max(0,1-Math.abs(type-2)), Math.max(0,type-2)];
+      Object.keys(oscillatorGains).forEach((key, i) => {
         const gain = oscillatorGains[key].gain;
         if (gain.cancelAndHoldAtTime) gain.cancelAndHoldAtTime(time);
         else { gain.cancelScheduledValues(time); gain.setValueAtTime(gain.value, time); }
         // Finite linear ramp reaches an exactly scheduled target; an exponential
         // setTargetAtTime tail would never become strictly stationary.
-        gain.linearRampToValueAtTime(target * .1, time + .05);
-      }
+        gain.linearRampToValueAtTime(gains[i] * .1, time + .05);
+      });
     }
     update(values);
     // One shared start time keeps the native carrier shapes phase-coherent.
