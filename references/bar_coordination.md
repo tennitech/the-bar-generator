@@ -28,8 +28,9 @@ geometry, renderer content and decoded exports rather than file signatures alone
 
 For local test reliability, a threaded development server may need a larger
 connection backlog under concurrent asset requests. A successful HTTP response
-alone does not establish renderer readiness. Keep test servers temporary and
-shut them down after their run.
+alone does not establish renderer readiness. Keep the verified site preview
+running for user handoff and shut down extra temporary test servers when their
+checks finish. See the [local preview setup](../README.md#local-preview-for-site-changes).
 
 ## Toolbar and contextual visual review
 

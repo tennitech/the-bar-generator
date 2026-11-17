@@ -30,37 +30,43 @@ work and already match its human contribution guide.
 
 ## Contribution record
 
-For each PR, record every materially contributing provider/model/configuration/role combination
-in the PR template, with enough scope to distinguish research, implementation,
-test authoring and review. A tool is the access application, not necessarily the
-model provider. A recommendation in AGENTS.md is not evidence of actual use.
+For each PR, give every material contributor one entry per configuration.
+Capture the exposed labels at the start and when they change. Group research,
+implementation, testing and self-review under one entry when they used the
+same configuration. Keep independent reviewers, delegated contributors, model
+switches, and material settings changes in separate entries. Use the scope to
+show which work each entry covers.
 
-- **Provider:** model provider, such as `openai`; use `unknown` if unavailable.
+- **Provider:** model provider, such as `openai`, identified separately from the access tool.
 - **Model identifier:** exact session-reported ID when exposed. Preserve a
   display label if that is all that is known, and state that the exact ID is
   unknown. Do not invent a version, snapshot, or underlying model for auto mode.
 - **Tool and version:** application or integration used, such as `codex`, and its
-  exposed version. A service without an exposed version uses `unknown`.
+  exposed version.
 - **Thinking mode:** exact exposed mode label, including explicit disabled/auto
-  selections. Use `unknown` if unavailable, or `not-applicable` only when the
-  setting is known not to apply. This records configuration, not hidden reasoning.
+  selections. Use `not-applicable` only when the setting is known not to apply.
 - **Reasoning effort:** exact exposed effort label, independently of thinking
   mode. Never infer one from the other or translate labels into a universal scale.
-- **Role/scope:** what this contributor actually did; list separate rows for
-  different roles, model switches, or configuration changes, including delegated
-  work if used. Preserve earlier records instead of replacing them with the last mode.
+- **Roles and scope:** what this contributor actually did in that configuration.
+  Mark self-review as such, and preserve earlier records when the configuration changes.
 - **Other settings:** exposed thinking/reasoning token budget, agent mode (such as
   plan or implementation), model snapshot, context limit, temperature, tool access,
   approval/permission mode, and relevant custom instruction or skill versions
   when known and material. These are observations, not required configuration
   changes. Record source commit and relevant local instruction changes when useful.
-  Include units for numeric budgets. Unavailable values stay `unknown`; do not
-  expose credentials, private paths, hidden reasoning, or conversation transcripts.
+  Include units for numeric budgets. Do not expose credentials, private paths,
+  hidden reasoning, or conversation transcripts.
 
-Update the record as work progresses. Use `none` for unassisted work; use
-`unknown` for uncertain historical assistance. Do not fabricate attribution or
-rewrite published commits to fill gaps. Disclosure records use, not copyright
-ownership, formal approval, or a claim that a model authored every line.
+In the PR, list known information in each entry and summarize unavailable
+fields in a single note that identifies the affected entries. For example:
+
+- OpenAI via Codex — researched the issue, implemented the fix, ran tests, and
+  reviewed its own changes.
+- The session exposed no exact model ID, tool version, thinking mode, or
+  reasoning effort for that entry.
+
+Use `none` for unassisted work and `unknown` for uncertain historical assistance.
+Do not fabricate attribution or rewrite published commits to fill gaps.
 
 ## Durable commit metadata
 
@@ -68,39 +74,39 @@ Use a repeated `AI-Assistance` trailer, one line for each contribution record,
 after a blank line at the end of the commit message. This key and value schema
 are project-specific; Git provides the trailer mechanism, not an AI standard.
 
-Each value has these fields in this order:
+Each value starts with these required fields:
 
 ```text
-AI-Assistance: provider=<provider>; model=<model-id-or-unknown>; tool=<tool>; tool-version=<version-or-unknown>; role=<role>; thinking=<mode-or-unknown>; effort=<effort-or-unknown>; settings=<settings-or-unknown>
+AI-Assistance: provider=<provider>; model=<model-id-or-label>; tool=<tool>; role=<comma-separated-roles>
 ```
 
-Values must be single-line and contain no semicolons; separate different records
-with repeated trailer lines. Use lowercase provider/tool/role slugs, retain exact
-model ID spelling, and keep detailed scope in the PR. For example, this is an
-illustrative format, not an attribution of this change:
+Use `unknown` for unavailable provider, model, or tool identity. Append
+`tool-version`, `thinking`, `effort`, and `settings` when exposed. Separate
+fields with a semicolon and a space. Use single-line field values without
+semicolons. Use lowercase provider/tool/role slugs, retain exact model and
+configuration labels, and keep detailed scope in the PR. For example:
 
 ```text
 docs: clarify local setup
 
-AI-Assistance: provider=openai; model=unknown; tool=codex; tool-version=unknown; role=documentation; thinking=unknown; effort=unknown; settings=unknown
-AI-Assistance: provider=unknown; model=unknown; tool=unknown; tool-version=unknown; role=review; thinking=unknown; effort=unknown; settings=unknown
+AI-Assistance: provider=openai; model=unknown; tool=codex; role=research,documentation,testing,self-review
+AI-Assistance: provider=unknown; model=unknown; tool=unknown; role=review
 ```
 
-For explicitly unassisted work use `AI-Assistance: none`. Where assistance was
-used but identities are unavailable, use the full fields with `unknown` values.
-Apply records to the commits they describe; do not credit an unrelated model
-on every commit. Do not create empty commits solely for attribution.
+For explicitly unassisted work use `AI-Assistance: none`. Apply records only
+to the commits they describe. Do not create empty commits solely for attribution
+or rewrite older trailers that recorded each role separately.
 
 Before merging, compare the PR record with the final squash or merge message.
 Include every material contributor, including research/review-only work, in that
-final message. Squash commits must carry the union of records because individual
-commit messages may not survive on main. Do not rely on GitHub's default message.
+final message. For a squash or merge, combine roles across commits for the same
+contributor and configuration. Copy the grouped records into the final message.
 The PR contains detailed context; the Git trailers retain searchable attribution.
 
 ## Comparing outcomes
 
 Use the PR's Quality evidence fields to record task scope/complexity, checks and
-failures, reviewer findings, remaining defects, human rework and explicit user
+failures, reviewer findings, remaining defects, human rework and confirmed user
 acceptance. Distinguish test authoring from independently performed review.
 Unreviewed or untested outcomes stay `pending`; untracked rework stays `unknown`.
 Record later discovered regressions against the original PR when available.

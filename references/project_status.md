@@ -1,5 +1,26 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
+## November 17 local preview handoff and grouped AI contribution records
+
+For site changes, contributors verify the affected route in a local browser
+and leave the same checkout's preview running for user review. A local server
+can support baseline testing during development. The fast brand and Jest checks
+run independently. User acceptance remains pending until explicitly confirmed.
+The preview server stops after 30 minutes by default. A linked public GitHub
+PR can end the preview earlier when it merges. Failed checks or a failed merge
+leave the preview available for debugging until it expires.
+
+The [merge and release checklist](../contributing.md#merge-and-verify-the-release)
+accepts natural-language testing and merge sign-off in context. It records the
+tested revision, verifies final CI and closure of fully resolved issues, and
+checks the public deployment for site changes.
+
+Future PRs and commit trailers group roles under each contributor and observed
+configuration. PR entries summarize unavailable details together and keep
+independent contributions and material configuration changes distinct. See the
+[local preview setup](../README.md#local-preview-for-site-changes) and
+[AI contribution records](ai_contribution_records.md).
+
 ## November 17 Waveform edits with Loop off and signal reversal
 
 Loop holds the Waveform sweep phase while note, shape and direction edits
