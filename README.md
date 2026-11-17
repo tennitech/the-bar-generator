@@ -41,18 +41,45 @@ The site uses HTML, CSS, JavaScript, p5.js, and Web Audio. There is no build ste
 git clone https://github.com/tennitech/the-bar-generator.git
 cd the-bar-generator
 npm ci --ignore-scripts --no-audit --no-fund
-python3 -m http.server 8000 --bind 127.0.0.1
+python3 scripts/test_server.py --port 8000
 ```
 
 Open [localhost:8000](http://127.0.0.1:8000/). The root page is the bar picker. Open `/generator/solid/` for the generator or `/animation/` for the animation prototype. Check for an existing project server before starting another one. If port 8000 is in use by another project, choose another port.
 
 Serve the files over HTTP. Do not open HTML files with `file://`; routed pages and asset loading need HTTP. No environment variables or credentials are required for local use.
 
+## Local preview for site changes
+
+Run the server from the checkout that contains the change. It binds to
+`127.0.0.1` and handles concurrent browser asset requests. Reuse a server
+only after confirming it serves that checkout. Choose a free port if needed
+and point `RPI_SITE_URL` at that port for browser scripts.
+
+Start the server early when reproducing a bug or checking a baseline. Before
+handoff, exercise the changed route and interactions in a browser. Confirm the
+final route is reachable, keep the preview server running for human review,
+and share the exact URL and steps to test. Stop temporary servers started for
+other checks when they are no longer needed. If the user cannot reach the
+preview from their machine, share the command above and the route to open locally.
+
+The server exits 30 minutes after it starts. For a public GitHub PR, pass its
+URL at launch to also stop the preview when GitHub confirms it merged. The
+server checks immediately and then once a minute without credentials.
+
+```sh
+python3 scripts/test_server.py --port 8000 --pr https://github.com/OWNER/REPO/pull/123
+```
+
+Restart your preview with the URL if the PR opens after the server starts.
+Failed checks, a failed merge, or unavailable PR status leave the preview
+running until it expires. If it expires before you finish testing, rerun the
+command. Press Ctrl+C to stop a foreground server, or pass `--timeout SECONDS`
+when you need a different lifetime.
+
 ## Tests
 
-For concurrent browser checks, use `python3 scripts/test_server.py --port 8000`.
-It serves the checkout over real HTTP with a larger connection backlog so
-parallel startup requests do not exceed older Python servers’ small default queue.
+The brand guard and Jest suite run without the preview server. The browser and
+motion smoke commands below load the site over HTTP and use the running server.
 
 ```sh
 # Unit tests

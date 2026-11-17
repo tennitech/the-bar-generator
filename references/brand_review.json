@@ -3,11 +3,11 @@
   "reviewedOn": "2026-11-17",
   "reviewer": "Codex self-review",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "8bf815a871701936456c5a6732f084b11d8eb723c5d0a2eda6730eeacd3c8bb6",
+  "changeFingerprint": "7def4f8c49a132d7a96901de18ff7c793d7c7224446f307b38b1fe82be7b756f",
   "areas": {
     "foundations": {
       "status": "reviewed",
-      "rationale": "The generator exposes edits to an authentic synthesized signal while holding the visual sweep. The scope describes the source and selected note using actual PCM.",
+      "rationale": "The timed preview workflow lets people inspect and test work directly, and specifies when their local preview closes.",
       "sources": [
         "home",
         "about-our-brand",
@@ -16,59 +16,54 @@
     },
     "copy": {
       "status": "reviewed",
-      "rationale": "Contributor notes describe the signed gains, paired Pulse coefficients, sampled data and settled edit behavior. Existing control labels and RPI naming are preserved.",
+      "rationale": "Contributor instructions describe preview timing, conversational sign-off, issue status and live-site verification. Attribution examples identify unavailable details.",
       "sources": [
         "naming-conventions",
         "voice-tone"
       ]
     },
     "interface": {
-      "status": "reviewed",
-      "rationale": "Loop and Reverse retain native checkbox semantics, keyboard focus and visible control states. Desktop and phone-width previews show the same fixed letterforms and existing color themes. The scope text is legible on the checked dark surface. Reduced motion still starts with Loop off.",
-      "sources": [
-        "design-principles",
-        "color",
-        "typography",
-        "pattern"
-      ]
+      "status": "not-applicable",
+      "rationale": "Changes cover local developer tooling, contributor instructions and templates.",
+      "sources": []
     },
     "bar-and-exports": {
-      "status": "reviewed",
-      "rationale": "Actual synthesized PCM drives a trace contained by the existing 250 by 18 reference viewport. The signal reflects about its phase origin while the note retains the same pitch and physical window. Editor, header, still exports and animated exports use the settled signal and existing geometry.",
-      "sources": [
-        "logo-system",
-        "the-bar",
-        "color",
-        "pattern"
-      ]
+      "status": "not-applicable",
+      "rationale": "No renderer, bar logic, preview or export implementation changed.",
+      "sources": []
     },
     "media": {
-      "status": "reviewed",
-      "rationale": "Audio Preview uses the app-synthesized carrier and finite gain ramps when reversing in place. The Video audio transition guidance is contextual. The change introduces no recorded media, production video, seal, spirit mark, gallery asset or email signature.",
-      "sources": [
-        "photography",
-        "video",
-        "spirit-marks",
-        "seal",
-        "email-signature",
-        "inspiration-gallery-1"
-      ]
+      "status": "not-applicable",
+      "rationale": "The documentation change introduces no media or contextual brand application.",
+      "sources": []
     },
     "assets-and-approvals": {
-      "status": "reviewed",
-      "rationale": "Review PNGs show only the existing generator UI and its rendered Waveform mark from the two issue settings. They reuse the supplied geometry and existing fonts and UI. No external artwork, asset file, recording, new lockup or library submission is included. Existing rights questions remain recorded.",
-      "sources": [
-        "logo-system",
-        "the-bar",
-        "typography",
-        "seal",
-        "spirit-marks"
-      ]
+      "status": "not-applicable",
+      "rationale": "No institutional assets, asset permissions or brand approval requests changed.",
+      "sources": []
     },
     "governance": {
-      "status": "not-applicable",
-      "rationale": "No source, policy, approvals register, test gate or workflow change is involved.",
-      "sources": []
+      "status": "reviewed",
+      "rationale": "Maintain the canonical cross-service workflow and references, including the merge and release checklist. Existing official source routes, coverage, hashes, conflict register and required review gate apply to later site changes.",
+      "sources": [
+        "home",
+        "about-our-brand",
+        "who-we-are",
+        "naming-conventions",
+        "voice-tone",
+        "design-principles",
+        "logo-system",
+        "the-bar",
+        "seal",
+        "color",
+        "typography",
+        "pattern",
+        "video",
+        "photography",
+        "spirit-marks",
+        "inspiration-gallery-1",
+        "email-signature"
+      ]
     }
   },
   "blockingConflicts": [],
@@ -85,48 +80,53 @@
       "B09",
       "B10"
     ],
-    "disposition": "The decisions and rights questions in references/brand_conflicts.md remain open. The Waveform repair relies on the fixed source geometry and an already supported color composition."
+    "disposition": "Recorded in references/brand_conflicts.md. These instructions introduce no new use of the disputed treatments."
   },
   "requiresFormalApproval": false,
-  "approvalStatus": "not-required-for-waveform-repair",
-  "approvalRationale": "This repairs the existing Waveform signal and controls. The scope contains no new institutional asset, student club use, institutional lockup, official library submission or disputed treatment requiring a new brand decision.",
+  "approvalStatus": "not-required-for-contributor-documentation",
+  "approvalRationale": "Contributor guidance and local server lifecycle changes introduce no institutional artwork, assets or generator output.",
   "approvalEvidence": "No formal institutional approval claimed.",
-  "publicationScope": "Draft PR to tennitech/the-bar-generator for issues 208 and 218. It contains Waveform and cache revisions, tests, reference updates and three screenshots of the existing generator UI.",
+  "publicationScope": "Owner-authorized repository PR and merge for contributor documentation, the PR template and local preview server tooling.",
   "checks": [
     {
       "name": "brand-policy",
       "result": "passed",
-      "evidence": "npm run check:brand validates the 36 captured source records, applicable review areas and fingerprint for this file state."
+      "evidence": "Local guard validates the source corpus, required area coverage and changed-file fingerprint."
     },
     {
       "name": "unit-tests",
       "result": "passed",
-      "evidence": "All 1,298 Jest tests in 107 suites pass on Node 22.23.5. Regression coverage includes paused and failed renders, a live fallback, frozen snapshots and reverse gain and Pulse coefficient scheduling."
+      "evidence": "Local Jest run passed all 1,298 tests across 107 suites against current main including merged Waveform PR #228."
+    },
+    {
+      "name": "local-preview-command",
+      "result": "passed",
+      "evidence": "Served root and /generator/solid/ on loopback and verified the listening socket closed at expiry. An actual request for merged PR #227 closed the server before expiry. Simulated unmerged and rate-limited responses, network errors and a stalled request left the independent expiry active. Invalid arguments failed validation."
+    },
+    {
+      "name": "commit-trailer-example",
+      "result": "passed",
+      "evidence": "git interpret-trailers --parse recognized both grouped AI-Assistance example records."
     },
     {
       "name": "rendered-ui",
-      "result": "passed",
-      "evidence": "Chromium and WebKit passed Space and Arrow key edits at 1829 by 974. Both canvases change when paused edits settle and hold until Loop resumes. Emulated touch at 390 by 844 toggled Reverse in both directions with reduced motion and Loop off. The screenshots were visually inspected. The checked scope status contrast in Gray on Black is 9.12:1."
-    },
-    {
-      "name": "audio-and-motion",
-      "result": "passed",
-      "evidence": "Both browser audio engines rendered six shapes and blends at A4. At 48 kHz, mirrored samples differ by at most 0.000253 around the shared phase origin. Mid-render direction edits settle to identical samples as an initial Reverse render. Real-time Web Audio and the scope worklet also settled and reported the new direction after a toggle."
+      "result": "not-applicable",
+      "evidence": "No generator UI changes. Route checks verified local developer preview startup and HTTP responses."
     },
     {
       "name": "preview-export-parity",
-      "result": "passed",
-      "evidence": "Both browsers captured the current reversed PCM for export. Downloaded bar-only SVG matched the captured source. Decoded PNG pixels matched the SVG at the same scale. All 107 decoded GIF frames per browser matched the alpha coverage of the captured replay renderer."
+      "result": "not-applicable",
+      "evidence": "No changes to runtime rendering, geometry or export behavior."
     },
     {
-      "name": "physical-device and listening checks",
-      "result": "pending",
-      "evidence": "Browser input and audio-engine output were verified in automation. Physical touch devices, native Safari delivery and subjective listening were not tested."
+      "name": "release-checklist",
+      "result": "passed",
+      "evidence": "Checked instructions and template against the active main ruleset, current Pages deployment, and GitHub default-branch issue closing documentation. Verified internal anchors and diff formatting."
     },
     {
       "name": "user acceptance",
-      "result": "pending",
-      "evidence": "The owner has not explicitly confirmed testing this repair."
+      "result": "not-applicable",
+      "evidence": "This change concerns contributor documentation and local tooling. The owner authorized the merge. Generator visual acceptance does not apply."
     }
   ]
 }
