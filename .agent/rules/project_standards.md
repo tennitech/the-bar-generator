@@ -1,15 +1,11 @@
-# Project Standards Rule
+---
+trigger: always_on
+description: Read the canonical repository policy before any project work.
+---
 
-Follow the repository root `AGENTS.md` first. This file is a compatibility shim for tools that read `.agent/rules/*`.
+# Project policy pointer
 
-## Reinforcements
-
-- `references/project_status.md` is the single source of truth for project status and architecture history.
-- Update `references/project_status.md` when phases complete, architecture changes, or new known issues are found.
-- Do not modify `references/project_proposal.md`.
-- Stay on Vanilla HTML, CSS, and JavaScript unless the user explicitly approves a stack change and it is logged in `references/project_status.md`.
-- Prefer ES modules for new utilities.
-- Apply the Client-First class strategy from `AGENTS.md` to all new work:
-  - global utilities use dash-only names
-  - new custom classes use underscore folder-style names
-  - JS hooks should use IDs or `data-*`, not styling utilities
+Before work, read and follow the repository-root [AGENTS.md](../../AGENTS.md).
+Keep all shared development rules there. This tracked legacy Antigravity adapter
+contains no independent policy. Setup and loading checks are documented in
+[agent_tool_setup.md](../../references/agent_tool_setup.md).

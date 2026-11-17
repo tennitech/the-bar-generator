@@ -1,5 +1,47 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
+## November 17 provider-neutral branches and AI contribution records
+
+New branches use `<type>/<short-description>` for both humans and AI tools,
+without a tool/provider/model prefix. Existing branches are retained unchanged.
+AGENTS.md, contributing.md and README now agree on this convention.
+
+The PR template and [AI contribution record](ai_contribution_records.md) capture
+each materially contributing provider/model, access tool/version, role, explicit
+thinking mode, reasoning effort and other exposed settings/budgets. Records
+distinguish model/configuration switches and review-only contributions. Unknown
+identities remain explicit. Repeated `AI-Assistance` commit trailers preserve
+provenance in Git; the final squash/merge message must retain all records.
+Task context, checks, reviewer findings, human rework and explicit user acceptance
+provide comparison evidence without treating attribution as a quality score.
+This is a repository-specific convention with no new dependency or CI gate.
+All project development rules apply across AI services and human contributors,
+with AGENTS.md remaining canonical. Contributors must read it when their tool
+does not automatically load it; external tools are not automatically configured.
+Provider-specific thinking/effort labels are retained without assuming equivalent
+reasoning budgets across models or services.
+
+Tool setup now follows verified native support instead of assuming every client
+uses one filename. Thin root CLAUDE.md/GEMINI.md imports and a Copilot pointer/import
+load or direct contributors to the canonical policy. Cursor, Antigravity and
+Grok Build use native AGENTS.md support;
+no redundant configuration is added for them. Existing tracked `.agent/rules`
+shims now declare Antigravity activation metadata and point to root policy.
+The duplicated, stale `references/AGENTS.md` is replaced with a pointer so nested
+loading cannot reintroduce outdated asset paths or geometry guidance. Fixed
+OpenAI model recommendations are replaced with provider-independent selection
+guidance while preserving explicit-user-request-only delegation.
+See [tool setup, official sources and verification limits](agent_tool_setup.md).
+No global tool settings, permissions, model selections or service accounts change.
+
+Validation: local documentation links, adapter/import targets,
+Antigravity trigger metadata, repeated Git trailer parsing, branch names
+and whitespace checks pass. Loading paths were checked against official sources;
+other AI clients were not launched for live acceptance testing. All 1,283 unit
+tests in 106 suites pass using a checksum-verified temporary official Node 22
+runtime and the locked dependencies. No application, asset, export or browser
+behavior changes. Required CI and merge evidence belong in the release PR.
+
 ## November 11 note-based whole-cycle Waveform redesign
 
 The new note model selects C1–C6 (MIDI 24–84), derives unrounded 12-TET A440
@@ -25,7 +67,7 @@ geometry/pixels, tests and unverified browser/hardware acceptance. The branch
 is retained pending explicit user testing; automated checks are not acceptance.
 
 
-**Last Updated:** 2026-11-11
+**Last Updated:** 2026-11-17
 **Current Phase:** Phase 3 (Advanced Features & Refinement)
 
 ## November 11 routed generator startup recovery

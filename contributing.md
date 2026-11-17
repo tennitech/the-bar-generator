@@ -16,7 +16,7 @@ Open http://127.0.0.1:8000/. Check for an existing server before starting anothe
 
 ## Submit a change
 
-1. Read [AGENTS.md](AGENTS.md) for the stack, naming, accessibility, and brand rules. These rules also guide human contributions.
+1. Read [AGENTS.md](AGENTS.md) for the stack, naming, accessibility, and brand rules. These rules apply to all contributors and AI services, even when a tool does not automatically load the file.
 2. Fork the repo if you do not have write access. Work on a branch, not `main`.
 3. Keep the change focused. Preserve the text filter and official logo geometry.
 4. Run the tests. For UI changes, check the page in a browser at phone and desktop widths. Check keyboard access and exports affected by the change.
@@ -64,14 +64,26 @@ Use `<type>/<short-description>` with lowercase words and hyphens:
 | `feat` | New behavior | `feat/new-bar-control` |
 | `fix` | Bug repair | `fix/mobile-menu-focus` |
 | `docs` | Documentation | `docs/local-setup` |
+| `refactor` | Restructuring without a behavior change | `refactor/export-snapshots` |
 | `test` | Test coverage | `test/svg-export` |
 | `chore` | Dependencies or repository upkeep | `chore/update-playwright` |
 
-Codex-created branches use `codex/<type>-<short-description>` to retain the agent branch prefix, for example `codex/docs-local-setup`. The old audit branch name is historical. Avoid personal names, `testing`, and permanent `dev` branches. Retain branches after merge unless the user explicitly requests deletion. Before deleting, report fresh ahead/behind counts, merge status, unmerged work, open pull requests, and unsaved changes.
+Use this convention for both human and AI-assisted work. Do not add tool, provider, model, or personal prefixes. An existing issue number may follow the type, for example `fix/123-mobile-menu-focus`; do not invent an issue number. Use lowercase words and hyphens, keep names short, and avoid spaces, `testing`, and permanent `dev` branches. Existing branch names are historical and need no rename. Retain branches after merge unless the user explicitly requests deletion. Before deleting, report fresh ahead/behind counts, merge status, unmerged work, open pull requests, and unsaved changes.
 
 Use a direct commit message. Prefer `fix: restore mobile menu focus` or `docs: explain local setup`. Use the same form for the pull request title. This is a writing convention; no commit-message tool is required.
 
 Prefer squash merge for routine changes. A merge commit is suitable when the commit history is useful to retain. Update an existing pull request on its branch rather than opening duplicates.
+
+## AI contribution tracking
+
+Before starting an AI-assisted task, use [AI tool setup](references/agent_tool_setup.md)
+to check how your client loads AGENTS.md. The repository includes compatibility
+adapters; other clients use the canonical file natively or need explicit context.
+Check the actual loaded files rather than relying only on the assistant's claim.
+
+For AI-assisted changes in any service, fill in the PR template's contribution table with every materially contributing provider, exact model identifier when available, tool/version, role, thinking mode, reasoning effort and other exposed settings/budgets. Preserve exact provider labels; similarly named modes are not assumed equivalent across services. Record multiple models and configuration changes separately, including reviewers. Use `unknown` for unavailable identity/settings, and `none` for work with no AI assistance. Never guess a model from a product name or retrospectively label old work without evidence.
+
+Preserve these records in `AI-Assistance` commit trailers, including in the final squash or merge commit. Record task scope, checks, reviewer findings, human rework and user acceptance in the PR so later comparisons have context. See [the record format, merge checklist and research sources](references/ai_contribution_records.md). This is a project convention, not a universal AI attribution standard.
 
 ## Review checks
 

@@ -4,6 +4,26 @@ This is the canonical agent instruction file for this repository.
 
 If another local rule file disagrees with this file, `AGENTS.md` wins. Keep all other agent and rule files as references or supplements so the policy does not drift again.
 
+## Scope Across Contributors And AI Services
+
+These project rules apply to every contributor working in this repository,
+regardless of AI provider, model, editor, CLI, or hosted service. This includes
+Codex, Claude Code, Cursor, Antigravity, Grok Build, and other current or future
+tools. The same branch, development, validation, documentation, approval,
+provenance, and retention rules apply to all of them. Scope remains this project
+folder; do not copy these rules into global settings for unrelated projects.
+
+Contributors must read this file before work, even if their tool does not
+automatically load it. Any tool-specific instruction file must point here rather
+than duplicate the policy. Do not assume that a file's presence automatically
+configures or enforces rules in every service. Follow higher-priority platform
+constraints and report any conflict that prevents the project workflow.
+
+See `references/agent_tool_setup.md` for the supported loading paths and session
+verification steps. Keep compatibility adapters thin, and verify loaded context
+after switching tools or changing instruction settings. A model's assertion that
+it followed the rules is not proof that the tool loaded the files.
+
 ## Required Reading Before Edits
 
 1. Read `references/project_status.md` for the current state and known issues.
@@ -16,14 +36,23 @@ This file remains the canonical agent policy. `references/AGENTS.md` and older l
 
 ## Feature Branches, User Testing, And Deletion
 
-Scope: These rules apply only to this repository. They do not change global Codex instructions or rules for other projects.
+Scope: These rules apply only to this repository. They do not change global tool settings or rules for other projects.
 
-- Create a new branch whenever the user requests work on a new feature. Use the naming convention in `contributing.md`. Start from current `main` unless the feature needs unmerged work; explain that dependency. Clarifications and repairs to the same feature stay on its existing branch.
-- Before switching to a new feature, preserve the current work and tell the user where it is saved. Example: "The motion feature still awaits your testing. It is saved in `codex/fix-animation-timing`." State whether the branch is local, pushed to GitHub, or linked to an open pull request. Verify the save state before reporting it.
+- Create a new branch whenever the user requests work on a new feature. Use `<type>/<short-description>` as defined in `contributing.md`, with the same naming for humans and AI tools. Do not add a tool, provider, model, or personal prefix. Start from current `main` unless the feature needs unmerged work; explain that dependency. Clarifications and repairs to the same feature stay on its existing branch.
+- Before switching to a new feature, preserve the current work and tell the user where it is saved. Example: "The motion feature still awaits your testing. It is saved in `fix/animation-timing`." State whether the branch is local, pushed to GitHub, or linked to an open pull request. Verify the save state before reporting it.
 - Omit that unfinished-feature note only when the earlier feature is complete AND the user has explicitly told you that they tested it. Automated checks, source inspection, a merge, silence, or approval without an explicit testing statement do not establish user testing. Keep unconfirmed work available on its branch.
 - Delete a local or remote branch only when the user explicitly asks for that deletion. A merge, completed feature, or passing test does not authorize deletion. Keep automatic deletion of merged branches disabled. Do not use `--delete-branch` or a cleanup command without explicit deletion authorization.
 - Before an authorized deletion, fetch current remote refs and inspect the target branch and any checkout that uses it. Report the comparison branch, ahead/behind counts, merge status, unmerged commits, open pull requests, and any unsaved changes. Explain what work would be removed before deleting it. Do not discard unrelated or unsaved work.
 - Verify the result after deletion and tell the user which local and remote branches were removed and which remain. If the requested deletion scope or loss of work needs a decision, ask for that decision; do not infer authorization for other branches.
+
+## AI Contribution Records
+
+- Follow `references/ai_contribution_records.md` for the project-specific provenance format, regardless of AI service. Record every materially contributing provider/model/configuration and its role in the pull request, including research, implementation, tests, and review. Distinguish the model provider from the tool used to access it.
+- Record thinking mode and reasoning effort as separate fields using the exact exposed labels. Include exposed thinking/token budgets, agent mode, tool version, and other relevant development settings. Do not equate similarly named modes across providers. A setting change starts a separate contribution record, just as a model switch does.
+- Use only model identifiers and settings exposed by the session or explicitly supplied by the user. Mark unavailable details `unknown`; do not infer a model from the app name, a recommended model, or an earlier chat. Record switches and delegated contributors separately without spawning agents just to fill the record.
+- Include the same provider/model/tool/version/role/thinking/effort/settings records as `AI-Assistance` commit trailers for the relevant commits. Before merging, ensure the final squash or merge commit preserves all contributing records, including review-only work. Do not rewrite published history to backfill unknown provenance.
+- Keep quality evidence in the PR: task scope, checks and failures, reviewer findings, human rework, and explicit user acceptance. Unperformed checks and acceptance stay pending. Provenance supports later comparison; it does not by itself measure model quality.
+- These requirements apply only to this repository. Existing branches need no rename, and historical provenance must not be guessed.
 
 ## Applying RPI's Feel To This Tool
 
@@ -74,6 +103,9 @@ Adhere to the following casing standards for new files:
   - files should prefer `kebab-case` for images and icons
   - keep original naming where needed for official asset matching, such as `RPIGeist-Bold.woff2`
 - Markdown: `snake_case.md` or `kebab-case.md`
+  - Exception: tool-discovered instruction filenames retain their required casing,
+    such as `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md`; tool configuration files
+    likewise retain their documented filenames.
 
 ## 3. Code Style And Structure
 
@@ -252,16 +284,17 @@ Use subagent workflows to keep the main thread focused on requirements, decision
 - Subagents help reduce context pollution and context rot by moving noisy intermediate work such as exploration notes, test logs, stack traces, and command output off the main thread.
 - Prefer subagents for read-heavy and parallelizable work such as repo exploration, tests, triage, log analysis, document review, and summarization.
 - Be more careful with write-heavy parallel work. Multiple agents editing code at once can create conflicts and coordination overhead.
-- Codex does not spawn subagents automatically. Only use subagents when the user explicitly asks for subagents, delegation, or parallel agent work.
+- Regardless of the tool's own delegation defaults, use subagents for this project only when the user explicitly asks for subagents, delegation, or parallel agent work. Do not automatically invoke delegated review just because a tool offers it.
 - Use subagents only when the token and coordination cost is justified. Parallel runs consume more tokens than comparable single-agent work.
 - When delegating, define the split clearly:
   - what slice of work each subagent owns
   - whether the main agent should wait for all subagents or continue locally
   - what summary or output each subagent should return
 - Have subagents return distilled summaries with relevant file references instead of flooding the main thread with raw logs.
-- Default model and reasoning guidance:
-  - use `gpt-5.4` with `medium` or `high` reasoning for the main agent and for ambiguous, multi-step, reviewer, or security-focused subagents
-  - use `gpt-5.4-mini` with `low` or `medium` reasoning for faster exploration, read-heavy scans, large-file review, or supporting-document analysis
+- Model and reasoning selection is provider-independent:
+  - Honor the contributor's selected model and settings. Do not switch providers/models, change reasoning budgets, or incur additional service costs solely to match an example or fill a provenance record.
+  - For authorized delegation, use an available model appropriate to the task's ambiguity and risk. A smaller/faster model can suit bounded read-heavy work; complex review needs suitable reasoning capability. Respect the user's model and cost constraints.
+  - Record actual provider/model, thinking mode, reasoning effort and material settings for every contributor/configuration as defined in `references/ai_contribution_records.md`. Never infer that equal effort labels mean equal capability across services.
 - Avoid subagents for tiny tasks, single-file edits, or blocking work that the main agent needs immediately to keep the critical path moving.
 - The main agent remains responsible for overall direction, integration, conflict management, and final review.
 
