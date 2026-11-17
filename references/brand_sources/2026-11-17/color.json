@@ -1,0 +1,299 @@
+{
+  "label": "Color",
+  "requestedUrl": "https://brand.rpi.edu/document/4#/-/color",
+  "url": "https://brand.rpi.edu/document/4#/-/color",
+  "capturedAt": "2026-11-17T16:19:28.762Z",
+  "method": "Authenticated content-manager DOM and accessibility text sampled across viewport positions; exact-line deduplication.",
+  "text": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.\n\nPRIMARY COLORS\n\nOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.\n\nPrimary Color Values\n\nPreview\tName\tRGBA\tHEX\tCMYK\tPMS\n\nBlack\n\n0, 0, 0, 1\n\n#000000\n\n30, 30, 30, 100\n\nBlack C\n\nWhite\n\n255, 255, 255, 1\n\n#FFFFFF\n\n0, 0, 0, 0\n\nN/A\n\nRed\n\n214, 0, 28, 1\n\n#D6001C\n\n0, 97, 100, 3\n\n2035\n\nThe Role of Red\n\nRed is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.\n\nRed should energize, not dominate. When in doubt, default to black and white.\n\nWhen Red Works\n\nActivation moments: Calls-to-action, interactive elements, navigation highlights\n\nAthletic events: “Big Red Freakout” and spirit applications where energy is the goal\n\nCeremonial occasions: Formal events, Commencement, and institutional celebrations\n\nAccent applications: Highlighting key information or creating visual emphasis\n\nWhen to Reduce Red\n\nContent-focused layouts: When photography, student work, or complex information is primary\n\nLarge background areas: Red backgrounds can strain readability and accessibility\n\nInterface-heavy applications: Where user experience requires visual calm\n\nText applications: Except for very specific emphasis or links\n\nSECONDARY COLORS\n\nOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.\n\nCOLOR ACCESSIBILITY\n\nEXAMPLES\n\nSecondary Color Usage\n\nBold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.\n\nUse the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.\n\nTypography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.\n\nDon't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.\n\nFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.\n\nColor Accessibility Checklist\n\nUse accessible color combinations only.\n\nMaintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).\n\nDon't use color alone to convey information,\n\nTest combinations with accessibility tools when creating new applications.\n\nSecondary Color Values\n\nPreview\tName\tRGBA\tHEX\tPMS\tCMYK\n\nSilver\n\n225, 237, 245, 1\n\n#E1EDF5\n\n642\n\n0, 3, 0, 4\n\nGray\n\n185, 204, 216, 1\n\n#B9CCD8\n\n643\n\n14, 6, 0, 15\n\nBlue\n\n0, 129, 206, 1\n\n#0081CE\n\n2173\n\n100, 37, 0, 19\n\nLink Blue\n\n0, 110, 176, 1\n\n#006EB0\n\n2172\n\n100, 37, 0, 31\n\nGold\n\n205, 172, 56, 1\n\n#CDAC38\n\n110\n\n0, 16, 73, 20",
+  "headings": [
+    {
+      "level": 3,
+      "text": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs."
+    },
+    {
+      "level": 2,
+      "text": "PRIMARY COLORS"
+    },
+    {
+      "level": 3,
+      "text": "The Role of Red"
+    },
+    {
+      "level": 2,
+      "text": "SECONDARY COLORS"
+    },
+    {
+      "level": 2,
+      "text": "COLOR ACCESSIBILITY"
+    },
+    {
+      "level": 2,
+      "text": "EXAMPLES"
+    },
+    {
+      "level": 3,
+      "text": "Secondary Color Usage"
+    }
+  ],
+  "imageAlts": [
+    "The RPI logo in white on black, black on white, and white on red.",
+    "A pie chart with 20% red,  80% black and white",
+    "Demonstrations of the RPI logo and type in the secondary color pallette including grey on red, silver on blue, black on gold, red on grey, blue on silver, and grey on black.",
+    "A condensed visual of all color palette combinations and whether they pass AA or AAA accessibility standards.",
+    "Posters advertising RPI plaster a white wall behind a series of white columns and silver poles.",
+    "Multi-colored RPI stamps adorn a strip of film",
+    "A 26/27 Academic School Year calendar with a red RPI seal sticker paperclipped to the front",
+    "Collection of various Instagram stories arranged in a grid layout."
+  ],
+  "links": [
+    {
+      "text": "Skip to main content",
+      "url": "https://brand.rpi.edu/#main"
+    },
+    {
+      "text": "Home",
+      "url": "https://brand.rpi.edu/document/4#/-/home"
+    },
+    {
+      "text": "About Our Brand",
+      "url": "https://brand.rpi.edu/document/4#/-/about-our-brand"
+    },
+    {
+      "text": "Who We Are",
+      "url": "https://brand.rpi.edu/document/4#/-/who-we-are"
+    },
+    {
+      "text": "Naming Conventions",
+      "url": "https://brand.rpi.edu/document/4#/-/naming-conventions"
+    },
+    {
+      "text": "Voice & Tone",
+      "url": "https://brand.rpi.edu/document/4#/-/voice-tone"
+    },
+    {
+      "text": "Design Principles",
+      "url": "https://brand.rpi.edu/document/4#/-/design-principles"
+    },
+    {
+      "text": "Logo System",
+      "url": "https://brand.rpi.edu/document/4#/-/logo-system"
+    },
+    {
+      "text": "The Bar",
+      "url": "https://brand.rpi.edu/document/4#/-/the-bar"
+    },
+    {
+      "text": "The Bar Generator",
+      "url": "https://brand.rpi.edu/document/4#/-/the-bar-generator"
+    },
+    {
+      "text": "Seal",
+      "url": "https://brand.rpi.edu/document/4#/-/seal"
+    },
+    {
+      "text": "Current page: Color",
+      "url": "https://brand.rpi.edu/document/4#/-/color"
+    },
+    {
+      "text": "Primary Colors",
+      "url": "https://brand.rpi.edu/document/4#/-/color/primary-colors-1"
+    },
+    {
+      "text": "Secondary Colors",
+      "url": "https://brand.rpi.edu/document/4#/-/color/secondary-colors"
+    },
+    {
+      "text": "Color Accessibility",
+      "url": "https://brand.rpi.edu/document/4#/-/color/color-accessibility"
+    },
+    {
+      "text": "Examples",
+      "url": "https://brand.rpi.edu/document/4#/-/color/examples"
+    },
+    {
+      "text": "Typography",
+      "url": "https://brand.rpi.edu/document/4#/-/typography"
+    },
+    {
+      "text": "Pattern",
+      "url": "https://brand.rpi.edu/document/4#/-/pattern"
+    },
+    {
+      "text": "Video",
+      "url": "https://brand.rpi.edu/document/4#/-/video"
+    },
+    {
+      "text": "Photography",
+      "url": "https://brand.rpi.edu/document/4#/-/photography"
+    },
+    {
+      "text": "Spirit Marks",
+      "url": "https://brand.rpi.edu/document/4#/-/spirit-marks"
+    },
+    {
+      "text": "Inspiration Gallery",
+      "url": "https://brand.rpi.edu/document/4#/-/inspiration-gallery-1"
+    },
+    {
+      "text": "Email Signature",
+      "url": "https://brand.rpi.edu/document/4#/-/email-signature"
+    },
+    {
+      "text": "Contact Usexternal linkopens in a new tab",
+      "url": "https://forms.monday.com/forms/d8ab4b03343edbb13f739adc3bfc1652"
+    },
+    {
+      "text": "Logos",
+      "url": "https://brand.rpi.edu/document/27"
+    },
+    {
+      "text": "Patterns and Bars",
+      "url": "https://brand.rpi.edu/document/28"
+    },
+    {
+      "text": "Fonts",
+      "url": "https://brand.rpi.edu/document/13"
+    },
+    {
+      "text": "Virtual Backgrounds",
+      "url": "https://brand.rpi.edu/document/22"
+    },
+    {
+      "text": "PowerPoint Template",
+      "url": "https://brand.rpi.edu/document/25"
+    },
+    {
+      "text": "Letterhead Template",
+      "url": "https://brand.rpi.edu/document/30"
+    },
+    {
+      "text": "Social Media Banners",
+      "url": "https://brand.rpi.edu/document/26"
+    },
+    {
+      "text": "Rensselaer Polytechnic Institute",
+      "url": "https://www.rpi.edu/"
+    },
+    {
+      "text": "Marketing and Communications Request Form.",
+      "url": "https://forms.monday.com/forms/d8ab4b03343edbb13f739adc3bfc1652"
+    },
+    {
+      "text": "Primary Colors(active)",
+      "url": "https://brand.rpi.edu/document/4#/-/color/primary-colors-1"
+    },
+    {
+      "text": "WCAG AA standards",
+      "url": "https://www.w3.org/TR/WCAG22/"
+    },
+    {
+      "text": "Secondary Colors(active)",
+      "url": "https://brand.rpi.edu/document/4#/-/color/secondary-colors"
+    },
+    {
+      "text": "Color Accessibility(active)",
+      "url": "https://brand.rpi.edu/document/4#/-/color/color-accessibility"
+    },
+    {
+      "text": "Examples(active)",
+      "url": "https://brand.rpi.edu/document/4#/-/color/examples"
+    }
+  ],
+  "buttons": [
+    "0, 0, 0, 1",
+    "#000000",
+    "30, 30, 30, 100",
+    "Black C",
+    "255, 255, 255, 1",
+    "#FFFFFF",
+    "0, 0, 0, 0",
+    "N/A",
+    "214, 0, 28, 1",
+    "#D6001C",
+    "0, 97, 100, 3",
+    "2035",
+    "225, 237, 245, 1",
+    "#E1EDF5",
+    "642",
+    "0, 3, 0, 4",
+    "185, 204, 216, 1",
+    "#B9CCD8",
+    "643",
+    "14, 6, 0, 15",
+    "0, 129, 206, 1",
+    "#0081CE",
+    "2173",
+    "100, 37, 0, 19",
+    "0, 110, 176, 1",
+    "#006EB0",
+    "2172",
+    "100, 37, 0, 31",
+    "205, 172, 56, 1",
+    "#CDAC38",
+    "110",
+    "0, 16, 73, 20",
+    "RGBA color representation value",
+    "HEX color representation value",
+    "CMYK color representation value",
+    "PMS color representation value"
+  ],
+  "modified": "Last modified on October 29, 2026 at 10:29 AM",
+  "frames": [
+    {
+      "text": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.\nPRIMARY COLORS\n\nOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.\n\nPrimary Color Values\nPreview\tName\tRGBA\tHEX\tCMYK\tPMS\n\n\t\nBlack\n\t\n0, 0, 0, 1\n\t\n#000000\n\t\n30, 30, 30, 100\n\t\nBlack C\n\n\n\t\nWhite\n\t\n255, 255, 255, 1\n\t\n#FFFFFF\n\t\n0, 0, 0, 0\n\t\nN/A\n\n\n\t\nRed\n\t\n214, 0, 28, 1\n\t\n#D6001C\n\t\n0, 97, 100, 3\n\t\n2035\nThe Role of Red\n\n\n\nRed is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.\n\n\n\nRed should energize, not dominate. When in doubt, default to black and white.\n\n\nWhen Red Works\n\n\n\nActivation moments: Calls-to-action, interactive elements, navigation highlights\n\nAthletic events: “Big Red Freakout” and spirit applications where energy is the goal\n\nCeremonial occasions: Formal events, Commencement, and institutional celebrations\n\nAccent applications: Highlighting key information or creating visual emphasis\n\nWhen to Reduce Red\n\n\n\nContent-focused layouts: When photography, student work, or complex information is primary\n\nLarge background areas: Red backgrounds can strain readability and accessibility\n\nInterface-heavy applications: Where user experience requires visual calm\n\nText applications: Except for very specific emphasis or links\n\nSECONDARY COLORS\n\nOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.\n\nCOLOR ACCESSIBILITY\nEXAMPLES",
+      "domText": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.Primary ColorsOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.Primary Color ValuesPreviewNameRGBAHEXCMYKPMSBlack0, 0, 0, 1#00000030, 30, 30, 100Black CWhite255, 255, 255, 1#FFFFFF0, 0, 0, 0N/ARed214, 0, 28, 1#D6001C0, 97, 100, 32035\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  The Role of Red﻿Red is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.﻿Red should energize, not dominate. When in doubt, default to black and white.﻿When Red Works﻿Activation moments: Calls-to-action, interactive elements, navigation highlightsAthletic events: “Big Red Freakout” and spirit applications where energy is the goalCeremonial occasions: Formal events, Commencement, and institutional celebrationsAccent applications: Highlighting key information or creating visual emphasisWhen to Reduce Red﻿Content-focused layouts: When photography, student work, or complex information is primaryLarge background areas: Red backgrounds can strain readability and accessibilityInterface-heavy applications: Where user experience requires visual calmText applications: Except for very specific emphasis or linksSecondary ColorsOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.Color AccessibilityExamples",
+      "scroll": {
+        "h": 6891,
+        "v": 763,
+        "y": 0
+      }
+    },
+    {
+      "text": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.\nPRIMARY COLORS\n\nOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.\n\nPrimary Color Values\nPreview\tName\tRGBA\tHEX\tCMYK\tPMS\n\n\t\nBlack\n\t\n0, 0, 0, 1\n\t\n#000000\n\t\n30, 30, 30, 100\n\t\nBlack C\n\n\n\t\nWhite\n\t\n255, 255, 255, 1\n\t\n#FFFFFF\n\t\n0, 0, 0, 0\n\t\nN/A\n\n\n\t\nRed\n\t\n214, 0, 28, 1\n\t\n#D6001C\n\t\n0, 97, 100, 3\n\t\n2035\nThe Role of Red\n\n\n\nRed is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.\n\n\n\nRed should energize, not dominate. When in doubt, default to black and white.\n\n\nWhen Red Works\n\n\n\nActivation moments: Calls-to-action, interactive elements, navigation highlights\n\nAthletic events: “Big Red Freakout” and spirit applications where energy is the goal\n\nCeremonial occasions: Formal events, Commencement, and institutional celebrations\n\nAccent applications: Highlighting key information or creating visual emphasis\n\nWhen to Reduce Red\n\n\n\nContent-focused layouts: When photography, student work, or complex information is primary\n\nLarge background areas: Red backgrounds can strain readability and accessibility\n\nInterface-heavy applications: Where user experience requires visual calm\n\nText applications: Except for very specific emphasis or links\n\nSECONDARY COLORS\n\nOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.\n\nSecondary Color Usage\n\n\nBold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.\n\nUse the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.\n\nTypography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.\n\nDon't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.\n\nCOLOR ACCESSIBILITY\n\nFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.\n\nColor Accessibility Checklist\n\nUse accessible color combinations only.\n\nMaintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).\n\nDon't use color alone to convey information,\n\nTest combinations with accessibility tools when creating new applications.\n\nEXAMPLES",
+      "domText": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.Primary ColorsOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.Primary Color ValuesPreviewNameRGBAHEXCMYKPMSBlack0, 0, 0, 1#00000030, 30, 30, 100Black CWhite255, 255, 255, 1#FFFFFF0, 0, 0, 0N/ARed214, 0, 28, 1#D6001C0, 97, 100, 32035\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  The Role of Red﻿Red is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.﻿Red should energize, not dominate. When in doubt, default to black and white.﻿When Red Works﻿Activation moments: Calls-to-action, interactive elements, navigation highlightsAthletic events: “Big Red Freakout” and spirit applications where energy is the goalCeremonial occasions: Formal events, Commencement, and institutional celebrationsAccent applications: Highlighting key information or creating visual emphasisWhen to Reduce Red﻿Content-focused layouts: When photography, student work, or complex information is primaryLarge background areas: Red backgrounds can strain readability and accessibilityInterface-heavy applications: Where user experience requires visual calmText applications: Except for very specific emphasis or linksSecondary ColorsOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.Secondary Color Usage﻿Bold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.Use the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.Typography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.Don't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.Color AccessibilityFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.﻿﻿Color Accessibility ChecklistUse accessible color combinations only.Maintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).Don't use color alone to convey information,Test combinations with accessibility tools when creating new applications.Examples",
+      "scroll": {
+        "h": 6010,
+        "v": 763,
+        "y": 1486
+      }
+    },
+    {
+      "text": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.\nPRIMARY COLORS\n\nOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.\n\nPrimary Color Values\nPreview\tName\tRGBA\tHEX\tCMYK\tPMS\n\n\t\nBlack\n\t\n0, 0, 0, 1\n\t\n#000000\n\t\n30, 30, 30, 100\n\t\nBlack C\n\n\n\t\nWhite\n\t\n255, 255, 255, 1\n\t\n#FFFFFF\n\t\n0, 0, 0, 0\n\t\nN/A\n\n\n\t\nRed\n\t\n214, 0, 28, 1\n\t\n#D6001C\n\t\n0, 97, 100, 3\n\t\n2035\nThe Role of Red\n\n\n\nRed is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.\n\n\n\nRed should energize, not dominate. When in doubt, default to black and white.\n\n\nWhen Red Works\n\n\n\nActivation moments: Calls-to-action, interactive elements, navigation highlights\n\nAthletic events: “Big Red Freakout” and spirit applications where energy is the goal\n\nCeremonial occasions: Formal events, Commencement, and institutional celebrations\n\nAccent applications: Highlighting key information or creating visual emphasis\n\nWhen to Reduce Red\n\n\n\nContent-focused layouts: When photography, student work, or complex information is primary\n\nLarge background areas: Red backgrounds can strain readability and accessibility\n\nInterface-heavy applications: Where user experience requires visual calm\n\nText applications: Except for very specific emphasis or links\n\nSECONDARY COLORS\n\nOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.\n\nSecondary Color Values\nPreview\tName\tRGBA\tHEX\tPMS\tCMYK\n\n\t\nSilver\n\t\n225, 237, 245, 1\n\t\n#E1EDF5\n\t\n642\n\t\n0, 3, 0, 4\n\n\n\t\nGray\n\t\n185, 204, 216, 1\n\t\n#B9CCD8\n\t\n643\n\t\n14, 6, 0, 15\n\n\n\t\nBlue\n\t\n0, 129, 206, 1\n\t\n#0081CE\n\t\n2173\n\t\n100, 37, 0, 19\n\n\n\t\nLink Blue\n\t\n0, 110, 176, 1\n\t\n#006EB0\n\t\n2172\n\t\n100, 37, 0, 31\n\n\n\t\nGold\n\t\n205, 172, 56, 1\n\t\n#CDAC38\n\t\n110\n\t\n0, 16, 73, 20\nSecondary Color Usage\n\n\nBold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.\n\nUse the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.\n\nTypography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.\n\nDon't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.\n\nCOLOR ACCESSIBILITY\n\nFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.\n\nColor Accessibility Checklist\n\nUse accessible color combinations only.\n\nMaintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).\n\nDon't use color alone to convey information,\n\nTest combinations with accessibility tools when creating new applications.\n\nEXAMPLES",
+      "domText": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.Primary ColorsOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.Primary Color ValuesPreviewNameRGBAHEXCMYKPMSBlack0, 0, 0, 1#00000030, 30, 30, 100Black CWhite255, 255, 255, 1#FFFFFF0, 0, 0, 0N/ARed214, 0, 28, 1#D6001C0, 97, 100, 32035\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  The Role of Red﻿Red is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.﻿Red should energize, not dominate. When in doubt, default to black and white.﻿When Red Works﻿Activation moments: Calls-to-action, interactive elements, navigation highlightsAthletic events: “Big Red Freakout” and spirit applications where energy is the goalCeremonial occasions: Formal events, Commencement, and institutional celebrationsAccent applications: Highlighting key information or creating visual emphasisWhen to Reduce Red﻿Content-focused layouts: When photography, student work, or complex information is primaryLarge background areas: Red backgrounds can strain readability and accessibilityInterface-heavy applications: Where user experience requires visual calmText applications: Except for very specific emphasis or linksSecondary ColorsOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.Secondary Color ValuesPreviewNameRGBAHEXPMSCMYKSilver225, 237, 245, 1#E1EDF56420, 3, 0, 4Gray185, 204, 216, 1#B9CCD864314, 6, 0, 15Blue0, 129, 206, 1#0081CE2173100, 37, 0, 19Link Blue0, 110, 176, 1#006EB02172100, 37, 0, 31Gold205, 172, 56, 1#CDAC381100, 16, 73, 20\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  Secondary Color Usage﻿Bold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.Use the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.Typography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.Don't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.Color AccessibilityFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.﻿﻿Color Accessibility ChecklistUse accessible color combinations only.Maintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).Don't use color alone to convey information,Test combinations with accessibility tools when creating new applications.Examples",
+      "scroll": {
+        "h": 5974,
+        "v": 763,
+        "y": 2229
+      }
+    },
+    {
+      "text": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.\nPRIMARY COLORS\n\nOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.\n\nThe Role of Red\n\n\n\nRed is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.\n\n\n\nRed should energize, not dominate. When in doubt, default to black and white.\n\n\nWhen Red Works\n\n\n\nActivation moments: Calls-to-action, interactive elements, navigation highlights\n\nAthletic events: “Big Red Freakout” and spirit applications where energy is the goal\n\nCeremonial occasions: Formal events, Commencement, and institutional celebrations\n\nAccent applications: Highlighting key information or creating visual emphasis\n\nWhen to Reduce Red\n\n\n\nContent-focused layouts: When photography, student work, or complex information is primary\n\nLarge background areas: Red backgrounds can strain readability and accessibility\n\nInterface-heavy applications: Where user experience requires visual calm\n\nText applications: Except for very specific emphasis or links\n\nSECONDARY COLORS\n\nOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.\n\nSecondary Color Values\nPreview\tName\tRGBA\tHEX\tPMS\tCMYK\n\n\t\nSilver\n\t\n225, 237, 245, 1\n\t\n#E1EDF5\n\t\n642\n\t\n0, 3, 0, 4\n\n\n\t\nGray\n\t\n185, 204, 216, 1\n\t\n#B9CCD8\n\t\n643\n\t\n14, 6, 0, 15\n\n\n\t\nBlue\n\t\n0, 129, 206, 1\n\t\n#0081CE\n\t\n2173\n\t\n100, 37, 0, 19\n\n\n\t\nLink Blue\n\t\n0, 110, 176, 1\n\t\n#006EB0\n\t\n2172\n\t\n100, 37, 0, 31\n\n\n\t\nGold\n\t\n205, 172, 56, 1\n\t\n#CDAC38\n\t\n110\n\t\n0, 16, 73, 20\nSecondary Color Usage\n\n\nBold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.\n\nUse the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.\n\nTypography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.\n\nDon't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.\n\nCOLOR ACCESSIBILITY\n\nFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.\n\nColor Accessibility Checklist\n\nUse accessible color combinations only.\n\nMaintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).\n\nDon't use color alone to convey information,\n\nTest combinations with accessibility tools when creating new applications.\n\nEXAMPLES",
+      "domText": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.Primary ColorsOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.Primary Color ValuesPreviewNameRGBAHEXCMYKPMSBlack0, 0, 0, 1#00000030, 30, 30, 100Black CWhite255, 255, 255, 1#FFFFFF0, 0, 0, 0N/ARed214, 0, 28, 1#D6001C0, 97, 100, 32035\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  The Role of Red﻿Red is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.﻿Red should energize, not dominate. When in doubt, default to black and white.﻿When Red Works﻿Activation moments: Calls-to-action, interactive elements, navigation highlightsAthletic events: “Big Red Freakout” and spirit applications where energy is the goalCeremonial occasions: Formal events, Commencement, and institutional celebrationsAccent applications: Highlighting key information or creating visual emphasisWhen to Reduce Red﻿Content-focused layouts: When photography, student work, or complex information is primaryLarge background areas: Red backgrounds can strain readability and accessibilityInterface-heavy applications: Where user experience requires visual calmText applications: Except for very specific emphasis or linksSecondary ColorsOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.Secondary Color ValuesPreviewNameRGBAHEXPMSCMYKSilver225, 237, 245, 1#E1EDF56420, 3, 0, 4Gray185, 204, 216, 1#B9CCD864314, 6, 0, 15Blue0, 129, 206, 1#0081CE2173100, 37, 0, 19Link Blue0, 110, 176, 1#006EB02172100, 37, 0, 31Gold205, 172, 56, 1#CDAC381100, 16, 73, 20\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  Secondary Color Usage﻿Bold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.Use the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.Typography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.Don't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.Color AccessibilityFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.﻿﻿Color Accessibility ChecklistUse accessible color combinations only.Maintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).Don't use color alone to convey information,Test combinations with accessibility tools when creating new applications.Examples",
+      "scroll": {
+        "h": 6010,
+        "v": 763,
+        "y": 2972
+      }
+    },
+    {
+      "text": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.\nPRIMARY COLORS\n\nOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.\n\nThe Role of Red\n\n\n\nRed is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.\n\n\n\nRed should energize, not dominate. When in doubt, default to black and white.\n\n\nWhen Red Works\n\n\n\nActivation moments: Calls-to-action, interactive elements, navigation highlights\n\nAthletic events: “Big Red Freakout” and spirit applications where energy is the goal\n\nCeremonial occasions: Formal events, Commencement, and institutional celebrations\n\nAccent applications: Highlighting key information or creating visual emphasis\n\nWhen to Reduce Red\n\n\n\nContent-focused layouts: When photography, student work, or complex information is primary\n\nLarge background areas: Red backgrounds can strain readability and accessibility\n\nInterface-heavy applications: Where user experience requires visual calm\n\nText applications: Except for very specific emphasis or links\n\nSECONDARY COLORS\n\nOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.\n\nSecondary Color Usage\n\n\nBold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.\n\nUse the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.\n\nTypography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.\n\nDon't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.\n\nCOLOR ACCESSIBILITY\n\nFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.\n\nColor Accessibility Checklist\n\nUse accessible color combinations only.\n\nMaintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).\n\nDon't use color alone to convey information,\n\nTest combinations with accessibility tools when creating new applications.\n\nEXAMPLES",
+      "domText": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.Primary ColorsOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.Primary Color ValuesPreviewNameRGBAHEXCMYKPMSBlack0, 0, 0, 1#00000030, 30, 30, 100Black CWhite255, 255, 255, 1#FFFFFF0, 0, 0, 0N/ARed214, 0, 28, 1#D6001C0, 97, 100, 32035\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  The Role of Red﻿Red is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.﻿Red should energize, not dominate. When in doubt, default to black and white.﻿When Red Works﻿Activation moments: Calls-to-action, interactive elements, navigation highlightsAthletic events: “Big Red Freakout” and spirit applications where energy is the goalCeremonial occasions: Formal events, Commencement, and institutional celebrationsAccent applications: Highlighting key information or creating visual emphasisWhen to Reduce Red﻿Content-focused layouts: When photography, student work, or complex information is primaryLarge background areas: Red backgrounds can strain readability and accessibilityInterface-heavy applications: Where user experience requires visual calmText applications: Except for very specific emphasis or linksSecondary ColorsOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.Secondary Color ValuesPreviewNameRGBAHEXPMSCMYKSilver225, 237, 245, 1#E1EDF56420, 3, 0, 4Gray185, 204, 216, 1#B9CCD864314, 6, 0, 15Blue0, 129, 206, 1#0081CE2173100, 37, 0, 19Link Blue0, 110, 176, 1#006EB02172100, 37, 0, 31Gold205, 172, 56, 1#CDAC381100, 16, 73, 20\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  Secondary Color Usage﻿Bold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.Use the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.Typography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.Don't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.Color AccessibilityFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.﻿﻿Color Accessibility ChecklistUse accessible color combinations only.Maintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).Don't use color alone to convey information,Test combinations with accessibility tools when creating new applications.Examples",
+      "scroll": {
+        "h": 5962,
+        "v": 763,
+        "y": 4458
+      }
+    },
+    {
+      "text": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.\nPRIMARY COLORS\n\nOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.\n\nThe Role of Red\n\n\n\nRed is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.\n\n\n\nRed should energize, not dominate. When in doubt, default to black and white.\n\n\nWhen Red Works\n\n\n\nActivation moments: Calls-to-action, interactive elements, navigation highlights\n\nAthletic events: “Big Red Freakout” and spirit applications where energy is the goal\n\nCeremonial occasions: Formal events, Commencement, and institutional celebrations\n\nAccent applications: Highlighting key information or creating visual emphasis\n\nWhen to Reduce Red\n\n\n\nContent-focused layouts: When photography, student work, or complex information is primary\n\nLarge background areas: Red backgrounds can strain readability and accessibility\n\nInterface-heavy applications: Where user experience requires visual calm\n\nText applications: Except for very specific emphasis or links\n\nSECONDARY COLORS\n\nOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.\n\nSecondary Color Usage\n\n\nBold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.\n\nUse the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.\n\nTypography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.\n\nDon't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.\n\nCOLOR ACCESSIBILITY\n\nFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.\n\nColor Accessibility Checklist\n\nUse accessible color combinations only.\n\nMaintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).\n\nDon't use color alone to convey information,\n\nTest combinations with accessibility tools when creating new applications.\n\nEXAMPLES",
+      "domText": "Our color system is built on institutional heritage while prioritizing clarity, accessibility, and purposeful application. The palette draws from RPI’s historic 1904 seal, establishing a foundation that honors our past and supporting modern communication needs.Primary ColorsOur primary palette establishes RPI’s visual foundation with black, white, and red as the institutional core. This restrained approach ensures maximum impact when color is applied purposefully.Primary Color ValuesPreviewNameRGBAHEXCMYKPMSBlack0, 0, 0, 1#00000030, 30, 30, 100Black CWhite255, 255, 255, 1#FFFFFF0, 0, 0, 0N/ARed214, 0, 28, 1#D6001C0, 97, 100, 32035\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  The Role of Red﻿Red is one of RPI’s most powerful brand assets — and our most easily misused. When applied thoughtfully, red creates energy, commands attention, and reinforces institutional pride. When overused, it overwhelms content and diminishes user experience.﻿Red should energize, not dominate. When in doubt, default to black and white.﻿When Red Works﻿Activation moments: Calls-to-action, interactive elements, navigation highlightsAthletic events: “Big Red Freakout” and spirit applications where energy is the goalCeremonial occasions: Formal events, Commencement, and institutional celebrationsAccent applications: Highlighting key information or creating visual emphasisWhen to Reduce Red﻿Content-focused layouts: When photography, student work, or complex information is primaryLarge background areas: Red backgrounds can strain readability and accessibilityInterface-heavy applications: Where user experience requires visual calmText applications: Except for very specific emphasis or linksSecondary ColorsOur secondary palette introduces blue and gold — the primary colors that form the foundation of all color creation. These accent colors, from which we also derive our silver and gray, provide flexibility while maintaining institutional consistency.Secondary Color ValuesPreviewNameRGBAHEXPMSCMYKSilver225, 237, 245, 1#E1EDF56420, 3, 0, 4Gray185, 204, 216, 1#B9CCD864314, 6, 0, 15Blue0, 129, 206, 1#0081CE2173100, 37, 0, 19Link Blue0, 110, 176, 1#006EB02172100, 37, 0, 31Gold205, 172, 56, 1#CDAC381100, 16, 73, 20\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  Secondary Color Usage﻿Bold brand colors (RPI red, blue, and gold) should generally be used as background color fills. Don't mix these bold brand colors together in a single composition (poster, Instagram story, etc.). For a series, you can use different bold colors across individual compositions.Use the neutral colors (gray, silver) to ground compositions and allow bolder brand colors to be used for emphasis.Typography should generally be black and white for legibility, but bolder colors can be applied to small type and to create typographic texture in the background.Don't allow the secondary palette to outshine the primary brand colors. Across RPI communications, use red as the dominant brand color, with blue and gold as supporting colors. While red should be the most frequently used and prominently featured brand color in the totality of RPI's visual presence, individual compositions can certainly use blue or gold without red.Color AccessibilityFor digital applications, these color combinations have been tested to meet WCAG AA standards, with many exceeding AAA requirements. Only use accessible combinations to ensure text readability for all users.﻿﻿Color Accessibility ChecklistUse accessible color combinations only.Maintain WCAG AA contrast minimums (4.5:1 for normal text, 3:1 for large text).Don't use color alone to convey information,Test combinations with accessibility tools when creating new applications.Examples",
+      "scroll": {
+        "h": 5962,
+        "v": 763,
+        "y": 5199.5
+      }
+    }
+  ],
+  "reachedBottom": true,
+  "scope": "Authored guideline page text and image alternative text; individual asset files, video transcripts and text embedded only in images excluded."
+}

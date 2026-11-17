@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "sourceManifest": "references/brand_sources/2026-11-17/manifest.json",
+  "reviewFile": "references/brand_review.json",
+  "policyDocument": "references/brand_policy.md",
+  "conflictRegister": "references/brand_conflicts.md",
+  "areas": [
+    {
+      "id": "foundations",
+      "title": "Institutional identity and purpose",
+      "always": true,
+      "sources": [
+        "home",
+        "about-our-brand",
+        "who-we-are"
+      ],
+      "requirements": [
+        "Apply the dynamic, participatory, authentic, distinctive identity to every generator surface and deliverable.",
+        "Ground claims in real implemented systems, evidence and human purpose; fictional brand examples are not evidence."
+      ]
+    },
+    {
+      "id": "copy",
+      "title": "Naming, voice and written communication",
+      "patterns": [
+        "\\.(md|html)$",
+        "^js/"
+      ],
+      "sources": [
+        "naming-conventions",
+        "voice-tone"
+      ],
+      "requirements": [
+        "Use RPI generally and Rensselaer Polytechnic Institute formally; retain established proper names without inventing lockups.",
+        "Write curious, humble, genuine, resilient, offbeat, relatable copy suited to its audience and medium; avoid unsupported claims and forced slogans."
+      ]
+    },
+    {
+      "id": "interface",
+      "title": "Interface, layout, color and type",
+      "patterns": [
+        "^(js/|css/|generator/|animation/)",
+        "(^|/)index\\.html$",
+        "^(404|marquee-ui)\\.html$"
+      ],
+      "sources": [
+        "design-principles",
+        "color",
+        "typography",
+        "pattern"
+      ],
+      "requirements": [
+        "Keep controls and supporting chrome calm while allowing the generated work to be expressive.",
+        "Use documented palette and approved compositions; evaluate small UI text contrast independently from logo-color examples.",
+        "Use the project RPIGeist/RPIGeistMono system, clear hierarchy, left-aligned multiline text and a measured grid; do not generalize email/video font exceptions to the UI.",
+        "Verify keyboard, focus, labels, contrast, reduced motion, scale and pattern interference where affected."
+      ]
+    },
+    {
+      "id": "bar-and-exports",
+      "title": "Bar systems, logo geometry, motion and exports",
+      "patterns": [
+        "^js/",
+        "^assets/shaders/",
+        "^generator/"
+      ],
+      "sources": [
+        "logo-system",
+        "the-bar",
+        "color",
+        "pattern"
+      ],
+      "requirements": [
+        "Use official vectors and fixed proportional geometry; retain the 500 by 36 design domain at uniform scale and documented clear space.",
+        "Document the encoded or scientific rule, data provenance, assumptions and limitations. Never fabricate measurement.",
+        "Preserve preview, header and export parity; never fit painted bounds or rescale individual animation frames to force edge contact.",
+        "Review complexity at final placement size; solid-bar minimum sizes do not establish a universal complex-pattern minimum.",
+        "Treat gradients/complex-artwork conflicts as unresolved approval questions; do not expand them by assuming existing app behavior is approved."
+      ]
+    },
+    {
+      "id": "media",
+      "title": "Photography, video and contextual brand applications",
+      "patterns": [
+        "^assets/(images|audio)/",
+        "\\.(mp4|mov|webm|wav|mp3)$"
+      ],
+      "sources": [
+        "photography",
+        "video",
+        "spirit-marks",
+        "seal",
+        "email-signature",
+        "inspiration-gallery-1"
+      ],
+      "requirements": [
+        "Use authentic people, work and process; protect legibility on imagery and retain appropriate licensing.",
+        "Use production-video resolution, audio, caption and template rules only for the production contexts they describe; never stretch a logo to fit an aspect ratio.",
+        "Do not use seal, athletics or mascot permissions as generic generator-artwork permissions.",
+        "Email fallback fonts are email-specific; gallery examples are inspiration, not blanket permission or technical specifications."
+      ]
+    },
+    {
+      "id": "assets-and-approvals",
+      "title": "Assets, licensing and institutional approvals",
+      "patterns": [
+        "^assets/",
+        "^third_party/",
+        "^attached_assets/",
+        "^THIRD_PARTY_NOTICES\\.md$",
+        "^LICENSE$"
+      ],
+      "sources": [
+        "logo-system",
+        "the-bar",
+        "typography",
+        "seal",
+        "spirit-marks"
+      ],
+      "requirements": [
+        "Read actual asset permission records before adding or changing assets; access to the library is not a redistribution license.",
+        "Keep Student Union internal-use approval separate from formal official-library approval.",
+        "Obtain the applicable written seal/athletics/mascot approvals before new use; do not infer them from this archive."
+      ]
+    },
+    {
+      "id": "governance",
+      "title": "Source and instruction maintenance",
+      "patterns": [
+        "^AGENTS\\.md$",
+        "^(CLAUDE|GEMINI)\\.md$",
+        "^references/(brand_|rpi_brand_guidelines|agent_tool_setup|AGENTS)",
+        "^scripts/checkBrandPolicy\\.js$",
+        "^tests/brandPolicy\\.test\\.js$",
+        "^\\.agent/",
+        "^\\.github/",
+        "^package(-lock)?\\.json$"
+      ],
+      "sources": [
+        "home",
+        "about-our-brand",
+        "who-we-are",
+        "naming-conventions",
+        "voice-tone",
+        "design-principles",
+        "logo-system",
+        "the-bar",
+        "seal",
+        "color",
+        "typography",
+        "pattern",
+        "video",
+        "photography",
+        "spirit-marks",
+        "inspiration-gallery-1",
+        "email-signature"
+      ],
+      "requirements": [
+        "Keep official source captures separate from project interpretation and historical references.",
+        "Verify coverage, hashes and source dates; record exclusions, source conflicts and review limits.",
+        "Update the source manifest and review fingerprint intentionally. Do not weaken checks or remove a requirement to get a change through."
+      ]
+    }
+  ]
+}
