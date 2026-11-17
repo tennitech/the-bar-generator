@@ -1,12 +1,11 @@
-# RPI Brand Rule
+---
+trigger: model_decision
+description: RPI brand, copy, logo, pattern, asset, and export work in this repository.
+---
 
-Follow the repository root `AGENTS.md` first. This file is a compatibility shim for tools that read `.agent/rules/*`.
+# Brand policy pointer
 
-## Reinforcements
-
-- Use approved RPI colors, fonts, naming, and assets only.
-- Do not recreate, distort, stretch, outline, or add shadow treatments to the logo.
-- Any bar treatment must remain scientifically accurate and visually brand-safe.
-- Generated copy should stay curious, humble, genuine, resilient, offbeat, and relatable.
-- Avoid arrogance, pretentiousness, obvious filler, and marketing hyperbole.
-- Keep profanity filtering and accessibility intact for every UI and visualizer change.
+Read the repository-root [AGENTS.md](../../AGENTS.md) and follow its required
+brand/science/licensing reading before changes in these areas. Shared policy
+and the dated source checklist remain in their canonical files; do not duplicate
+or reinterpret them in this compatibility adapter.

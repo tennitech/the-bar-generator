@@ -119,7 +119,14 @@ Zoom is relative to the current viewport and does not change downloads. The same
 
 ## Contribution workflow
 
-Read [contributing.md](contributing.md) and [AGENTS.md](AGENTS.md) before editing. Fork the repo if you do not have write access. Create a short branch such as `fix/mobile-menu-focus`, then open a pull request into `main`. Use `feat/`, `fix/`, `docs/`, `test/`, or `chore/` followed by a lowercase description with hyphens. Codex branches use `codex/<type>-<description>`, such as `codex/fix-mobile-menu-focus`.
+Project rules apply to all contributors and AI services, including Codex, Claude
+Code, Cursor, Antigravity and Grok Build. Read AGENTS.md even if your tool does
+not load it automatically. AI contribution records distinguish thinking mode,
+reasoning effort and other exposed settings/budgets for later comparisons.
+See [AI tool setup and loading checks](references/agent_tool_setup.md) for the
+repository's adapters, native support and client-specific limitations.
+
+Read [contributing.md](contributing.md) and [AGENTS.md](AGENTS.md) before editing. Fork the repo if you do not have write access. Create a short branch such as `fix/mobile-menu-focus`, then open a pull request into `main`. Use `feat/`, `fix/`, `docs/`, `refactor/`, `test/`, or `chore/` followed by a lowercase description with hyphens. Humans and AI tools use the same branch convention. Record AI providers, models and contribution roles in the PR and commit metadata using [the contribution record format](references/ai_contribution_records.md).
 
 `main` requires a pull request, the passing Unit tests check, and resolved review conversations. During primary development, a second approval is not required. Prefer squash merge for routine changes. Retain branches unless the user explicitly requests deletion; first report ahead/behind counts, merge status, and unmerged or unsaved work. Use a merge commit when retaining a reviewed multi-commit history is useful. No permanent development branch is needed.
 
