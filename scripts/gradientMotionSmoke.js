@@ -29,14 +29,19 @@ const hash = data => createHash('sha256').update(data).digest('hex');
     assert.equal(await page.locator('#style-select option[value="gradient"]').evaluate(el => el.parentElement.label), 'Dynamic');
     assert.ok(await page.isChecked('#gradient-motion-toggle'));
     const initial = await phase(); await page.waitForTimeout(350); assert.notEqual(await phase(),initial);
-    await pause(); const held = await phase(); await page.waitForTimeout(200); assert.equal(await phase(),held,'pause holds coverage');
+    await pause(); await page.waitForTimeout(200); assert.equal(await phase(),0,'Loop off returns to default coverage');
     await page.evaluate(() => {
       liveMotionPhase = .27;
       const speed = document.getElementById('gradient-speed-slider');speed.value = '.3';speed.dispatchEvent(new Event('input',{bubbles:true}));
       const reverse = document.getElementById('gradient-reverse-toggle');reverse.checked=true;reverse.dispatchEvent(new Event('change',{bubbles:true}));
       if (liveMotionPhase !== .27) throw new Error('Speed/reverse changed current phase');
     });
-    await set('gradient-motion-toggle',true,'change'); const beforeReverse=await phase();await page.waitForTimeout(180);assert.ok(await phase()<beforeReverse,'reverse retraces coverage');await pause();
+    await set('gradient-motion-toggle',true,'change');
+    await page.waitForFunction(() => liveMotionPhase > 0.5);
+    const beforeReverse=await phase();
+    await page.waitForTimeout(180);
+    assert.ok(await phase()<beforeReverse,'reverse retraces coverage');
+    await pause();
     await page.locator('#gradient-speed-slider').focus();await page.keyboard.press('Home');assert.equal(await page.inputValue('#gradient-speed-slider'),'0.02');
     for (const variant of ['1','2']) {
       await set('gradient-variant-slider',variant);

@@ -10,16 +10,16 @@ function engine() {
     createPeriodicWave:jest.fn((real,imaginary)=>({real,imaginary}))};
   return {context,master:node('master'),events};
 }
-test('all carrier oscillators use exact note frequencies and one explicit phase origin without worklets or pitch glides',()=>{
+test('all four carriers use exact note frequencies and one explicit phase origin without worklets or pitch glides',()=>{
   for(const note of [24,49,69,84]) {
     const e=engine(),graph=audio.create(e.context,e.master,{note,type:3});
     expect(graph.pulseWorkletNode).toBe(null);
-    const starts=e.events.filter(x=>x[1]==='start');expect(starts).toHaveLength(5);
+    const starts=e.events.filter(x=>x[1]==='start');expect(starts).toHaveLength(4);
     expect(new Set(starts.map(x=>x[2]))).toEqual(new Set([.01]));
     expect(e.events.filter(x=>x[0].includes('.frequency') && x[1]==='setValueAtTime').every(x=>x[2]===notes.get(note).frequencyHz)).toBe(true);
     expect(e.events.some(x=>x[1]==='exponentialRampToValueAtTime')).toBe(false);
-    expect(e.events.filter(x=>x[1]==='connect' && x[2]===e.master.id)).toHaveLength(5);
-    expect(e.context.createPeriodicWave).toHaveBeenCalledTimes(2);
+    expect(e.events.filter(x=>x[1]==='connect' && x[2]===e.master.id)).toHaveLength(4);
+    expect(e.context.createPeriodicWave).toHaveBeenCalledTimes(1);
   }
 });
 test('pulse is a DC-free finite Fourier model of positive-first bipolar duty, natively normalized and band limited',()=>{
@@ -33,36 +33,11 @@ test('pulse is a DC-free finite Fourier model of positive-first bipolar duty, na
 });
 test('finite 50ms ramps reach steady gains, unchanged settings reuse pulse coefficients, cache is bounded',()=>{
   const e=engine(),g=audio.create(e.context,e.master,{note:24,type:3});
-  g.update({note:24,type:3});expect(e.context.createPeriodicWave).toHaveBeenCalledTimes(2);
+  g.update({note:24,type:3});expect(e.context.createPeriodicWave).toHaveBeenCalledTimes(1);
   for(let i=0;i<=100;i++)g.update({note:24,type:2+i/100});
-  expect(e.context.createPeriodicWave).toHaveBeenCalledTimes(204);
+  expect(e.context.createPeriodicWave).toHaveBeenCalledTimes(102);
   expect(e.events.filter(x=>x[1]==='linearRampToValueAtTime').every(x=>x[3]===.05)).toBe(true);
   expect(e.events.some(x=>x[1]==='setTargetAtTime')).toBe(false);
-});
-
-test('Reverse mirrors carrier phase, including asymmetric Pulse, with finite gain transitions', () => {
-  const e = engine();
-  const graph = audio.create(e.context, e.master, { note: 36, type: 2.75 });
-  const [forward, reverse] = e.context.createPeriodicWave.mock.calls;
-  expect(reverse[0]).toEqual(forward[0]);
-  expect(reverse[1]).toEqual(forward[1].map(coefficient => -coefficient));
-
-  function targets() {
-    return Object.fromEntries(Object.entries(graph.oscillatorGains).map(([name, node]) => [
-      name, e.events.findLast(([id, event]) => id === node.gain.id && event === 'linearRampToValueAtTime').slice(2)
-    ]));
-  }
-  expect(targets().pulse[0]).toBeCloseTo(.075);
-  expect(targets().square[0]).toBeCloseTo(.025);
-
-  e.context.currentTime = .2;
-  e.events.length = 0;
-  graph.update({ note: 36, type: 2.75, reverse: true });
-  expect(targets().reversePulse[0]).toBeCloseTo(.075);
-  expect(targets().pulse[0]).toBe(0);
-  expect(targets().square[0]).toBeCloseTo(-.025);
-  expect(Object.values(targets()).every(([, end]) => end === .25)).toBe(true);
-  expect(e.events.some(([id, event]) => id.includes('.frequency') || event === 'wave')).toBe(false);
 });
 test('audio stop is scheduled at a whole carrier phase after release, including note edits',()=>{
   const e=engine(),g=audio.create(e.context,e.master,{note:24,type:0});
@@ -76,5 +51,5 @@ test('audio stop is scheduled at a whole carrier phase after release, including 
 test('stopped voices have their own finite gain release even if a rapid restart cancels the shared master fade',()=>{
   const e=engine(),g=audio.create(e.context,e.master,{note:24,type:0});
   const stop=g.nextCycleBoundary(.08);g.fadeOutAt(stop);
-  expect(e.events.filter(x=>x[1]==='linearRampToValueAtTime' && x[2]===0 && x[3]===stop)).toHaveLength(5);
+  expect(e.events.filter(x=>x[1]==='linearRampToValueAtTime' && x[2]===0 && x[3]===stop)).toHaveLength(4);
 });

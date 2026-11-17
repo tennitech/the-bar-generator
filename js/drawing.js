@@ -931,8 +931,9 @@ function captureLogoExportSnapshot(options = {}) {
   // capture the exact live phase without changing playback or saved settings.
   const family = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid');
   const currentValues = getCurrentBarPatternValues(REFERENCE_WIDTH);
-  const scopeCapture = currentShader === 4 ? window.waveformScopeController?.capture(getLoopRuntimeValues().waveformReverse === true) : null;
-  const values = JSON.parse(JSON.stringify({ ...currentValues, ...getLoopRuntimeValues(),
+  const loopValues = getLoopRuntimeValues();
+  const scopeCapture = currentShader === 4 ? window.waveformScopeController?.capture(loopValues.waveformReverse) : null;
+  const values = JSON.parse(JSON.stringify({ ...currentValues, ...loopValues,
     loopOffsetX: 0, timeSeconds: 0, gradientPhase: 0, quantumPhase: options.format === 'gif' && family === 'wave-quantum'
       ? window.quantumModel.normalizePhase(currentValues.quantumPhase) : 0,
     ...(scopeCapture ? { waveformScope: scopeCapture.frame,

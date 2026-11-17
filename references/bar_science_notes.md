@@ -1,14 +1,13 @@
 # Bar meaning and source notes
 
-## Waveform direction and paused edits — November 17, 2026
+## Waveform motion and paused edits — November 17, 2026
 
-Loop pauses the visual sweep. Changing the note, type or direction replaces
-the displayed signal at the held sweep phase once the new PCM is ready.
-Reverse reverses the sweep and reflects the synthesized signal about its carrier
-phase origin. It preserves the selected pitch and whole-cycle interval. The
-signed gains and paired Pulse waves apply to both audible and offline synthesis.
-Editor, header and exports use the settled PCM. See the
-[Waveform model and assumptions](waveform_notes.md).
+Loop returns the visual sweep to phase zero on either transition. Note and
+Type update the displayed signal at the current phase as completed PCM arrives, including during slider movement.
+Reverse changes the direction of the sweep from the current phase and
+replays the captured GIF frames in that direction. Note and Type determine
+synthesis and the whole-cycle interval. Editor, header and exports use the
+displayed PCM. See the [Waveform model and assumptions](waveform_notes.md).
 
 ## Current Waveform note model — November 11, 2026
 

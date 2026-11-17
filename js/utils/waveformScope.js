@@ -1,12 +1,14 @@
 /* Actual PCM scope: bounded min/max recording, offline rendering and live tap. */
 (function(root) {
-  const GROUP = 8, BINS = 1024, REPLAY = 2, SETTLE = .5;
+  const GROUP = 8, BINS = 1024, REPLAY = 2;
   const notes = root.WaveformNotes || (typeof require === 'function' ? require('./waveformNotes') : null);
   const SWEEP_HZ = .3;
+  const OFFLINE_SETTLE_SECONDS = .075;
+  const LIVE_SETTLE_SECONDS = .5;
   const MAX_HISTORY_SECONDS = 1;
   function settings(values = {}) {
     return { note: notes.read(values),
-      type: Math.max(0, Math.min(3, Number(values.type) || 0)), reverse: values.reverse === true };
+      type: Math.max(0, Math.min(3, Number(values.type) || 0)) };
   }
   function duration(values) {
     return notes.get(settings(values).note).seconds;
@@ -79,7 +81,7 @@
             return (i - 1 - pcm[i-1] / (pcm[i] - pcm[i-1])) / sampleRate;
           }
         }
-        // Select an actual rising crossing; never alter or synthesize samples.
+        // Select an actual crossing; never alter or synthesize samples.
         const end = Math.min(replayPairs, Math.floor(limit * rate));
         const begin = Math.max(1, end - Math.ceil(searchSeconds * rate));
         for (let i = end; i >= begin; i--) {
@@ -106,7 +108,7 @@
   }
   function displaySettings(values) {
     const v = settings(values), carrierHz = root.WaveformAudio.frequency(v.note);
-    return { displayMode: 'trace', carrierHz, note: v.note, type: v.type, reverse: v.reverse, cycles: notes.get(v.note).cycles, replayLimit: .1 };
+    return { displayMode: 'trace', carrierHz, note: v.note, type: v.type, cycles: notes.get(v.note).cycles, replayLimit: .1 };
   }
   function sweep(captured, values) {
     const requestedSpan = sweepSpan(values);
@@ -116,13 +118,13 @@
     const origin = captured.triggerBefore(latest, 1 / display.carrierHz);
     return { captured, origin, span };
   }
-  function sweepReplay(view, offset, first, reverse) {
+  function sweepReplay(view, offset, first, reverse = false) {
     const { captured, origin, span } = view;
     return Object.freeze({ source: captured.source, seconds: captured.seconds,
       replaySeconds: span, playbackSeconds: span > 0 ? 1 / SWEEP_HZ : 0,
       frame(time) {
         if (!span || !time || Math.abs(time - span) < 1e-10) return first;
-        const position = ((offset + (reverse ? -1 : 1) * time) % span + span) % span;
+        const position = ((offset + (reverse ? -time : time)) % span + span) % span;
         return captured.frame(origin + position);
       } });
   }
@@ -130,24 +132,24 @@
     const v = settings(values), seconds = duration(v), sampleRate = 48000, display = displaySettings(v);
     const Context = environment.OfflineAudioContext || environment.webkitOfflineAudioContext;
     if (!Context) throw new Error('This browser cannot render a silent audio scope. Start Audio for a live scope.');
-    const context = new Context(1, Math.ceil((seconds + display.replayLimit + SETTLE) * sampleRate), sampleRate);
+    const context = new Context(1, Math.ceil((seconds + display.replayLimit + OFFLINE_SETTLE_SECONDS) * sampleRate), sampleRate);
     const master = context.createGain(); master.connect(context.destination);
     master.gain.setValueAtTime(0, 0); master.gain.linearRampToValueAtTime(1, .05);
-    const graph = root.WaveformAudio.create(context, master, v, environment.AudioWorkletNode);
-    graph.update(v);
+    root.WaveformAudio.create(context, master, v);
     const buffer = await context.startRendering();
-    const pcm = buffer.getChannelData(0).slice(Math.round(SETTLE * sampleRate));
+    const pcm = buffer.getChannelData(0).slice(Math.round(OFFLINE_SETTLE_SECONDS * sampleRate));
     return recording(pcmExtrema(pcm), sampleRate / GROUP, seconds, 'offline', {
       ...display, pulse: 'band-limited-periodic-wave'
     }, pcm);
   }
   function createController({ onChange = () => {}, environment = root } = {}) {
     let key = '', currentKey = '', currentSettings, offlineKey = '', offline = null, current = null;
-    let error = '', rendering = false, generation = 0;
-    let pending = null, cancelPending = () => {}, queue = Promise.resolve(), timer;
+    let error = '', rendering = false, disposed = false;
+    let pending = null, queued = null, active = null, timer;
     let tap = null, input = null, ring = null, pcmRing = null, hasPcm = false, written = 0, pairRate = 0, attachGeneration = 0;
-    let currentRecording = null, exportRecording = null, lastWritten = -1, lastEditAt = null, liveError = '';
-    let offset = 0, currentOrigin = 0, currentReverse = false, running = true, sweepTime = 0;
+    let currentOffset = 0, exportRecording = null, exportReverse = false;
+    let lastWritten = -1, lastEditAt = null, liveError = '';
+    let running = true, sweepTime = 0;
     let currentSweep = null, liveCycle = null;
     // Bounded per-controller LRU. Render on demand, reuse recent immutable PCM.
     // 8 entries keep memory bounded; do not pre-render all 61 x 301 morph values.
@@ -155,11 +157,9 @@
     function showSweep(view, time, capturedKey) {
       currentSweep = view;
       const phase = (((Number(time) || 0) * SWEEP_HZ) % 1 + 1) % 1;
-      offset = phase * view.span;
-      currentOrigin = view.origin + offset;
-      currentRecording = view.captured;
-      current = currentRecording.frame(currentOrigin); currentKey = capturedKey;
-      exportRecording = sweepReplay(view, offset, current, currentReverse);
+      currentOffset = phase * view.span;
+      current = view.captured.frame(view.origin + currentOffset); currentKey = capturedKey;
+      exportRecording = null;
     }
     function liveData(seconds) {
       const count = Math.min(written, ring.length / 2, Math.floor(seconds * pairRate + 1e-9));
@@ -178,44 +178,62 @@
       showSweep(view, time, capturedKey);
     }
 
-    function configure(values, immediate = false) {
+    async function renderQueued() {
+      timer = undefined;
+      active = queued;
+      queued = null;
+      const job = active;
+      const { values, key: jobKey } = job;
+      try {
+        let captured = cache.get(jobKey);
+        if (captured) cache.delete(jobKey);
+        else captured = await render(values, environment);
+        if (disposed) return;
+        cache.set(jobKey, captured);
+        while (cache.size > 8) cache.delete(cache.keys().next().value);
+
+        if (jobKey === key) {
+          offline = captured; offlineKey = jobKey; rendering = false;
+        }
+        // Show complete PCM as it arrives during a drag. A settled live
+        // frame for the latest setting takes precedence over older renders.
+        if (!current || currentKey !== key || (jobKey === key && running && !tap)) {
+          const view = sweep(captured, values);
+          showSweep(view, sweepTime, jobKey);
+        }
+        job.resolve(captured);
+        onChange();
+      } catch (failure) {
+        job.resolve(null);
+        if (!disposed && jobKey === key) {
+          error = failure.message; rendering = false; onChange();
+        }
+      } finally {
+        active = null;
+        if (queued) timer = setTimeout(renderQueued, 0);
+      }
+    }
+
+    function configure(values) {
       const next = settings(values), nextKey = JSON.stringify(next);
-      if (key === nextKey) return pending;
+      if (disposed || key === nextKey) return pending;
       key = nextKey; currentSettings = next; error = ''; rendering = true;
-      // The tap records a continuous signal, including the real parameter
-      // ramps. Keep that history and label views that include earlier settings.
+      // Keep the tap history, but wait for settled live PCM after each edit.
       if (tap) lastEditAt = written;
       lastWritten = -1; liveCycle = null;
-      const token = ++generation;
-      clearTimeout(timer); cancelPending();
-      pending = new Promise(resolve => {
-        cancelPending = () => resolve(null);
-        timer = setTimeout(() => {
-          queue = queue.then(async () => {
-            if (token !== generation) return resolve(null);
-            try {
-              let captured = cache.get(nextKey);
-              if (captured) cache.delete(nextKey);
-              else captured = await render(next, environment);
-              cache.set(nextKey, captured);
-              while (cache.size > 8) cache.delete(cache.keys().next().value);
-              if (token === generation) {
-                offline = captured; offlineKey = nextKey; rendering = false;
-                // Loop pauses the sweep clock. Edits still replace the signal
-                // at that phase once a complete render of the new settings exists.
-                if (!current || (running && !tap) || (!running && currentKey !== nextKey)) {
-                  showOffline(captured, sweepTime, nextKey);
-                }
-                onChange();
-              }
-              resolve(captured);
-            } catch (failure) {
-              if (token === generation) { error = failure.message; rendering = false; onChange(); }
-              resolve(null);
-            }
-          });
-        }, immediate ? 0 : 100);
-      });
+
+      // One render in flight and one latest setting waiting. Pointer input can
+      // arrive faster than PCM renders, so skip replaced waiting settings.
+      queued?.resolve(null);
+      if (active?.key === nextKey) {
+        queued = null;
+        pending = active.promise;
+      } else {
+        let resolve;
+        pending = new Promise(done => { resolve = done; });
+        queued = { values: next, key: nextKey, resolve, promise: pending };
+        if (!active && timer === undefined) timer = setTimeout(renderQueued, 0);
+      }
       return pending;
     }
     function detach() {
@@ -224,7 +242,9 @@
       tap = input = ring = pcmRing = null; hasPcm = false; written = 0; lastWritten = -1; liveCycle = null; lastEditAt = null; liveError = '';
     }
     async function attach(context, destination) {
-      detach(); const token = attachGeneration;
+      detach();
+      if (!context.audioWorklet || typeof environment.AudioWorkletNode !== 'function') return;
+      const token = attachGeneration;
       try { await context.audioWorklet.addModule('js/waveform-scope-worklet.js?v=20261110-scope-contours'); }
       catch (failure) { liveError = ' · live capture unavailable'; onChange(); throw failure; }
       if (token !== attachGeneration) return;
@@ -251,11 +271,9 @@
       };
       input.connect(tap); tap.connect(context.destination);
     }
-    function tick(seconds, isRunning = true, reverse = false) {
+    function tick(seconds, isRunning = true) {
       running = isRunning;
       sweepTime = seconds;
-      if (reverse !== currentReverse && currentRecording) exportRecording = sweepReplay(currentSweep, offset, current, reverse);
-      currentReverse = reverse;
       // A settled live signal can also satisfy an edit if offline rendering is
       // unavailable. Once the paused frame matches the controls, keep it still.
       if (!running && (!tap || currentKey === key)) return current;
@@ -263,7 +281,7 @@
         // Capture continuously, but present immutable, triggered sweeps at
         // the selected visual speed rather than racing through native PCM.
         if (!written) return current;
-        const stableHistory = written - (lastEditAt || 0) > (SETTLE + duration(currentSettings) + .1) * pairRate;
+        const stableHistory = written - (lastEditAt || 0) > (LIVE_SETTLE_SECONDS + duration(currentSettings) + .1) * pairRate;
         if (!stableHistory) {
           if (offline && offlineKey === key) showOffline(offline, seconds, offlineKey);
           return current;
@@ -290,11 +308,17 @@
       }
       return current;
     }
-    function capture(reverse = currentReverse) {
-      if (current && reverse !== currentReverse) {
-        currentReverse = reverse; exportRecording = sweepReplay(currentSweep, offset, current, reverse);
-      }
+    function resetSweep() {
+      sweepTime = 0;
+      liveCycle = null;
+      if (currentSweep) showSweep(currentSweep, 0, currentKey);
+    }
+    function capture(reverse = false) {
       if (!current) throw new Error(error || 'The audio signal is rendering. Try exporting again in a moment.');
+      if (!exportRecording || exportReverse !== reverse) {
+        exportRecording = sweepReplay(currentSweep, currentOffset, current, reverse);
+        exportReverse = reverse;
+      }
       return Object.freeze({ frame: current, recording: exportRecording });
     }
     function status() {
@@ -309,9 +333,18 @@
         + (tap && current.source !== 'live' && running ? ' · waiting for settled live audio' : '')
         + (current.pulse === 'square-fallback' ? ' · Square fallback' : '') + liveError;
     }
-    return { configure, attach, detach, tick, frame: () => current, capture, status,
+    return { configure, attach, detach, tick, resetSweep, frame: () => current, capture, status,
       ready: () => pending,
-      dispose() { generation++; clearTimeout(timer); cancelPending(); detach(); offline = current = currentRecording = exportRecording = null; cache.clear(); }
+      dispose() {
+        disposed = true;
+        clearTimeout(timer);
+        queued?.resolve(null);
+        active?.resolve(null);
+        queued = null;
+        detach();
+        offline = current = currentSweep = exportRecording = null;
+        cache.clear();
+      }
     };
   }
 

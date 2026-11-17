@@ -18,7 +18,6 @@ let binaryGroup;
 let morseInput;
 let morseGroup;
 let morseAudioBtn;
-let lunarGroup;
 let lunarAudioBtn;
 let staffAudioBtn;
 let rulerGroup;
@@ -200,7 +199,7 @@ let waveformScopeTime = 0;
 let lastWaveformScopeTimestamp = 0;
 let isAudioPlaying = false;
 let activeAudioPreviewType = null;
-let hasShownAudioHintToast = false;
+let audioStartRequest = null;
 let artemisMissionAudio = null;
 
 // Crossfader audio system - multiple simultaneous oscillators
@@ -1076,20 +1075,15 @@ function syncMotionToggleState() {
   });
 }
 
-function setMotionEnabledForStyle(style, enabled, options = {}) {
+function setMotionEnabledForStyle(style, enabled) {
   const normalizedStyle = normalizeStyleValue(style);
   if (!styleSupportsMotion(normalizedStyle)) {
     return;
   }
 
   MOTION_ENABLED_BY_STYLE[normalizedStyle] = !!enabled;
-  if (['gradient', 'waveform'].includes(normalizedStyle) && options.resetPhase !== true) {
-    // Hold the current coverage on pause; resume has no elapsed-time catch-up.
-    lastAnimationFrameTimestamp = 0;
-    if (normalizedStyle === 'waveform') lastWaveformScopeTimestamp = 0;
-  } else if (!enabled || options.resetPhase === true) {
-    resetAnimationClock();
-  }
+  resetAnimationClock();
+  if (normalizedStyle === 'waveform') resetWaveformScope();
 
   syncMotionToggleState();
   requestUpdate();
@@ -1103,22 +1097,16 @@ function generateRandomStaffPattern() {
 function getWaveformSignalSettings() {
   return {
     note: waveformNoteSlider?.value || 24,
-    type: waveformTypeSlider?.value || 0,
-    reverse: waveformReverseToggle?.checked === true
+    type: waveformTypeSlider?.value || 0
   };
 }
 
 function updateWaveformScopeControls() {
   if (!window.WaveformScope || getCurrentMotionStyle() !== 'waveform') return;
-  const syncStatus = () => {
-    const status = document.getElementById('waveform-scope-status');
-    if (status) status.textContent = window.waveformScopeController.status();
-  };
-  if (!window.waveformScopeController) window.waveformScopeController = window.WaveformScope.createController({
-    onChange: () => { syncStatus(); requestUpdate(); }
-  });
+  if (!window.waveformScopeController) {
+    window.waveformScopeController = window.WaveformScope.createController({ onChange: requestUpdate });
+  }
   window.waveformScopeController.configure(getWaveformSignalSettings());
-  syncStatus();
 }
 
 function getLiveWaveformGeometry(barStartX, barY, exactBarWidth, barHeight, timeSeconds) {
@@ -1137,16 +1125,15 @@ function tickWaveformScope(timestamp, suspended = false) {
   lastWaveformScopeTimestamp = timestamp;
   const scope = window.waveformScopeController;
   const running = isMotionEnabledForStyle('waveform');
-  const reverse = waveformReverseToggle?.checked === true;
-  if (running) waveformScopeTime += elapsed * Number(waveformSpeedSlider?.value || .3) / .3 * (reverse ? -1 : 1);
-  scope?.tick(waveformScopeTime, running, reverse);
-  const scopeStatus = document.getElementById('waveform-scope-status');
-  if (scopeStatus && scope) scopeStatus.textContent = scope.status();
+  const direction = waveformReverseToggle?.checked ? -1 : 1;
+  if (running) waveformScopeTime += elapsed * Number(waveformSpeedSlider?.value || .3) / .3 * direction;
+  scope?.tick(waveformScopeTime, running);
 }
 
 function resetWaveformScope() {
   waveformScopeTime = 0;
   lastWaveformScopeTimestamp = 0;
+  window.waveformScopeController?.resetSweep();
   updateWaveformScopeControls();
 }
 
@@ -1187,10 +1174,10 @@ function generateWaveformValue(phase, type) {
 
 function getAudioButtonConfig() {
   return [
-    { type: 'morse', button: morseAudioBtn, currentShader: 7 },
-    { type: 'waveform', button: waveformAudioBtn, currentShader: 4 },
-    { type: 'lunar', button: lunarAudioBtn, currentShader: 24 },
-    { type: 'staff', button: staffAudioBtn, currentShader: 10 }
+    { type: 'morse', button: morseAudioBtn },
+    { type: 'waveform', button: waveformAudioBtn },
+    { type: 'lunar', button: lunarAudioBtn },
+    { type: 'staff', button: staffAudioBtn }
   ];
 }
 
@@ -1207,11 +1194,6 @@ function resetAudioSequencePosition(type) {
     return;
   }
 
-  if (currentType === 'staff' && (!currentStaffNotes?.some(note => note.note !== 'rest'))) {
-    showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
-    return;
-  }
-
   if (sequenceContext.type === currentType && sequenceContext.active) {
     stopAudio();
   }
@@ -1222,8 +1204,8 @@ function togglePreviewAudio(type) {
   if (!currentType || currentType !== type) return;
   const activeType = getActiveAudioPreviewType();
 
-  if (type === 'staff' && (!currentStaffNotes?.some(note => note.note !== 'rest'))) {
-    showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
+  if (audioStartRequest) {
+    stopAudio();
     return;
   }
 
@@ -1681,7 +1663,7 @@ async function submitBugReport(event) {
   const payload = buildBugReportPayload();
 
   if (!payload.title || !payload.details) {
-    showAudioToast('Please include a short title and a description of the issue.', 'error');
+    window.Toast?.show('Please include a short title and a description of the issue.', 'error');
     return;
   }
 
@@ -1695,15 +1677,15 @@ async function submitBugReport(event) {
         },
         body: JSON.stringify(payload)
       });
-      showAudioToast('Report sent. Thank you.', 'success');
+      window.Toast?.show('Report sent. Thank you.', 'success');
     } else {
       await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-      showAudioToast('Report details copied. Add your Google Apps Script URL in js/main.js to send reports to Sheets.', 'info');
+      window.Toast?.show('Report details copied. Add your Google Apps Script URL in js/main.js to send reports to Sheets.', 'info');
     }
     closeBugReportDialog(true);
   } catch (error) {
     console.error('Failed to submit bug report:', error);
-    showAudioToast('Could not send the report. Please try again.', 'error');
+    window.Toast?.show('Could not send the report. Please try again.', 'error');
   }
 }
 
@@ -2162,7 +2144,6 @@ function setup() {
   morseInput = document.getElementById('morse-input');
   morseGroup = document.getElementById('morse-group');
   morseAudioBtn = document.getElementById('morse-audio-btn');
-  lunarGroup = document.getElementById('lunar-group');
   lunarAudioBtn = document.getElementById('lunar-audio-btn');
   rulerGroup = document.getElementById('ruler-group');
   rulerRepeatsSlider = document.getElementById('ruler-repeats-slider');
@@ -2411,14 +2392,12 @@ function setup() {
     updateWaveformScopeControls();
     updateAudioParameters();
     updateUrlParameters();
-    requestUpdate();
   });
   waveformNoteSlider.addEventListener('input', function () {
     updateWaveformNoteDisplay();
     updateWaveformScopeControls();
     updateAudioParameters();
     updateUrlParameters();
-    requestUpdate();
   });
   waveformSpeedSlider.addEventListener('input', function () {
     updateWaveformSpeedDisplay();
@@ -2432,10 +2411,8 @@ function setup() {
   }
   if (waveformReverseToggle) {
     waveformReverseToggle.addEventListener('change', function () {
-      updateWaveformScopeControls();
-      updateAudioParameters();
+      lastWaveformScopeTimestamp = 0;
       updateUrlParameters();
-      requestUpdate();
     });
   }
 
@@ -3128,9 +3105,6 @@ function setup() {
   applyUrlParameters();
   updateUrlParameters();
 
-  // Initialize Web Audio API
-  initializeAudio();
-
   // Initialize custom dropdowns
   setupCustomDropdowns();
   syncLunarColorOptionAvailability();
@@ -3169,7 +3143,7 @@ function setup() {
     },
     playback: () => {
       if (currentShader === 7 || currentShader === 10 || (currentShader === 24 && isMissionControlThemeActive())) {
-        if (isAudioPlaying) stopAudio(); else startAudio();
+        togglePreviewAudio(getCurrentAudioPreviewType());
         return true;
       }
       if (currentShader === 26 || currentShader === 27) {
@@ -3199,10 +3173,7 @@ function setup() {
     nextColor: () => cycleKeyboardColor(1)
   } });
 
-  const handleDocumentAudioDeactivation = function () {
-    if (!audioContext) return;
-    pauseAllAudioPlayback({ suspendContext: true });
-  };
+  const handleDocumentAudioDeactivation = () => stopAudio();
 
   document.addEventListener('visibilitychange', function () {
     invalidateLunarPreviewFrame();
@@ -3914,7 +3885,6 @@ function handleStyleChange() {
     circlesGroup.style.display = 'none';
     numericGroup.style.display = 'none';
     morseGroup.style.display = 'none';
-    if (lunarGroup) lunarGroup.style.display = 'none';
     if (circlesGradientGroup) circlesGradientGroup.style.display = 'none';
     if (gradientGroup) gradientGroup.style.display = 'none';
     if (gridGroup) gridGroup.style.display = 'none';
@@ -3955,9 +3925,6 @@ function handleStyleChange() {
         break;
       case 'morse':
         morseGroup.style.display = 'block';
-        break;
-      case 'lunar':
-        syncLunarPreviewVisibility(selectedStyle);
         break;
       case 'circles-gradient':
         if (circlesGradientGroup) circlesGradientGroup.style.display = 'block';
@@ -4002,7 +3969,6 @@ function handleStyleChange() {
 
   window.quantumControls.sync();
   window.quantumStudyControls.sync();
-  syncLunarPreviewVisibility(selectedStyle);
   console.log('Style changed to:', selectedStyle, 'currentShader:', currentShader);
   syncSaveMenuCopy();
   updateSidebarScrollFadeState();
@@ -4055,9 +4021,8 @@ function applyColorMode(colorMode) {
 
   syncMissionControlInterfaceCopy();
   syncSaveMenuCopy();
-  syncLunarPreviewVisibility();
   updateAudioControlsUI();
-  if (activeAudioPreviewType === 'lunar' && !isMissionControlThemeActive(currentColorMode)) {
+  if ((activeAudioPreviewType === 'lunar' || audioStartRequest?.type === 'lunar') && !isMissionControlThemeActive(currentColorMode)) {
     stopAudio();
   }
   console.log('Color mode applied:', currentColorMode);
@@ -4441,30 +4406,22 @@ function styleSupportsAudio(style) {
     || style === 'lunar';
 }
 
-function showAudioToast(message, type = 'info') {
-  if (typeof Toast !== 'undefined' && Toast && typeof Toast.show === 'function') {
-    Toast.show(message, type);
-  }
-}
-
 function updateAudioControlsUI() {
   window.MusicStyle.syncComposer(document, currentStaffNotes, currentNoteDuration);
   const activeType = getActiveAudioPreviewType();
-  const staffPreviewDisabled = !currentStaffNotes?.some(note => note.note !== 'rest');
-  const lunarPreviewDisabled = !isMissionControlThemeActive();
+  const currentType = getCurrentAudioPreviewType();
+  const audio = document.getElementById('bar-information-audio');
+  if (audio) audio.hidden = !currentType;
 
-  getAudioButtonConfig().forEach(({ type, button, currentShader: shaderId }) => {
-    const isStaffControl = type === 'staff' && shaderId === 10;
-    const isLunarControl = type === 'lunar' && shaderId === 24;
-    const disabled = (isStaffControl && staffPreviewDisabled) || (isLunarControl && lunarPreviewDisabled);
-    const disabledReason = isStaffControl
-      ? 'Add notes first'
-      : (isLunarControl ? 'Use Mission Control theme' : 'Unavailable');
-
+  getAudioButtonConfig().forEach(({ type, button }) => {
+    if (!button) return;
+    button.hidden = currentType !== type;
+    const supported = type === 'lunar' ? typeof Audio === 'function' : Boolean(window.AudioContext || window.webkitAudioContext);
+    const missingNotes = type === 'staff' && !currentStaffNotes?.some(note => note.note !== 'rest');
     renderPreviewButton(button, 'audio', {
-      active: activeType === type && isAudioPlaying,
-      disabled,
-      disabledReason
+      active: activeType === type,
+      disabled: !supported || missingNotes,
+      disabledReason: supported ? 'Add notes first' : 'Audio unavailable in this browser'
     });
   });
 }
@@ -5007,14 +4964,6 @@ function isMissionControlThemeActive(colorMode = currentColorMode) {
   return normalizeColorModeValue(colorMode) === 'lunar';
 }
 
-function syncLunarPreviewVisibility(selectedStyle = normalizeStyleValue(styleSelect ? styleSelect.value : 'solid')) {
-  if (!lunarGroup) return;
-
-  lunarGroup.style.display = selectedStyle === 'lunar' && isMissionControlThemeActive()
-    ? 'block'
-    : 'none';
-}
-
 function handleArtemisMissionAudioEnded() {
   if (activeAudioPreviewType !== 'lunar') {
     return;
@@ -5042,22 +4991,20 @@ function ensureArtemisMissionAudio() {
   return artemisMissionAudio;
 }
 
-async function initializeAudio() {
-  try {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+function initializeAudio() {
+  if (audioContext && audioContext.state !== 'closed') return;
+  const Context = window.AudioContext || window.webkitAudioContext;
+  if (!Context) throw new Error('Web Audio is unavailable');
 
-    // Create gain node for volume control and smooth fade in/out
-    gainNode = audioContext.createGain();
-    gainNode.connect(audioContext.destination);
-    gainNode.gain.value = 0;
-
-    noiseBuffer = createNoiseBuffer(audioContext);
-    staffReverbImpulse = createReverbImpulse(audioContext);
-
-    console.log('Audio context initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize audio context:', error);
-  }
+  // Create and resume from the same user gesture that requests playback.
+  const context = new Context();
+  const master = context.createGain();
+  master.connect(context.destination);
+  master.gain.value = 0;
+  audioContext = context;
+  gainNode = master;
+  noiseBuffer = null;
+  staffReverbImpulse = null;
 }
 
 function updateStaffEffects(time = audioContext ? audioContext.currentTime : 0) {
@@ -5108,94 +5055,43 @@ function setupStaffEffectsChain() {
 }
 
 async function startAudio() {
+  const type = getCurrentAudioPreviewType();
+  if (!type || isAudioPlaying || audioStartRequest) return;
+  if (type === 'staff' && !currentStaffNotes?.some(note => note.note !== 'rest')) return;
+
+  const request = { type };
+  audioStartRequest = request;
   try {
-    const requestedType = getCurrentAudioPreviewType();
-    if (!requestedType) {
-      updateAudioControlsUI();
-      return;
-    }
-
-    if (isAudioPlaying) {
-      updateAudioControlsUI();
-      return;
-    }
-
-    if (requestedType === 'lunar') {
-      await startArtemisMissionAudio();
+    if (type === 'lunar') {
+      const audio = ensureArtemisMissionAudio();
+      if (!audio) return;
+      audio.currentTime = 0;
+      await audio.play();
+      if (audioStartRequest !== request) return;
+      isAudioPlaying = true;
     } else {
-      if (!audioContext) {
-        updateAudioControlsUI();
-        return;
-      }
+      initializeAudio();
+      if (audioContext.state !== 'running') await audioContext.resume();
+      if (audioStartRequest !== request || audioContext.state !== 'running') return;
 
-      // Resume audio context if suspended (required by browsers)
-      if (audioContext.state === 'suspended') {
-        await audioContext.resume();
-      }
-
-      if (audioContext.state !== 'running') {
-        showAudioToast('Audio is blocked by the browser. Click the page and try again.', 'warning');
-        updateAudioControlsUI();
-        return;
-      }
-
-      if (requestedType === 'waveform') {
-        startWaveformAudio();
-      } else if (requestedType === 'morse') {
-        startSequenceAudio('morse');
-      } else if (requestedType === 'staff') {
-        if (!currentStaffNotes?.some(note => note.note !== 'rest')) {
-          showAudioToast('Add notes to the keyboard before previewing music audio.', 'info');
-          updateAudioControlsUI();
-          return;
-        }
-        startSequenceAudio('staff');
-      }
+      if (type === 'waveform') startWaveformAudio();
+      else startSequenceAudio(type);
     }
-    if (isAudioPlaying) {
-      activeAudioPreviewType = requestedType;
-    }
-    if (isAudioPlaying && !hasShownAudioHintToast) {
-      showAudioToast('Audio started. If you do not hear sound, check your device volume.', 'info');
-      hasShownAudioHintToast = true;
-    }
-    updateAudioControlsUI();
+    activeAudioPreviewType = type;
   } catch (error) {
-    console.error('Failed to start audio:', error);
-    showAudioToast('Could not start audio. Check browser audio permissions.', 'error');
-    updateAudioControlsUI();
+    if (audioStartRequest === request) {
+      console.warn('Unable to start audio:', error);
+      stopAudio();
+    }
+  } finally {
+    if (audioStartRequest === request) {
+      audioStartRequest = null;
+      updateAudioControlsUI();
+    }
   }
 }
 
-async function startArtemisMissionAudio() {
-  if (!isMissionControlThemeActive()) {
-    showAudioToast('Artemis II audio is only available in the Mission Control theme.', 'info');
-    return;
-  }
-
-  const audioElement = ensureArtemisMissionAudio();
-  if (!audioElement) {
-    throw new Error('Unable to initialize Artemis II audio element');
-  }
-
-  audioElement.pause();
-  audioElement.currentTime = 0;
-
-  const playResult = audioElement.play();
-  if (playResult && typeof playResult.then === 'function') {
-    await playResult;
-  }
-
-  isAudioPlaying = true;
-  console.log('Artemis II audio started');
-}
-
-async function startWaveformAudio() {
-  // Resume audio context if suspended (required by browsers)
-  if (audioContext.state === 'suspended') {
-    await audioContext.resume();
-  }
-
+function startWaveformAudio() {
   const note = window.WaveformNotes.normalize(waveformNoteSlider.value);
   const mappedFrequency = window.WaveformNotes.get(note).frequencyHz;
   waveformCarrier = window.WaveformAudio.create(audioContext, gainNode, getWaveformSignalSettings());
@@ -5220,19 +5116,11 @@ async function startWaveformAudio() {
   console.log('Audio started - Frequency:', mappedFrequency, 'Type: morphing oscillators with pulse wave');
 }
 
-function pauseAllAudioPlayback(options = {}) {
-  if (isAudioPlaying || sequenceContext.active || activeAudioPreviewType) {
-    stopAudio();
-  }
-
-  if (options.suspendContext && audioContext && audioContext.state === 'running') {
-    audioContext.suspend().catch((error) => {
-      console.warn('Unable to suspend audio context:', error);
-    });
-  }
-}
-
 function stopAudio() {
+  const pendingType = audioStartRequest?.type;
+  audioStartRequest = null;
+  if (pendingType === 'lunar' && !isAudioPlaying) stopArtemisMissionAudio();
+
   const activeType = getActiveAudioPreviewType() || sequenceContext.type;
   if (!activeType && !isAudioPlaying && !sequenceContext.active) return;
 
@@ -5313,6 +5201,8 @@ function startSequenceAudio(type) {
   sequenceContext.activeVoices = [];
 
   if (type === 'staff') {
+    if (!noiseBuffer) noiseBuffer = createNoiseBuffer(audioContext);
+    if (!staffReverbImpulse) staffReverbImpulse = createReverbImpulse(audioContext);
     setupStaffEffectsChain();
   } else {
     // Set up oscillators

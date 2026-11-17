@@ -76,8 +76,21 @@ test('preparation stays within control groups, leaving the separate About footer
 
 test('Waveform keeps carrier, scope, Motion and Audio without the retired modulation controls', () => {
   const waveform = html.slice(html.indexOf('id="waveform-group"'), html.indexOf('id="circles-group"'));
-  expect(waveform).not.toMatch(/waveform[-_]lfo|LFO/);
-  for(const id of ['waveform-type-slider','waveform-note-slider','waveform-scope-status','waveform-motion-toggle','waveform-reverse-toggle','waveform-speed-slider','waveform-audio-btn']) expect(waveform).toContain(`id="${id}"`);
+  expect(waveform).not.toMatch(/waveform[-_]lfo|LFO|waveform-scope-status/);
+  for(const id of ['waveform-type-slider','waveform-note-slider','waveform-motion-toggle','waveform-reverse-toggle','waveform-speed-slider']) expect(waveform).toContain(`id="${id}"`);
+});
+
+test('audio controls sit beside the About disclosure without a Preview section', () => {
+  const about = html.indexOf('id="bar-information"');
+  const audio = html.indexOf('id="bar-information-audio"');
+  const footer = html.indexOf('class="sidebar_footer-actions"');
+  expect(audio).toBeGreaterThan(html.indexOf('</details>', html.indexOf('</details>', about) + 1));
+  expect(footer).toBeGreaterThan(audio);
+  const row = html.slice(audio, html.indexOf('</div>', audio));
+  for (const family of ['waveform', 'morse', 'staff', 'lunar']) {
+    expect(row).toContain(`id="${family}-audio-btn"`);
+  }
+  expect(html).not.toMatch(/class="control-header">PREVIEW</);
 });
 
 

@@ -105,17 +105,17 @@ test('a paused edit can settle from live PCM when there is no offline renderer',
   try {
     push(.8);c.tick(.7,false);
     const held=c.frame();
-    c.configure({note:49,type:1,reverse:true});c.tick(.7,false,true);
+    c.configure({note:49,type:1});c.tick(.7,false);
     expect(c.frame()).toBe(held);
-    push(.7,-.01,.01);c.tick(.7,false,true);
+    push(.7,-.01,.01);c.tick(.7,false);
     const updated=c.frame();
-    expect(updated).toMatchObject({source:'live',note:49,type:1,reverse:true,parameterChanges:false});
-    push(.2);c.tick(.7,false,true);
+    expect(updated).toMatchObject({source:'live',note:49,type:1,parameterChanges:false});
+    push(.2);c.tick(.7,false);
     expect(c.frame()).toBe(updated);
   } finally {c.dispose();}
 });
 
-test('silent edits hold a labeled previous frame until one complete latest render replaces it',async()=>{
+test('continuous edits show completed PCM and coalesce waiting settings',async()=>{
   jest.useFakeTimers();const {environment,jobs}=offlineEngine();
   const create=jest.spyOn(WaveformAudio,'create').mockReturnValue({update(){},pulseWorkletNode:{}});
   const c=scope.createController({environment});
@@ -124,9 +124,15 @@ test('silent edits hold a labeled previous frame until one complete latest rende
     c.tick(.3);const held=c.frame(),original=c.capture();
     c.configure({...base,type:1},true);await jest.advanceTimersByTimeAsync(0);
     expect(c.frame()).toBe(held);expect(c.status()).toContain('previous settings (rendering update)');
-    c.configure({...base,type:2,note:24},true);
-    jobs[1].finish(.04);await jest.advanceTimersByTimeAsync(0);
-    expect(c.frame()).toBe(held);expect(jobs).toHaveLength(3);
+    const skipped = c.configure({ ...base, type: 1.5 });
+    c.configure({ ...base, type: 2 });
+    expect(await skipped).toBeNull();
+    expect(jobs).toHaveLength(2);
+    jobs[1].finish(.04);
+    await jest.advanceTimersByTimeAsync(1);
+    expect(c.frame()).toMatchObject({ type: 1 });
+    expect(c.status()).toContain('previous settings (rendering update)');
+    expect(jobs).toHaveLength(3);
     jobs[2].finish(.08);await c.ready();
     expect(c.frame()).toMatchObject({source:'offline',seconds:scope.duration({note:24}),startFraction:0,endFraction:1});
     expect(c.frame().extrema.every(x=>x>.07)).toBe(true);expect(c.status()).not.toContain('previous settings');
@@ -144,13 +150,13 @@ test('paused edits replace the rendered signal at the held phase and retain the 
     const heldTime = .7;
     c.tick(heldTime);c.tick(heldTime,false);
     const held=c.capture();
-    c.configure({note:49,type:3,reverse:true},true);await jest.advanceTimersByTimeAsync(0);
+    c.configure({note:49,type:3},true);await jest.advanceTimersByTimeAsync(0);
     expect(c.frame()).toBe(held.frame);expect(c.status()).toContain('previous settings');
-    expect(create.mock.lastCall[2]).toEqual({note:49,type:3,reverse:true});
+    expect(create.mock.lastCall[2]).toEqual({note:49,type:3});
     const pcm=Float32Array.from({length:48000},(_,i)=>.01+i/48000);
     jobs[1].finish(pcm);await c.ready();
     let complete=c.frame();
-    expect(complete).toMatchObject({note:49,type:3,reverse:true});
+    expect(complete).toMatchObject({note:49,type:3});
     expect(c.status()).toContain('frozen');expect(c.status()).not.toContain('previous settings');
     expect(c.capture().recording.frame(0)).toBe(complete);
     expect(held.recording.frame(0)).toBe(held.frame);
@@ -173,9 +179,9 @@ test('offline/live/mute handoffs never relabel cached or transitional data as li
     expect(c.status()).toContain('waiting for settled live audio');
     push(.005);c.tick(1);expect(c.frame().source).toBe('offline');
     push(.7);c.tick(1);expect(c.frame()).toMatchObject({source:'live',filling:false,parameterChanges:false});
-    c.configure({...base,note:49},true);c.tick(1);const held=c.frame();
+    c.configure({...base,note:49});c.tick(1);
     await jest.advanceTimersByTimeAsync(0);jobs[1].finish(.08);await c.ready();
-    expect(c.frame()).toBe(held);c.tick(1);expect(c.frame().source).toBe('offline');
+    expect(c.frame()).toMatchObject({source:'offline',note:49});
     push(.7);c.tick(1);const liveFrame=c.frame();expect(liveFrame.source).toBe('live');
     c.tick(1,false);c.detach();c.tick(2,false);expect(c.frame()).toBe(liveFrame);
     c.tick(2,true);expect(c.frame()).toMatchObject({source:'offline',startFraction:0,endFraction:1});
