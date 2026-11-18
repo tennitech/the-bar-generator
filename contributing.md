@@ -33,6 +33,56 @@ Open http://127.0.0.1:8000/. Check for an existing server before starting anothe
 
 The fast Unit tests check is the only required automated check. It runs only on ready pull requests targeting main. Use a draft pull request while work is in progress; marking it ready starts the check. New pushes to that ready pull request replace older runs. There is no duplicate test run after merge. Contributors and reviewers perform the relevant UI, keyboard, accessibility, motion, and export checks. Optional browser and motion scripts are available in [README.md](README.md); run them locally when useful. They do not run in CI and are not merge requirements.
 
+## Parallel work
+
+Each active thread owns one branch and one worktree for its PR. The thread can
+handle several tasks or issues there. Each independent thread starts in a fresh
+worktree. This keeps two chats from writing into the same checkout.
+
+Before the first edit, verify the folder, branch, working changes and linked worktrees.
+Repeat after a resume, checkout change or handoff.
+
+```sh
+git status --short --branch
+git worktree list --porcelain
+```
+
+Use the client's worktree tool when available. Other clients can use standard
+Git worktrees. Choose current main as the starting point unless the work depends
+on an unmerged branch. Do not write to another active thread's checkout.
+
+Record a short ownership note in the branch description. For example, on
+branch `fix/mobile-menu`:
+
+```sh
+git config --local branch.fix/mobile-menu.description \
+  "Owner=Menu fix chat | Scope=Menu PR | State=working"
+```
+
+Use a thread ID when the client exposes it. Read existing notes before taking over a branch.
+
+```sh
+git config --local --get-regexp '^branch\..*\.description$'
+```
+
+No matches means no notes exist. Notes stay local to the clone and its linked
+worktrees. They do not detect live writers or lock a checkout. A handoff must
+establish that the previous writer has stopped. Update the note when handing off
+or waiting for user testing. Use the PR for published scope and validation evidence.
+
+Use a separate preview port for each worktree. `python3 scripts/test_server.py --port 0`
+lets the OS choose a free port and prints the URL. Include the branch and URL
+when handing work to a user. Run tests against that URL.
+
+Before integration, fetch main and review related PRs and any merge in progress.
+Let that merge finish, then update and validate your branch against the new main.
+Resolve conflicts by checking both tasks' intended behavior. Stop if the shared
+behavior needs a decision. GitHub's required checks still apply to the final revision.
+
+Worktree and branch deletion follow AGENTS.md and require explicit authorization.
+See [Git worktrees](https://git-scm.com/docs/git-worktree) and
+[branch descriptions](https://git-scm.com/docs/git-branch#Documentation/git-branch.txt---edit-description).
+
 ## Merge and verify the release
 
 1. Link related issues in the PR. Use `Closes #123` for each issue this PR fully resolves. Reference partial work as `Refs #123` and record what remains open. GitHub closes linked issues when the PR merges into the default branch. [GitHub issue linking](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue)
@@ -69,9 +119,8 @@ Today, the project owner can merge a pull request after checks pass without a se
 Use a separate branch for each new feature or change. Related fixes stay on that feature branch. When switching features, state the saved branch for any feature still in progress or awaiting user test confirmation. Start from the latest `main`:
 
 ```sh
-git switch main
-git pull --ff-only origin main
-git switch -c fix/mobile-menu-focus
+git fetch origin main
+git worktree add -b fix/mobile-menu-focus ../bar-mobile-menu-focus origin/main
 ```
 
 Use `<type>/<short-description>` with lowercase words and hyphens:

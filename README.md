@@ -54,6 +54,8 @@ Run the server from the checkout that contains the change. It binds to
 `127.0.0.1` and handles concurrent browser asset requests. Reuse a server
 only after confirming it serves that checkout. Choose a free port if needed
 and point `RPI_SITE_URL` at that port for browser scripts.
+For concurrent threads, `--port 0` selects a free port. Share the branch and exact
+URL so reviewers open the correct worktree. See [parallel work](contributing.md#parallel-work).
 
 Start the server early when reproducing a bug or checking a baseline. Before
 handoff, exercise the changed route and interactions in a browser. Confirm the

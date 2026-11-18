@@ -30,6 +30,9 @@ ignored. Do not force-add private tool state or unignore these folders wholesale
 
 1. Open this repository as the project/workspace and confirm the working folder.
    Check the actual client/version and selected model/configuration.
+   Read the [parallel work procedure](../contributing.md#parallel-work), inspect
+   the current checkout and linked worktrees. Each active thread must own a
+   separate branch and worktree. Read ownership notes before a handoff.
 2. Inspect loaded instructions using the client's context/rules view or loading
    diagnostics. Claude Code offers `/memory`; Gemini CLI offers `/memory show`;
    Copilot CLI offers `/instructions`; Grok Build offers `grok inspect`.

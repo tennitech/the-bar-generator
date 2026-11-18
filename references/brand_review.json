@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "reviewedOn": "2026-11-18",
-  "reviewer": "OpenAI via Codex self-review",
+  "reviewer": "Codex self-review",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "e7a2ee35a583044338f18b85c783c0f83baad13319fd73569e581b319987f160",
+  "changeFingerprint": "baf1f39683d4c59bca3e748ecf7504f952d166ddeaa2713ac5dfb1489e3b56b9",
   "areas": {
     "foundations": {
       "status": "reviewed",
-      "rationale": "The final owner direction removes Gradient rather than promoting an unresolved experiment. Remaining descriptions explain implemented systems and identify evidence without institutional claims.",
+      "rationale": "Exclusive thread ownership keeps contributor work identifiable and preserves related changes within one PR.",
       "sources": [
         "home",
         "about-our-brand",
@@ -16,58 +16,35 @@
     },
     "copy": {
       "status": "reviewed",
-      "rationale": "Gradient About copy is removed. Seven requested About revisions remain: Circles, Circles Gradient, Numeric, Grid, Triangles, Union and Artemis. Naming, credits and plain-language model limits remain grounded in the full Naming and Voice & Tone sources.",
+      "rationale": "The workflow gives a short folder/branch verification step and plain handoff instructions. Several tasks can share one thread and PR.",
       "sources": [
         "naming-conventions",
         "voice-tone"
       ]
     },
     "interface": {
-      "status": "reviewed",
-      "rationale": "Gradient is absent from picker, About, controls and Home; old routes, queries and snapshots recover to Solid. Circles Gradient remains intact. Chromium/WebKit checks cover all three retired styles, recovered SVG export, Circles Gradient and 390px keyboard disclosure. Remaining fonts, palette and focus semantics are unchanged.",
-      "sources": [
-        "design-principles",
-        "color",
-        "typography",
-        "pattern"
-      ]
+      "status": "not-applicable",
+      "rationale": "Only contributor coordination instructions changed. Generator code, media and assets are outside this task.",
+      "sources": []
     },
     "bar-and-exports": {
-      "status": "reviewed",
-      "rationale": "Gradient geometry helper, preview/SVG rendering branches and controls are removed. There is no replacement exposure-step model or brightness-chart claim. Recovered states use the existing official Solid geometry, verified through actual SVG export. Other pattern geometry and the shared fixed viewport remain unchanged.",
-      "sources": [
-        "logo-system",
-        "the-bar",
-        "color",
-        "pattern"
-      ]
+      "status": "not-applicable",
+      "rationale": "Only contributor coordination instructions changed. Generator code, media and assets are outside this task.",
+      "sources": []
     },
     "media": {
-      "status": "reviewed",
-      "rationale": "The obsolete generated Gradient Home SVGs and candidate review image are removed. A project-only picker screenshot and the existing Artemis review capture document remaining UI. No new production media, font, photo, seal, spirit mark or external art is introduced.",
-      "sources": [
-        "photography",
-        "video",
-        "spirit-marks",
-        "seal",
-        "email-signature",
-        "inspiration-gallery-1"
-      ]
+      "status": "not-applicable",
+      "rationale": "Only contributor coordination instructions changed. Generator code, media and assets are outside this task.",
+      "sources": []
     },
     "assets-and-approvals": {
-      "status": "reviewed",
-      "rationale": "Read the actual asset-permission record; existing unresolved font/brand/artwork permissions remain open. Only generated Gradient samples and its obsolete review screenshot are deleted. Original reference artwork, official captured sources and licenses are retained. New picker screenshot contains existing project UI/assets only.",
-      "sources": [
-        "logo-system",
-        "the-bar",
-        "typography",
-        "seal",
-        "spirit-marks"
-      ]
+      "status": "not-applicable",
+      "rationale": "Only contributor coordination instructions changed. Generator code, media and assets are outside this task.",
+      "sources": []
     },
     "governance": {
       "status": "reviewed",
-      "rationale": "Read all 17 captured pages and source coverage/manifest. Record the owner’s narrowly scoped November 18 product decision in brand_conflicts.md without altering official sources, checks or claiming formal approval.",
+      "rationale": "The canonical policy and session setup guides require one branch and worktree per active thread. Git checks confirm the target checkout. Ownership notes remain advisory. Source, review, approval and retention requirements apply.",
       "sources": [
         "home",
         "about-our-brand",
@@ -103,38 +80,43 @@
       "B09",
       "B10"
     ],
-    "disposition": "The owner’s final November 18 request retires Gradient entirely, superseding the attempted exposure-step models. Circles Gradient and other B01–B10 source/approval questions remain unchanged. Original official sources and reference assets are retained; retirement is not formal RPI approval."
+    "disposition": "Recorded in references/brand_conflicts.md. These instructions introduce no new use of the disputed treatments."
   },
   "requiresFormalApproval": false,
-  "approvalStatus": "not-required-for-scoped-software-and-copy-changes",
-  "approvalRationale": "Owner explicitly requested removal of the entire Gradient bar. Retiring the style and recovering old states to existing Solid introduces no new identity asset, palette, measurement claim or institutional lockup. Existing institutional approvals remain separate.",
-  "approvalEvidence": "Final November 18 session instruction: remove the entire bar as is. Implemented as Gradient retirement; no branch deletion or merge is authorized by that request.",
-  "publicationScope": "Owner-requested PR for issues #212, #213, #215, #216, #219, #220, #221, #222, #223 and #226, including code, project records and project-only review images. On November 18 the owner accepted final preview 3050d7c and explicitly authorized merge. Feature branches remain retained; no formal RPI approval is implied.",
+  "approvalStatus": "not-required-for-contributor-documentation",
+  "approvalRationale": "Worktree and task-note guidance introduces no institutional artwork, media, assets or generator output.",
+  "approvalEvidence": "No formal institutional approval claimed.",
+  "publicationScope": "Owner-authorized PR and merge of thread ownership policy and contributor setup instructions.",
   "checks": [
     {
       "name": "brand-policy",
       "result": "passed",
-      "evidence": "Current source archive/coverage and required review areas verified by scripts/checkBrandPolicy.js; changed-file fingerprint refreshed for this state."
+      "evidence": "The guard validates source archive integrity, applicable source coverage and the changed-file fingerprint."
     },
     {
       "name": "unit-tests",
       "result": "passed",
-      "evidence": "All 1,280 Jest tests across 106 suites pass. Obsolete Gradient geometry/motion cases are removed; the remaining Ticker restoration regression is retained. Route and snapshot regressions now cover Gradient, Lines and Point Connect recovery to Solid."
+      "evidence": "All 1,280 Jest tests across 106 suites passed against current main, using the existing locked test dependency installation read-only. The cached npm CLI has a missing module, so Jest and the brand guard ran directly. CI will verify the normal npm entry point."
+    },
+    {
+      "name": "coordination-notes",
+      "result": "passed",
+      "evidence": "Verified shared branch descriptions from both linked worktrees, thread branch discovery, documented internal links and diff formatting. Confirmed native Codex worktree support from the current official manual and callable worktree tools."
     },
     {
       "name": "rendered-ui",
-      "result": "passed",
-      "evidence": "retiredStylesSmoke.js passes in Chromium and Playwright WebKit: Gradient/Lines/Point Connect are absent from native options and Home; old direct routes, root queries and saved snapshots recover to Solid with the selected theme. Circles Gradient still loads and its 390px About disclosure remains keyboard operable. Picker review screenshot captured and inspected. Earlier unchanged-card evidence remains historical and applicable only to unchanged surfaces."
+      "result": "not-applicable",
+      "evidence": "No app interface or runtime changes."
     },
     {
-      "name": "preview-export-parity",
-      "result": "passed",
-      "evidence": "Both browser engines export an actual SVG from a recovered retired state and compare it with captured Solid source. Gradient has no renderer/helper, Home sample or current export path. No Gradient PNG/GIF or brightness correctness is claimed. Remaining export composition/unit coverage passes."
+      "name": "user acceptance",
+      "result": "not-applicable",
+      "evidence": "Contributor documentation has no generator visual acceptance requirement. The owner requested publication and merge."
     },
     {
-      "name": "user-acceptance",
-      "result": "passed",
-      "evidence": "On November 18, after the final 3050d7c preview handoff, the owner replied good to go, merge pls. This confirms acceptance and merge authorization for the final retirement/copy batch. Individual manual test steps were not itemized; no formal institutional approval or unperformed native/device/accessibility testing is inferred."
+      "name": "cross-client enforcement",
+      "result": "pending",
+      "evidence": "Other clients were not launched. These are cooperative instructions, not a process lock or live-chat detector."
     }
   ]
 }

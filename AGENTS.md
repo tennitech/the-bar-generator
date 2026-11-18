@@ -47,12 +47,24 @@ This file remains the canonical agent policy. `references/AGENTS.md` and older l
 
 Scope: These rules apply only to this repository. They do not change global tool settings or rules for other projects.
 
-- Create a new branch whenever the user requests work on a new feature. Use `<type>/<short-description>` as defined in `contributing.md`, with the same naming for humans and AI tools. Do not add a tool, provider, model, or personal prefix. Start from current `main` unless the feature needs unmerged work; explain that dependency. Clarifications and repairs to the same feature stay on its existing branch.
+- Use one feature branch for each PR. A thread can handle several tasks within that PR. Use `<type>/<short-description>` as defined in `contributing.md`, with the same naming for humans and AI tools. Do not add a tool, provider, model, or personal prefix. Start from current `main` unless the feature needs unmerged work; explain that dependency. Clarifications and repairs to the same feature stay on its existing branch.
 - Before switching to a new feature, preserve the current work and tell the user where it is saved. Example: "The motion feature still awaits your testing. It is saved in `fix/animation-timing`." State whether the branch is local, pushed to GitHub, or linked to an open pull request. Verify the save state before reporting it.
 - Omit that unfinished-feature note only when the earlier feature is complete and the user's response, read in context, confirms they tested it. Keep unconfirmed work available on its branch.
 - Delete a local or remote branch only when the user explicitly asks for that deletion. A merge, completed feature, or passing test does not authorize deletion. Keep automatic deletion of merged branches disabled. Do not use `--delete-branch` or a cleanup command without explicit deletion authorization.
 - Before an authorized deletion, fetch current remote refs and inspect the target branch and any checkout that uses it. Report the comparison branch, ahead/behind counts, merge status, unmerged commits, open pull requests, and any unsaved changes. Explain what work would be removed before deleting it. Do not discard unrelated or unsaved work.
 - Verify the result after deletion and tell the user which local and remote branches were removed and which remain. If the requested deletion scope or loss of work needs a decision, ask for that decision; do not infer authorization for other branches.
+
+## Thread Ownership And Concurrent Work
+
+- Give each active thread exclusive ownership of its branch and worktree. Several issues and tasks can share that thread and PR. Independent threads use separate branches and worktrees, even when they change the same files.
+- Before the first edit, verify the checkout path, branch, working changes and linked worktrees. Use the [thread setup procedure](contributing.md#parallel-work). Repeat after a resume, checkout change or handoff. This check confirms where the thread will write.
+- Start each new independent thread in a fresh worktree from current main. Use the client's worktree tools when available, or standard Git worktrees. Continue an existing branch only through a handoff after its previous writer has stopped. A clean checkout does not establish ownership.
+- Record the owner thread, PR scope and state in the branch's local description. Include a thread ID when exposed. These notes are shared by linked worktrees. Update them at handoff and when the thread stops or awaits user testing. Published issues and PRs hold context across machines.
+- Keep edits, commits, tests and previews within the thread's own worktree. Never switch branches, stash, reset or clean another thread's checkout. Do not bypass Git's branch checkout protection with force options.
+- Give each preview a free port. Include its branch, URL and expiry in the handoff. Stop only previews started by that thread.
+- Before merging, fetch current main and check related PRs or dependencies. Merge one PR at a time. Refresh integration, validation and the brand fingerprint if main changes. Preserve the other thread's intended behavior when resolving conflicts.
+
+Ownership notes are advisory. Git cannot detect two chats editing the same directory. Separate worktrees provide the file isolation.
 
 ## Local Preview And User Testing
 
