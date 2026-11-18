@@ -65,6 +65,7 @@ Scope: These rules apply only to this repository. They do not change global tool
 
 - Accept ordinary wording for user testing and merge authorization when the work, result, and intent are clear from context. One reply can cover both, and prior merge authorization still counts. For example, “That works now, go ahead” can cover both after a handoff that identified what to test and that the next step is merging. If one part is unclear, clarify only that part. Automated checks alone do not establish user testing.
 - For site changes, record what the user tested and which revision they tested. After any update that affects the accepted behavior, repeat the affected checks and confirm acceptance again. Follow the [merge and release checklist](contributing.md#merge-and-verify-the-release) for final CI, issue tracking, and public-site verification.
+- Start each user-facing PR, check, merge, or deployment status line with a square and a plain-text status. Use 🟩 for a verified success, 🟨 for queued, in progress, or awaiting review or verification, and 🟥 for failed or blocked. State what the status applies to. For example, a merge can be 🟩 Merged while its deployment is 🟨 Pending. Keep the text label so the meaning is available without color.
 
 ## AI Contribution Records
 
