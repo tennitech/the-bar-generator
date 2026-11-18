@@ -47,9 +47,21 @@ git status --short --branch
 git worktree list --porcelain
 ```
 
-Use the client's worktree tool when available. Other clients can use standard
-Git worktrees. Choose current main as the starting point unless the work depends
-on an unmerged branch. Do not write to another active thread's checkout.
+For new independent work, use freshly fetched main by default. A branch or
+revision explicitly chosen by the user takes priority.
+
+```sh
+git fetch origin main
+git rev-parse origin/main
+```
+
+Create the new branch and worktree from that `origin/main` revision. Use the
+client's worktree tool when available. Other clients can use standard Git worktrees.
+If the client already created a worktree, verify its base before edits.
+Preserve existing changes and report fetch failures.
+
+Continue existing work on its branch. Honor an explicitly requested base and
+explain dependencies on unmerged work. Do not write to another active thread's checkout.
 
 Record a short ownership note in the branch description. For example, on
 branch `fix/mobile-menu`:
