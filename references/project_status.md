@@ -1,5 +1,17 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
+## November 18 thread ownership and worktree isolation
+
+Each active thread owns a branch and worktree for its PR. Several tasks can
+share that thread. A new independent thread starts in a fresh worktree.
+A short Git check confirms the folder and branch before edits. Local branch
+descriptions record thread ownership for handoffs. They remain advisory and
+cannot detect live editors. Published PRs hold context across machines.
+
+Previews use separate ports. Integration runs one PR at a time against current
+main, with final checks and brand fingerprints refreshed after changes.
+These rules apply across coding tools and need no orchestrator or new service.
+
 ## November 18 related bar descriptions and retired styles
 
 One feature branch batches #212, #213, #215, #216, #219, #220, #221, #222,
