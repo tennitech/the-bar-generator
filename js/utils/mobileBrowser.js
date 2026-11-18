@@ -35,6 +35,24 @@
   const canvasSurface = document.querySelector('.logo-container');
   const headerSurface = document.querySelector('.app-header');
   const touchLayout = window.matchMedia('(pointer: coarse) and (max-width: 1100px)');
+  let embedParentOrigin = null;
+  let embedSurface = null;
+  function publishEmbedSurface() {
+    if (embedParentOrigin && embedSurface) window.parent.postMessage(embedSurface, embedParentOrigin);
+  }
+  // The embedding block initiates a handshake, so referrer suppression works.
+  // Only the direct, trusted parent receives display colors; no logo/input data.
+  window.addEventListener('message', event => {
+    if (window.parent === window || event.source !== window.parent
+      || event.data?.type !== 'rpi-generator:surface-request' || event.data.version !== 1) return;
+    let parentUrl;
+    try { parentUrl = new URL(event.origin); } catch (_) { return; }
+    const trustedParent = event.origin === 'https://brand.rpi.edu'
+      || (parentUrl.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(parentUrl.hostname));
+    if (!trustedParent) return;
+    embedParentOrigin = event.origin;
+    publishEmbedSurface();
+  });
 
   function syncBrowserSurface() {
     const visibleSurface = sidebar && touchLayout.matches && sidebar.classList.contains('active')
@@ -60,6 +78,9 @@
     if (canvasSurface) body.style.setProperty('--browser-surface', bottomBackground);
     root.style.colorScheme = dark ? 'dark' : 'light';
     if (themeColor.content !== background) themeColor.content = background;
+    embedSurface = { type: 'rpi-generator:surface', version: 1,
+      topColor: background, bottomColor: bottomBackground, colorScheme: dark ? 'dark' : 'light' };
+    publishEmbedSurface();
   }
 
   syncBrowserSurface();

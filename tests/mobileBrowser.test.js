@@ -60,3 +60,37 @@ test.each([
   expect(root.style.colorScheme).toBe('light');
   expect(body.style.setProperty).toHaveBeenLastCalledWith('--browser-surface', panel.backgroundColor);
 });
+
+test('only a trusted direct parent can subscribe to surface colors, including later theme changes', () => {
+  const listeners = new Map();
+  const sent = [];
+  const parent = { postMessage: (...args) => sent.push(args) };
+  let observerCallback;
+  let color = 'rgb(0, 0, 0)';
+  const root = { hasAttribute: () => false, dataset: {}, style: {} };
+  const body = { classList: { contains: () => false }, style: { setProperty() {} } };
+  const hint = { content: '' };
+  const document = { documentElement: root, body, addEventListener() {},
+    querySelector: () => hint, getElementById: () => null };
+  const window = { parent, matchMedia: () => ({ matches: false, addEventListener() {} }),
+    addEventListener: (name, callback) => listeners.set(name, callback) };
+  function MutationObserver(callback) { observerCallback = callback; this.observe = () => {}; }
+  vm.runInNewContext(source, { document, window, URL, MutationObserver,
+    getComputedStyle: () => ({ backgroundColor: color }) });
+  const request = { type: 'rpi-generator:surface-request', version: 1 };
+  const receive = listeners.get('message');
+  receive({ source: parent, origin: 'https://untrusted.example', data: request });
+  receive({ source: {}, origin: 'https://brand.rpi.edu', data: request });
+  receive({ source: parent, origin: 'https://brand.rpi.edu', data: { ...request, version: 2 } });
+  expect(sent).toHaveLength(0);
+  receive({ source: parent, origin: 'https://brand.rpi.edu', data: request });
+  expect(sent[0][1]).toBe('https://brand.rpi.edu');
+  expect(sent[0][0]).toMatchObject({ type: 'rpi-generator:surface', version: 1,
+    topColor: color, bottomColor: color, colorScheme: 'dark' });
+  for (const next of ['rgb(255, 255, 255)', 'rgb(225, 237, 245)', 'rgb(0, 0, 0)']) {
+    color = next;
+    observerCallback();
+    expect(sent.at(-1)[0]).toMatchObject({ topColor: next, bottomColor: next });
+  }
+  expect(Object.keys(sent.at(-1)[0]).sort()).toEqual(['bottomColor', 'colorScheme', 'topColor', 'type', 'version']);
+});
