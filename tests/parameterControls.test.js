@@ -95,7 +95,7 @@ function fixture(random = 0) {
 }
 
 const active = ['graph', 'truss', 'music', 'nucleotide', 'ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
-  'circles-gradient', 'gradient', 'grid', 'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles'];
+  'circles-gradient', 'gradient', 'grid', 'neural-network', 'triangle-grid', 'triangles'];
 const studies = ['well-modes', 'rabi'];
 const fixed = ['solid', 'fibonacci-sequence', 'union', 'runway', 'lunar'];
 

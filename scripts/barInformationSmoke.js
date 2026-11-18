@@ -49,6 +49,7 @@ const evidence = `/tmp/rpi-bar-information-${engine}`;
     const after = await footer.boundingBox();
     assert.equal(after.y, before.y, 'footer stays pinned when controls scroll');
     assert.ok(await scroller.evaluate(el => !el.contains(document.querySelector('.sidebar-footer'))));
+    await page.selectOption('#style-select', 'lunar', { force: true });
     for(const color of ['black','white','white-on-red','lunar']) {
       await page.selectOption('#color-mode-select',color,{force:true});
       assert.equal(await page.locator('.bar_information-credit').isVisible(),color==='lunar');
@@ -77,6 +78,6 @@ const evidence = `/tmp/rpi-bar-information-${engine}`;
     await credit.focus();
     assert.equal(await credit.evaluate(el=>el===document.activeElement),true);
     assert.deepEqual(errors,[]);
-    console.log(`${engine}: 22 styles, 4 themes, 3 narrow layouts, direct route, motion preferences, and credit focus passed. Evidence: ${evidence}`);
+    console.log(`${engine}: ${styles.length} styles, 4 themes, 3 narrow layouts, direct route, motion preferences, and credit focus passed. Evidence: ${evidence}`);
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

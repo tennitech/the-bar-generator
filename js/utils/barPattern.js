@@ -705,39 +705,32 @@ function createGradientPatternGeometry(options = {}) {
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
   const variant = clampPatternVariant(options.variant || 1, 2);
-  // Optical tone is encoded by area coverage, never opacity or new colors.
+  // Twenty-one width steps encode powers of two, not pixel luminance.
+  // Fixed gaps leave every mathematical step distinct in vector output; the
+  // narrowest steps naturally fall below raster resolution at ordinary sizes.
   const rects = [];
-  const count = 24;
-  const cellWidth = exactBarWidth / count;
-  const widthAt = t => cellWidth * (variant === 1
-    ? 0.88 - 0.7 * t
-    : 0.2 + 0.68 * (1 - Math.abs(2 * t - 1)));
-  // A bounded sinusoidal coordinate warp moves coverage, not the stripe grid.
-  // Phase zero is the original artwork; absent phase keeps static consumers still.
+  const count = 21;
+  const gap = exactBarWidth * 0.008;
+  const firstWidth = (exactBarWidth - gap * (count - 1)) / (2 - 2 ** (1 - count));
   const phase = Number.isFinite(Number(options.gradientPhase)) ? Number(options.gradientPhase) % 1 : 0;
-  const sweep = 0.28 * Math.sin(2 * Math.PI * phase);
-  const firstWidth = widthAt(0);
-  const lastWidth = widthAt(1);
-  // Equally spaced centers span from the first painted left edge to the last
-  // painted right edge, retaining the area progression without end margins.
-  const centerSpan = exactBarWidth - (firstWidth + lastWidth) / 2;
+  const angle = 2 * Math.PI * phase;
+  // Animate one common coverage factor so adjacent widths always retain 2:1.
+  // Centers and the reference viewport stay fixed; no painted-bounds fitting.
+  const coverage = 1 - 0.35 * (1 - Math.cos(angle)) * (1 + 0.3 * Math.sin(angle));
+  let left = barStartX;
   for (let i = 0; i < count; i++) {
-    const t = i / (count - 1);
-    const sample = t + sweep * Math.sin(Math.PI * t);
-    const width = widthAt(sample);
-    const x = barStartX + firstWidth / 2 + t * centerSpan - width / 2;
+    const restingWidth = firstWidth * 2 ** -i;
+    const width = restingWidth * coverage;
+    const x = left + (restingWidth - width) / 2;
     if (variant === 1) {
       rects.push({ x, y: barY, width, height: barHeight, radius: 0 });
     } else {
-      // Three aligned rows converge toward a central band of maximum coverage.
       const height = barHeight / 4;
       for (let row = 0; row < 3; row++) {
-        rects.push({
-          x, y: barY + row * barHeight * 0.375,
-          width, height, radius: 0
-        });
+        rects.push({ x, y: barY + row * barHeight * 0.375, width, height, radius: 0 });
       }
     }
+    left += restingWidth + gap;
   }
 
   return { rects };

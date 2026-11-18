@@ -2,10 +2,17 @@ const { createGradientPatternGeometry, createBarPatternSVG } = require('../js/ut
 const { advanceLiveLoopPhase, getLoopingGifFramePlan, getLoopingAnimationState, normalizeLoopSpeed } = require('../js/utils/loopingGif');
 const marquee = require('../js/utils/marqueeAnimation');
 
-test.each([1, 2])('Gradient %s preserves its resting artwork, grid and containment throughout a seamless loop', variant => {
+test.each([1, 2])('Gradient %s preserves its 21 halving width steps and containment throughout a seamless loop', variant => {
   const options = {variant, barStartX:13, barY:7, exactBarWidth:500, barHeight:36};
   const original = createGradientPatternGeometry(options).rects;
-  expect(original).toHaveLength(variant === 1 ? 24 : 72);
+  expect(original).toHaveLength(variant === 1 ? 21 : 63);
+  const columns = original.filter((_, index) => variant === 1 || index % 3 === 0);
+  expect(columns).toHaveLength(21);
+  for (let i = 1; i < columns.length; i++) {
+    expect(columns[i - 1].width / columns[i].width).toBeCloseTo(2, 12);
+    expect(columns[i].x).toBeGreaterThan(columns[i - 1].x + columns[i - 1].width);
+  }
+  expect(columns[0].width / columns[20].width).toBe(2 ** 20);
   for (const phase of [undefined, 0, 1, -1, NaN, Infinity]) {
     expect(createGradientPatternGeometry({...options, gradientPhase:phase}).rects).toEqual(original);
   }
@@ -54,6 +61,7 @@ test.each(['gradient', 'ticker'])('%s resets its motion clock on every Loop chan
   const fs = require('node:fs'), vm = require('node:vm');
   const source = fs.readFileSync(require.resolve('../js/main'), 'utf8');
   const context = {
+    window: { barShareController: { isRestoring: () => false } },
     normalizeStyleValue: value => value,
     styleSupportsMotion: value => value === style,
     MOTION_ENABLED_BY_STYLE: { [style]: true },
@@ -66,6 +74,9 @@ test.each(['gradient', 'ticker'])('%s resets its motion clock on every Loop chan
     context.setMotionEnabledForStyle(style, enabled);
     expect(context.MOTION_ENABLED_BY_STYLE[style]).toBe(enabled);
   }
+  expect(context.resetAnimationClock).toHaveBeenCalledTimes(4);
+  context.window.barShareController.isRestoring = () => true;
+  context.setMotionEnabledForStyle(style, false);
   expect(context.resetAnimationClock).toHaveBeenCalledTimes(4);
 });
 
@@ -101,6 +112,6 @@ test.each([[1,'gradient.svg'],[2,'gradient-1.svg']])('Gradient %s phase zero exa
     fgColor:'currentColor',values:{gradientVariant:variant,gradientPhase:0}});
   // Exclude the defensive viewport clip rectangle from both representations.
   const rectangles=svg=>[...svg.matchAll(/<rect [^>]*rx="0"[^>]*\/>/g)].map(match=>match[0]);
-  expect(rectangles(current).length).toBe(variant===1?24:72);
+  expect(rectangles(current).length).toBe(variant===1?21:63);
   expect(rectangles(current)).toEqual(rectangles(original));
 });

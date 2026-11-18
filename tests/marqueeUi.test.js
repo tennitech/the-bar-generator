@@ -17,8 +17,8 @@ describe('marquee row layout helpers', () => {
     ['Style=Ruler CM.svg', 'ruler'],
     ['Style=Ticker Md.svg', 'ticker'],
     ['Style=Grid 1.svg', 'grid'],
-    ['Style=Lines Md.svg', 'lines'],
-    ['Style=Point Connect 2.svg', 'point-connect'],
+    ['Style=Lines Md.svg', 'solid'],
+    ['Style=Point Connect 2.svg', 'solid'],
     ['Style=Triangle Grid 1.svg', 'triangle-grid']
   ])('opens the matching generator for %s', (filename, expectedStyle) => {
     expect(getMarqueeBarStyle(`assets/bar references/${filename}`).value).toBe(expectedStyle);

@@ -17,8 +17,6 @@
     'circles-gradient': ['circlesGradientVariant=2', 'circlesGradientVariant=3'],
     gradient: ['gradientVariant=2'],
     grid: ['gridVariant=2', 'gridVariant=3'],
-    lines: ['linesVariant=1'],
-    'point-connect': ['pointConnectVariant=2'],
     'neural-network': ['neuralNetworkHiddenLayers=2&neuralNetworkUnits=4&neuralNetworkSeed=7', 'neuralNetworkHiddenLayers=4&neuralNetworkUnits=5&neuralNetworkSeed=13&neuralNetworkConnectivity=local'],
     'triangle-grid': ['triangleGridVariant=1', 'triangleGridVariant=3'],
     triangles: ['trianglesDirection=up-left&trianglesCount=8', 'trianglesDirection=up-right&trianglesCount=20'],
@@ -29,7 +27,7 @@
     ['binary', 'Binary'], ['waveform', 'Waveform'], ['circles', 'Circles'],
     ['nucleotide', 'Nucleotide'], ['numeric', 'Numeric'], ['morse', 'Morse Code'],
     ['circles-gradient', 'Circles Gradient'], ['gradient', 'Gradient'],
-    ['grid', 'Grid'], ['lines', 'Lines'], ['point-connect', 'Point Connect'],
+    ['grid', 'Grid'],
     ['neural-network', 'Neural Network'], ['triangle-grid', 'Triangle Grid'],
     ['triangles', 'Triangles'], ['fibonacci-sequence', 'Fibonacci Sequence'],
     ['union', 'Union'], ['wave-quantum', 'Ring Wavefunction'],
@@ -37,7 +35,7 @@
   ].map(([value, label]) => {
     const variants = ['', ...(configurations[value] || [])].map((query, variant) => Object.freeze({
       value, label, query, variant,
-      path: `assets/images/marquee-bars/${value}${variant ? `-${variant}` : ''}.svg?v=${value === 'nucleotide' ? '20261104-nucleotide-minimum' : value === 'circles-gradient' && variant === 0 ? '20261104-gradient-reference' : value === 'ruler' ? '20261103-resting-motion-ruler' : value === 'binary' ? '20261103-binary-seams' : '20261103-configurations'}`
+      path: `assets/images/marquee-bars/${value}${variant ? `-${variant}` : ''}.svg?v=${value === 'gradient' ? '20261118-exposure-steps' : value === 'nucleotide' ? '20261104-nucleotide-minimum' : value === 'circles-gradient' && variant === 0 ? '20261104-gradient-reference' : value === 'ruler' ? '20261103-resting-motion-ruler' : value === 'binary' ? '20261103-binary-seams' : '20261103-configurations'}`
     }));
     return Object.freeze({ ...variants[0], variants: Object.freeze(variants) });
   });

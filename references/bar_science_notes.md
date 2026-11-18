@@ -663,3 +663,39 @@ ledger lines, added side strips, or forced painted-edge scaling remain.
 Authoritative coordinate/tuning sources and exact drawing conventions are in
 [music_bar.md](music_bar.md). These are original short exercise patterns, not
 borrowed compositions, recordings or measured musical data.
+
+
+## November 18, 2026 exposure-stop width schematic (#215)
+
+This supersedes the earlier linear/centered Gradient width envelopes and
+coordinate-warp motion. The owner selected discrete solid steps with halving
+widths after clarification that widths do not implement the inverse-square law.
+For n = 0…20, resting width is `w[n] = w[0] * 2^(-n)`, with fixed gap
+`g = 0.008 * W` and `w[0] = (W - 20*g)/(2 - 2^(-20))`. This normalizes the
+finite geometric sum once to the fixed bar viewport. Variant 1 uses full-height
+rectangles; variant 2 repeats the same 21 columns in three quarter-height rows,
+at y offsets 0, 0.375H and 0.75H. Both are single ink with no opacity blending.
+
+Motion multiplies all widths by the common factor
+`1 - 0.35*(1-cos(2πq))*(1+0.3*sin(2πq))`, keeping fixed centers, positive widths,
+2:1 adjacent ratios and a seamless period. It never fits painted bounds per
+frame. Header/live preview and GIF use that shared phase geometry. Existing
+still SVG/PNG exports intentionally use the resting phase, as before this
+change. Home stills are recaptured from the same renderer. Saved motion phases
+are preserved while replaying control events during restoration.
+
+[DSC Labs' Xyla 21](https://dsclabs.com/products/xyla-21), inspected November 18,
+2026, has 21 steps spanning 20 f-stops. Here the largest-to-smallest width ratio
+is 2^20, a schematic analogy for successive intensity halvings. Width is not
+luminance; this is neither a calibrated chart nor a light-propagation model.
+At ordinary raster sizes, the narrowest steps are subpixel and cannot all be
+resolved. SVG retains their actual positive widths; no minimum-width clamping,
+extra edge paint or universal size guarantee is added. Review at final size.
+
+Circles' About text now explains the actual seeded best-candidate search,
+spacing/edge/local-density scores, smaller-gap filling and πr² area, without
+claiming optimal or strictly non-overlapping packing. Its algorithm is unchanged.
+Circles Gradient adds ceramic-frit context without changing any circle geometry
+or claiming a thermal simulation. Lines and Point Connect are retired from
+selection and Home; known old routes, queries and v1 snapshots recover to Solid.
+Historical low-level geometry remains available to avoid unrelated code removal.

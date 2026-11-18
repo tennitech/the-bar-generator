@@ -162,3 +162,15 @@ project code under the existing MIT license. The review contact sheet at
 `references/review-images/dice-roll/filmstrip.png` is an original offline native
 raster of that code in a reconstructed button context, using the existing UI
 font. It contains project UI only and is not a native browser motion capture.
+
+
+## November 18 related bar-description review
+
+`review-images/bar-descriptions/gradient-desktop.png` and `artemis-mobile.png`
+are captures of this checkout's running UI in Chromium and Playwright WebKit.
+They contain only project UI and existing configured identity/font/artwork.
+The two Gradient Home SVGs are original rectangle geometry recaptured through
+`scripts/generateMarqueeAssets.js`; no external chart art, font, mission image
+or audio is downloaded or redistributed by this change. Xyla is named as
+inspiration, not copied or presented as an affiliation. Existing brand/mission/
+font permission questions above stay open.

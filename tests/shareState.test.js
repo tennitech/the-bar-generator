@@ -130,3 +130,9 @@ test('retired color compositions restore safely without losing their other setti
   }
   expect(() => decodeState(rawFragment({ ...state, controls: { ...state.controls, 'color-mode-select': 'unknown-theme' } }), schema)).toThrow();
 });
+
+
+test.each(['lines', 'point-connect'])('retired %s snapshots preserve other settings with Solid', style => {
+  const restored = decodeState(rawFragment({ ...state, controls: { ...state.controls, 'style-select': style } }), manifest);
+  expect(restored).toEqual({ ...state, controls: { ...state.controls, 'style-select': 'solid' } });
+});

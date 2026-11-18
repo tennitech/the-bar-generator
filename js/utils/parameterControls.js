@@ -10,8 +10,8 @@
   const capabilities = Object.freeze({
     graph: 'graph', truss: 'truss', music: 'music', nucleotide: 'nucleotide', solid: null, ruler: 'ruler', binary: 'binary', morse: 'morse', ticker: 'ticker',
     waveform: 'waveform', 'wave-quantum': 'quantum', 'well-modes': 'well-modes', rabi: 'rabi', circles: 'circles', numeric: 'numeric',
-    'circles-gradient': 'circles-gradient', gradient: 'gradient', grid: 'grid', lines: 'lines',
-    'point-connect': 'point-connect', 'neural-network': 'neural-network',
+    'circles-gradient': 'circles-gradient', gradient: 'gradient', grid: 'grid',
+    'neural-network': 'neural-network',
     'triangle-grid': 'triangle-grid', triangles: 'triangles',
     'fibonacci-sequence': null, union: null, runway: null, lunar: null
   });

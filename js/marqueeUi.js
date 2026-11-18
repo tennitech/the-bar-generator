@@ -127,7 +127,8 @@ function getMarqueeBarStyle(path) {
   const legacy = [['Triangle Grid', 'triangle-grid'], ['Point Connect', 'point-connect'],
     ['Ruler', 'ruler'], ['Ticker', 'ticker'], ['Grid', 'grid'], ['Lines', 'lines']];
   const match = legacy.find(([prefix]) => name.startsWith(`Style=${prefix}`));
-  return marqueeCatalog.find(item => item.value === (match ? match[1] : 'solid'));
+  return marqueeCatalog.find(item => item.value === (match ? match[1] : 'solid'))
+    || marqueeCatalog.find(item => item.value === 'solid');
 }
 
 function getGeneratorHref(style = 'solid', query = '') {

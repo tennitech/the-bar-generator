@@ -585,7 +585,7 @@ function getWorkspaceDisplaySize() {
 const AVAILABLE_STYLE_VALUES = new Set([
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
   'numeric', 'morse', 'nucleotide', 'circles-gradient', 'gradient', 'grid',
-  'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles',
+  'neural-network', 'triangle-grid', 'triangles',
   'fibonacci-sequence', 'union', 'wave-quantum', 'well-modes', 'rabi',
   'runway', 'lunar', 'truss', 'music', 'graph'
 ]);
@@ -1082,7 +1082,7 @@ function setMotionEnabledForStyle(style, enabled) {
   }
 
   MOTION_ENABLED_BY_STYLE[normalizedStyle] = !!enabled;
-  resetAnimationClock();
+  if (!window.barShareController?.isRestoring()) resetAnimationClock();
   if (normalizedStyle === 'waveform') resetWaveformScope();
 
   syncMotionToggleState();

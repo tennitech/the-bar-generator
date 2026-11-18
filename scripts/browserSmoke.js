@@ -8,7 +8,7 @@ const browserType = { chromium, firefox, webkit }[browserName];
 assert.ok(browserType, `Unsupported browser: ${browserName}`);
 const styles = [
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles', 'numeric',
-  'morse', 'circles-gradient', 'gradient', 'grid', 'lines', 'point-connect',
+  'morse', 'circles-gradient', 'gradient', 'grid',
   'neural-network', 'triangle-grid', 'triangles', 'fibonacci-sequence',
   'union', 'wave-quantum', 'runway', 'lunar'
 ];
@@ -27,7 +27,7 @@ async function openGenerator(page, style) {
   });
   assert.ok([200, 304].includes(response.status()), `${style} route response: ${response.status()}`);
   try {
-    await page.locator('#p5-container canvas').waitFor({ timeout: 15000 });
+    await page.locator('#p5-container canvas.p5Canvas').waitFor({ timeout: 15000 });
   } catch (error) {
     const state = await page.evaluate(() => ({
       bodyText: document.body.innerText.slice(0, 500),
@@ -94,7 +94,7 @@ async function main() {
     }
 
     await page.goto(`${baseUrl}/generator/binary/?binaryText=nigga`);
-    await page.locator('#p5-container canvas').waitFor({ timeout: 15000 });
+    await page.locator('#p5-container canvas.p5Canvas').waitFor({ timeout: 15000 });
     const encoding = await page.evaluate(() => ({
       accentedBytes: textToBinary('é').length,
       commaMorse: textToMorse(',').length

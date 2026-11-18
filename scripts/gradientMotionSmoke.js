@@ -83,6 +83,11 @@ const hash = data => createHash('sha256').update(data).digest('hex');
     const still = await page.evaluate(() => captureLogoExportSnapshot().svgSource);
     await page.evaluate(() => setZoomLevel(4,{immediate:true}));assert.equal(await page.evaluate(() => captureLogoExportSnapshot().svgSource),still);
     await page.evaluate(() => setZoomLevel(1,{immediate:true}));
+    const expectedPlan = await page.evaluate(() => {
+      const snapshot = captureLogoExportSnapshot();
+      const plan = loopingGifUtils.getLoopingGifFramePlan(snapshot.family, snapshot.values, {barWidth:snapshot.geometry.width});
+      return {frameCount:plan.frameCount, durationMs:Math.round(plan.periodSeconds*1000)};
+    });
     const exportInfo=[];
     for (const [format,method] of [['svg','saveSVG'],['png','savePNG'],['gif','saveLoopingGIF']]) {
       const pending=page.waitForEvent('download',{timeout:120000});
@@ -93,8 +98,8 @@ const hash = data => createHash('sha256').update(data).digest('hex');
     assert.equal(await fs.readFile(path.join(evidence,'gradient.svg'),'utf8'),still);
     const png=await fs.readFile(path.join(evidence,'gradient.png'));assert.equal(png.readUInt32BE(16),1160);assert.equal(png.readUInt32BE(20),762);
     const gif=parseGif(await fs.readFile(path.join(evidence,'gradient.gif')));
-    assert.equal(gif.width,1160);assert.equal(gif.height,762);assert.equal(gif.frames.length,72);
-    assert.equal(gif.frames.reduce((sum,f)=>sum+f.delayMs,0),10000);
+    assert.equal(gif.width,1160);assert.equal(gif.height,762);assert.equal(gif.frames.length,expectedPlan.frameCount);
+    assert.equal(gif.frames.reduce((sum,f)=>sum+f.delayMs,0),expectedPlan.durationMs);
     const frameHashes=[];for (const decoded of decodeFrames(gif)) {assert.equal(decoded.frame.disposal,2);assert.ok(decoded.frame.transparent);frameHashes.push(hash(decoded.rgba));}
     assert.ok(new Set(frameHashes).size>20,'encoded GIF contains changing geometry');
     await page.setViewportSize({width:390,height:844});await page.locator('#mobile-menu-toggle').click();

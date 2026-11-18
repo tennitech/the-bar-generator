@@ -38,6 +38,12 @@
     const sourceControls = scope.loopingGifUtils && typeof scope.loopingGifUtils.normalizeMotionSpeedControls === 'function'
       ? scope.loopingGifUtils.normalizeMotionSpeedControls(value.controls)
       : { ...value.controls };
+    // Retired geometric families recover narrowly to Solid. Unknown styles
+    // still fail native-option validation instead of silently losing state.
+    if (['lines', 'point-connect'].includes(sourceControls['style-select'])
+      && manifest['style-select']?.options?.includes('solid')) {
+      sourceControls['style-select'] = 'solid';
+    }
     // A new field distinguishes MIDI notes from the retired linear index.
     if (manifest['waveform-note-slider'] && scope.WaveformNotes) {
       const legacy = sourceControls['waveform-frequency-slider'];

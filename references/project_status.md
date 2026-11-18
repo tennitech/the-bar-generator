@@ -1,5 +1,48 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
+## November 18 related bar descriptions, retirement and exposure steps
+
+One feature branch batches #212, #213, #215, #216, #219, #220, #221, #222,
+#223 and #226. Eight About descriptions use the requested copy or an explanation
+of the actual algorithm and verified context. Lines and Point Connect leave
+Home and the picker; their old paths, query links and v1 saves recover to Solid
+while preserving other valid settings. Historical source/reference art and
+low-level geometry remain for compatibility.
+
+Gradient now uses 21 solid width steps with an exact 2:1 ratio. The owner chose
+this interpretation after the distinction from inverse-square physics was
+explained. Both existing layouts use the same progression; motion scales widths
+uniformly around fixed centers. Still exports remain resting artwork, while
+preview/header/GIF share the animated geometry. Home's two SVG stills are
+recaptured. Thin steps naturally become subpixel in raster output, so inspect
+complex patterns at final size. No new library, runtime asset or palette is added.
+
+Browser validation also exposed saved phases being reset by restored Loop
+control events. Those events now preserve the already restored motion clock;
+ordinary user Loop changes retain the current reset-to-default behavior.
+
+Model, source and approval boundaries are in [bar science notes](bar_science_notes.md),
+[About copy sources](bar_information_cards.md) and the scoped November 18 decision
+in [the conflict register](brand_conflicts.md). Formal RPI approval and broader
+asset permissions remain open. User acceptance of this batch is pending.
+
+Validation covers 1,296 Jest tests in 107 suites; focused Chromium/WebKit
+checks of all eight revised cards, keyboard disclosure, 390px layouts, measured
+18.10:1 About text contrast in Gray on Black, retired paths/saves and Home.
+Chromium Gradient checks cover both variants, motion/reverse/reduced motion,
+query/share/Undo/reset, touch/2D fallback, SVG/PNG downloads and a decoded
+500-frame, 10-second transparent GIF. Actual desktop/mobile screenshots and
+PNG output were inspected. This is not native Safari, physical-device,
+photosensitivity certification or institutional approval.
+
+Initial checks exposed stale test assumptions: the Gradient smoke hard-coded
+72 GIF frames, the broad browser smoke matched temporary entrance canvases,
+and the About smoke tried a Mission Control theme on Ring Wavefunction.
+The checks now use the export frame plan, the p5 artwork canvas and Artemis
+before Mission Control selection. The native npm cache was incomplete; a
+standalone npm 10.9.4 under /tmp runs the unchanged repository commands with
+Node 22.23.5, without modifying application dependencies.
+
 ## November 17 Loop defaults, compact Waveform controls and audio startup
 
 Both Loop transitions reset the selected bar to its default phase. Ticker,

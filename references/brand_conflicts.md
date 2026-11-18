@@ -30,3 +30,15 @@ Sources: full [page archive and coverage](brand_sources/index.md), especially
 To resolve an item, add dated evidence identifying the deciding authority and
 the exact approved scope. Retain the earlier record. Update affected guidance,
 project status, source manifest if refreshed, and the change's brand review.
+
+## November 18, 2026 scoped owner decision for issue #215
+
+In the implementation session, the project owner selected “Use 21 solid steps
+with halving widths” after the distinction between width, light intensity and
+the inverse-square law was explained. Scope: replace Gradient's stripe system
+with 21 discrete single-ink width steps; retain its two layouts and existing
+motion/export controls. No opacity ramp, blended color, photograph or new asset
+is introduced. This is a documented product interpretation using primitive
+rectangles, not formal RPI approval of the treatment/name, Circles Gradient,
+Artemis artwork, or general asset redistribution. The remaining B01 questions
+and stricter palette/geometry controls stay open.

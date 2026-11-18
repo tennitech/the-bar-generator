@@ -13,5 +13,5 @@ test('style dropdown stays alphabetical within Dynamic and Static without duplic
       expect(options.map(option=>option[1])).toContain('triangle-grid');
     }
   }
-  expect(seen.length).toBe(20);expect(new Set(seen).size).toBe(seen.length);
+  expect(seen.length).toBe(18);expect(new Set(seen).size).toBe(seen.length);
 });
