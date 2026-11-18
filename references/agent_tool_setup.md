@@ -33,6 +33,8 @@ ignored. Do not force-add private tool state or unignore these folders wholesale
    Read the [parallel work procedure](../contributing.md#parallel-work), inspect
    the current checkout and linked worktrees. Each active thread must own a
    separate branch and worktree. Read ownership notes before a handoff.
+   For new independent work, fetch `origin main` and use refreshed `origin/main`
+   by default. Honor an explicit branch or revision choice. Verify client-created worktrees before edits.
 2. Inspect loaded instructions using the client's context/rules view or loading
    diagnostics. Claude Code offers `/memory`; Gemini CLI offers `/memory show`;
    Copilot CLI offers `/instructions`; Grok Build offers `grok inspect`.

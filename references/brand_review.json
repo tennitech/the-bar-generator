@@ -3,7 +3,7 @@
   "reviewedOn": "2026-11-18",
   "reviewer": "Codex self-review",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "baf1f39683d4c59bca3e748ecf7504f952d166ddeaa2713ac5dfb1489e3b56b9",
+  "changeFingerprint": "dc016156504bb600af7858af68a5a1ab740c921f1cb75697d37c6c1938768af5",
   "areas": {
     "foundations": {
       "status": "reviewed",
@@ -16,7 +16,7 @@
     },
     "copy": {
       "status": "reviewed",
-      "rationale": "The workflow gives a short folder/branch verification step and plain handoff instructions. Several tasks can share one thread and PR.",
+      "rationale": "The default starting point and the explicit user exception are stated in plain instructions. Existing work remains on its intended branch.",
       "sources": [
         "naming-conventions",
         "voice-tone"
@@ -44,7 +44,7 @@
     },
     "governance": {
       "status": "reviewed",
-      "rationale": "The canonical policy and session setup guides require one branch and worktree per active thread. Git checks confirm the target checkout. Ownership notes remain advisory. Source, review, approval and retention requirements apply.",
+      "rationale": "The canonical policy and setup guides require fetching origin main before new independent work, using refreshed origin/main by default, and honoring explicit branch or revision choices. Existing worktree changes are preserved. Source and review requirements remain in place.",
       "sources": [
         "home",
         "about-our-brand",
@@ -86,7 +86,7 @@
   "approvalStatus": "not-required-for-contributor-documentation",
   "approvalRationale": "Worktree and task-note guidance introduces no institutional artwork, media, assets or generator output.",
   "approvalEvidence": "No formal institutional approval claimed.",
-  "publicationScope": "Owner-authorized PR and merge of thread ownership policy and contributor setup instructions.",
+  "publicationScope": "Follow-up to owner-authorized thread-isolation instructions, making the fresh-main default and explicit base exception clear.",
   "checks": [
     {
       "name": "brand-policy",
@@ -101,7 +101,7 @@
     {
       "name": "coordination-notes",
       "result": "passed",
-      "evidence": "Verified shared branch descriptions from both linked worktrees, thread branch discovery, documented internal links and diff formatting. Confirmed native Codex worktree support from the current official manual and callable worktree tools."
+      "evidence": "Verified the follow-up branch starts at the freshly fetched origin/main revision. Internal procedure links and diff formatting passed. The explicit branch/revision exception appears in policy and setup guidance."
     },
     {
       "name": "rendered-ui",

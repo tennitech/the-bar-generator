@@ -4,6 +4,9 @@
 
 Each active thread owns a branch and worktree for its PR. Several tasks can
 share that thread. A new independent thread starts in a fresh worktree.
+Before new work, agents fetch origin main and use refreshed origin/main as the
+base. Client-created worktrees are checked before edits. Existing work and
+explicit base choices retain their intended branches.
 A short Git check confirms the folder and branch before edits. Local branch
 descriptions record thread ownership for handoffs. They remain advisory and
 cannot detect live editors. Published PRs hold context across machines.
