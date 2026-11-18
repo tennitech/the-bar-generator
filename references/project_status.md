@@ -48,6 +48,10 @@ accepts natural-language testing and merge sign-off in context. It records the
 tested revision, verifies final CI and closure of fully resolved issues, and
 checks the public deployment for site changes.
 
+Agent release reports use colored squares and text labels for verified success,
+pending work, and failures. Merge and deployment statuses are reported separately
+when they differ.
+
 Future PRs and commit trailers group roles under each contributor and observed
 configuration. PR entries summarize unavailable details together and keep
 independent contributions and material configuration changes distinct. See the

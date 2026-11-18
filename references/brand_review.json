@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "reviewedOn": "2026-11-17",
+  "reviewedOn": "2026-11-18",
   "reviewer": "Codex self-review",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "2a42000c4213bbfe06aeb6ba0136b05e7030d4b37b3cb515fb5cf4770791f0df",
+  "changeFingerprint": "49afa5f103cb83db24522d566ba5b29eda0ac176dcbad23713df1cd69fecae6c",
   "areas": {
     "foundations": {
       "status": "reviewed",
-      "rationale": "Both Loop transitions return to a reproducible starting frame. Audio playback is explicitly started, and the Waveform technical explanation is available in About.",
+      "rationale": "Contributor status reports identify what has been verified and what remains pending.",
       "sources": [
         "home",
         "about-our-brand",
@@ -16,46 +16,54 @@
     },
     "copy": {
       "status": "reviewed",
-      "rationale": "Waveform keeps a compact editing surface and an About explanation. The study hints describe what Cycle controls and the phase restored by Loop. The speaker retains its accessible name.",
+      "rationale": "Each square has a plain-text label that identifies the actual state and operation without relying on color.",
       "sources": [
         "naming-conventions",
         "voice-tone"
       ]
     },
     "interface": {
-      "status": "reviewed",
-      "rationale": "Use a 28 CSS-pixel icon target in the About row with current theme and focus styling. Clear dynamic Waveform text and audio notifications. Toggle tracks retain their on/off colors and position, and keyboard focus uses a black mark within the white thumb.",
-      "sources": [
-        "design-principles",
-        "color",
-        "typography",
-        "pattern"
-      ]
+      "status": "not-applicable",
+      "rationale": "The change applies to contributor status reports. No generator, media, or institutional asset changes are involved.",
+      "sources": []
     },
     "bar-and-exports": {
-      "status": "reviewed",
-      "rationale": "Reset clocks to the authored phases on both Loop transitions. Waveform reuses captured PCM and its fixed viewport at phase zero. GIF uses the existing captured sweep direction and SVG and PNG use the displayed frame.",
-      "sources": [
-        "logo-system",
-        "the-bar",
-        "color",
-        "pattern"
-      ]
+      "status": "not-applicable",
+      "rationale": "The change applies to contributor status reports. No generator, media, or institutional asset changes are involved.",
+      "sources": []
     },
     "media": {
       "status": "not-applicable",
-      "rationale": "Artemis II remains limited to existing Mission Control playback through its native MP3 element. Web Audio startup and optional live capture affect the existing generated audio only.",
+      "rationale": "The change applies to contributor status reports. No generator, media, or institutional asset changes are involved.",
       "sources": []
     },
     "assets-and-approvals": {
       "status": "not-applicable",
-      "rationale": "No runtime assets or new institutional logo compositions are added. Two review screenshots document existing generator surfaces using the existing official vectors and brand fonts.",
+      "rationale": "The change applies to contributor status reports. No generator, media, or institutional asset changes are involved.",
       "sources": []
     },
     "governance": {
-      "status": "not-applicable",
-      "rationale": "The change applies the existing review policy and records its results. Policy, captured sources and the brand guard retain their current rules.",
-      "sources": []
+      "status": "reviewed",
+      "rationale": "The unified agent policy and contributor checklist describe the same user-facing release statuses. Source routes and review requirements continue to apply.",
+      "sources": [
+        "home",
+        "about-our-brand",
+        "who-we-are",
+        "naming-conventions",
+        "voice-tone",
+        "design-principles",
+        "logo-system",
+        "the-bar",
+        "seal",
+        "color",
+        "typography",
+        "pattern",
+        "video",
+        "photography",
+        "spirit-marks",
+        "inspiration-gallery-1",
+        "email-signature"
+      ]
     }
   },
   "blockingConflicts": [],
@@ -72,43 +80,38 @@
       "B09",
       "B10"
     ],
-    "disposition": "Existing boundaries remain documented in brand_conflicts.md. Moving the existing audio action preserves playback eligibility and adds no use of disputed art or media."
+    "disposition": "Recorded in references/brand_conflicts.md. These instructions introduce no new use of the disputed treatments."
   },
   "requiresFormalApproval": false,
-  "approvalStatus": "not-required-for-this-change",
-  "approvalRationale": "Existing controls and native audio synthesis are adjusted within the current generator. No new institutional composition, library submission, asset use or redistribution is proposed.",
+  "approvalStatus": "not-required-for-contributor-documentation",
+  "approvalRationale": "Status report formatting does not change institutional artwork, assets or generator output.",
   "approvalEvidence": "No formal institutional approval claimed.",
-  "publicationScope": "Owner authorized publication and merge in tennitech/the-bar-generator, including generator code, project notes, tests, and screenshots of the existing generator UI.",
+  "publicationScope": "Owner-authorized PR and merge for contributor status-report instructions.",
   "checks": [
     {
       "name": "brand-policy",
       "result": "passed",
-      "evidence": "Local guard verifies source integrity, review coverage and the final normalized changed-file fingerprint."
+      "evidence": "Brand guard verifies the existing source archive, applicable review areas, and the changed-file fingerprint."
     },
     {
       "name": "unit-tests",
       "result": "passed",
-      "evidence": "1300 Jest tests in 107 suites passed. Coverage includes Loop reset, Waveform recording and phase, prefixed audio startup, and cancellation of a pending resume."
+      "evidence": "All 1,300 local Jest tests across 107 suites passed against current main. Invoked Jest directly because the cached npm CLI has a missing module. The brand guard passed separately."
     },
     {
       "name": "rendered-ui",
-      "result": "passed",
-      "evidence": "Chromium and WebKit verified two off/on cycles for all six Loop styles and actual audio signal or media progress for all four audio styles. Pixel 7 and iPhone 15 touch emulation passed. The icon measured 28 CSS pixels square. Waveform text and About positions stayed fixed and audio produced no toasts. Prefixed constructor and missing AudioWorklet paths passed. Screenshots inspected. Toggle focus, hover and checked states were checked in light, dark and red themes in Chromium and WebKit, including forced colors in Chromium."
+      "result": "not-applicable",
+      "evidence": "No generator UI changes."
     },
     {
       "name": "preview-export-parity",
-      "result": "passed",
-      "evidence": "Chromium checked default rendered Waveform edges after Loop off in native and forced Canvas 2D. SVG and PNG matched captured artwork and 107 decoded GIF frames matched reversed replay. Both canvases updated during slider edits."
+      "result": "not-applicable",
+      "evidence": "No change to renderer, geometry or export behavior."
     },
     {
-      "name": "firefox",
-      "result": "pending",
-      "evidence": "Playwright Firefox failed to launch on this host before reaching the preview. Firefox playback is unverified."
-    },
-    {
-      "name": "owner-acceptance",
-      "result": "passed",
-      "evidence": "Owner requested merge after the final localhost handoff for change fingerprint 2197183509d27be89788ddbccce3b0fe34f0cedf1da5984ebd98ee307368d919. The PR adds review images and release records. No specific owner test steps were reported. Physical-device and screen-reader testing were not performed."
+      "name": "user acceptance",
+      "result": "not-applicable",
+      "evidence": "Contributor communication guidance does not require generator visual acceptance."
     }
   ]
 }

@@ -40,7 +40,7 @@ The fast Unit tests check is the only required automated check. It runs only on 
 3. Mark the PR ready once it meets the handoff requirements. Confirm conversations are resolved and verify that **Unit tests** succeeded for the latest revision against current `main`. If the PR changes, check the new revision. Once authorized, squash-merge the verified revision by default and preserve the final `AI-Assistance` trailers. Keep the feature branch.
 4. Confirm the PR merged and verify that GitHub closed the fully resolved issues. If an expected closure is missing, verify the issue's scope and close it as completed with the PR link when authorized. Leave partial issues open with their remaining work visible in the PR.
 5. For site changes, confirm the GitHub Pages deployment contains the merged commit, then smoke-test the affected public route or interaction. If deployment or the live check fails, report the failure and keep it visible in the release handoff. Stop the preview you started after confirming the merge.
-6. Report the PR, merged commit, issues closed or still open, and the live URL and verification result when applicable.
+6. Report the PR, merged commit, issues closed or still open, and the live URL and verification result when applicable. Use the [status indicators](AGENTS.md#release-handoff) with plain-text labels so the merge and deployment can each show their own status.
 
 ## Prepare the complete release package
 
