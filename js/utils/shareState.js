@@ -40,7 +40,7 @@
       : { ...value.controls };
     // Retired geometric families recover narrowly to Solid. Unknown styles
     // still fail native-option validation instead of silently losing state.
-    if (['lines', 'point-connect'].includes(sourceControls['style-select'])
+    if (['lines', 'point-connect', 'gradient'].includes(sourceControls['style-select'])
       && manifest['style-select']?.options?.includes('solid')) {
       sourceControls['style-select'] = 'solid';
     }

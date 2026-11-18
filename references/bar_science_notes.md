@@ -665,47 +665,22 @@ Authoritative coordinate/tuning sources and exact drawing conventions are in
 borrowed compositions, recordings or measured musical data.
 
 
-## November 18, 2026 static relative-light area encoding (#215)
+## November 18, 2026 Gradient retirement (#215)
 
-After the scientific review, the owner requested implementation of a direct
-geometric encoding instead of the soft-logarithmic width taper. The final
-model uses 21 equal cells across the unchanged bar viewport. For step n = 0…20,
-`I[n]/I[0] = 2^(-n)`. Cell pitch is `P = W/21`, center is `x0 + (n+0.5)P`,
-and rectangle width is `w[n] = P * 2^(-n)`. Thus actual ink area satisfies
-`A[n]/A[0] = 2^(-n)` with no logarithmic transform, width floor, added paint,
-opacity adjustment or per-output reinterpretation. Twenty halvings give an
-exact 1,048,576:1 represented ratio (20 stops), not 21 stops.
+The owner's final direction was to remove the entire Gradient style. It is no
+longer selectable, catalogued, described in About or generated in preview/SVG.
+Its controls, geometry helper, rendering paths, Home samples and candidate
+review image are removed. This supersedes the exposure-step models previously
+attempted in this PR; those revisions remain in Git history, not the product.
+Historical Gradient URLs and saved states recover to Solid and keep other
+valid settings. The old route shell exists solely for that recovery.
 
-Variant 1 has fixed full-height rectangles, so `A[n] = H*P*2^(-n)`.
-Variant 2 uses three quarter-height rectangles at offsets 0, 0.375H and 0.75H;
-their combined area is `A[n] = (3H/4)*P*2^(-n)`. Each layout therefore has the
-same normalized relative-light encoding. The difference in absolute area
-between variants is a drawing choice, not a change in represented light.
-The fixed cell centers explicitly represent exposure-step index rather than
-physical distance. Shapes stay inside their cells and the official viewport.
-No geometry is fitted to painted bounds or to a particular raster resolution.
-
-[DSC Labs' Xyla 21](https://dsclabs.com/products/xyla-21) specifies 21 steps
-spanning 20 f-stops. [Imatest's Xyla description](https://www.imatest.com/product/xyla/),
-inspected November 18, 2026, describes neutral optical transmission steps with
-a regulated light source. This generator does not reproduce that instrument:
-ink area encodes relative light numerically; the chosen ink/background colors,
-screen radiance, gamma, optical density, flare, noise and sensor response are
-not calibrated or simulated. It is not a camera test chart, an inverse-square
-simulation or a claim that a screen displays 20 stops of contrast.
-
-The final widths are 1/1,048,576 of the first. At normal screen/export sizes,
-some steps become subpixel and disappear; the apparent painted bar can end
-before the fixed viewport. That is disclosed in About. Do not hide this limit
-with a width floor, logarithmic compression, added boundary paint or fitted
-spacing. SVG retains all 21 positive widths (63 rectangles in the three-row
-layout), including values below raster resolution. Review at final placement
-size. There is no universal complex-pattern minimum size.
-
-Gradient remains Static with no Loop, Speed, Reverse or GIF action. Historical
-query/share motion settings and phases are ignored. Preview, header, SVG, PNG
-and recaptured Home stills share this exact geometry. Ticker and Waveform motion
-are unchanged. No new dependency, external artwork or formal approval is added.
+Circles Gradient is a separate family and is unchanged by this retirement.
+Original supplied reference artwork and official source captures are retained;
+retiring the generator option does not establish a general licensing or brand
+approval decision about those materials. See the latest owner direction in
+the conflict register. No current dynamic-range or brightness-chart claim is
+made by the removed style. Earlier Gradient sections above are historical.
 
 Circles' About text now explains the actual seeded best-candidate search,
 spacing/edge/local-density scores, smaller-gap filling and πr² area, without

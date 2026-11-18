@@ -8,7 +8,7 @@ const browserType = { chromium, firefox, webkit }[browserName];
 assert.ok(browserType, `Unsupported browser: ${browserName}`);
 const styles = [
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles', 'numeric',
-  'morse', 'circles-gradient', 'gradient', 'grid',
+  'morse', 'circles-gradient', 'grid',
   'neural-network', 'triangle-grid', 'triangles', 'fibonacci-sequence',
   'union', 'wave-quantum', 'runway', 'lunar'
 ];

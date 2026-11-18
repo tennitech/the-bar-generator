@@ -5,7 +5,6 @@ const {
   createBarPatternSVG,
   createCirclesGradientPatternGeometry,
   createFibonacciPatternGeometry,
-  createGradientPatternGeometry,
   createGridPatternGeometry,
   createLinesPatternGeometry,
   createNeuralNetworkPatternGeometry,
@@ -541,13 +540,6 @@ describe('createBarPatternSVG', () => {
         circlesGradientVariant: 2
       }
     }));
-    const gradient = createBarPatternSVG(makeBaseConfig({
-      currentShader: 17,
-      values: {
-        ...makeBaseConfig().values,
-        gradientVariant: 2
-      }
-    }));
     const grid = createBarPatternSVG(makeBaseConfig({
       currentShader: 18,
       values: {
@@ -569,7 +561,6 @@ describe('createBarPatternSVG', () => {
     const lunar = createBarPatternSVG(makeBaseConfig({ currentShader: 24 }));
 
     expect(circlesGradient).toContain('<circle');
-    expect(gradient).toContain('<rect');
     expect(grid).toContain('<path d="');
     expect(triangles).toContain('<polygon');
     expect(neuralNetwork).toContain('<circle');
@@ -588,13 +579,6 @@ describe('createBarPatternSVG', () => {
       exactBarWidth: 250,
       barHeight: 18,
       variant: 3
-    });
-    const gradient = createGradientPatternGeometry({
-      barStartX: 0,
-      barY: 0,
-      exactBarWidth: 250,
-      barHeight: 18,
-      variant: 2
     });
     const grid = createGridPatternGeometry({
       barStartX: 0,
@@ -630,7 +614,6 @@ describe('createBarPatternSVG', () => {
     });
 
     expect(circlesGradient.circles.length + circlesGradient.rects.length).toBeGreaterThan(0);
-    expect(gradient.rects.length).toBeGreaterThan(0);
     expect(grid.lines.length).toBeGreaterThan(0);
     expect(triangles.polygons.length).toBeGreaterThan(0);
     expect(fibonacci.rects).toHaveLength(8);

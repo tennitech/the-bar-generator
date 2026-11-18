@@ -1,27 +1,19 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
-## November 18 related bar descriptions, retirement and exposure steps
+## November 18 related bar descriptions and retired styles
 
 One feature branch batches #212, #213, #215, #216, #219, #220, #221, #222,
-#223 and #226. Eight About descriptions use the requested copy or an explanation
-of the actual algorithm and verified context. Lines and Point Connect leave
-Home and the picker; their old paths, query links and v1 saves recover to Solid
-while preserving other valid settings. Historical source/reference art and
-low-level geometry remain for compatibility.
+#223 and #226. Seven About descriptions use the requested copy or explain the
+implemented system and verified context. Gradient, Lines and Point Connect
+are removed from Home, the picker and About. Their old paths, query links and
+v1 saves recover to Solid while preserving other valid settings.
 
-Gradient remains Static with no Loop, Speed, Reverse or GIF export; old motion
-settings cannot animate it. Following the owner's scientific review and
-implementation request, it now directly encodes relative light by ink area:
-21 equal cells represent `2^(-n)` for n = 0…20. Actual area halves at every
-step, giving a 1,048,576:1 represented ratio across 20 stops in both layouts.
-There is no logarithmic width transform, resolution-dependent widening or
-painted-edge fitting. Fixed cell positions preserve the full reference domain.
-
-This is a numerical encoding, not a calibrated brightness chart. Some steps
-will disappear at finite raster resolution and the painted pattern can appear
-shorter than its fixed viewport. About now states that limit. SVG preserves
-all 21 positive steps. Preview/header/SVG/PNG/Home share the same static model.
-This supersedes the earlier literal-packed and soft-logarithmic candidates.
+The owner's final direction was to remove Gradient entirely. Its controls,
+preview/SVG geometry generator, shader-selection/rendering paths, selector
+preview entry, Home samples and obsolete review image are removed. This
+supersedes all earlier exposure-step candidates. The legacy route shell stays
+only to redirect old links. Original supplied reference artwork and dated brand
+sources are retained as historical evidence. Circles Gradient is unchanged.
 
 Browser validation also exposed saved phases being reset by restored Loop
 control events. Those events now preserve the already restored motion clock;
@@ -32,26 +24,16 @@ Model, source and approval boundaries are in [bar science notes](bar_science_not
 in [the conflict register](brand_conflicts.md). Formal RPI approval and broader
 asset permissions remain open. User acceptance of this batch is pending.
 
-The direct-area revision passes 1,290 Jest tests in 107 suites. Regressions
-verify exact normalized area ratios and fixed cells, replacing the
-retired Gradient motion expectations. Validation also includes focused Chromium/WebKit
-checks of all eight revised cards, keyboard disclosure, 390px layouts, measured
-18.10:1 About text contrast in Gray on Black, retired paths/saves and Home.
-Earlier animated-candidate checks included GIF decoding. Final static Gradient
-checks cover both variants, absent motion/GIF controls, ignored legacy settings,
-unchanged geometry over time, keyboard/phone layout, SVG/PNG downloads and
-Reset/Randomize/Undo in Chromium and Playwright WebKit. Actual desktop/mobile screenshots and
-PNG output were inspected. This is not native Safari, physical-device,
-photosensitivity certification or institutional approval.
+All 1,280 tests in 106 Jest suites pass. Validation for the retirement uses `scripts/retiredStylesSmoke.js`: direct
+routes, legacy queries and saved states recover to Solid; removed entries do
+not appear in the picker/Home; recovered SVG export works; Circles Gradient
+still loads; mobile keyboard disclosure remains operable. Earlier mathematical
+and animation checks describe removed candidates, not a current feature.
+Native Safari, physical-device, screen-reader, photosensitivity and formal
+institutional acceptance are not established. User acceptance is pending.
 
-Initial checks exposed stale test assumptions: the Gradient smoke hard-coded
-72 GIF frames, the broad browser smoke matched temporary entrance canvases,
-and the About smoke tried a Mission Control theme on Ring Wavefunction.
-Those earlier fixture repairs used the export frame plan, p5 artwork canvas
-and Artemis before Mission Control selection. The final Gradient smoke instead
-verifies the static contract and SVG/PNG output. The native npm cache was incomplete; a
-standalone npm 10.9.4 under /tmp runs the unchanged repository commands with
-Node 22.23.5, without modifying application dependencies.
+The native npm cache is incomplete; standalone npm 10.9.4 under /tmp runs the
+unchanged guard with Node 22.23.5. Application dependencies are unchanged.
 
 ## November 17 Loop defaults, compact Waveform controls and audio startup
 

@@ -15,7 +15,6 @@
     nucleotide: ['nucleotideVariant=backbone', 'nucleotideSequence=ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGG'],
     morse: ['morseText=1824', 'morseText=WHY+NOT'],
     'circles-gradient': ['circlesGradientVariant=2', 'circlesGradientVariant=3'],
-    gradient: ['gradientVariant=2'],
     grid: ['gridVariant=2', 'gridVariant=3'],
     'neural-network': ['neuralNetworkHiddenLayers=2&neuralNetworkUnits=4&neuralNetworkSeed=7', 'neuralNetworkHiddenLayers=4&neuralNetworkUnits=5&neuralNetworkSeed=13&neuralNetworkConnectivity=local'],
     'triangle-grid': ['triangleGridVariant=1', 'triangleGridVariant=3'],
@@ -26,7 +25,7 @@
     ['solid', 'Solid'], ['ruler', 'Ruler'], ['ticker', 'Ticker'],
     ['binary', 'Binary'], ['waveform', 'Waveform'], ['circles', 'Circles'],
     ['nucleotide', 'Nucleotide'], ['numeric', 'Numeric'], ['morse', 'Morse Code'],
-    ['circles-gradient', 'Circles Gradient'], ['gradient', 'Gradient'],
+    ['circles-gradient', 'Circles Gradient'],
     ['grid', 'Grid'],
     ['neural-network', 'Neural Network'], ['triangle-grid', 'Triangle Grid'],
     ['triangles', 'Triangles'], ['fibonacci-sequence', 'Fibonacci Sequence'],
@@ -35,7 +34,7 @@
   ].map(([value, label]) => {
     const variants = ['', ...(configurations[value] || [])].map((query, variant) => Object.freeze({
       value, label, query, variant,
-      path: `assets/images/marquee-bars/${value}${variant ? `-${variant}` : ''}.svg?v=${value === 'gradient' ? '20261118-linear-area' : value === 'nucleotide' ? '20261104-nucleotide-minimum' : value === 'circles-gradient' && variant === 0 ? '20261104-gradient-reference' : value === 'ruler' ? '20261103-resting-motion-ruler' : value === 'binary' ? '20261103-binary-seams' : '20261103-configurations'}`
+      path: `assets/images/marquee-bars/${value}${variant ? `-${variant}` : ''}.svg?v=${value === 'nucleotide' ? '20261104-nucleotide-minimum' : value === 'circles-gradient' && variant === 0 ? '20261104-gradient-reference' : value === 'ruler' ? '20261103-resting-motion-ruler' : value === 'binary' ? '20261103-binary-seams' : '20261103-configurations'}`
     }));
     return Object.freeze({ ...variants[0], variants: Object.freeze(variants) });
   });

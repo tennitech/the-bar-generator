@@ -83,7 +83,7 @@ function fixture(random = 0) {
   vm.runInContext(fs.readFileSync(require.resolve('../js/utils/parameterControls'), 'utf8'), context);
   vm.runInContext(source.slice(source.indexOf('function getTriangleGridControlValues'), source.indexOf('function updateTrianglesCountDisplay')), context);
 
-  vm.runInContext(source.slice(source.indexOf('function getCirclesGradientControlValues'), source.indexOf('function updateGradientVariantDisplay')), context);
+  vm.runInContext(source.slice(source.indexOf('function getCirclesGradientControlValues'), source.indexOf('function updateGridVariantDisplay')), context);
   vm.runInContext(source.slice(source.indexOf('const NEURAL_CONTROL_DEFAULTS'), source.indexOf('function updateTriangleGridVariantDisplay')), context);
   vm.runInContext(source.slice(source.indexOf('function resetWaveformScope()'), source.indexOf('function getCurrentAudioPreviewType()')), context);
   vm.runInContext(source.slice(source.indexOf('function resetStyleParameters'), source.indexOf('function getBugReportContextLabel')), context);
@@ -95,7 +95,7 @@ function fixture(random = 0) {
 }
 
 const active = ['graph', 'truss', 'music', 'nucleotide', 'ruler', 'binary', 'morse', 'ticker', 'waveform', 'wave-quantum', 'circles', 'numeric',
-  'circles-gradient', 'gradient', 'grid', 'neural-network', 'triangle-grid', 'triangles'];
+  'circles-gradient', 'grid', 'neural-network', 'triangle-grid', 'triangles'];
 const studies = ['well-modes', 'rabi'];
 const fixed = ['solid', 'fibonacci-sequence', 'union', 'runway', 'lunar'];
 

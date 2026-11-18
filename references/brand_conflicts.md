@@ -61,3 +61,11 @@ proportional to `2^(-n)`, stays static, and explicitly discloses that this is
 not a calibrated brightness chart. This supersedes the logarithmic-display
 interpretation above. It adds no institutional approval, palette exception,
 photometric calibration claim or permission for new assets.
+
+
+The owner's final November 18 instruction was “remove the entire bar as is.”
+This retires Gradient completely from the product, including its geometry
+helper, rendering paths, controls, catalog and description. Old links/saves
+recover to Solid. The preceding Gradient implementation decisions are
+superseded. Circles Gradient and the other B01–B10 source/approval boundaries
+are unchanged; original reference art and official sources remain historical.

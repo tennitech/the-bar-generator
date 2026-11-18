@@ -2,10 +2,10 @@
 
 ## November 18, 2026 related issue batch
 
-Issues #212, #213, #215, #216, #219, #222, #223 and #226 revise the About copy
-for Circles, Circles Gradient, Gradient, Numeric, Grid, Triangles, Union and
-Artemis II. #220 and #221 retire Lines and Point Connect from Home, selection
-and descriptions. Legacy entry routes and snapshots recover to Solid.
+Issues #212, #213, #216, #219, #222, #223 and #226 revise the About copy
+for Circles, Circles Gradient, Numeric, Grid, Triangles, Union and Artemis II.
+The final owner direction for #215 retires Gradient entirely, alongside Lines
+and Point Connect from #220/#221. All three leave Home, selection and About. Legacy entry routes and snapshots recover to Solid.
 
 Numeric uses the owner's requested Dot Matrix explanation; Height Encoding's
 existing control and behavior remain. Grid and Triangles omit their requested
@@ -25,13 +25,9 @@ Sources inspected November 18, 2026:
   supports ceramic dot transitions and manufacturing distortion context. Copy
   omits the proposed guarantee against cracking in extreme weather; this tool
   has no thermal model or material parameters.
-- Gradient: [DSC Labs Xyla 21](https://dsclabs.com/products/xyla-21) specifies
-  21 steps over 20 stops. Following scientific review, the owner requested a
-  direct encoding: ink area halves in each equal cell. About discloses subpixel
-  disappearance and distinguishes area encoding from calibrated brightness.
-  [Imatest](https://www.imatest.com/product/xyla/) describes the physical optical
-  transmission target; this generator does not reproduce its radiance. Equations and raster limits
-  are recorded in [bar science notes](bar_science_notes.md).
+- Gradient is retired under the owner's final instruction. Previous exposure-
+  step interpretations remain in Git history and are no longer About copy or
+  generator behavior. Original source/reference records remain historical.
 - Artemis: [NASA splashdown](https://www.nasa.gov/gallery/artemis-ii-splashdown-and-recovery/),
   [RPI alumni context](https://news.rpi.edu/2026/03/31/meet-rpi-engineers-guiding-artemis-ii-moon-and-back)
   and [BOROMIR's own README](https://github.com/the-astronot/boromir/blob/main/README.md),

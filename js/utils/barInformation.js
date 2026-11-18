@@ -57,10 +57,6 @@
     "title": "Circles Gradient",
     "text": "Inspired by ceramic frit on automotive glass, halftone circles create an apparent gradient in one color. Dark ceramic heats faster than clear glass during manufacturing; a gradual dot pattern softens that temperature transition and helps reduce optical distortion, or “lensing.” This pattern illustrates the idea without simulating heat flow."
   },
-  "gradient": {
-    "title": "Gradient",
-    "text": "Encode 20 stops of dynamic range in 21 equal cells. Ink area halves at each step, representing relative light levels from 1 to 1/1,048,576. The smallest steps may disappear at screen resolution. This single-color encoding is not a calibrated brightness chart."
-  },
   "grid": {
     "title": "Grid",
     "text": "A repeating grid divides the bar into cells and open spaces. Variants change the geometry."

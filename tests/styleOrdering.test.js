@@ -7,12 +7,12 @@ test('style dropdown stays alphabetical within Dynamic and Static without duplic
     const names = options.map(option => option[2]);
     expect(names).toEqual([...names].sort((a,b)=>a.localeCompare(b,'en')));
     seen.push(...options.map(option=>option[1]));
-    if (match[1] === 'Static') expect(options.map(option=>option[1])).toContain('gradient');
+    expect(options.map(option=>option[1])).not.toContain('gradient');
     if (match[1] === 'Dynamic') {
       expect(options.map(option=>option[1])).toContain('circles-gradient');
       expect(options.map(option=>option[1])).not.toContain('gradient');
       expect(options.map(option=>option[1])).toContain('triangle-grid');
     }
   }
-  expect(seen.length).toBe(18);expect(new Set(seen).size).toBe(seen.length);
+  expect(seen.length).toBe(17);expect(new Set(seen).size).toBe(seen.length);
 });

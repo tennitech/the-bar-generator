@@ -62,7 +62,7 @@ describe('generator route utils', () => {
 
 });
 
-test.each(['lines', 'point-connect'])('retired %s links recover to Solid and keep theme state', style => {
+test.each(['lines', 'point-connect', 'gradient'])('retired %s links recover to Solid and keep theme state', style => {
   expect(normalizeStyleValue(style)).toBe('solid');
   expect(getLegacyGeneratorRedirectUrl(`/repo/generator/${style}/`, '?colorMode=gray-on-black'))
     .toBe('/repo/generator/solid/?colorMode=gray-on-black');

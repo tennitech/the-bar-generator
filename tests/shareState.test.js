@@ -132,7 +132,7 @@ test('retired color compositions restore safely without losing their other setti
 });
 
 
-test.each(['lines', 'point-connect'])('retired %s snapshots preserve other settings with Solid', style => {
+test.each(['lines', 'point-connect', 'gradient'])('retired %s snapshots preserve other settings with Solid', style => {
   const restored = decodeState(rawFragment({ ...state, controls: { ...state.controls, 'style-select': style } }), manifest);
   expect(restored).toEqual({ ...state, controls: { ...state.controls, 'style-select': 'solid' } });
 });

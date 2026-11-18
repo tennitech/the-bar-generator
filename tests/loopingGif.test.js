@@ -240,3 +240,26 @@ test('explicit 30 fps remains available for matched comparisons and odd centisec
   expect(timing.delays.filter(delay => delay === 30)).toHaveLength(1);
   expect(timing.delays.filter(delay => delay === 20)).toHaveLength(30);
 });
+
+test.each(['ticker'])('%s resets its motion clock on every Loop change', style => {
+  const fs = require('node:fs'), vm = require('node:vm');
+  const source = fs.readFileSync(require.resolve('../js/main'), 'utf8');
+  const context = {
+    window: { barShareController: { isRestoring: () => false } },
+    normalizeStyleValue: value => value,
+    styleSupportsMotion: value => value === style,
+    MOTION_ENABLED_BY_STYLE: { [style]: true },
+    resetAnimationClock: jest.fn(),
+    syncMotionToggleState: jest.fn(),
+    requestUpdate: jest.fn()
+  };
+  vm.runInNewContext(source.slice(source.indexOf('function setMotionEnabledForStyle('), source.indexOf('function generateRandomStaffPattern(')), context);
+  for (const enabled of [false, true, false, true]) {
+    context.setMotionEnabledForStyle(style, enabled);
+    expect(context.MOTION_ENABLED_BY_STYLE[style]).toBe(enabled);
+  }
+  expect(context.resetAnimationClock).toHaveBeenCalledTimes(4);
+  context.window.barShareController.isRestoring = () => true;
+  context.setMotionEnabledForStyle(style, false);
+  expect(context.resetAnimationClock).toHaveBeenCalledTimes(4);
+});

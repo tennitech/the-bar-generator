@@ -270,7 +270,7 @@ test('ring GIF discloses actual default resolution and updates with speed/compos
   expect(elements['quantum-speed-slider'].value).toBe('.5');
 });
 
-test.each(['ticker', 'waveform', 'gradient'])('%s action discloses GIF pixels separately from PNG before activation', family => {
+test.each(['ticker', 'waveform'])('%s action discloses GIF pixels separately from PNG before activation', family => {
   const { ui, elements } = fixture(undefined, undefined, true);
   elements['style-select'].value = family;
   for (const size of ['large', 'standard']) for (const composition of ['logo', 'bar']) {
@@ -287,10 +287,10 @@ test.each(['ticker', 'waveform', 'gradient'])('%s action discloses GIF pixels se
 });
 
 
-function completedGradient(f = fixture(undefined, undefined, true)) {
-  f.elements['style-select'].value = 'gradient'; f.ui.sync();
+function completedTicker(f = fixture(undefined, undefined, true)) {
+  f.elements['style-select'].value = 'ticker'; f.ui.sync();
   const job = f.ui.begin('gif');
-  f.ui.describe(job, { family: 'gradient', composition: 'logo', dimensions: { width: 2320, height: 1524 } });
+  f.ui.describe(job, { family: 'ticker', composition: 'logo', dimensions: { width: 2320, height: 1524 } });
   f.ui.ready(job, { size: 5032238 });
   f.ui.finish(job, 'requested', 'GIF download requested.');
   expect(f.elements['export-detail'].textContent).toContain('5.0 MB');
@@ -298,7 +298,7 @@ function completedGradient(f = fixture(undefined, undefined, true)) {
 }
 
 test('switching from exported Gradient to ring clears stale status/statistics without reopening or stealing focus', () => {
-  const f = completedGradient();
+  const f = completedTicker();
   f.elements['style-select'].focus(); f.elements['style-select'].value = 'wave-quantum'; f.ui.sync();
   expect(f.elements['export-progress'].hidden).toBe(true);
   for (const id of ['export-message', 'export-detail', 'export-percent']) expect(f.elements[id].textContent).toBe('');
@@ -308,7 +308,7 @@ test('switching from exported Gradient to ring clears stale status/statistics wi
 });
 
 test.each(['size', 'composition', 'theme', 'parameters', 'credits'])('changing %s clears a completed export result', change => {
-  const f = completedGradient();
+  const f = completedTicker();
   if (change === 'size') f.elements['export-size-standard'].listeners.change({ target: { checked: true } });
   if (change === 'composition') f.elements['export-composition-bar'].listeners.change({ target: { checked: true } });
   if (change === 'theme') { f.elements['color-mode-select'].value = 'white'; f.ui.sync(); }
@@ -319,14 +319,14 @@ test.each(['size', 'composition', 'theme', 'parameters', 'credits'])('changing %
 });
 
 test.each(['requested', 'cancelled'])('style changes preserve captured in-flight source and cancellation, then discard its late %s status', outcome => {
-  const f = fixture(undefined, undefined, true); f.elements['style-select'].value = 'gradient'; f.ui.sync();
+  const f = fixture(undefined, undefined, true); f.elements['style-select'].value = 'ticker'; f.ui.sync();
   const job = f.ui.begin('gif');
-  f.ui.describe(job, { family: 'gradient', composition: 'logo', dimensions: { width: 2320, height: 1524 } });
+  f.ui.describe(job, { family: 'ticker', composition: 'logo', dimensions: { width: 2320, height: 1524 } });
   f.elements['style-select'].value = 'wave-quantum'; f.ui.sync();
   expect(f.ui.isBusy()).toBe(true); expect(f.elements['export-cancel'].hidden).toBe(false);
-  expect(f.elements['export-message'].textContent).toContain('gradient GIF');
+  expect(f.elements['export-message'].textContent).toContain('ticker GIF');
   f.ui.report(job, { prepared: 8, encoded: 8, total: 8 });
-  expect(f.elements['export-detail'].textContent).toContain('gradient GIF');
+  expect(f.elements['export-detail'].textContent).toContain('ticker GIF');
   expect(job.dimensions).toBe('2320 × 1524 px');
   if (outcome === 'cancelled') { f.elements['export-cancel'].listeners.click(); expect(job.controller.signal.aborted).toBe(true); }
   else { expect(job.controller.signal.aborted).toBe(false); f.ui.ready(job, { size: 5032238 }); }
