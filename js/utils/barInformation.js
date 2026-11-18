@@ -59,7 +59,7 @@
   },
   "gradient": {
     "title": "Gradient",
-    "text": "Explore dynamic range through 21 width steps, each half the width of the one to its left. Inspired by the Xyla 21’s 21 steps spanning 20 stops of light, widths represent successive halvings schematically. This is a geometric analogy, not a calibrated light source or an inverse-square simulation."
+    "text": "Explore 21 light levels spanning 20 exposure stops, inspired by the Xyla 21. Each step represents half as much light as the previous one. Stripe widths use a logarithmic display scale to keep the full range readable in one color. This is a schematic, not a calibrated camera test chart."
   },
   "grid": {
     "title": "Grid",

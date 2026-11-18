@@ -42,3 +42,12 @@ is introduced. This is a documented product interpretation using primitive
 rectangles, not formal RPI approval of the treatment/name, Circles Gradient,
 Artemis artwork, or general asset redistribution. The remaining B01 questions
 and stricter palette/geometry controls stay open.
+
+
+The same November 18 session subsequently rejected the compressed-spacing
+candidate and directed: “remove the motion for this bar style” and “we need
+this to be logical and look nice.” The final product interpretation keeps
+21 successive light halvings, displays them on an explicitly documented
+logarithmic width scale, and removes Gradient motion/GIF controls. This
+supersedes the earlier literal-width and motion-control scope above without
+claiming a brand exception or formal institutional approval.

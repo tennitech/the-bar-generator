@@ -3,7 +3,7 @@
   "reviewedOn": "2026-11-18",
   "reviewer": "OpenAI via Codex self-review",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "90d9849c6387213778e64fe023576fb7b352d293b9b63c03d211cc9a91a4ebb2",
+  "changeFingerprint": "7272b89ee4dbae793a9266628e0e919a3e354a5748e86620705903c36dc9c773",
   "areas": {
     "foundations": {
       "status": "reviewed",
@@ -16,7 +16,7 @@
     },
     "copy": {
       "status": "reviewed",
-      "rationale": "Read Naming and Voice & Tone in full. Applied owner copy for Numeric, Grid, Triangles, Union and Artemis; Circles and frit context remain evidence-led. Established Rensselaer Union name is permitted. BOROMIR credit is visible in all themes.",
+      "rationale": "About Gradient now explicitly distinguishes halving light values from logarithmic display widths, and identifies the schematic limitation. Other requested descriptions and source credits are preserved. Full Naming and Voice & Tone sources remain the basis.",
       "sources": [
         "naming-conventions",
         "voice-tone"
@@ -24,7 +24,7 @@
     },
     "interface": {
       "status": "reviewed",
-      "rationale": "Retired Lines and Point Connect from picker and Home, preserving safe route/query/snapshot fallback. Existing fonts, palette, disclosure semantics and input filtering remain. Chromium and WebKit keyboard/mobile checks and measured About contrast passed.",
+      "rationale": "Gradient returns to Static with only its variant control: Loop, Speed, Reverse and GIF are removed. Legacy motion fields cannot revive animation. Keyboard/390px layout, Randomize/Undo/reset and actual SVG/PNG downloads pass in Chromium and WebKit. Other changed cards retain the earlier focused coverage.",
       "sources": [
         "design-principles",
         "color",
@@ -34,7 +34,7 @@
     },
     "bar-and-exports": {
       "status": "reviewed",
-      "rationale": "Read official geometry and Pattern guidance. Owner chose 21 solid steps with width ratio 2:1 on November 18 after scientific clarification. Fixed geometry, one ink, no opacity blending or fitted edges. Shared preview/header/GIF geometry; existing resting SVG/PNG semantics retained. Extremely narrow steps are honestly documented as subpixel at normal raster size. Screenshot feedback exposed the fixed-gap tail; gaps now halve with the steps at 1/8 preceding width. Both finite sums are normalized once. Chromium and WebKit raster probes of the resting 1000px bar detect visible ink in the final column (999), with all 21 widths still halving.",
+      "rationale": "The owner rejected the literal-width/compressed-gap candidate and requested static, logical, readable artwork. Twenty-one relative light levels 2^-n span 20 stops; a documented log2(1 + I/Imin) width display makes them readable. Fixed evenly spaced centers use natural endpoint tangency. No opacity blending, edge strips, fitting, new asset or calibrated measurement is claimed. Preview/header/SVG/PNG/Home share static geometry; legacy phases are ignored and GIF is unavailable.",
       "sources": [
         "logo-system",
         "the-bar",
@@ -103,12 +103,12 @@
       "B09",
       "B10"
     ],
-    "disposition": "B01 retains formal-review questions. The owner selected discrete single-ink halving-width steps for #215 on November 18; see the appended scoped decision. Circles Gradient and Artemis artwork are unchanged. Other B01–B10 boundaries remain unchanged, with no new asset, lockup, palette or permission assumption."
+    "disposition": "B01 retains institutional-review questions. The final November 18 owner direction supersedes the initial literal-width candidate: static primitive steps with halving light values, explicit logarithmic width display and no Gradient motion/GIF. See the appended conflict-register note. B02–B10 boundaries and existing asset/approval questions remain unchanged."
   },
   "requiresFormalApproval": false,
   "approvalStatus": "not-required-for-scoped-software-and-copy-changes",
-  "approvalRationale": "The owner authorized the issue batch and explicitly selected solid primitive width steps. This replaces the prior stripe algorithm without adding a blended gradient, asset or organizational lockup. Copy-only changes do not certify institutional artwork. Existing formal RPI approval questions remain open.",
-  "approvalEvidence": "November 18 implementation-session reply: Use 21 solid steps with halving widths. #223 and #226 provide the requested organizational and artwork attribution. No formal RPI approval is claimed.",
+  "approvalRationale": "Owner-authorized software/copy correction uses static single-ink primitive geometry and adds no asset, palette or organizational lockup. Existing institutional approval questions stay open.",
+  "approvalEvidence": "November 18 session: owner requested removal of motion, rejected the compressed candidate and directed that the bar be logical and look nice. The final documented interpretation preserves 21 exposure steps with an explicit logarithmic display. No formal RPI approval claimed.",
   "publicationScope": "Owner-requested single PR for issues #212, #213, #215, #216, #219, #220, #221, #222, #223 and #226, including code, status/science/source records and original application review screenshots. No merge authorized in this session.",
   "checks": [
     {
@@ -119,22 +119,22 @@
     {
       "name": "unit-tests",
       "result": "passed",
-      "evidence": "All 1,296 tests in 107 Jest suites passed after changes; final npm pretest and test invocation is recorded in the PR."
+      "evidence": "All 1,290 tests in 107 Jest suites passed for the static revision; retired animation-specific expectations are replaced with static/legacy-motion/GIF-unavailable regressions."
     },
     {
       "name": "rendered-ui",
       "result": "passed",
-      "evidence": "Focused Chromium and Playwright WebKit HTTP checks passed for all eight changed descriptions, keyboard Enter disclosure, four 390px copy layouts, retired routes and local saved snapshots, and absence from Home. About text contrast measured 18.10:1 in Gray on Black. Desktop/mobile screenshots inspected; project-only samples retained in references/review-images/bar-descriptions/. Follow-up proportional-gap artwork checked in Chromium and WebKit at desktop and 390px; resting bar rasterized at 1000px reaches column 999 in both engines. Gradient review image refreshed."
+      "evidence": "Final static Gradient checked in Chromium and Playwright WebKit at 1440px and 390px. Both layouts stay unchanged over time and after historical motion restoration; no Loop/Speed/Reverse/GIF controls appear. Keyboard variant edits, reset/randomize/Undo pass. Screenshots inspected and Gradient review image refreshed. Earlier all-eight-card keyboard/mobile/18.10:1 About-contrast checks remain applicable to the untouched cards."
     },
     {
       "name": "preview-export-parity",
       "result": "passed",
-      "evidence": "Chromium gradientMotionSmoke passes both variants, shared geometry, phase/share/Undo, reverse, reduced motion, mobile keyboard, touch/2D fallback, static Home and actual SVG/PNG/GIF downloads. SVG source equality checked; PNG signature, dimensions and contained alpha bounds checked; composited on white and inspected. 500 GIF frames decoded with transparent disposal and changing artwork, total 10 seconds. Unit regressions compare GIF painted rectangles with shared phase geometry. Still exports retain documented resting phase. Gradient smoke repeated successfully after proportional-gap correction, with new SVG/PNG and decoded 500-frame GIF output."
+      "evidence": "Final Chromium/WebKit static smoke verifies both variants, ignored legacy phases, exact SVG download source, actual PNG signature, and shared static geometry. A 1000px raster probe resolves all 21 separate stripes and detects ink in the final column 999. Home SVG stills recaptured. Gradient GIF eligibility and controls are removed, so no final Gradient GIF is claimed. Earlier animated candidate evidence is historical only."
     },
     {
       "name": "user-acceptance",
       "result": "pending",
-      "evidence": "Owner selected the width interpretation; acceptance of the implemented batch and tested revision remains pending. No native Safari, physical-device, screen-reader or medical photosensitivity certification claimed."
+      "evidence": "The owner rejected the preceding visual revisions. Acceptance of the final static logarithmic display is pending. Browser/automated checks do not establish native Safari, physical-device, screen-reader, photosensitivity or institutional approval."
     }
   ]
 }

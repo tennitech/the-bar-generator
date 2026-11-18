@@ -2,27 +2,31 @@ const { createGradientPatternGeometry, createBarPatternSVG } = require('../js/ut
 const { advanceLiveLoopPhase, getLoopingGifFramePlan, getLoopingAnimationState, normalizeLoopSpeed } = require('../js/utils/loopingGif');
 const marquee = require('../js/utils/marqueeAnimation');
 
-test.each([1, 2])('Gradient %s preserves its 21 halving width steps and containment throughout a seamless loop', variant => {
+test.each([1, 2])('Gradient %s shows 21 logarithmic light levels and ignores historical phases', variant => {
   const options = {variant, barStartX:13, barY:7, exactBarWidth:500, barHeight:36};
   const original = createGradientPatternGeometry(options).rects;
   expect(original).toHaveLength(variant === 1 ? 21 : 63);
   const columns = original.filter((_, index) => variant === 1 || index % 3 === 0);
   expect(columns).toHaveLength(21);
-  for (let i = 1; i < columns.length; i++) {
-    expect(columns[i - 1].width / columns[i].width).toBeCloseTo(2, 12);
-    expect(columns[i].x).toBeGreaterThan(columns[i - 1].x + columns[i - 1].width);
-    expect(columns[i].x - columns[i - 1].x - columns[i - 1].width)
-      .toBeCloseTo(columns[i - 1].width / 8, 10);
+  for (let i = 0; i < columns.length; i++) {
+    const relativeLight = 2 ** -i;
+    const minimumLight = 2 ** -20;
+    expect(columns[i].width / columns[0].width)
+      .toBeCloseTo(Math.log2(1 + relativeLight / minimumLight) / Math.log2(1 + 1 / minimumLight), 12);
+    if (i > 0) {
+      expect(columns[i].width).toBeLessThan(columns[i - 1].width);
+      expect(columns[i].x).toBeGreaterThan(columns[i - 1].x + columns[i - 1].width);
+    }
   }
-  expect(columns[0].width / columns[20].width).toBe(2 ** 20);
-  // At rest, steps thinner than one reference unit and their proportional
-  // gaps occupy less than 2.5 units, instead of a long run of fixed gaps.
-  const visible = columns.filter(r => r.width >= 1);
-  expect(513 - Math.max(...visible.map(r => r.x + r.width))).toBeLessThan(2.5);
+  const pitches = columns.slice(1).map((r, i) => r.x + r.width / 2 - columns[i].x - columns[i].width / 2);
+  pitches.forEach(pitch => expect(pitch).toBeCloseTo(pitches[0], 10));
+  expect(columns[20].width).toBeGreaterThan(.5); // One pixel at a 1000px bar.
+  expect(columns[0].x).toBeCloseTo(13, 10);
+  expect(columns[20].x + columns[20].width).toBeCloseTo(513, 10);
   for (const phase of [undefined, 0, 1, -1, NaN, Infinity]) {
     expect(createGradientPatternGeometry({...options, gradientPhase:phase}).rects).toEqual(original);
   }
-  expect(createGradientPatternGeometry({...options, gradientPhase:.25}).rects).not.toEqual(original);
+  expect(createGradientPatternGeometry({...options, gradientPhase:.25}).rects).toEqual(original);
   for (let frame = 0; frame < 120; frame++) {
     const rects = createGradientPatternGeometry({...options, gradientPhase:frame/120}).rects;
     rects.forEach((rect,index) => {
@@ -37,33 +41,30 @@ test.each([1, 2])('Gradient %s preserves its 21 halving width steps and containm
   before.forEach((rect,i) => expect(Math.abs(rect.width-after[i].width)).toBeLessThan(1e-5));
 });
 
-test('Gradient live and GIF transport share rate, direction and the same phase at all supported speeds', () => {
-  for (const gradientSpeed of [.02,.1,.2,.3,.4]) for (const gradientReverse of [false,true]) {
-    const values = {gradientSpeed,gradientReverse};
-    const plan = getLoopingGifFramePlan('gradient',values);
-    expect(plan.periodSeconds).toBeCloseTo(1/gradientSpeed);
-    const direction = gradientReverse ? -1 : 1;
-    const next = advanceLiveLoopPhase(.5,'gradient',values,16);
-    expect(next).toBeCloseTo(.5 + direction*gradientSpeed*.016);
-    const state = getLoopingAnimationState('gradient',values,{phase:next});
-    const phase = ((state.timeSeconds*gradientSpeed)%1+1)%1;
-    expect(phase).toBeCloseTo(next);
-    expect(plan.getTimeSeconds(.25)*gradientSpeed).toBeCloseTo(direction*.25);
-  }
-  expect(normalizeLoopSpeed('gradient',999)).toBe(.4);
-  expect(normalizeLoopSpeed('gradient','bad')).toBe(.1);
+test('Gradient cannot animate or export a looping GIF, even with legacy motion settings', () => {
+  const { isLoopingGifEligibleStyle } = require('../js/utils/loopingGif');
+  expect(isLoopingGifEligibleStyle('gradient')).toBe(false);
+  expect(getLoopingGifFramePlan('gradient', { gradientSpeed: .4, gradientReverse: true })).toBeNull();
+  const fs = require('node:fs'), vm = require('node:vm');
+  const source = fs.readFileSync(require.resolve('../js/main'), 'utf8');
+  const context = { normalizeStyleValue: x => x, currentShader: 17, MOTION_ENABLED_BY_STYLE: {ticker:true, waveform:true} };
+  vm.runInNewContext(source.slice(source.indexOf('function styleSupportsMotion('), source.indexOf('function getMotionControlConfig(')), context);
+  expect(context.styleSupportsMotion('gradient')).toBe(false);
+  expect(context.getCurrentMotionStyle()).toBeNull();
+  const html = fs.readFileSync(require.resolve('../generator/index.html'), 'utf8');
+  expect(html).not.toMatch(/id="gradient-(motion-toggle|speed-slider|reverse-toggle)"/);
 });
 
-test('Gradient SVG consumes the explicit phase while marquee samples opt out of individual motion', () => {
+test('Gradient SVG ignores historical phases and Home remains static', () => {
   const config = {currentShader:17,barStartX:0,barY:0,exactBarWidth:250,barHeight:18,fgColor:'#000000',values:{gradientVariant:2}};
   const resting = createBarPatternSVG(config);
   const moving = createBarPatternSVG({...config,values:{...config.values,gradientPhase:.25}});
-  expect(moving).not.toBe(resting);
+  expect(moving).toBe(resting);
   expect(moving).not.toMatch(/opacity|linearGradient|NaN|undefined/);
   expect(marquee.createSettings({value:'gradient',query:'gradientVariant=2'})).toBeNull();
 });
 
-test.each(['gradient', 'ticker'])('%s resets its motion clock on every Loop change', style => {
+test.each(['ticker'])('%s resets its motion clock on every Loop change', style => {
   const fs = require('node:fs'), vm = require('node:vm');
   const source = fs.readFileSync(require.resolve('../js/main'), 'utf8');
   const context = {
@@ -85,31 +86,6 @@ test.each(['gradient', 'ticker'])('%s resets its motion clock on every Loop chan
   context.setMotionEnabledForStyle(style, false);
   expect(context.resetAnimationClock).toHaveBeenCalledTimes(4);
 });
-
-test.each([1,2])('Gradient %s GIF renderer paints the shared geometry at every captured phase', variant => {
-  const fs=require('node:fs'), vm=require('node:vm');
-  const source=fs.readFileSync(require.resolve('../js/drawing'),'utf8');
-  const rectangles=[];
-  const ctx={setTransform(){},clearRect(){rectangles.length=0;},save(){},restore(){},scale(){},translate(){},fill(){},beginPath(){},rect(){},clip(){},
-    fillRect(...args){rectangles.push(args);},getImageData(){return rectangles.map(rect=>[...rect]);}};
-  const context={document:{createElement:()=>({getContext:()=>ctx})},Path2D:class {},createGradientPatternGeometry};
-  vm.runInNewContext(source.slice(source.indexOf('function createCapturedGifRenderer('),source.indexOf('function startLogoDownload(')),context);
-  for(const gradientReverse of [false,true]) {
-    const values={gradientVariant:variant,gradientSpeed:.2,gradientReverse};
-    const plan=getLoopingGifFramePlan('gradient',values);
-    const geometry={width:250,barY:132.4885,barHeight:18,exportPadding:20,paths:{r:'',p:'',i:''}};
-    const renderer=context.createCapturedGifRenderer({currentShader:17,family:'gradient',values,
-      foreground:'#000000',dimensions:{width:1160,height:762,scale:4},geometry,
-      composition:'logo',viewport:{x:-20,y:-20,width:290,height:190.4885}},plan);
-    for(const phase of [0,.125,.25,.5,.75,1]) {
-      const actual=renderer.renderFrame(0,phase);
-      const expected=createGradientPatternGeometry({variant,barY:geometry.barY,gradientPhase:phase*(gradientReverse?-1:1)}).rects;
-      expect(actual).toEqual(expected.map(rect=>[rect.x,rect.y,rect.width,rect.height]));
-    }
-    renderer.release();
-  }
-});
-
 
 test.each([[1,'gradient.svg'],[2,'gradient-1.svg']])('Gradient %s phase zero exactly retains the shipped Home sample', (variant,file) => {
   const fs=require('node:fs'), path=require('node:path');

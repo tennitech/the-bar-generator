@@ -14,7 +14,7 @@ test.each(['logo', 'bar'])('SVG source and geometry stay identical at both %s ra
   }
 });
 
-test.each(['ticker', 'waveform', 'gradient', 'wave-quantum'])('%s snapshot uses GIF pixels without changing PNG selection', family => {
+test.each(['ticker', 'waveform', 'wave-quantum'])('%s snapshot uses GIF pixels without changing PNG selection', family => {
   const r = createRuntime({ loopingGifUtils: require('../js/utils/loopingGif') });
   r.select(family);
   for (const composition of ['logo', 'bar']) for (const size of ['standard', 'large']) {
@@ -131,7 +131,7 @@ test('composition choices have native radio semantics, visible labels and hidden
   expect(options.dimensions('large', geometry)).toEqual(options.dimensions('large', geometry, 'logo'));
 });
 
-test.each(['ticker', 'waveform', 'gradient'])('%s bar-only GIF remains offered and uses the download-request path', async family => {
+test.each(['ticker', 'waveform'])('%s bar-only GIF remains offered and uses the download-request path', async family => {
   const fills = [];
   const ctx = Object.fromEntries(['setTransform', 'clearRect', 'save', 'scale', 'translate', 'beginPath', 'rect', 'clip', 'fillRect', 'restore']
     .map(name => [name, () => {}]));

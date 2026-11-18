@@ -1055,13 +1055,6 @@ function createCapturedGifRenderer(snapshot, framePlan) {
         for (let i = 1; i < polygon.length; i++) ctx.lineTo(polygon[i].x, polygon[i].y);
         ctx.closePath(); ctx.fill();
       }
-    } else if (snapshot.currentShader === 17) {
-      const pattern = createGradientPatternGeometry({
-        barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,
-        variant: values.gradientVariant,
-        gradientPhase: framePlan.getTimeSeconds(progress) * values.gradientSpeed
-      });
-      pattern.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
     } else {
       const markup = createBarPatternSVG({ currentShader: 4, currentColorMode: snapshot.colorMode,
         barStartX: 0, barY: geometry.barY, exactBarWidth: geometry.width, barHeight: geometry.barHeight,

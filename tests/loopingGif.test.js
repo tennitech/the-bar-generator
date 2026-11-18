@@ -211,7 +211,7 @@ test('native controls and runtime speed policy agree without changing saved defa
 });
 
 // Exercise actual selectable rates rather than only the default frame count.
-test.each(['ticker', 'waveform', 'gradient'])('%s exports with 20 ms minimum encoded delays across its speed range without shortening loops', style => {
+test.each(['ticker', 'waveform'])('%s exports with 20 ms minimum encoded delays across its speed range without shortening loops', style => {
   const { frameTiming } = require('../js/utils/transparentGif');
   const limits = getLoopSpeedLimits(style);
   for (const speed of [limits.min, limits.default, limits.max]) {

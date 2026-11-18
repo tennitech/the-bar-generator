@@ -9,18 +9,15 @@ Home and the picker; their old paths, query links and v1 saves recover to Solid
 while preserving other valid settings. Historical source/reference art and
 low-level geometry remain for compatibility.
 
-Gradient now uses 21 solid width steps with an exact 2:1 ratio. The owner chose
-this interpretation after the distinction from inverse-square physics was
-explained. The owner's screenshot review found that constant gaps left an apparently
-short bar once the final steps fell below pixel resolution. Gaps now halve
-with the widths, at one eighth of each preceding step, with no trailing gap.
-The two geometric sums define the layout once in the fixed viewport; no
-extra edge strips, minimum-width paint or per-frame fitting is introduced.
-Both existing layouts use the same progression; motion scales widths
-uniformly around fixed centers. Still exports remain resting artwork, while
-preview/header/GIF share the animated geometry. Home's two SVG stills are
-recaptured. Thin steps naturally become subpixel in raster output, so inspect
-complex patterns at final size. No new library, runtime asset or palette is added.
+Gradient is now in Static: no Loop, Speed, Reverse or GIF export. Historical
+motion settings and phases cannot animate it. The owner rejected the literal-
+width/proportional-gap candidate and asked for a logical, readable pattern.
+Its 21 levels still represent successive halvings of light across 20 stops,
+but widths now use a documented soft-logarithmic display scale. Evenly spaced
+centers, visible dark-end stripes and natural endpoint tangency keep the
+composition distributed across the fixed viewport. Both layouts, SVG, PNG,
+header and Home share the same geometry. This supersedes earlier motion,
+fixed-gap and proportional-gap descriptions in this batch's history.
 
 Browser validation also exposed saved phases being reset by restored Loop
 control events. Those events now preserve the already restored motion clock;
@@ -31,20 +28,23 @@ Model, source and approval boundaries are in [bar science notes](bar_science_not
 in [the conflict register](brand_conflicts.md). Formal RPI approval and broader
 asset permissions remain open. User acceptance of this batch is pending.
 
-Validation covers 1,296 Jest tests in 107 suites; focused Chromium/WebKit
+The static revision passes 1,290 Jest tests in 107 suites, replacing the
+retired Gradient motion expectations. Validation also includes focused Chromium/WebKit
 checks of all eight revised cards, keyboard disclosure, 390px layouts, measured
 18.10:1 About text contrast in Gray on Black, retired paths/saves and Home.
-Chromium Gradient checks cover both variants, motion/reverse/reduced motion,
-query/share/Undo/reset, touch/2D fallback, SVG/PNG downloads and a decoded
-500-frame, 10-second transparent GIF. Actual desktop/mobile screenshots and
+Earlier animated-candidate checks included GIF decoding. Final static Gradient
+checks cover both variants, absent motion/GIF controls, ignored legacy settings,
+unchanged geometry over time, keyboard/phone layout, SVG/PNG downloads and
+Reset/Randomize/Undo in Chromium and Playwright WebKit. Actual desktop/mobile screenshots and
 PNG output were inspected. This is not native Safari, physical-device,
 photosensitivity certification or institutional approval.
 
 Initial checks exposed stale test assumptions: the Gradient smoke hard-coded
 72 GIF frames, the broad browser smoke matched temporary entrance canvases,
 and the About smoke tried a Mission Control theme on Ring Wavefunction.
-The checks now use the export frame plan, the p5 artwork canvas and Artemis
-before Mission Control selection. The native npm cache was incomplete; a
+Those earlier fixture repairs used the export frame plan, p5 artwork canvas
+and Artemis before Mission Control selection. The final Gradient smoke instead
+verifies the static contract and SVG/PNG output. The native npm cache was incomplete; a
 standalone npm 10.9.4 under /tmp runs the unchanged repository commands with
 Node 22.23.5, without modifying application dependencies.
 

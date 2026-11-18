@@ -27,7 +27,7 @@ test.each(['ticker', 'waveform', 'gradient', 'wave-quantum'])('%s displays one t
 });
 
 test('all formerly valid rates keep their physical meaning, including fractional new speeds', () => {
-  for (const [style, maximum] of [['ticker', .8], ['waveform', 1], ['gradient', .3]]) {
+  for (const [style, maximum] of [['ticker', .8], ['waveform', 1]]) {
     for (let value = .2; value <= maximum + 1e-9; value += .1) {
       expect(normalizeLoopSpeed(style, value)).toBeCloseTo(value, 9);
     }
@@ -38,9 +38,9 @@ test('all formerly valid rates keep their physical meaning, including fractional
   }
 });
 
-test('retained Waveform LFO settings cannot alter Gradient or Ticker GIFs', () => {
+test('retained Waveform LFO settings cannot alter Ticker GIFs', () => {
   const settings = { waveformLfo: true, waveformLfoRate: .07, waveformLfoDepth: 100 };
-  for (const style of ['ticker', 'gradient']) {
+  for (const style of ['ticker']) {
     const actual = getLoopingGifFramePlan(style, settings), expected = getLoopingGifFramePlan(style, {});
     for (const key of ['periodSeconds', 'frameCount', 'repeatWidth', 'frameDelayMs']) expect(actual[key]).toBe(expected[key]);
     for (const phase of [0, .25, .5, 1]) {

@@ -24,7 +24,7 @@
   <script src="js/utils/customDropdowns.js?v=20261110-picker-tab-focus"></script>
   <script src="js/utils/parameterControls.js?v=20261118-bar-batch"></script>
   <script src="js/utils/rulerScale.js?v=20261103-resting-motion-ruler"></script>
-  <script src="js/utils/loopingGif.js?v=20261111-quantum-studies-r2"></script>
+  <script src="js/utils/loopingGif.js?v=20261118-static-gradient"></script>
   <script src="js/utils/featherIcons.js?v=20261104-parameter-action-recovery"></script>
   <script src="js/utils/numericControls.js?v=20261103-save-removal"></script>
   <script src="js/utils/shareState.js?v=20261118-bar-batch"></script>
@@ -34,7 +34,7 @@
   <script src="js/utils/waveformNotes.js?v=20261111-waveform-notes-r2"></script>
   <script src="js/utils/dataGraph.js?v=20261111-data-graph-r3"></script>
   <script src="js/utils/dataGraphControls.js?v=20261111-data-graph-r3"></script>
-  <script src="js/utils/barPattern.js?v=20261118-halving-gaps"></script>
+  <script src="js/utils/barPattern.js?v=20261118-static-gradient"></script>
   <script src="js/utils/tickerDisplay.js"></script>
   <script src="js/utils/profanityFilter.js?v=20261103-save-removal"></script>
   <script src="js/utils/motionSpeed.js?v=20261111-quantum-studies-r2"></script>
@@ -210,7 +210,6 @@
                   <option value="binary">Binary</option>
                   <option value="circles">Circles</option>
                   <option value="circles-gradient">Circles Gradient</option>
-                  <option value="gradient">Gradient</option>
                   <option value="morse">Morse Code</option>
                   <option value="neural-network">Neural Network</option>
                   <option value="nucleotide">Nucleotide</option>
@@ -223,6 +222,7 @@
                 </optgroup>
                 <optgroup label="Static">
                   <option value="fibonacci-sequence">Fibonacci Sequence</option>
+                  <option value="gradient">Gradient</option>
                   <option value="grid">Grid</option>
                   <option value="solid">Solid</option>
                   <option value="triangles">Triangles</option>
@@ -797,22 +797,6 @@
             <input type="range" id="gradient-variant-slider" data-url-parameter="gradientVariant" min="1" max="2" value="1" class="control-slider"
               aria-label="Gradient Variant">
           </div>
-          <div class="runtime_section motion_section">
-            <div class="control-header">MOTION</div>
-            <div class="control control_row control_row-toggle">
-              <label for="gradient-motion-toggle" class="control-label control_row-label">LOOP</label>
-              <label class="switch"><input type="checkbox" id="gradient-motion-toggle" checked aria-label="Loop gradient animation"><span class="slider round"></span></label>
-            </div>
-            <div class="control control_row control_row-toggle">
-              <label for="gradient-reverse-toggle" class="control-label control_row-label">REVERSE</label>
-              <label class="switch"><input type="checkbox" id="gradient-reverse-toggle" data-url-parameter="gradientReverse"><span class="slider round"></span></label>
-            </div>
-            <div class="control slider-control runtime_speed-control">
-              <label for="gradient-speed-slider" class="control-label">SPEED <span id="gradient-speed-display" data-slider-value>1×</span></label>
-              <input type="range" id="gradient-speed-slider" data-url-parameter="gradientSpeed" min="0.02" max="0.4" step="0.001" value="0.1" class="control-slider" aria-label="Gradient motion speed" aria-describedby="gradient-speed-unit">
-              <p id="gradient-speed-unit" class="u-sr-only">0.2–4× default speed<span class="u-sr-only">. Drag gently snaps at 0.5×, 1× and 2×; type or use keys for fine adjustments.</span></p>
-            </div>
-          </div>
         </div>
 
         <div id="grid-group" data-parameter-actions="grid" class="control-group" style="display: none;">
@@ -1123,15 +1107,15 @@
   <script src="js/utils/transparentGif.js?v=20261110-ring-release"></script>
   <script src="js/utils/embedSupport.js?v=20261103-save-removal"></script>
   <script src="js/utils/exportUi.js?v=20261111-quantum-studies-r2"></script>
-  <script src="js/utils/barInformation.js?v=20261118-bar-batch"></script>
+  <script src="js/utils/barInformation.js?v=20261118-static-gradient"></script>
   <script>BarInformation.sync();</script>
   <script src="js/utils/animationPalette.js?v=20261103-save-removal"></script>
   <script src="js/utils/secretIntro.js?v=20261103-intro-dropdown"></script>
   <script src="js/utils/keyboardShortcuts.js?v=20261111-menu-consistency"></script>
   <script src="js/utils/inputLimitFeedback.js?v=20261110-input-limit-feedback"></script>
-  <script src="js/main.js?v=20261118-bar-batch"></script>
+  <script src="js/main.js?v=20261118-static-gradient"></script>
   <script src="js/utils/logoClipboard.js?v=20261110-export-composition-r2"></script>
-  <script src="js/drawing.js?v=20261117-loop-controls"></script>
+  <script src="js/drawing.js?v=20261118-static-gradient"></script>
   <script>
     if (typeof window.p5 !== 'function') {
       document.getElementById('p5-container').innerHTML =

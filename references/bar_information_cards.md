@@ -26,8 +26,9 @@ Sources inspected November 18, 2026:
   omits the proposed guarantee against cracking in extreme weather; this tool
   has no thermal model or material parameters.
 - Gradient: [DSC Labs Xyla 21](https://dsclabs.com/products/xyla-21) specifies
-  21 steps over 20 stops. The owner explicitly chose width halvings as a
-  schematic analogy, not inverse-square physics; equations and raster limits
+  21 steps over 20 stops. Following visual review, the owner asked for static,
+  logical, readable artwork. Light values halve per step, with an explicitly
+  logarithmic width display rather than literal width halvings; equations and raster limits
   are recorded in [bar science notes](bar_science_notes.md).
 - Artemis: [NASA splashdown](https://www.nasa.gov/gallery/artemis-ii-splashdown-and-recovery/),
   [RPI alumni context](https://news.rpi.edu/2026/03/31/meet-rpi-engineers-guiding-artemis-ii-moon-and-back)

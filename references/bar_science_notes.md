@@ -665,37 +665,39 @@ Authoritative coordinate/tuning sources and exact drawing conventions are in
 borrowed compositions, recordings or measured musical data.
 
 
-## November 18, 2026 exposure-stop width schematic (#215)
+## November 18, 2026 static exposure-step schematic (#215)
 
-This supersedes the earlier linear/centered Gradient width envelopes and
-coordinate-warp motion. The owner selected discrete solid steps with halving
-widths after clarification that widths do not implement the inverse-square law.
-For n = 0…20, resting width is `w[n] = w[0] * 2^(-n)`. Each of the first
-20 steps has a following gap `g[n] = w[n]/8`; there is no trailing gap.
-`w[0] = W / ((2 - 2^(-20)) + (2 - 2^(-19))/8)` normalizes both finite
-geometric sums once to the fixed bar viewport. This supersedes the first
-candidate's constant `0.008W` gaps: those consumed 16% of the width even
-where the intervening stripes were too thin to resolve, visibly shortening
-the bar. Proportional gaps keep the unresolved tail proportionally tiny.
-Variant 1 uses full-height
-rectangles; variant 2 repeats the same 21 columns in three quarter-height rows,
-at y offsets 0, 0.375H and 0.75H. Both are single ink with no opacity blending.
+The final owner direction is to remove Gradient motion and make the pattern
+logical and readable. This supersedes the earlier literal-width and proportional-
+gap candidates, which the owner rejected visually. Gradient has no Loop, Speed,
+Reverse or GIF action. Historical query/share motion settings are ignored;
+restored runtime phases cannot change its geometry. Ticker and Waveform retain
+motion. The two original Gradient layout choices remain available.
 
-Motion multiplies all widths by the common factor
-`1 - 0.35*(1-cos(2πq))*(1+0.3*sin(2πq))`, keeping fixed centers, positive widths,
-2:1 adjacent ratios and a seamless period. It never fits painted bounds per
-frame. Header/live preview and GIF use that shared phase geometry. Existing
-still SVG/PNG exports intentionally use the resting phase, as before this
-change. Home stills are recaptured from the same renderer. Saved motion phases
-are preserved while replaying control events during restoration.
+For step n = 0…20, relative light is `I[n] = 2^(-n)`. These are 21 levels over
+20 stops, inspired by [DSC Labs' Xyla 21](https://dsclabs.com/products/xyla-21),
+inspected November 18, 2026. They are schematic values, not measured camera data.
+Literal width halvings made dark steps subpixel, and collapsing their gaps
+made the composition read as a solid band. The final display uses
+`w[n] = (0.88 W/21) * log2(1 + I[n]/I[20]) / log2(1 + I[0]/I[20])`.
+This soft logarithm is a display transform: light halves at each step; drawn
+widths do not. The About card explicitly identifies the logarithmic scale.
+There is no opacity or color interpolation, brightness calibration or inverse-
+square simulation. The count, maximum-width fraction and display transform
+are documented drawing choices, not Xyla chart dimensions.
 
-[DSC Labs' Xyla 21](https://dsclabs.com/products/xyla-21), inspected November 18,
-2026, has 21 steps spanning 20 f-stops. Here the largest-to-smallest width ratio
-is 2^20, a schematic analogy for successive intensity halvings. Width is not
-luminance; this is neither a calibrated chart nor a light-propagation model.
-At ordinary raster sizes, the narrowest steps are subpixel and cannot all be
-resolved. SVG retains their actual positive widths; no minimum-width clamping,
-extra edge paint or universal size guarantee is added. Review at final size.
+Centers are evenly spaced over `W - (w[0]+w[20])/2`, starting at `w[0]/2`.
+This defines a fixed grid with natural endpoint tangency, without strips,
+clipping circles, painted-bounds fitting or per-frame rescaling. The smallest
+width is approximately 1/20 of the largest, instead of 1/1,048,576, keeping
+all steps readable at ordinary preview sizes. Final placement still requires
+size review; no universal complex-pattern minimum is asserted. Variant 1 has
+full-height stripes. Variant 2 repeats the same 21 columns in three quarter-
+height rows at offsets 0, 0.375H and 0.75H.
+
+Preview, header, SVG, PNG and Home stills use exactly the same static geometry.
+Shared seeds, filtering, official vectors, palette and clear space are unchanged.
+No new artwork, dependency or formal brand approval is introduced.
 
 Circles' About text now explains the actual seeded best-candidate search,
 spacing/edge/local-density scores, smaller-gap filling and πr² area, without

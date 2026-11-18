@@ -705,25 +705,21 @@ function createGradientPatternGeometry(options = {}) {
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
   const variant = clampPatternVariant(options.variant || 1, 2);
-  // Twenty-one width steps encode powers of two, not pixel luminance.
-  // Gaps halve with the steps, so the unresolved tail occupies a tiny part
-  // of the viewport rather than leaving a long run of empty fixed gaps.
+  // Twenty-one light levels I[n] = 2^-n span twenty exposure stops.
+  // A log2(1 + I/Imin) width display keeps the dark-end steps readable;
+  // these are single-ink symbols, not calibrated luminance patches.
   const rects = [];
   const count = 21;
-  const gapRatio = 1 / 8;
-  const widthSum = 2 - 2 ** (1 - count);
-  const gapSum = 2 - 2 ** (2 - count);
-  const firstWidth = exactBarWidth / (widthSum + gapRatio * gapSum);
-  const phase = Number.isFinite(Number(options.gradientPhase)) ? Number(options.gradientPhase) % 1 : 0;
-  const angle = 2 * Math.PI * phase;
-  // Animate one common coverage factor so adjacent widths always retain 2:1.
-  // Centers and the reference viewport stay fixed; no painted-bounds fitting.
-  const coverage = 1 - 0.35 * (1 - Math.cos(angle)) * (1 + 0.3 * Math.sin(angle));
-  let left = barStartX;
+  const maxWidth = exactBarWidth / count * 0.88;
+  const logRange = Math.log2(1 + 2 ** (count - 1));
+  const widthAt = index => maxWidth * Math.log2(1 + 2 ** (count - 1 - index)) / logRange;
+  const firstWidth = widthAt(0);
+  const lastWidth = widthAt(count - 1);
+  // A fixed, evenly spaced center grid with natural endpoint tangency.
+  const centerSpan = exactBarWidth - (firstWidth + lastWidth) / 2;
   for (let i = 0; i < count; i++) {
-    const restingWidth = firstWidth * 2 ** -i;
-    const width = restingWidth * coverage;
-    const x = left + (restingWidth - width) / 2;
+    const width = widthAt(i);
+    const x = barStartX + firstWidth / 2 + i / (count - 1) * centerSpan - width / 2;
     if (variant === 1) {
       rects.push({ x, y: barY, width, height: barHeight, radius: 0 });
     } else {
@@ -732,7 +728,6 @@ function createGradientPatternGeometry(options = {}) {
         rects.push({ x, y: barY + row * barHeight * 0.375, width, height, radius: 0 });
       }
     }
-    left += restingWidth * (1 + (i < count - 1 ? gapRatio : 0));
   }
 
   return { rects };
