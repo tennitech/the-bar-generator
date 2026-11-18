@@ -1,3 +1,17 @@
+# November 18 companion Content Block integration
+
+The user confirmed that PNG and SVG files saved from a custom iframe test
+with explicit download permissions, and subsequently confirmed the installed
+Content Block rendered successfully. This is user evidence for that tested
+configuration, not a guarantee for all browsers or ancestor policies.
+
+The local surface-sync revision sends only existing top/bottom colors and the
+native color scheme after a trusted direct-parent handshake. It does not
+transfer generated files or change export generation, download permissions,
+clipboard delegation or export feedback. Frontify wrapper layout and color
+changes need independent host/device review before release. Earlier dated
+research and its original limitations are retained below.
+
 # Embedded export compatibility
 
 November 3, 2026. Application implementation and fixture verification are

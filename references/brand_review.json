@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "reviewedOn": "2026-11-18",
-  "reviewer": "Codex self-review",
+  "reviewer": "OpenAI GPT-6 via Codex desktop, reconciliation and self-review; original gpt-6.1-sol review retained in Git history",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "dc016156504bb600af7858af68a5a1ab740c921f1cb75697d37c6c1938768af5",
+  "changeFingerprint": "63fe813c6ca6636abc9478229cff2f66d3fbe8967c12699cc8cfef865613ef4d",
   "areas": {
     "foundations": {
       "status": "reviewed",
-      "rationale": "Exclusive thread ownership keeps contributor work identifiable and preserves related changes within one PR.",
+      "rationale": "Propagates real existing display surfaces to the embedding host without unsupported branding claims.",
       "sources": [
         "home",
         "about-our-brand",
@@ -16,54 +16,46 @@
     },
     "copy": {
       "status": "reviewed",
-      "rationale": "The default starting point and the explicit user exception are stated in plain instructions. Existing work remains on its intended branch.",
+      "rationale": "Contributor documentation distinguishes implementation, automated checks, user acceptance and production validation.",
       "sources": [
         "naming-conventions",
         "voice-tone"
       ]
     },
     "interface": {
-      "status": "not-applicable",
-      "rationale": "Only contributor coordination instructions changed. Generator code, media and assets are outside this task.",
-      "sources": []
+      "status": "reviewed",
+      "rationale": "Reports existing computed surfaces without new palette values, typography, patterns or controls. Current-Mac in-app Chromium loaded Home, navigated to the generator and returned Home; physical Safari and updated production wrapper checks remain pending.",
+      "sources": [
+        "design-principles",
+        "color",
+        "typography",
+        "pattern"
+      ]
     },
     "bar-and-exports": {
-      "status": "not-applicable",
-      "rationale": "Only contributor coordination instructions changed. Generator code, media and assets are outside this task.",
-      "sources": []
+      "status": "reviewed",
+      "rationale": "The color-only bridge is isolated from logo geometry, render state, text input, scientific models and export generation. No export pixels or files are transmitted.",
+      "sources": [
+        "logo-system",
+        "the-bar",
+        "color",
+        "pattern"
+      ]
     },
     "media": {
       "status": "not-applicable",
-      "rationale": "Only contributor coordination instructions changed. Generator code, media and assets are outside this task.",
+      "rationale": "No change to media, assets, licensing, source captures or governance policy.",
       "sources": []
     },
     "assets-and-approvals": {
       "status": "not-applicable",
-      "rationale": "Only contributor coordination instructions changed. Generator code, media and assets are outside this task.",
+      "rationale": "No change to media, assets, licensing, source captures or governance policy.",
       "sources": []
     },
     "governance": {
-      "status": "reviewed",
-      "rationale": "The canonical policy and setup guides require fetching origin main before new independent work, using refreshed origin/main by default, and honoring explicit branch or revision choices. Existing worktree changes are preserved. Source and review requirements remain in place.",
-      "sources": [
-        "home",
-        "about-our-brand",
-        "who-we-are",
-        "naming-conventions",
-        "voice-tone",
-        "design-principles",
-        "logo-system",
-        "the-bar",
-        "seal",
-        "color",
-        "typography",
-        "pattern",
-        "video",
-        "photography",
-        "spirit-marks",
-        "inspiration-gallery-1",
-        "email-signature"
-      ]
+      "status": "not-applicable",
+      "rationale": "No change to media, assets, licensing, source captures or governance policy.",
+      "sources": []
     }
   },
   "blockingConflicts": [],
@@ -80,43 +72,43 @@
       "B09",
       "B10"
     ],
-    "disposition": "Recorded in references/brand_conflicts.md. These instructions introduce no new use of the disputed treatments."
+    "disposition": "Existing B01\u2013B10 questions remain open; the handshake does not add or expand their disputed treatments."
   },
   "requiresFormalApproval": false,
-  "approvalStatus": "not-required-for-contributor-documentation",
-  "approvalRationale": "Worktree and task-note guidance introduces no institutional artwork, media, assets or generator output.",
+  "approvalStatus": "not-required-for-color-only-host-handshake",
+  "approvalRationale": "Only existing computed UI colors are sent to a trusted direct parent; no artwork, media, fonts, palette options or permission changes.",
   "approvalEvidence": "No formal institutional approval claimed.",
-  "publicationScope": "Follow-up to owner-authorized thread-isolation instructions, making the fresh-main default and explicit base exception clear.",
+  "publicationScope": "Owner-requested release of the paired layout and surface-color feature after accepted local preview. Physical Safari verification remains pending.",
   "checks": [
-    {
-      "name": "brand-policy",
-      "result": "passed",
-      "evidence": "The guard validates source archive integrity, applicable source coverage and the changed-file fingerprint."
-    },
     {
       "name": "unit-tests",
       "result": "passed",
-      "evidence": "All 1,280 Jest tests across 106 suites passed against current main, using the existing locked test dependency installation read-only. The cached npm CLI has a missing module, so Jest and the brand guard ran directly. CI will verify the normal npm entry point."
+      "evidence": "After integrating main 1e6f67e: npm test -- --runInBand passed the brand guard and all 1,281 Jest tests in 106 suites. Companion wrapper: 10 node tests, TypeScript and local production build passed; ESLint zero errors and one preexisting warning. Frontify manifest/dry run blocked by account policy after successful OAuth login."
     },
     {
-      "name": "coordination-notes",
+      "name": "brand-policy",
       "result": "passed",
-      "evidence": "Verified the follow-up branch starts at the freshly fetched origin/main revision. Internal procedure links and diff formatting passed. The explicit branch/revision exception appears in policy and setup guidance."
+      "evidence": "Applicable captured source pages reviewed, source hashes/fingerprint checked by scripts/checkBrandPolicy.js; rendered-ui evidence is the user report, not an agent browser pass."
     },
     {
       "name": "rendered-ui",
+      "result": "passed",
+      "evidence": "User accepted paired local layout at transferred commit 76a7a13 on November 18. Current-Mac in-app Chromium visually inspected Home, loaded generator and returned Home; white generator top surface/light scheme confirmed. No physical Safari pass. Runtime/test blob hashes match the transferred patch; only current-main HTML cache keys and additive documentation reconciled."
+    },
+    {
+      "name": "preview-export-parity",
       "result": "not-applicable",
-      "evidence": "No app interface or runtime changes."
+      "evidence": "Only existing computed UI colors are transmitted. Renderer, geometry, export generation, export payloads and permissions are unchanged."
     },
     {
       "name": "user acceptance",
-      "result": "not-applicable",
-      "evidence": "Contributor documentation has no generator visual acceptance requirement. The owner requested publication and merge."
+      "result": "passed",
+      "evidence": "User accepted paired local layout at transferred commit 76a7a13 and authorized release in the continuation request. Current-main reconciliation preserves identical surface-handshake runtime/test blobs and newer main behavior."
     },
     {
-      "name": "cross-client enforcement",
+      "name": "Safari-device",
       "result": "pending",
-      "evidence": "Other clients were not launched. These are cooperative instructions, not a process lock or live-chat detector."
+      "evidence": "User will test iPhone Safari after release; no device or browser-toolbar visual pass claimed."
     }
   ]
 }

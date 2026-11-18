@@ -1,3 +1,41 @@
+# November 18 Frontify surface synchronization — layout accepted, Safari pending
+
+The local `fix/frontify-surface-sync` branch adds a versioned color-only
+handshake in `mobileBrowser.js`. A direct parent on `https://brand.rpi.edu`
+(or a localhost HTTP development origin) can request the existing top and
+bottom browser-surface colors. Theme changes and mobile controls update the
+reported values. No logo state, text input, pixels, assets or export files
+are sent, and download/clipboard permissions are unchanged.
+
+The companion Content Block measures available height below the host header
+and uses these values for the outer page background, native color scheme and
+theme-color hint. The generator has to deploy through GitHub Pages before the
+production block can receive the messages. The three HTML entry points use a
+new mobileBrowser cache key. Renderer and export code are unchanged.
+
+Unit checks cover the trusted-parent handshake and existing surface selection.
+The user tested the paired local host-layout preview and confirmed on
+November 18 that the layout works. This acceptance covers the local revision
+with the color-only bridge and responsive wrapper. Browser automation was
+blocked by origin permissions on the transfer Mac; Safari toolbar appearance and authenticated
+Frontify verification remain pending until the feature is live. No merge or
+public deployment of this branch is claimed. The host fixture is separate
+from an authenticated Frontify test.
+
+On this Mac, the transfer was reconciled onto current main `822e1f9` in a
+separate worktree, then integrated documentation-only main `1e6f67e`. The existing retired-style and Home script versions are
+preserved; the generator runtime/test blobs match the transferred candidate.
+Only HTML cache keys and additive documentation needed reconciliation. The
+November 18 layout acceptance of transferred commit `76a7a13` still applies
+to this behavior. Current-Mac checks and release results are recorded in the PR.
+
+The companion wrapper passes 10 regression tests, TypeScript and a local
+production build with only `index.js` and `style.css`. ESLint reports zero
+errors and the existing iframe-sandbox warning. OAuth login succeeds, but
+Frontify rejects manifest validation and the CLI dry run with
+`policy 'account' not fulfilled`. No wrapper upload or publication was
+attempted after that rejection; paired production verification remains blocked.
+
 # RPI Logo Generator - Project Status & Master Documentation
 
 ## November 18 thread ownership and worktree isolation
