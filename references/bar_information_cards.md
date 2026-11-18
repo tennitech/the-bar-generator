@@ -1,5 +1,43 @@
 # Bar information cards
 
+## November 18, 2026 related issue batch
+
+Issues #212, #213, #216, #219, #222, #223 and #226 revise the About copy
+for Circles, Circles Gradient, Numeric, Grid, Triangles, Union and Artemis II.
+The final owner direction for #215 retires Gradient entirely, alongside Lines
+and Point Connect from #220/#221. All three leave Home, selection and About. Legacy entry routes and snapshots recover to Solid.
+
+Numeric uses the owner's requested Dot Matrix explanation; Height Encoding's
+existing control and behavior remain. Grid and Triangles omit their requested
+closing disclaimers. Union uses the owner's supplied organizational attribution,
+“The official bar of the Rensselaer Union.” This supersedes the older motif-only
+copy below without creating a new lockup or asserting institutional approval of
+the generator. Artemis credits BOROMIR and Maeve Marshall in its primary About
+text in every theme, retaining the existing links and Mission Control credit.
+
+Sources inspected November 18, 2026:
+
+- Circles: `calculatePhaseParameters`, `executePackingPhase`,
+  `calculatePlacementScore` and `executeGapFillingPhase` in `js/main.js`;
+  bounded output caveats remain in [bar science notes](bar_science_notes.md).
+  The existing Collins/Stephenson comment is not used to invent a named theorem.
+- Circles Gradient: [NuVision Auto Glass' frit explanation](https://www.nuvisionautoglass.com/guide/what-are-the-black-dots-on-my-windshield/)
+  supports ceramic dot transitions and manufacturing distortion context. Copy
+  omits the proposed guarantee against cracking in extreme weather; this tool
+  has no thermal model or material parameters.
+- Gradient is retired under the owner's final instruction. Previous exposure-
+  step interpretations remain in Git history and are no longer About copy or
+  generator behavior. Original source/reference records remain historical.
+- Artemis: [NASA splashdown](https://www.nasa.gov/gallery/artemis-ii-splashdown-and-recovery/),
+  [RPI alumni context](https://news.rpi.edu/2026/03/31/meet-rpi-engineers-guiding-artemis-ii-moon-and-back)
+  and [BOROMIR's own README](https://github.com/the-astronot/boromir/blob/main/README.md),
+  alongside the owner's attribution in #226. No artwork or license is added.
+
+These changes preserve existing disclosure semantics, textContent insertion,
+fonts, palette, source links and profanity protections. Existing institutional
+approval and asset-permission questions remain open; see the scoped owner
+interpretation in [the conflict register](brand_conflicts.md).
+
 ## November 11 concise-copy update
 
 The current inventory has 22 selectable styles. Copy now ranges from 14 to 58

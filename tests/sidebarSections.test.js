@@ -95,7 +95,7 @@ test('audio controls sit beside the About disclosure without a Preview section',
 
 
 test('speed range descriptions stay accessible without visible helper spacing in every dynamic style', () => {
-  for (const style of ['ticker', 'quantum', 'waveform', 'gradient']) {
+  for (const style of ['ticker', 'quantum', 'waveform']) {
     expect(html).toMatch(new RegExp(`aria-describedby="${style}-speed-unit"`));
     expect(html).toMatch(new RegExp(`<p id="${style}-speed-unit" class="u-sr-only">0.2–4× default speed`));
   }

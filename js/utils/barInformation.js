@@ -43,11 +43,11 @@
   },
   "circles": {
     "title": "Circles",
-    "text": "A packing process arranges circles within the bar. Adjust density, size variation and fill to change the balance of circles and open space. No external data is encoded."
+    "text": "A best-candidate packing process tests circle positions and scores the space around them, then fills smaller gaps. Circle area follows πr². Density and size variation control the search; the result is a geometric arrangement, not a mathematically optimal packing."
   },
   "numeric": {
     "title": "Numeric",
-    "text": "Encode a decimal value or formula approximation as dots or heights. The sign is omitted; zero cells stay empty in Dot Matrix. This encodes digits, not an external measurement."
+    "text": "Encode a decimal value or formula approximation as dots. The number of dots per column refers to the numeral. A lone dot at the bottom of the column represents a decimal point."
   },
   "neural-network": {
     "title": "Neural Network",
@@ -55,23 +55,11 @@
   },
   "circles-gradient": {
     "title": "Circles Gradient",
-    "text": "Circle area and spacing create an apparent shift in tone in one color. Choose reference rows, a ramp or a center peak, then adjust the geometry. No color blending or measured data is used."
-  },
-  "gradient": {
-    "title": "Gradient",
-    "text": "Stripe widths create an apparent shift in tone in one color. Choose a tapered or centered pattern, then animate its coverage. No color blending or measured data is used."
-  },
-  "lines": {
-    "title": "Lines",
-    "text": "Evenly spaced strokes follow a repeating height envelope. Switch variants to change line density. The wave-like silhouette is geometry, not recorded sound or motion."
-  },
-  "point-connect": {
-    "title": "Point Connect",
-    "text": "Crossing lines connect the corners and midpoints of repeated cells. Variants change connection density. This geometric motif is not a tested engineering model."
+    "text": "Inspired by ceramic frit on automotive glass, halftone circles create an apparent gradient in one color. Dark ceramic heats faster than clear glass during manufacturing; a gradual dot pattern softens that temperature transition and helps reduce optical distortion, or “lensing.” This pattern illustrates the idea without simulating heat flow."
   },
   "grid": {
     "title": "Grid",
-    "text": "A repeating grid divides the bar into cells and open spaces. Variants change the geometry; the grid represents no geographic coordinates or measured data."
+    "text": "A repeating grid divides the bar into cells and open spaces. Variants change the geometry."
   },
   "triangle-grid": {
     "title": "Triangle Grid",
@@ -79,7 +67,7 @@
   },
   "triangles": {
     "title": "Triangles",
-    "text": "Each equal-width cell has one filled triangular half. Change the count or direction to vary the geometry. No measured quantity is encoded."
+    "text": "Each equal-width cell has one filled triangular half. Change the count or direction to vary the geometry."
   },
   "fibonacci-sequence": {
     "title": "Fibonacci Sequence",
@@ -87,7 +75,7 @@
   },
   "union": {
     "title": "Union",
-    "text": "Five repeated modules pair a horizontal band with arches below. The name describes the motif, not an organizational affiliation or measurement."
+    "text": "The official bar of the Rensselaer Union."
   },
   "well-modes": {
     "title": "Well Modes",
@@ -107,7 +95,7 @@
   },
   "lunar": {
     "title": "Artemis II",
-    "text": "Supplied artwork marks Artemis II’s splashdown on April 10, 2026, at 8:07 p.m. EDT. Pair it with mission audio or the Mission Control theme. The illustration is not telemetry."
+    "text": "This mark celebrates Artemis II’s splashdown on April 10, 2026, at 8:07 p.m. EDT. The graphic of the moon was sourced from BOROMIR, an open-source lunar renderer developed for NASA by RPI grad, Maeve Marshall ’23, ’24G."
   }
 };
 

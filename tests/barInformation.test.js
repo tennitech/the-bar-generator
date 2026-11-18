@@ -78,11 +78,11 @@ test('concise explanations retain scientific and approval qualifications', () =>
     binary: [/UTF-8/, /most-significant bit first/, /Rejected text/],
     morse: [/International Morse/, /relative timing/, /unsupported characters/, /Rejected text/],
     nucleotide: [/30–50 bases/, /not standard molecular symbols/, /not complete genes/],
-    numeric: [/approximation/, /sign is omitted/, /zero cells stay empty/],
+    numeric: [/approximation/, /dots per column/, /decimal point/],
     'neural-network': [/untrained/, /weighted sums/, /negative weights/],
     'wave-quantum': [/normalized/, /ideal periodic ring/, /−4, 3 and 7/, /0°, 60° and 120°/, /scrolling coordinate/, /4.28 seconds at 1×/, /not particle paths, probability density or measured data/],
     runway: [/not a navigation aid/, /does not establish an approved/],
-    lunar: [/April 10, 2026/, /8:07 p.m. EDT/, /not telemetry/]
+    lunar: [/April 10, 2026/, /8:07 p.m. EDT/, /BOROMIR/, /Maeve Marshall/]
   };
   for (const [style, qualifications] of Object.entries(essentialMeaning)) {
     for (const qualification of qualifications) expect(descriptions[style].text).toMatch(qualification);

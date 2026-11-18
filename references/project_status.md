@@ -1,5 +1,45 @@
 # RPI Logo Generator - Project Status & Master Documentation
 
+## November 18 related bar descriptions and retired styles
+
+One feature branch batches #212, #213, #215, #216, #219, #220, #221, #222,
+#223 and #226. Seven About descriptions use the requested copy or explain the
+implemented system and verified context. Gradient, Lines and Point Connect
+are removed from Home, the picker and About. Their old paths, query links and
+v1 saves recover to Solid while preserving other valid settings.
+
+The owner's final direction was to remove Gradient entirely. Its controls,
+preview/SVG geometry generator, shader-selection/rendering paths, selector
+preview entry, Home samples and obsolete review image are removed. This
+supersedes all earlier exposure-step candidates. The legacy route shell stays
+only to redirect old links. Original supplied reference artwork and dated brand
+sources are retained as historical evidence. Circles Gradient is unchanged.
+
+Browser validation also exposed saved phases being reset by restored Loop
+control events. Those events now preserve the already restored motion clock;
+ordinary user Loop changes retain the current reset-to-default behavior.
+
+Model, source and approval boundaries are in [bar science notes](bar_science_notes.md),
+[About copy sources](bar_information_cards.md) and the scoped November 18 decision
+in [the conflict register](brand_conflicts.md). Formal RPI approval and broader
+asset permissions remain open. On November 18 the owner accepted the final
+preview at `3050d7c` and authorized merging PR #232 ("good to go, merge pls").
+The handoff covered the retired styles and related copy; individual manual
+interactions were not itemized. Final CI/deployment evidence is recorded in
+[PR #232](https://github.com/tennitech/the-bar-generator/pull/232).
+
+All 1,280 tests in 106 Jest suites pass. Validation for the retirement uses `scripts/retiredStylesSmoke.js`: direct
+routes, legacy queries and saved states recover to Solid; removed entries do
+not appear in the picker/Home; recovered SVG export works; Circles Gradient
+still loads; mobile keyboard disclosure remains operable. Earlier mathematical
+and animation checks describe removed candidates, not a current feature.
+Native Safari, physical-device, screen-reader, photosensitivity and formal
+institutional acceptance are not established. Owner acceptance of the final
+preview at `3050d7c` is confirmed; this is separate from formal RPI approval.
+
+The native npm cache is incomplete; standalone npm 10.9.4 under /tmp runs the
+unchanged guard with Node 22.23.5. Application dependencies are unchanged.
+
 ## November 17 Loop defaults, compact Waveform controls and audio startup
 
 Both Loop transitions reset the selected bar to its default phase. Ticker,

@@ -60,13 +60,6 @@ let numericSourceSelect;
 let numericFormulaSelect;
 let circlesGradientGroup;
 let circlesGradientVariantSlider;
-let gradientGroup;
-let gradientVariantSlider;
-let gradientVariantDisplay;
-let gradientMotionToggle;
-let gradientSpeedSlider;
-let gradientSpeedDisplay;
-let gradientReverseToggle;
 let gridGroup;
 let gridVariantSlider;
 let gridVariantDisplay;
@@ -482,7 +475,6 @@ const DEFAULT_MOTION_ENABLED = !(typeof window !== 'undefined'
   && window.matchMedia
   && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 const MOTION_ENABLED_BY_STYLE = {
-  gradient: DEFAULT_MOTION_ENABLED,
   ticker: DEFAULT_MOTION_ENABLED,
   waveform: DEFAULT_MOTION_ENABLED
 };
@@ -584,8 +576,8 @@ function getWorkspaceDisplaySize() {
 
 const AVAILABLE_STYLE_VALUES = new Set([
   'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
-  'numeric', 'morse', 'nucleotide', 'circles-gradient', 'gradient', 'grid',
-  'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles',
+  'numeric', 'morse', 'nucleotide', 'circles-gradient', 'grid',
+  'neural-network', 'triangle-grid', 'triangles',
   'fibonacci-sequence', 'union', 'wave-quantum', 'well-modes', 'rabi',
   'runway', 'lunar', 'truss', 'music', 'graph'
 ]);
@@ -615,7 +607,6 @@ const RESETTABLE_GROUP_STYLE_MAP = {
   'circles-group': 'circles',
   'numeric-group': 'numeric',
   'circles-gradient-group': 'circles-gradient',
-  'gradient-group': 'gradient',
   'grid-group': 'grid',
   'truss-group': 'truss',
   'staff-group': 'music',
@@ -957,8 +948,6 @@ function getCurrentMotionStyle() {
       return 'ticker';
     case 4:
       return 'waveform';
-    case 17:
-      return 'gradient';
     default:
       return null;
   }
@@ -966,9 +955,6 @@ function getCurrentMotionStyle() {
 
 function getMotionControlConfig(style) {
   const normalizedStyle = normalizeStyleValue(style);
-  if (normalizedStyle === 'gradient') {
-    return { toggle: gradientMotionToggle, speedSlider: gradientSpeedSlider, speedDisplay: gradientSpeedDisplay };
-  }
   if (normalizedStyle === 'ticker') {
     return {
       toggle: tickerMotionToggle,
@@ -997,8 +983,6 @@ function getLoopRuntimeValues() {
     ...window.quantumStudyControls.values(),
     quantumSpeed: window.quantumModel.normalizeSpeed(document.getElementById('quantum-speed-slider')?.value ?? 1),
     quantumReverse: document.getElementById('quantum-reverse-toggle')?.checked === true,
-    gradientSpeed: normalizeLoopSpeed('gradient', gradientSpeedSlider ? gradientSpeedSlider.value : undefined),
-    gradientReverse: gradientReverseToggle ? gradientReverseToggle.checked : false,
     rulerRepeats: rulerRepeatsSlider ? rulerRepeatsSlider.value : 10,
     rulerUnits: rulerDivisionsSelect ? rulerDivisionsSelect.value : 10,
     rulerThickness: rulerThicknessSlider ? rulerThicknessSlider.value : 1,
@@ -1082,7 +1066,7 @@ function setMotionEnabledForStyle(style, enabled) {
   }
 
   MOTION_ENABLED_BY_STYLE[normalizedStyle] = !!enabled;
-  resetAnimationClock();
+  if (!window.barShareController?.isRestoring()) resetAnimationClock();
   if (normalizedStyle === 'waveform') resetWaveformScope();
 
   syncMotionToggleState();
@@ -1314,14 +1298,6 @@ function resetStyleParameters(style) {
       if (circlesGradientVariantSlider) circlesGradientVariantSlider.value = 1;
       setCirclesGradientControls({ variant: 1 });
       break;
-    case 'gradient':
-      liveMotionPhase = 0;
-      gradientSpeedSlider.value = getDefaultLoopSpeed('gradient');
-      gradientReverseToggle.checked = false;
-      updateGradientSpeedDisplay();
-      if (gradientVariantSlider) gradientVariantSlider.value = 1;
-      updateGradientVariantDisplay();
-      break;
     case 'grid':
       if (gridVariantSlider) gridVariantSlider.value = 1;
       updateGridVariantDisplay();
@@ -1495,13 +1471,6 @@ function randomizeStyleParameters(style) {
       setCirclesGradientControls({ variant: randomStepValue(1, 3, 1), columns: randomDifferentStep(document.getElementById('circles-gradient-columns'), 12, 40),
         rows: randomStepValue(1, 5, 1), size: randomStepValue(50, 100, 1), contrast: randomStepValue(20, 100, 1),
         stagger: randomStepValue(0, 100, 1), reverse: Math.random() < .5 });
-      break;
-    case 'gradient':
-      gradientSpeedSlider.value = window.MotionSpeed.rate('gradient', randomStepValue(0.2, 4, 0.05));
-      gradientReverseToggle.checked = Math.random() < 0.5;
-      updateGradientSpeedDisplay();
-      if (gradientVariantSlider) gradientVariantSlider.value = randomDifferentStep(gradientVariantSlider, 1, 2);
-      updateGradientVariantDisplay();
       break;
     case 'grid':
       if (gridVariantSlider) gridVariantSlider.value = randomDifferentStep(gridVariantSlider, 1, 3);
@@ -2221,13 +2190,6 @@ function setup() {
   numericModeSelect = document.getElementById('numeric-mode-select');
   circlesGradientGroup = document.getElementById('circles-gradient-group');
   circlesGradientVariantSlider = document.getElementById('circles-gradient-variant-slider');
-  gradientGroup = document.getElementById('gradient-group');
-  gradientVariantSlider = document.getElementById('gradient-variant-slider');
-  gradientVariantDisplay = document.getElementById('gradient-variant-display');
-  gradientMotionToggle = document.getElementById('gradient-motion-toggle');
-  gradientSpeedSlider = document.getElementById('gradient-speed-slider');
-  gradientSpeedDisplay = document.getElementById('gradient-speed-display');
-  gradientReverseToggle = document.getElementById('gradient-reverse-toggle');
   gridGroup = document.getElementById('grid-group');
   gridVariantSlider = document.getElementById('grid-variant-slider');
   gridVariantDisplay = document.getElementById('grid-variant-display');
@@ -2720,21 +2682,6 @@ function setup() {
     updateCirclesGradientVariantDisplay();
   }
 
-  gradientMotionToggle.addEventListener('change', () => setMotionEnabledForStyle('gradient', gradientMotionToggle.checked));
-  gradientSpeedSlider.addEventListener('input', () => {
-    updateGradientSpeedDisplay(); updateUrlParameters(); requestUpdate();
-  });
-  gradientReverseToggle.addEventListener('change', () => { updateUrlParameters(); requestUpdate(); });
-  updateGradientSpeedDisplay();
-  if (gradientVariantSlider) {
-    gradientVariantSlider.addEventListener('input', function () {
-      updateGradientVariantDisplay();
-      updateUrlParameters();
-      requestUpdate();
-    });
-    updateGradientVariantDisplay();
-  }
-
   if (gridVariantSlider) {
     gridVariantSlider.addEventListener('input', function () {
       updateGridVariantDisplay();
@@ -3050,21 +2997,6 @@ function setup() {
       ariaLabel: `Set circles gradient ${key}`
     })),
     {
-      ...window.MotionSpeed.editor('gradient', gradientSpeedSlider),
-      slider: gradientSpeedSlider,
-      display: gradientSpeedDisplay,
-      refreshDisplay: updateGradientSpeedDisplay,
-      commit: () => { updateGradientSpeedDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set gradient motion speed'
-    },
-    {
-      slider: gradientVariantSlider,
-      display: gradientVariantDisplay,
-      refreshDisplay: updateGradientVariantDisplay,
-      commit: () => { updateGradientVariantDisplay(); updateUrlParameters(); requestUpdate(); },
-      ariaLabel: 'Set gradient variant'
-    },
-    {
       slider: gridVariantSlider,
       display: gridVariantDisplay,
       refreshDisplay: updateGridVariantDisplay,
@@ -3337,17 +3269,6 @@ function updateCirclesGradientVariantDisplay() {
     const display = document.getElementById(`circles-gradient-${key}-display`);
     if (field && display) display.textContent = field.value;
   }
-}
-
-function updateGradientSpeedDisplay() {
-  if (!gradientSpeedSlider || !gradientSpeedDisplay) return;
-  gradientSpeedSlider.value = String(normalizeLoopSpeed('gradient', gradientSpeedSlider.value));
-  window.MotionSpeed.sync('gradient', gradientSpeedSlider, gradientSpeedDisplay);
-}
-
-function updateGradientVariantDisplay() {
-  if (!gradientVariantSlider || !gradientVariantDisplay) return;
-  gradientVariantDisplay.textContent = gradientVariantSlider.value;
 }
 
 function updateGridVariantDisplay() {
@@ -3815,9 +3736,6 @@ function handleStyleChange() {
     case 'circles-gradient':
       currentShader = 16;
       break;
-    case 'gradient':
-      currentShader = 17;
-      break;
     case 'grid':
       currentShader = 18;
       break;
@@ -3886,7 +3804,6 @@ function handleStyleChange() {
     numericGroup.style.display = 'none';
     morseGroup.style.display = 'none';
     if (circlesGradientGroup) circlesGradientGroup.style.display = 'none';
-    if (gradientGroup) gradientGroup.style.display = 'none';
     if (gridGroup) gridGroup.style.display = 'none';
     if (linesGroup) linesGroup.style.display = 'none';
     if (pointConnectGroup) pointConnectGroup.style.display = 'none';
@@ -3929,11 +3846,7 @@ function handleStyleChange() {
       case 'circles-gradient':
         if (circlesGradientGroup) circlesGradientGroup.style.display = 'block';
         break;
-      case 'gradient':
-        if (gradientGroup) gradientGroup.style.display = 'block';
-        isAnimated = true;
-        break;
-      case 'grid':
+        case 'grid':
         if (gridGroup) gridGroup.style.display = 'block';
         break;
       case 'lines':
@@ -4065,8 +3978,6 @@ function getCurrentBarPatternValues(exactBarWidth) {
     numericFormula: numericFormulaSelect?.value || 'pi',
     numericMode: numericModeSelect ? numericModeSelect.value : 'dotmatrix',
     ...getCirclesGradientControlValues(),
-    gradientVariant: gradientVariantSlider ? gradientVariantSlider.value : 1,
-    gradientPhase: currentShader === 17 ? liveMotionPhase : 0,
     gridVariant: gridVariantSlider ? gridVariantSlider.value : 1,
     linesVariant: linesVariantSlider ? linesVariantSlider.value : 2,
     pointConnectVariant: pointConnectVariantSlider ? pointConnectVariantSlider.value : 1,
@@ -4231,12 +4142,6 @@ function renderHeaderMotionPreview() {
     const geometry = createBoundedTickGeometry({ shader: 2,
       ...values, barStartX: 0, barY: 0, exactBarWidth: REFERENCE_WIDTH,
       barHeight: REFERENCE_BAR_HEIGHT, loopOffsetX: state.loopOffsetX
-    });
-    geometry.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
-  } else if (style === 'gradient') {
-    const geometry = createGradientPatternGeometry({
-      exactBarWidth: REFERENCE_WIDTH, barHeight: REFERENCE_BAR_HEIGHT,
-      variant: gradientVariantSlider ? gradientVariantSlider.value : 1, gradientPhase: liveMotionPhase
     });
     geometry.rects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.width, rect.height));
   } else if (style === 'waveform') {
@@ -5563,13 +5468,6 @@ function updateUrlParameters() {
     for (const [key, value] of Object.entries(getCirclesGradientControlValues())) params.set(key, String(value));
   }
 
-  if (styleSelect && styleSelect.value === 'gradient') {
-    if (Number(gradientSpeedSlider.value) !== getDefaultLoopSpeed('gradient')) params.set('gradientSpeed', gradientSpeedSlider.value);
-    if (gradientReverseToggle.checked) params.set('gradientReverse', 'true');
-    if (gradientVariantSlider && parseInt(gradientVariantSlider.value, 10) !== 1) {
-      params.set('gradientVariant', gradientVariantSlider.value);
-    }
-  }
 
   if (styleSelect && styleSelect.value === 'grid') {
     if (gridVariantSlider && parseInt(gridVariantSlider.value, 10) !== 1) {
@@ -5781,13 +5679,6 @@ function applyUrlParameters() {
   if (circlesGradientVariantSlider) {
     setCirclesGradientControls(params);
   }
-  if (gradientVariantSlider) {
-    gradientVariantSlider.value = params.gradientVariant;
-    gradientSpeedSlider.value = params.gradientSpeed;
-    gradientReverseToggle.checked = params.gradientReverse;
-    updateGradientSpeedDisplay();
-    updateGradientVariantDisplay();
-  }
   if (gridVariantSlider) {
     gridVariantSlider.value = params.gridVariant;
     updateGridVariantDisplay();
@@ -5940,8 +5831,6 @@ function updateAllDisplays() {
   updateCirclesDensityDisplay();
   updateCirclesSizeVariationDisplay();
   updateCirclesGradientVariantDisplay();
-  updateGradientVariantDisplay();
-  updateGradientSpeedDisplay();
   updateGridVariantDisplay();
   updatePointConnectVariantDisplay();
   updateNeuralNetworkHiddenLayersDisplay();
@@ -6635,24 +6524,6 @@ function drawBottomBar(currentWidth, responsiveLogoScale = getRenderedResponsive
       const circleData = geometry.circles[i];
       circle(circleData.cx, circleData.cy, circleData.r * 2);
     }
-  } else if (currentShader === 17) {
-    // Gradient pattern
-    resetShader();
-    noStroke();
-    fill(fgColor);
-    const geometry = createGradientPatternGeometry({
-      barStartX,
-      barY: 0,
-      exactBarWidth,
-      barHeight: rectHeight,
-      variant: gradientVariantSlider ? gradientVariantSlider.value : 1,
-      gradientPhase: liveMotionPhase
-    });
-
-    for (let i = 0; i < geometry.rects.length; i++) {
-      const rectData = geometry.rects[i];
-      rect(rectData.x, rectData.y, rectData.width, rectData.height, rectData.radius);
-    }
   } else if (currentShader === 18) {
     // Grid pattern
     resetShader();
@@ -7106,7 +6977,7 @@ function setupShareLinks() {
         const toggle = document.getElementById(`${style}-motion-toggle`);
         MOTION_ENABLED_BY_STYLE[style] = !!(toggle && toggle.checked && !reduce);
         if (toggle) toggle.checked = MOTION_ENABLED_BY_STYLE[style];
-        if (styleSelect.value === style && !MOTION_ENABLED_BY_STYLE[style] && style !== 'gradient') resetAnimationClock();
+        if (styleSelect.value === style && !MOTION_ENABLED_BY_STYLE[style]) resetAnimationClock();
       }
       lastWaveformScopeTimestamp = 0;
       updateWaveformScopeControls();

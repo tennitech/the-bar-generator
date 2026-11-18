@@ -1,7 +1,6 @@
 const {
   createBarPatternSVG,
   createLinesPatternGeometry,
-  createGradientPatternGeometry,
   createCirclesGradientPatternGeometry,
   createBoundedCirclePatternGeometry,
   createTrianglesPatternGeometry
@@ -22,7 +21,7 @@ describe('experimental pattern compositions', () => {
         const circles = createCirclesGradientPatternGeometry({ ...bounds, variant });
         circles.circles.forEach(c => contains(c.cx - c.r, c.cy - c.r, c.cx + c.r, c.cy + c.r));
         if (variant > 2) continue;
-        for (const helper of [createLinesPatternGeometry, createGradientPatternGeometry]) {
+        for (const helper of [createLinesPatternGeometry]) {
           helper({ ...bounds, variant }).rects.forEach(r => contains(r.x, r.y, r.x + r.width, r.y + r.height));
         }
         createTrianglesPatternGeometry({ ...bounds, variant }).polygons.forEach(polygon => {
@@ -36,7 +35,7 @@ describe('experimental pattern compositions', () => {
     'paints both exact horizontal boundaries at %s × %s', (width, height, x, y) => {
       const bounds = { barStartX: x, barY: y, exactBarWidth: width, barHeight: height };
       for (const variant of [1, 2, 3, 0, 99, '2']) {
-        for (const helper of [createLinesPatternGeometry, createGradientPatternGeometry,
+        for (const helper of [createLinesPatternGeometry,
           createCirclesGradientPatternGeometry, createTrianglesPatternGeometry]) {
           if (helper === createCirclesGradientPatternGeometry && [0, 1].includes(variant)) continue;
           const geometry = helper({ ...bounds, variant });
@@ -85,7 +84,7 @@ describe('experimental pattern compositions', () => {
     }
   );
 
-  test.each([[19, 'triangles'], [17, 'gradient'], [16, 'circlesGradient']])(
+  test.each([[19, 'triangles'], [16, 'circlesGradient']])(
     'serializes the selected non-default variant for shader %s', (shader, key) => {
       const render = variant => createBarPatternSVG({
         currentShader: shader, barStartX: 0, barY: 132.4885,

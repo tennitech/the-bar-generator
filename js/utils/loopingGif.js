@@ -7,7 +7,7 @@
 
   root.loopingGifUtils = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'gradient', 'wave-quantum', 'well-modes', 'rabi']);
+  const LOOPING_GIF_STYLE_SET = new Set(['ticker', 'waveform', 'wave-quantum', 'well-modes', 'rabi']);
   // Uniform 20 ms GIF frames avoid alternating delays at the default cadence.
   const DEFAULT_CAPTURE_FPS = 50;
   const MIN_CAPTURE_FPS = 12;

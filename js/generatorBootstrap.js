@@ -1,5 +1,5 @@
 (async function bootstrapGeneratorRoute() {
-  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261117-loop-controls';
+  const sourcePath = window.__RPI_GENERATOR_PAGE_SOURCE__ || 'generator/index.html?v=20261118-retire-gradient';
   const descriptionTag = document.querySelector('meta[name="description"]');
 
   function loadScript(src) {
@@ -20,7 +20,7 @@
       return window.GeneratorRoutes;
     }
 
-    await loadScript('js/utils/generatorRoutes.js?v=20261111-data-graph-r3');
+    await loadScript('js/utils/generatorRoutes.js?v=20261118-retire-gradient');
     return window.GeneratorRoutes || null;
   }
 
@@ -45,10 +45,10 @@
     const bodyClone = doc.body.cloneNode(true);
     const scriptSources = Array.from(bodyClone.querySelectorAll('script[src]'))
       .map(script => script.getAttribute('src'))
-      .filter(src => src && !(window.GeneratorRoutes && src.startsWith('js/utils/generatorRoutes.js?v=20261111-data-graph-r3')));
+      .filter(src => src && !(window.GeneratorRoutes && src.startsWith('js/utils/generatorRoutes.js?v=20261118-retire-gradient')));
     if (window.__RPI_GENERATOR_ROUTE_STYLE__ === 'lunar') {
       const lunarSource = 'js/utils/lunarBarAsset.js?v=20261103-save-removal';
-      const patternIndex = scriptSources.findIndex(src => src.startsWith('js/utils/barPattern.js?v=20261111-data-graph-r3'));
+      const patternIndex = scriptSources.findIndex(src => src.startsWith('js/utils/barPattern.js?v=20261118-retire-gradient'));
       scriptSources.splice(patternIndex < 0 ? scriptSources.length : patternIndex, 0, lunarSource);
     }
 

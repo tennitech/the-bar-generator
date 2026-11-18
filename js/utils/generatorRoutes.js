@@ -1,8 +1,8 @@
 (function (globalScope) {
   const AVAILABLE_STYLE_VALUES = new Set([
     'solid', 'ruler', 'ticker', 'binary', 'waveform', 'circles',
-    'numeric', 'morse', 'nucleotide', 'circles-gradient', 'gradient', 'grid',
-    'lines', 'point-connect', 'neural-network', 'triangle-grid', 'triangles',
+    'numeric', 'morse', 'nucleotide', 'circles-gradient', 'grid',
+    'neural-network', 'triangle-grid', 'triangles',
     'fibonacci-sequence', 'union', 'wave-quantum', 'well-modes', 'rabi',
     'runway', 'lunar', 'truss', 'music', 'graph'
   ]);

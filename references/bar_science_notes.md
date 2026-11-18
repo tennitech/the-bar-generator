@@ -663,3 +663,29 @@ ledger lines, added side strips, or forced painted-edge scaling remain.
 Authoritative coordinate/tuning sources and exact drawing conventions are in
 [music_bar.md](music_bar.md). These are original short exercise patterns, not
 borrowed compositions, recordings or measured musical data.
+
+
+## November 18, 2026 Gradient retirement (#215)
+
+The owner's final direction was to remove the entire Gradient style. It is no
+longer selectable, catalogued, described in About or generated in preview/SVG.
+Its controls, geometry helper, rendering paths, Home samples and candidate
+review image are removed. This supersedes the exposure-step models previously
+attempted in this PR; those revisions remain in Git history, not the product.
+Historical Gradient URLs and saved states recover to Solid and keep other
+valid settings. The old route shell exists solely for that recovery.
+
+Circles Gradient is a separate family and is unchanged by this retirement.
+Original supplied reference artwork and official source captures are retained;
+retiring the generator option does not establish a general licensing or brand
+approval decision about those materials. See the latest owner direction in
+the conflict register. No current dynamic-range or brightness-chart claim is
+made by the removed style. Earlier Gradient sections above are historical.
+
+Circles' About text now explains the actual seeded best-candidate search,
+spacing/edge/local-density scores, smaller-gap filling and πr² area, without
+claiming optimal or strictly non-overlapping packing. Its algorithm is unchanged.
+Circles Gradient adds ceramic-frit context without changing any circle geometry
+or claiming a thermal simulation. Lines and Point Connect are retired from
+selection and Home; known old routes, queries and v1 snapshots recover to Solid.
+Historical low-level geometry remains available to avoid unrelated code removal.

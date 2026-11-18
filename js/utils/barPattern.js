@@ -699,50 +699,6 @@ function createTriangleGridPatternGeometry(options = {}) {
   return { lines, thickness };
 }
 
-function createGradientPatternGeometry(options = {}) {
-  const barStartX = Number(options.barStartX || 0);
-  const barY = Number(options.barY || 0);
-  const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
-  const barHeight = Math.max(1, Number(options.barHeight || 18));
-  const variant = clampPatternVariant(options.variant || 1, 2);
-  // Optical tone is encoded by area coverage, never opacity or new colors.
-  const rects = [];
-  const count = 24;
-  const cellWidth = exactBarWidth / count;
-  const widthAt = t => cellWidth * (variant === 1
-    ? 0.88 - 0.7 * t
-    : 0.2 + 0.68 * (1 - Math.abs(2 * t - 1)));
-  // A bounded sinusoidal coordinate warp moves coverage, not the stripe grid.
-  // Phase zero is the original artwork; absent phase keeps static consumers still.
-  const phase = Number.isFinite(Number(options.gradientPhase)) ? Number(options.gradientPhase) % 1 : 0;
-  const sweep = 0.28 * Math.sin(2 * Math.PI * phase);
-  const firstWidth = widthAt(0);
-  const lastWidth = widthAt(1);
-  // Equally spaced centers span from the first painted left edge to the last
-  // painted right edge, retaining the area progression without end margins.
-  const centerSpan = exactBarWidth - (firstWidth + lastWidth) / 2;
-  for (let i = 0; i < count; i++) {
-    const t = i / (count - 1);
-    const sample = t + sweep * Math.sin(Math.PI * t);
-    const width = widthAt(sample);
-    const x = barStartX + firstWidth / 2 + t * centerSpan - width / 2;
-    if (variant === 1) {
-      rects.push({ x, y: barY, width, height: barHeight, radius: 0 });
-    } else {
-      // Three aligned rows converge toward a central band of maximum coverage.
-      const height = barHeight / 4;
-      for (let row = 0; row < 3; row++) {
-        rects.push({
-          x, y: barY + row * barHeight * 0.375,
-          width, height, radius: 0
-        });
-      }
-    }
-  }
-
-  return { rects };
-}
-
 function normalizeCirclesGradientSettings(options = {}) {
   const read = key => options[key] ?? options[`circlesGradient${key[0].toUpperCase()}${key.slice(1)}`];
   const variant = clampPatternVariant(read('variant') || 1, 3);
@@ -1862,23 +1818,6 @@ function createBarPatternSVG(config) {
     return pattern;
   }
 
-  if (currentShader === 17) {
-    const geometry = createGradientPatternGeometry({
-      barStartX,
-      barY,
-      exactBarWidth,
-      barHeight,
-      variant: values.gradientVariant,
-      gradientPhase: values.gradientPhase
-    });
-
-    for (let i = 0; i < geometry.rects.length; i++) {
-      const rect = geometry.rects[i];
-      pattern += `\n    <rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" rx="${rect.radius}" fill="${fgColor}"/>`;
-    }
-    return pattern;
-  }
-
   if (currentShader === 18) {
     const geometry = createGridPatternGeometry({
       barStartX,
@@ -2002,7 +1941,6 @@ if (typeof window !== 'undefined') {
   window.normalizeCirclesGradientSettings = normalizeCirclesGradientSettings;
   window.createCirclesGradientPatternGeometry = createCirclesGradientPatternGeometry;
   window.createFibonacciPatternGeometry = createFibonacciPatternGeometry;
-  window.createGradientPatternGeometry = createGradientPatternGeometry;
   window.createGridPatternGeometry = createGridPatternGeometry;
   window.createLinesPatternGeometry = createLinesPatternGeometry;
   window.normalizeNeuralNetworkSettings = normalizeNeuralNetworkSettings;
@@ -2042,7 +1980,6 @@ if (typeof module !== 'undefined' && module.exports) {
     createCirclesGradientPatternGeometry,
     createBoundedCirclePatternGeometry,
     createFibonacciPatternGeometry,
-    createGradientPatternGeometry,
     createGridPatternGeometry,
     createLinesPatternGeometry,
     normalizeNeuralNetworkSettings,

@@ -211,7 +211,7 @@ test('native controls and runtime speed policy agree without changing saved defa
 });
 
 // Exercise actual selectable rates rather than only the default frame count.
-test.each(['ticker', 'waveform', 'gradient'])('%s exports with 20 ms minimum encoded delays across its speed range without shortening loops', style => {
+test.each(['ticker', 'waveform'])('%s exports with 20 ms minimum encoded delays across its speed range without shortening loops', style => {
   const { frameTiming } = require('../js/utils/transparentGif');
   const limits = getLoopSpeedLimits(style);
   for (const speed of [limits.min, limits.default, limits.max]) {
@@ -239,4 +239,27 @@ test('explicit 30 fps remains available for matched comparisons and odd centisec
   expect(timing.durationMs).toBe(630);
   expect(timing.delays.filter(delay => delay === 30)).toHaveLength(1);
   expect(timing.delays.filter(delay => delay === 20)).toHaveLength(30);
+});
+
+test.each(['ticker'])('%s resets its motion clock on every Loop change', style => {
+  const fs = require('node:fs'), vm = require('node:vm');
+  const source = fs.readFileSync(require.resolve('../js/main'), 'utf8');
+  const context = {
+    window: { barShareController: { isRestoring: () => false } },
+    normalizeStyleValue: value => value,
+    styleSupportsMotion: value => value === style,
+    MOTION_ENABLED_BY_STYLE: { [style]: true },
+    resetAnimationClock: jest.fn(),
+    syncMotionToggleState: jest.fn(),
+    requestUpdate: jest.fn()
+  };
+  vm.runInNewContext(source.slice(source.indexOf('function setMotionEnabledForStyle('), source.indexOf('function generateRandomStaffPattern(')), context);
+  for (const enabled of [false, true, false, true]) {
+    context.setMotionEnabledForStyle(style, enabled);
+    expect(context.MOTION_ENABLED_BY_STYLE[style]).toBe(enabled);
+  }
+  expect(context.resetAnimationClock).toHaveBeenCalledTimes(4);
+  context.window.barShareController.isRestoring = () => true;
+  context.setMotionEnabledForStyle(style, false);
+  expect(context.resetAnimationClock).toHaveBeenCalledTimes(4);
 });

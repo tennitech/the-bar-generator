@@ -30,3 +30,42 @@ Sources: full [page archive and coverage](brand_sources/index.md), especially
 To resolve an item, add dated evidence identifying the deciding authority and
 the exact approved scope. Retain the earlier record. Update affected guidance,
 project status, source manifest if refreshed, and the change's brand review.
+
+## November 18, 2026 scoped owner decision for issue #215
+
+In the implementation session, the project owner selected “Use 21 solid steps
+with halving widths” after the distinction between width, light intensity and
+the inverse-square law was explained. Scope: replace Gradient's stripe system
+with 21 discrete single-ink width steps; retain its two layouts and existing
+motion/export controls. No opacity ramp, blended color, photograph or new asset
+is introduced. This is a documented product interpretation using primitive
+rectangles, not formal RPI approval of the treatment/name, Circles Gradient,
+Artemis artwork, or general asset redistribution. The remaining B01 questions
+and stricter palette/geometry controls stay open.
+
+
+The same November 18 session subsequently rejected the compressed-spacing
+candidate and directed: “remove the motion for this bar style” and “we need
+this to be logical and look nice.” The final product interpretation keeps
+21 successive light halvings, displays them on an explicitly documented
+logarithmic width scale, and removes Gradient motion/GIF controls. This
+supersedes the earlier literal-width and motion-control scope above without
+claiming a brand exception or formal institutional approval.
+
+
+A subsequent scientific review clarified that the soft-logarithmic taper did
+not directly encode the relative light ratios. After that distinction and
+finite-resolution limits were explained, the owner requested “implement it.”
+The final scoped implementation therefore uses 21 equal cells with ink area
+proportional to `2^(-n)`, stays static, and explicitly discloses that this is
+not a calibrated brightness chart. This supersedes the logarithmic-display
+interpretation above. It adds no institutional approval, palette exception,
+photometric calibration claim or permission for new assets.
+
+
+The owner's final November 18 instruction was “remove the entire bar as is.”
+This retires Gradient completely from the product, including its geometry
+helper, rendering paths, controls, catalog and description. Old links/saves
+recover to Solid. The preceding Gradient implementation decisions are
+superseded. Circles Gradient and the other B01–B10 source/approval boundaries
+are unchanged; original reference art and official sources remain historical.
