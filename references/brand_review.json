@@ -3,7 +3,7 @@
   "reviewedOn": "2026-11-18",
   "reviewer": "OpenAI via Codex self-review",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "60aa8f3b4169af4d8a9b13c9b5d8869a899b959f342083ab82d20b95ad4ed4c0",
+  "changeFingerprint": "e7a2ee35a583044338f18b85c783c0f83baad13319fd73569e581b319987f160",
   "areas": {
     "foundations": {
       "status": "reviewed",
@@ -109,7 +109,7 @@
   "approvalStatus": "not-required-for-scoped-software-and-copy-changes",
   "approvalRationale": "Owner explicitly requested removal of the entire Gradient bar. Retiring the style and recovering old states to existing Solid introduces no new identity asset, palette, measurement claim or institutional lockup. Existing institutional approvals remain separate.",
   "approvalEvidence": "Final November 18 session instruction: remove the entire bar as is. Implemented as Gradient retirement; no branch deletion or merge is authorized by that request.",
-  "publicationScope": "Owner-requested single PR for issues #212, #213, #215, #216, #219, #220, #221, #222, #223 and #226, including code, status/science/source records and original application review screenshots. No merge authorized in this session.",
+  "publicationScope": "Owner-requested PR for issues #212, #213, #215, #216, #219, #220, #221, #222, #223 and #226, including code, project records and project-only review images. On November 18 the owner accepted final preview 3050d7c and explicitly authorized merge. Feature branches remain retained; no formal RPI approval is implied.",
   "checks": [
     {
       "name": "brand-policy",
@@ -133,8 +133,8 @@
     },
     {
       "name": "user-acceptance",
-      "result": "pending",
-      "evidence": "Owner requested complete Gradient removal. Acceptance of the retirement revision remains pending; prior candidates are superseded. No formal RPI, native Safari, physical-device, screen-reader or photosensitivity acceptance claimed."
+      "result": "passed",
+      "evidence": "On November 18, after the final 3050d7c preview handoff, the owner replied good to go, merge pls. This confirms acceptance and merge authorization for the final retirement/copy batch. Individual manual test steps were not itemized; no formal institutional approval or unperformed native/device/accessibility testing is inferred."
     }
   ]
 }

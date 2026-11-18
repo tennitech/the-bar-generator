@@ -22,7 +22,11 @@ ordinary user Loop changes retain the current reset-to-default behavior.
 Model, source and approval boundaries are in [bar science notes](bar_science_notes.md),
 [About copy sources](bar_information_cards.md) and the scoped November 18 decision
 in [the conflict register](brand_conflicts.md). Formal RPI approval and broader
-asset permissions remain open. User acceptance of this batch is pending.
+asset permissions remain open. On November 18 the owner accepted the final
+preview at `3050d7c` and authorized merging PR #232 ("good to go, merge pls").
+The handoff covered the retired styles and related copy; individual manual
+interactions were not itemized. Final CI/deployment evidence is recorded in
+[PR #232](https://github.com/tennitech/the-bar-generator/pull/232).
 
 All 1,280 tests in 106 Jest suites pass. Validation for the retirement uses `scripts/retiredStylesSmoke.js`: direct
 routes, legacy queries and saved states recover to Solid; removed entries do
@@ -30,7 +34,8 @@ not appear in the picker/Home; recovered SVG export works; Circles Gradient
 still loads; mobile keyboard disclosure remains operable. Earlier mathematical
 and animation checks describe removed candidates, not a current feature.
 Native Safari, physical-device, screen-reader, photosensitivity and formal
-institutional acceptance are not established. User acceptance is pending.
+institutional acceptance are not established. Owner acceptance of the final
+preview at `3050d7c` is confirmed; this is separate from formal RPI approval.
 
 The native npm cache is incomplete; standalone npm 10.9.4 under /tmp runs the
 unchanged guard with Node 22.23.5. Application dependencies are unchanged.
