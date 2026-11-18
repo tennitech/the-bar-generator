@@ -665,39 +665,47 @@ Authoritative coordinate/tuning sources and exact drawing conventions are in
 borrowed compositions, recordings or measured musical data.
 
 
-## November 18, 2026 static exposure-step schematic (#215)
+## November 18, 2026 static relative-light area encoding (#215)
 
-The final owner direction is to remove Gradient motion and make the pattern
-logical and readable. This supersedes the earlier literal-width and proportional-
-gap candidates, which the owner rejected visually. Gradient has no Loop, Speed,
-Reverse or GIF action. Historical query/share motion settings are ignored;
-restored runtime phases cannot change its geometry. Ticker and Waveform retain
-motion. The two original Gradient layout choices remain available.
+After the scientific review, the owner requested implementation of a direct
+geometric encoding instead of the soft-logarithmic width taper. The final
+model uses 21 equal cells across the unchanged bar viewport. For step n = 0…20,
+`I[n]/I[0] = 2^(-n)`. Cell pitch is `P = W/21`, center is `x0 + (n+0.5)P`,
+and rectangle width is `w[n] = P * 2^(-n)`. Thus actual ink area satisfies
+`A[n]/A[0] = 2^(-n)` with no logarithmic transform, width floor, added paint,
+opacity adjustment or per-output reinterpretation. Twenty halvings give an
+exact 1,048,576:1 represented ratio (20 stops), not 21 stops.
 
-For step n = 0…20, relative light is `I[n] = 2^(-n)`. These are 21 levels over
-20 stops, inspired by [DSC Labs' Xyla 21](https://dsclabs.com/products/xyla-21),
-inspected November 18, 2026. They are schematic values, not measured camera data.
-Literal width halvings made dark steps subpixel, and collapsing their gaps
-made the composition read as a solid band. The final display uses
-`w[n] = (0.88 W/21) * log2(1 + I[n]/I[20]) / log2(1 + I[0]/I[20])`.
-This soft logarithm is a display transform: light halves at each step; drawn
-widths do not. The About card explicitly identifies the logarithmic scale.
-There is no opacity or color interpolation, brightness calibration or inverse-
-square simulation. The count, maximum-width fraction and display transform
-are documented drawing choices, not Xyla chart dimensions.
+Variant 1 has fixed full-height rectangles, so `A[n] = H*P*2^(-n)`.
+Variant 2 uses three quarter-height rectangles at offsets 0, 0.375H and 0.75H;
+their combined area is `A[n] = (3H/4)*P*2^(-n)`. Each layout therefore has the
+same normalized relative-light encoding. The difference in absolute area
+between variants is a drawing choice, not a change in represented light.
+The fixed cell centers explicitly represent exposure-step index rather than
+physical distance. Shapes stay inside their cells and the official viewport.
+No geometry is fitted to painted bounds or to a particular raster resolution.
 
-Centers are evenly spaced over `W - (w[0]+w[20])/2`, starting at `w[0]/2`.
-This defines a fixed grid with natural endpoint tangency, without strips,
-clipping circles, painted-bounds fitting or per-frame rescaling. The smallest
-width is approximately 1/20 of the largest, instead of 1/1,048,576, keeping
-all steps readable at ordinary preview sizes. Final placement still requires
-size review; no universal complex-pattern minimum is asserted. Variant 1 has
-full-height stripes. Variant 2 repeats the same 21 columns in three quarter-
-height rows at offsets 0, 0.375H and 0.75H.
+[DSC Labs' Xyla 21](https://dsclabs.com/products/xyla-21) specifies 21 steps
+spanning 20 f-stops. [Imatest's Xyla description](https://www.imatest.com/product/xyla/),
+inspected November 18, 2026, describes neutral optical transmission steps with
+a regulated light source. This generator does not reproduce that instrument:
+ink area encodes relative light numerically; the chosen ink/background colors,
+screen radiance, gamma, optical density, flare, noise and sensor response are
+not calibrated or simulated. It is not a camera test chart, an inverse-square
+simulation or a claim that a screen displays 20 stops of contrast.
 
-Preview, header, SVG, PNG and Home stills use exactly the same static geometry.
-Shared seeds, filtering, official vectors, palette and clear space are unchanged.
-No new artwork, dependency or formal brand approval is introduced.
+The final widths are 1/1,048,576 of the first. At normal screen/export sizes,
+some steps become subpixel and disappear; the apparent painted bar can end
+before the fixed viewport. That is disclosed in About. Do not hide this limit
+with a width floor, logarithmic compression, added boundary paint or fitted
+spacing. SVG retains all 21 positive widths (63 rectangles in the three-row
+layout), including values below raster resolution. Review at final placement
+size. There is no universal complex-pattern minimum size.
+
+Gradient remains Static with no Loop, Speed, Reverse or GIF action. Historical
+query/share motion settings and phases are ignored. Preview, header, SVG, PNG
+and recaptured Home stills share this exact geometry. Ticker and Waveform motion
+are unchanged. No new dependency, external artwork or formal approval is added.
 
 Circles' About text now explains the actual seeded best-candidate search,
 spacing/edge/local-density scores, smaller-gap filling and πr² area, without

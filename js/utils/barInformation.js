@@ -59,7 +59,7 @@
   },
   "gradient": {
     "title": "Gradient",
-    "text": "Explore 21 light levels spanning 20 exposure stops, inspired by the Xyla 21. Each step represents half as much light as the previous one. Stripe widths use a logarithmic display scale to keep the full range readable in one color. This is a schematic, not a calibrated camera test chart."
+    "text": "Encode 20 stops of dynamic range in 21 equal cells. Ink area halves at each step, representing relative light levels from 1 to 1/1,048,576. The smallest steps may disappear at screen resolution. This single-color encoding is not a calibrated brightness chart."
   },
   "grid": {
     "title": "Grid",

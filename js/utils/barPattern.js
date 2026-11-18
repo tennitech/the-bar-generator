@@ -705,21 +705,16 @@ function createGradientPatternGeometry(options = {}) {
   const exactBarWidth = Math.max(1, Number(options.exactBarWidth || 250));
   const barHeight = Math.max(1, Number(options.barHeight || 18));
   const variant = clampPatternVariant(options.variant || 1, 2);
-  // Twenty-one light levels I[n] = 2^-n span twenty exposure stops.
-  // A log2(1 + I/Imin) width display keeps the dark-end steps readable;
-  // these are single-ink symbols, not calibrated luminance patches.
+  // Equal cells encode relative light I[n]/I[0] = 2^-n by ink area.
+  // Fixed heights make area proportional to width in both layouts. Do not
+  // widen subpixel steps: that would change the represented light ratios.
   const rects = [];
   const count = 21;
-  const maxWidth = exactBarWidth / count * 0.88;
-  const logRange = Math.log2(1 + 2 ** (count - 1));
-  const widthAt = index => maxWidth * Math.log2(1 + 2 ** (count - 1 - index)) / logRange;
-  const firstWidth = widthAt(0);
-  const lastWidth = widthAt(count - 1);
-  // A fixed, evenly spaced center grid with natural endpoint tangency.
-  const centerSpan = exactBarWidth - (firstWidth + lastWidth) / 2;
+  const cellWidth = exactBarWidth / count;
   for (let i = 0; i < count; i++) {
-    const width = widthAt(i);
-    const x = barStartX + firstWidth / 2 + i / (count - 1) * centerSpan - width / 2;
+    const width = cellWidth * 2 ** -i;
+    const center = barStartX + (i + 0.5) * cellWidth;
+    const x = center - width / 2;
     if (variant === 1) {
       rects.push({ x, y: barY, width, height: barHeight, radius: 0 });
     } else {

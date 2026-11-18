@@ -51,3 +51,13 @@ this to be logical and look nice.” The final product interpretation keeps
 logarithmic width scale, and removes Gradient motion/GIF controls. This
 supersedes the earlier literal-width and motion-control scope above without
 claiming a brand exception or formal institutional approval.
+
+
+A subsequent scientific review clarified that the soft-logarithmic taper did
+not directly encode the relative light ratios. After that distinction and
+finite-resolution limits were explained, the owner requested “implement it.”
+The final scoped implementation therefore uses 21 equal cells with ink area
+proportional to `2^(-n)`, stays static, and explicitly discloses that this is
+not a calibrated brightness chart. This supersedes the logarithmic-display
+interpretation above. It adds no institutional approval, palette exception,
+photometric calibration claim or permission for new assets.

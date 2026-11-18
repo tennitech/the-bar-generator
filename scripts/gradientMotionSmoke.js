@@ -53,8 +53,7 @@ const evidence = `/tmp/rpi-gradient-static-${engine}`;
         }
         return { runs, last };
       });
-      assert.equal(raster.runs, 21, 'all 21 stripes resolve separately at a 1000px bar width');
-      assert.equal(raster.last, 999, 'the last stripe reaches the final column naturally');
+      assert.ok(raster.runs > 1 && raster.runs < 21, 'finite pixels resolve only a subset of the 21 true area steps');
       await page.screenshot({ path: path.join(evidence, `variant-${variant}-desktop.png`) });
     }
     await page.locator('[data-parameter-action="reset"][data-parameter-style="gradient"]').click();
@@ -63,6 +62,7 @@ const evidence = `/tmp/rpi-gradient-static-${engine}`;
     await page.locator('[data-randomize-undo="gradient"]').click();
     assert.equal(await page.evaluate(() => captureLogoExportSnapshot().svgSource), reset);
     await page.evaluate(() => { document.getElementById('export-size-select').value = 'standard'; logoExportUI.sync(false); });
+    const rasterSpec = await page.evaluate(() => { const s = captureLogoExportSnapshot(); return {dimensions:s.dimensions, viewport:s.viewport}; });
     for (const [format, method] of [['svg', 'saveSVG'], ['png', 'savePNG']]) {
       const pending = page.waitForEvent('download');
       await page.evaluate(method => window[method](), method);
@@ -70,7 +70,36 @@ const evidence = `/tmp/rpi-gradient-static-${engine}`;
       const target = path.join(evidence, `gradient.${format}`);
       await download.saveAs(target);
       if (format === 'svg') assert.equal(await fs.readFile(target, 'utf8'), reset);
-      else assert.equal((await fs.readFile(target)).subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+      else {
+        const png = await fs.readFile(target);
+        assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+        const alphaError = await page.evaluate(async ({ png, svg, rasterSpec }) => {
+          const load = async source => { const image = new Image(); image.src = source; await image.decode(); return image; };
+          const actual = await load('data:image/png;base64,' + png);
+          const xml = new DOMParser().parseFromString(svg, 'image/svg+xml');
+          const { dimensions, viewport } = rasterSpec;
+          xml.documentElement.setAttribute('width', dimensions.width);
+          xml.documentElement.setAttribute('height', dimensions.height);
+          // The export contract uses a whole-pixel viewport at uniform scale.
+          xml.documentElement.setAttribute('viewBox', `${viewport.x} ${viewport.y} ${dimensions.width / dimensions.scale} ${dimensions.height / dimensions.scale}`);
+          const expected = await load('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(xml)));
+          const canvas = document.createElement('canvas');
+          canvas.width = actual.naturalWidth; canvas.height = actual.naturalHeight;
+          const context = canvas.getContext('2d');
+          context.drawImage(actual, 0, 0);
+          const actualPixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(expected, 0, 0, canvas.width, canvas.height);
+          const expectedPixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+          let difference = 0, expectedAlpha = 0;
+          for (let i = 3; i < actualPixels.length; i += 4) {
+            difference += Math.abs(actualPixels[i] - expectedPixels[i]);
+            expectedAlpha += expectedPixels[i];
+          }
+          return expectedAlpha ? difference / expectedAlpha : Infinity;
+        }, { png: png.toString('base64'), svg: reset, rasterSpec });
+        assert.ok(alphaError < .005, `decoded PNG alpha differs from the captured SVG: ${alphaError}`);
+      }
     }
     await page.locator('#bar-information-toggle').click();
     await page.screenshot({ path: path.join(evidence, 'about-desktop.png') });

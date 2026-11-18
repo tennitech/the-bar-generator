@@ -1,28 +1,28 @@
 const { createGradientPatternGeometry, createBarPatternSVG } = require('../js/utils/barPattern');
-const { advanceLiveLoopPhase, getLoopingGifFramePlan, getLoopingAnimationState, normalizeLoopSpeed } = require('../js/utils/loopingGif');
+const { getLoopingGifFramePlan } = require('../js/utils/loopingGif');
 const marquee = require('../js/utils/marqueeAnimation');
 
-test.each([1, 2])('Gradient %s shows 21 logarithmic light levels and ignores historical phases', variant => {
+test.each([1, 2])('Gradient %s encodes 21 light levels with exact halving ink area and ignores historical phases', variant => {
   const options = {variant, barStartX:13, barY:7, exactBarWidth:500, barHeight:36};
   const original = createGradientPatternGeometry(options).rects;
   expect(original).toHaveLength(variant === 1 ? 21 : 63);
   const columns = original.filter((_, index) => variant === 1 || index % 3 === 0);
   expect(columns).toHaveLength(21);
+  const cellWidth = options.exactBarWidth / 21;
+  const areas = columns.map((_, i) => {
+    const shapes = variant === 1 ? [original[i]] : original.slice(i * 3, i * 3 + 3);
+    return shapes.reduce((area, r) => area + r.width * r.height, 0);
+  });
   for (let i = 0; i < columns.length; i++) {
-    const relativeLight = 2 ** -i;
-    const minimumLight = 2 ** -20;
-    expect(columns[i].width / columns[0].width)
-      .toBeCloseTo(Math.log2(1 + relativeLight / minimumLight) / Math.log2(1 + 1 / minimumLight), 12);
-    if (i > 0) {
-      expect(columns[i].width).toBeLessThan(columns[i - 1].width);
-      expect(columns[i].x).toBeGreaterThan(columns[i - 1].x + columns[i - 1].width);
-    }
+    expect(areas[i] / areas[0]).toBe(2 ** -i);
+    if (i > 0) expect(areas[i - 1] / areas[i]).toBe(2);
+    const center = options.barStartX + (i + .5) * cellWidth;
+    expect(columns[i].x + columns[i].width / 2).toBeCloseTo(center, 10);
+    expect(columns[i].x).toBeGreaterThanOrEqual(options.barStartX + i * cellWidth - 1e-9);
+    expect(columns[i].x + columns[i].width).toBeLessThanOrEqual(options.barStartX + (i + 1) * cellWidth + 1e-9);
   }
-  const pitches = columns.slice(1).map((r, i) => r.x + r.width / 2 - columns[i].x - columns[i].width / 2);
-  pitches.forEach(pitch => expect(pitch).toBeCloseTo(pitches[0], 10));
-  expect(columns[20].width).toBeGreaterThan(.5); // One pixel at a 1000px bar.
-  expect(columns[0].x).toBeCloseTo(13, 10);
-  expect(columns[20].x + columns[20].width).toBeCloseTo(513, 10);
+  expect(areas[0] / areas[20]).toBe(1_048_576);
+  expect(columns[20].width).toBeLessThan(.001); // Preserve true subpixel geometry.
   for (const phase of [undefined, 0, 1, -1, NaN, Infinity]) {
     expect(createGradientPatternGeometry({...options, gradientPhase:phase}).rects).toEqual(original);
   }

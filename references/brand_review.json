@@ -3,7 +3,7 @@
   "reviewedOn": "2026-11-18",
   "reviewer": "OpenAI via Codex self-review",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "7272b89ee4dbae793a9266628e0e919a3e354a5748e86620705903c36dc9c773",
+  "changeFingerprint": "e6c94f6e99c6b19009d4afa98de8a9550ef68540c335d543249a634f8a0dbe2d",
   "areas": {
     "foundations": {
       "status": "reviewed",
@@ -16,7 +16,7 @@
     },
     "copy": {
       "status": "reviewed",
-      "rationale": "About Gradient now explicitly distinguishes halving light values from logarithmic display widths, and identifies the schematic limitation. Other requested descriptions and source credits are preserved. Full Naming and Voice & Tone sources remain the basis.",
+      "rationale": "About Gradient states 21 equal cells, halving ink area, 20 stops and 1 to 1/1,048,576 represented light. It explicitly warns that steps disappear at screen resolution and that this is not a calibrated brightness chart. Other requested copy and credits are preserved.",
       "sources": [
         "naming-conventions",
         "voice-tone"
@@ -24,7 +24,7 @@
     },
     "interface": {
       "status": "reviewed",
-      "rationale": "Gradient returns to Static with only its variant control: Loop, Speed, Reverse and GIF are removed. Legacy motion fields cannot revive animation. Keyboard/390px layout, Randomize/Undo/reset and actual SVG/PNG downloads pass in Chromium and WebKit. Other changed cards retain the earlier focused coverage.",
+      "rationale": "Gradient stays Static with no motion/GIF controls. Both layouts and historical motion restores remain static. Chromium/WebKit keyboard, 390px layout, reset/randomize/Undo and actual SVG/PNG download checks pass. No changed font, palette or new UI asset is introduced; the About copy explains the finite-resolution behavior.",
       "sources": [
         "design-principles",
         "color",
@@ -34,7 +34,7 @@
     },
     "bar-and-exports": {
       "status": "reviewed",
-      "rationale": "The owner rejected the literal-width/compressed-gap candidate and requested static, logical, readable artwork. Twenty-one relative light levels 2^-n span 20 stops; a documented log2(1 + I/Imin) width display makes them readable. Fixed evenly spaced centers use natural endpoint tangency. No opacity blending, edge strips, fitting, new asset or calibrated measurement is claimed. Preview/header/SVG/PNG/Home share static geometry; legacy phases are ignored and GIF is unavailable.",
+      "rationale": "The owner requested implementation of a scientifically direct geometric encoding after the soft-logarithmic candidate was distinguished from a dynamic-range target. Twenty-one equal cells encode I[n]/I[0] = 2^-n through actual ink area. Both variants have exact normalized 2:1 successive area ratios and a 1,048,576:1 span. No logarithmic transform, minimum-width inflation, edge paint, fitted spacing or emitted-brightness claim remains. Preview/header/SVG/PNG/Home use the same static geometry; legacy motion remains ignored and GIF unavailable.",
       "sources": [
         "logo-system",
         "the-bar",
@@ -103,12 +103,12 @@
       "B09",
       "B10"
     ],
-    "disposition": "B01 retains institutional-review questions. The final November 18 owner direction supersedes the initial literal-width candidate: static primitive steps with halving light values, explicit logarithmic width display and no Gradient motion/GIF. See the appended conflict-register note. B02–B10 boundaries and existing asset/approval questions remain unchanged."
+    "disposition": "B01 retains formal institutional-review questions. The final scientific implementation request supersedes the earlier logarithmic-display candidate: 21 equal cells directly encode light ratios with halving ink area and explicit raster/brightness limitations. See the appended decision note. Other B01–B10 approval, geometry, palette and asset boundaries remain unchanged."
   },
   "requiresFormalApproval": false,
   "approvalStatus": "not-required-for-scoped-software-and-copy-changes",
-  "approvalRationale": "Owner-authorized software/copy correction uses static single-ink primitive geometry and adds no asset, palette or organizational lockup. Existing institutional approval questions stay open.",
-  "approvalEvidence": "November 18 session: owner requested removal of motion, rejected the compressed candidate and directed that the bar be logical and look nice. The final documented interpretation preserves 21 exposure steps with an explicit logarithmic display. No formal RPI approval claimed.",
+  "approvalRationale": "Owner-authorized numerical encoding uses static single-ink primitive geometry without new assets, palette, calibration claims or organizational lockups. Existing formal RPI approval questions remain open.",
+  "approvalEvidence": "November 18: after the distinction between symbolic log widths, direct geometric encoding and calibrated brightness was explained, the owner requested implement it. Gradient remains static under the earlier explicit motion-removal request. No institutional approval claimed.",
   "publicationScope": "Owner-requested single PR for issues #212, #213, #215, #216, #219, #220, #221, #222, #223 and #226, including code, status/science/source records and original application review screenshots. No merge authorized in this session.",
   "checks": [
     {
@@ -119,22 +119,22 @@
     {
       "name": "unit-tests",
       "result": "passed",
-      "evidence": "All 1,290 tests in 107 Jest suites passed for the static revision; retired animation-specific expectations are replaced with static/legacy-motion/GIF-unavailable regressions."
+      "evidence": "All 1,290 Jest tests in 107 suites pass for the direct-area revision. Regressions verify actual summed area for both layouts, exact 2^-n normalization, 2:1 adjacent ratios, 1,048,576:1 range, fixed cell centers/containment and preserved subpixel widths, plus existing static/legacy-motion/GIF-unavailable behavior."
     },
     {
       "name": "rendered-ui",
       "result": "passed",
-      "evidence": "Final static Gradient checked in Chromium and Playwright WebKit at 1440px and 390px. Both layouts stay unchanged over time and after historical motion restoration; no Loop/Speed/Reverse/GIF controls appear. Keyboard variant edits, reset/randomize/Undo pass. Screenshots inspected and Gradient review image refreshed. Earlier all-eight-card keyboard/mobile/18.10:1 About-contrast checks remain applicable to the untouched cards."
+      "evidence": "Direct-area revision checked in Chromium and Playwright WebKit at desktop and 390px. Both variants, legacy motion restoration, keyboard variant editing, reset/randomize/Undo and no motion/GIF controls pass. Screenshots inspected and Gradient review image refreshed. Earlier unchanged-card keyboard/mobile/contrast evidence remains applicable. Finite-resolution disappearance is expected and disclosed rather than widened away."
     },
     {
       "name": "preview-export-parity",
       "result": "passed",
-      "evidence": "Final Chromium/WebKit static smoke verifies both variants, ignored legacy phases, exact SVG download source, actual PNG signature, and shared static geometry. A 1000px raster probe resolves all 21 separate stripes and detects ink in the final column 999. Home SVG stills recaptured. Gradient GIF eligibility and controls are removed, so no final Gradient GIF is claimed. Earlier animated candidate evidence is historical only."
+      "evidence": "Chromium/WebKit static smoke verifies the real downloaded SVG exactly matches captured source; PNG is decoded and its alpha compared with the captured SVG rasterized at the same dimensions (under 0.5% normalized alpha error). SVG retains all 21 true steps; a 1000px raster resolves only a subset, as expected. Home SVGs recaptured from the shared renderer. There is no final Gradient GIF or calibrated-brightness claim."
     },
     {
       "name": "user-acceptance",
       "result": "pending",
-      "evidence": "The owner rejected the preceding visual revisions. Acceptance of the final static logarithmic display is pending. Browser/automated checks do not establish native Safari, physical-device, screen-reader, photosensitivity or institutional approval."
+      "evidence": "Owner requested the direct geometric encoding implementation after scientific clarification; acceptance of the implemented revision remains pending. Earlier visual candidates were rejected. No physical-device, native Safari, screen-reader, photosensitivity or institutional acceptance claimed."
     }
   ]
 }

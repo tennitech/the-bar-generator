@@ -9,15 +9,19 @@ Home and the picker; their old paths, query links and v1 saves recover to Solid
 while preserving other valid settings. Historical source/reference art and
 low-level geometry remain for compatibility.
 
-Gradient is now in Static: no Loop, Speed, Reverse or GIF export. Historical
-motion settings and phases cannot animate it. The owner rejected the literal-
-width/proportional-gap candidate and asked for a logical, readable pattern.
-Its 21 levels still represent successive halvings of light across 20 stops,
-but widths now use a documented soft-logarithmic display scale. Evenly spaced
-centers, visible dark-end stripes and natural endpoint tangency keep the
-composition distributed across the fixed viewport. Both layouts, SVG, PNG,
-header and Home share the same geometry. This supersedes earlier motion,
-fixed-gap and proportional-gap descriptions in this batch's history.
+Gradient remains Static with no Loop, Speed, Reverse or GIF export; old motion
+settings cannot animate it. Following the owner's scientific review and
+implementation request, it now directly encodes relative light by ink area:
+21 equal cells represent `2^(-n)` for n = 0…20. Actual area halves at every
+step, giving a 1,048,576:1 represented ratio across 20 stops in both layouts.
+There is no logarithmic width transform, resolution-dependent widening or
+painted-edge fitting. Fixed cell positions preserve the full reference domain.
+
+This is a numerical encoding, not a calibrated brightness chart. Some steps
+will disappear at finite raster resolution and the painted pattern can appear
+shorter than its fixed viewport. About now states that limit. SVG preserves
+all 21 positive steps. Preview/header/SVG/PNG/Home share the same static model.
+This supersedes the earlier literal-packed and soft-logarithmic candidates.
 
 Browser validation also exposed saved phases being reset by restored Loop
 control events. Those events now preserve the already restored motion clock;
@@ -28,7 +32,8 @@ Model, source and approval boundaries are in [bar science notes](bar_science_not
 in [the conflict register](brand_conflicts.md). Formal RPI approval and broader
 asset permissions remain open. User acceptance of this batch is pending.
 
-The static revision passes 1,290 Jest tests in 107 suites, replacing the
+The direct-area revision passes 1,290 Jest tests in 107 suites. Regressions
+verify exact normalized area ratios and fixed cells, replacing the
 retired Gradient motion expectations. Validation also includes focused Chromium/WebKit
 checks of all eight revised cards, keyboard disclosure, 390px layouts, measured
 18.10:1 About text contrast in Gray on Black, retired paths/saves and Home.

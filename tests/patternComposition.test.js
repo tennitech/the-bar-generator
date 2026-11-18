@@ -36,7 +36,7 @@ describe('experimental pattern compositions', () => {
     'paints both exact horizontal boundaries at %s × %s', (width, height, x, y) => {
       const bounds = { barStartX: x, barY: y, exactBarWidth: width, barHeight: height };
       for (const variant of [1, 2, 3, 0, 99, '2']) {
-        for (const helper of [createLinesPatternGeometry, createGradientPatternGeometry,
+        for (const helper of [createLinesPatternGeometry,
           createCirclesGradientPatternGeometry, createTrianglesPatternGeometry]) {
           if (helper === createCirclesGradientPatternGeometry && [0, 1].includes(variant)) continue;
           const geometry = helper({ ...bounds, variant });
