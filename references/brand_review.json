@@ -3,7 +3,7 @@
   "reviewedOn": "2026-11-18",
   "reviewer": "OpenAI via Codex self-review",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "668d0a1b21bb192028bb7ed1c2e5b3bdf092b9e8149a98bc6dcc8d328e4f115d",
+  "changeFingerprint": "90d9849c6387213778e64fe023576fb7b352d293b9b63c03d211cc9a91a4ebb2",
   "areas": {
     "foundations": {
       "status": "reviewed",
@@ -34,7 +34,7 @@
     },
     "bar-and-exports": {
       "status": "reviewed",
-      "rationale": "Read official geometry and Pattern guidance. Owner chose 21 solid steps with width ratio 2:1 on November 18 after scientific clarification. Fixed geometry, one ink, no opacity blending or fitted edges. Shared preview/header/GIF geometry; existing resting SVG/PNG semantics retained. Extremely narrow steps are honestly documented as subpixel at normal raster size.",
+      "rationale": "Read official geometry and Pattern guidance. Owner chose 21 solid steps with width ratio 2:1 on November 18 after scientific clarification. Fixed geometry, one ink, no opacity blending or fitted edges. Shared preview/header/GIF geometry; existing resting SVG/PNG semantics retained. Extremely narrow steps are honestly documented as subpixel at normal raster size. Screenshot feedback exposed the fixed-gap tail; gaps now halve with the steps at 1/8 preceding width. Both finite sums are normalized once. Chromium and WebKit raster probes of the resting 1000px bar detect visible ink in the final column (999), with all 21 widths still halving.",
       "sources": [
         "logo-system",
         "the-bar",
@@ -124,12 +124,12 @@
     {
       "name": "rendered-ui",
       "result": "passed",
-      "evidence": "Focused Chromium and Playwright WebKit HTTP checks passed for all eight changed descriptions, keyboard Enter disclosure, four 390px copy layouts, retired routes and local saved snapshots, and absence from Home. About text contrast measured 18.10:1 in Gray on Black. Desktop/mobile screenshots inspected; project-only samples retained in references/review-images/bar-descriptions/."
+      "evidence": "Focused Chromium and Playwright WebKit HTTP checks passed for all eight changed descriptions, keyboard Enter disclosure, four 390px copy layouts, retired routes and local saved snapshots, and absence from Home. About text contrast measured 18.10:1 in Gray on Black. Desktop/mobile screenshots inspected; project-only samples retained in references/review-images/bar-descriptions/. Follow-up proportional-gap artwork checked in Chromium and WebKit at desktop and 390px; resting bar rasterized at 1000px reaches column 999 in both engines. Gradient review image refreshed."
     },
     {
       "name": "preview-export-parity",
       "result": "passed",
-      "evidence": "Chromium gradientMotionSmoke passes both variants, shared geometry, phase/share/Undo, reverse, reduced motion, mobile keyboard, touch/2D fallback, static Home and actual SVG/PNG/GIF downloads. SVG source equality checked; PNG decoded alpha bounds [80,80]–[1076,681] in 1160×762, composited on white and inspected. 500 GIF frames decoded with transparent disposal and changing artwork, total 10 seconds. Unit regressions compare GIF painted rectangles with shared phase geometry. Still exports retain documented resting phase."
+      "evidence": "Chromium gradientMotionSmoke passes both variants, shared geometry, phase/share/Undo, reverse, reduced motion, mobile keyboard, touch/2D fallback, static Home and actual SVG/PNG/GIF downloads. SVG source equality checked; PNG signature, dimensions and contained alpha bounds checked; composited on white and inspected. 500 GIF frames decoded with transparent disposal and changing artwork, total 10 seconds. Unit regressions compare GIF painted rectangles with shared phase geometry. Still exports retain documented resting phase. Gradient smoke repeated successfully after proportional-gap correction, with new SVG/PNG and decoded 500-frame GIF output."
     },
     {
       "name": "user-acceptance",

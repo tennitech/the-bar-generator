@@ -670,9 +670,14 @@ borrowed compositions, recordings or measured musical data.
 This supersedes the earlier linear/centered Gradient width envelopes and
 coordinate-warp motion. The owner selected discrete solid steps with halving
 widths after clarification that widths do not implement the inverse-square law.
-For n = 0…20, resting width is `w[n] = w[0] * 2^(-n)`, with fixed gap
-`g = 0.008 * W` and `w[0] = (W - 20*g)/(2 - 2^(-20))`. This normalizes the
-finite geometric sum once to the fixed bar viewport. Variant 1 uses full-height
+For n = 0…20, resting width is `w[n] = w[0] * 2^(-n)`. Each of the first
+20 steps has a following gap `g[n] = w[n]/8`; there is no trailing gap.
+`w[0] = W / ((2 - 2^(-20)) + (2 - 2^(-19))/8)` normalizes both finite
+geometric sums once to the fixed bar viewport. This supersedes the first
+candidate's constant `0.008W` gaps: those consumed 16% of the width even
+where the intervening stripes were too thin to resolve, visibly shortening
+the bar. Proportional gaps keep the unresolved tail proportionally tiny.
+Variant 1 uses full-height
 rectangles; variant 2 repeats the same 21 columns in three quarter-height rows,
 at y offsets 0, 0.375H and 0.75H. Both are single ink with no opacity blending.
 

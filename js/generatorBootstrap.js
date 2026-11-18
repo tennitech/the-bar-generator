@@ -48,7 +48,7 @@
       .filter(src => src && !(window.GeneratorRoutes && src.startsWith('js/utils/generatorRoutes.js?v=20261118-bar-batch')));
     if (window.__RPI_GENERATOR_ROUTE_STYLE__ === 'lunar') {
       const lunarSource = 'js/utils/lunarBarAsset.js?v=20261103-save-removal';
-      const patternIndex = scriptSources.findIndex(src => src.startsWith('js/utils/barPattern.js?v=20261118-bar-batch'));
+      const patternIndex = scriptSources.findIndex(src => src.startsWith('js/utils/barPattern.js?v=20261118-halving-gaps'));
       scriptSources.splice(patternIndex < 0 ? scriptSources.length : patternIndex, 0, lunarSource);
     }
 

@@ -11,8 +11,14 @@ test.each([1, 2])('Gradient %s preserves its 21 halving width steps and containm
   for (let i = 1; i < columns.length; i++) {
     expect(columns[i - 1].width / columns[i].width).toBeCloseTo(2, 12);
     expect(columns[i].x).toBeGreaterThan(columns[i - 1].x + columns[i - 1].width);
+    expect(columns[i].x - columns[i - 1].x - columns[i - 1].width)
+      .toBeCloseTo(columns[i - 1].width / 8, 10);
   }
   expect(columns[0].width / columns[20].width).toBe(2 ** 20);
+  // At rest, steps thinner than one reference unit and their proportional
+  // gaps occupy less than 2.5 units, instead of a long run of fixed gaps.
+  const visible = columns.filter(r => r.width >= 1);
+  expect(513 - Math.max(...visible.map(r => r.x + r.width))).toBeLessThan(2.5);
   for (const phase of [undefined, 0, 1, -1, NaN, Infinity]) {
     expect(createGradientPatternGeometry({...options, gradientPhase:phase}).rects).toEqual(original);
   }

@@ -706,12 +706,14 @@ function createGradientPatternGeometry(options = {}) {
   const barHeight = Math.max(1, Number(options.barHeight || 18));
   const variant = clampPatternVariant(options.variant || 1, 2);
   // Twenty-one width steps encode powers of two, not pixel luminance.
-  // Fixed gaps leave every mathematical step distinct in vector output; the
-  // narrowest steps naturally fall below raster resolution at ordinary sizes.
+  // Gaps halve with the steps, so the unresolved tail occupies a tiny part
+  // of the viewport rather than leaving a long run of empty fixed gaps.
   const rects = [];
   const count = 21;
-  const gap = exactBarWidth * 0.008;
-  const firstWidth = (exactBarWidth - gap * (count - 1)) / (2 - 2 ** (1 - count));
+  const gapRatio = 1 / 8;
+  const widthSum = 2 - 2 ** (1 - count);
+  const gapSum = 2 - 2 ** (2 - count);
+  const firstWidth = exactBarWidth / (widthSum + gapRatio * gapSum);
   const phase = Number.isFinite(Number(options.gradientPhase)) ? Number(options.gradientPhase) % 1 : 0;
   const angle = 2 * Math.PI * phase;
   // Animate one common coverage factor so adjacent widths always retain 2:1.
@@ -730,7 +732,7 @@ function createGradientPatternGeometry(options = {}) {
         rects.push({ x, y: barY + row * barHeight * 0.375, width, height, radius: 0 });
       }
     }
-    left += restingWidth + gap;
+    left += restingWidth * (1 + (i < count - 1 ? gapRatio : 0));
   }
 
   return { rects };
