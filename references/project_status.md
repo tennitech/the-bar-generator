@@ -23,11 +23,18 @@ public deployment of this branch is claimed. The host fixture is separate
 from an authenticated Frontify test.
 
 On this Mac, the transfer was reconciled onto current main `822e1f9` in a
-separate worktree. The existing retired-style and Home script versions are
+separate worktree, then integrated documentation-only main `1e6f67e`. The existing retired-style and Home script versions are
 preserved; the generator runtime/test blobs match the transferred candidate.
 Only HTML cache keys and additive documentation needed reconciliation. The
 November 18 layout acceptance of transferred commit `76a7a13` still applies
 to this behavior. Current-Mac checks and release results are recorded in the PR.
+
+The companion wrapper passes 10 regression tests, TypeScript and a local
+production build with only `index.js` and `style.css`. ESLint reports zero
+errors and the existing iframe-sandbox warning. OAuth login succeeds, but
+Frontify rejects manifest validation and the CLI dry run with
+`policy 'account' not fulfilled`. No wrapper upload or publication was
+attempted after that rejection; paired production verification remains blocked.
 
 # RPI Logo Generator - Project Status & Master Documentation
 
@@ -35,6 +42,9 @@ to this behavior. Current-Mac checks and release results are recorded in the PR.
 
 Each active thread owns a branch and worktree for its PR. Several tasks can
 share that thread. A new independent thread starts in a fresh worktree.
+Before new work, agents fetch origin main and use refreshed origin/main as the
+base. Client-created worktrees are checked before edits. Existing work and
+explicit base choices retain their intended branches.
 A short Git check confirms the folder and branch before edits. Local branch
 descriptions record thread ownership for handoffs. They remain advisory and
 cannot detect live editors. Published PRs hold context across machines.

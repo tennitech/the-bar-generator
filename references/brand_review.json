@@ -3,7 +3,7 @@
   "reviewedOn": "2026-11-18",
   "reviewer": "OpenAI GPT-6 via Codex desktop, reconciliation and self-review; original gpt-6.1-sol review retained in Git history",
   "sourceSnapshot": "2026-11-17",
-  "changeFingerprint": "c9c35ce92774f3a6aef0f02edaa95d85b12c7fd03ba34fc6ca825d9ef51bc0b8",
+  "changeFingerprint": "63fe813c6ca6636abc9478229cff2f66d3fbe8967c12699cc8cfef865613ef4d",
   "areas": {
     "foundations": {
       "status": "reviewed",
@@ -83,7 +83,7 @@
     {
       "name": "unit-tests",
       "result": "passed",
-      "evidence": "Current-main reconciliation: all 1,281 Jest tests in 106 suites passed. Companion wrapper: all 10 node tests and TypeScript passed; ESLint zero errors, one preexisting iframe sandbox warning. Transfer had 1,301 tests before main retired three styles."
+      "evidence": "After integrating main 1e6f67e: npm test -- --runInBand passed the brand guard and all 1,281 Jest tests in 106 suites. Companion wrapper: 10 node tests, TypeScript and local production build passed; ESLint zero errors and one preexisting warning. Frontify manifest/dry run blocked by account policy after successful OAuth login."
     },
     {
       "name": "brand-policy",
